@@ -23,9 +23,9 @@ document.querySelectorAll('div[data-id]').forEach(el => {
 var sortedKeys = Array.from(fileMap.keys()).sort((a, b) => a - b);
 var output = "";
 
-// 1. 맨 첫 줄에 1호의 full 링크 주소 출력
+// 1. 맨 첫 줄에 'full path' 및 1호의 링크 주소 출력
 if (fileMap.has(1)) {
-    output += `https://drive.google.com/file/d/${fileMap.get(1).id}/view?usp=sharing\n\n`;
+    output += `full path\nhttps://drive.google.com/file/d/${fileMap.get(1).id}/view?usp=sharing\n\n`;
 }
 
 // 2. 이후 모든 파일들의 '파일명 - 파일 ID' 출력
