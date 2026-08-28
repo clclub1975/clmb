@@ -1,16 +1,16 @@
 <table style="text-align: center; width: 100%;">
   <!-- 1행: 001호 ~ 005호 -->
   <tr>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">001호 | 발행년월</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">002호 | 발행년월</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">003호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">001호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">002호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">003호 | 발행년월</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">004호 | 발행년월</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">005호 | 발행년월</th>
   </tr>
   <tr>
-    <td>회보</td><td>요약</td><td>교정</td>
-    <td>회보</td><td>요약</td><td>교정</td>
-    <td>회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td>회보</td><td>요약</td><td>교정</td>
     <td>회보</td><td>요약</td><td>교정</td>
   </tr>
@@ -33,16 +33,16 @@
 
   <!-- 3행: 101호 ~ 105호 -->
   <tr>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">101호 | 발행년월</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">102호 | 발행년월</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">103호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">101호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">102호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">103호 | 발행년월</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">104호 | 발행년월</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">105호 | 발행년월</th>
   </tr>
   <tr>
-    <td>회보</td><td>요약</td><td>교정</td>
-    <td>회보</td><td>요약</td><td>교정</td>
-    <td>회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td>회보</td><td>요약</td><td>교정</td>
     <td>회보</td><td>요약</td><td>교정</td>
   </tr>
@@ -65,16 +65,16 @@
 
   <!-- 5행: 151호 ~ 155호 -->
   <tr>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">151호 | 발행년월</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">152호 | 발행년월</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">153호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">151호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">152호 | 발행년월</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f;">153호 | 발행년월</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">154호 | 발행년월</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">155호 | 발행년월</th>
   </tr>
   <tr>
-    <td>회보</td><td>요약</td><td>교정</td>
-    <td>회보</td><td>요약</td><td>교정</td>
-    <td>회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td>회보</td><td>요약</td><td>교정</td>
     <td>회보</td><td>요약</td><td>교정</td>
   </tr>
