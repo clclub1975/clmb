@@ -35,14 +35,14 @@
   <tr>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">101호 | 1993년 1월호</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">102호 | 1993년 2월호</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">103호 | 1993년 3월호</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">103호 | ---------------</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">104호 | ---------------</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">105호 | ---------------</th>
   </tr>
   <tr>
     <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
-    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
+    <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
   </tr>
@@ -67,29 +67,29 @@
   <tr>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">151호 | 1997년 3월호</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">152호 | 1997년 4월호</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">153호 | 1997년 5월호</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">154호 | ---------------</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">153호 | ---------------</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">154호 | 1997년 6월호</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">155호 | ---------------</th>
   </tr>
   <tr>
     <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
-    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
   </tr>
 
   <!-- 6행: 156호 ~ 160호 -->
   <tr>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">156호 | ---------------</th>
-    <th colspan="3" style="background-color: #d0d7de; padding: 10px;">157호 | ---------------</th>
+    <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">157호 | 1997년 9월호</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">158호 | ---------------</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">159호 | ---------------</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">160호 | ---------------</th>
   </tr>
   <tr>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-    <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+    <td style="color: #d9534f; font-weight: bold;">회보</td><td>요약</td><td>교정</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
