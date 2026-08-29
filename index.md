@@ -18,7 +18,7 @@
 
 <table style="text-align: center; width: 100%; border-collapse: collapse; table-layout: fixed;">
  <tr>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">[001호] | 1984년 3월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">[001호] | <span style="color: green;">1984년 3월호</span></th>
   <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">[002호] | 1984년 4월호</th>
   <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">[003호] | 1984년 5월호</th>
   <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[004호] | ---------------</th>
