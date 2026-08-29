@@ -3,6 +3,9 @@
   <p style="margin-bottom: 5px; color: #856404;">
     본 페이지는 제미나이가 요약한 촛불회 회보 내용을 회원 여러분과 함께 검토하고 교정하기 위한 <strong>준비 현황판</strong>입니다.
   </p>
+  <p style="margin-bottom: 5px; color: #856404;">
+    본 페이지는 퍼스트 베타(First Beta) 버전이며, 레이아웃과 디자인은 추후 순차적으로 개선될 예정입니다.
+  </p>
   <ul style="margin-bottom: 0; color: #856404; font-size: 14px;">
     <li>현재는 진척 상황을 공유하는 단계이며, 향후 구글 폼이 준비되면 '교정'란을 통해 본격적인 피드백 수렴이 진행될 예정입니다.</li>
     <li>각 회보의 원본과 제미나이 요약본을 미리 확인하실 수 있습니다.</li>
