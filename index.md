@@ -8,7 +8,7 @@
   </tr>
   <tr>
     <td><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=drive_link" target="_blank" style="color: #d9534f; font-weight: bold; text-decoration: none;">회보</a></td>
-    <td><a href="https://drive.google.com/uc?id=1euBR4QJoxybMUJNXRU61kpOQICrBLs44&export=view#page=7" target="_blank">요약</a></td>
+    <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true" target="_blank">요약</a></td>
     <td>교정</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
