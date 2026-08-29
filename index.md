@@ -1,6 +1,3 @@
-# 회보 색인 목록
-
-## 001호 ~ 010호
 <table style="text-align: center; width: 100%; border-collapse: collapse; table-layout: fixed;">
   <tr>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">[001호] | 1984년 3월호</th>
@@ -50,10 +47,6 @@
     <td>&nbsp;</td>
     <td>&nbsp;</td>
   </tr>
-</table>
-
-## 101호 ~ 110호
-<table style="text-align: center; width: 100%; border-collapse: collapse; table-layout: fixed;">
   <tr>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[101호] | ---------------</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[102호] | ---------------</th>
@@ -102,10 +95,6 @@
     <td>&nbsp;</td>
     <td>&nbsp;</td>
   </tr>
-</table>
-
-## 151호 ~ 160호
-<table style="text-align: center; width: 100%; border-collapse: collapse; table-layout: fixed;">
   <tr>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">[151호] | 1997년 2월호</th>
     <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #d9534f; font-weight: bold;">[152호] | 1997년 3월호</th>
