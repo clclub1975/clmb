@@ -25,13 +25,13 @@
   <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[005호] | ---------------</th>
  </tr>
  <tr>
-  <td><a href="url?id=26" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
-  <td><a href="https://github.com/clclub1975/clmb/blob/main/url?id=27" target="_blank">요약</a></td>
+  <td><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
-  <td><a href="https://drive.google.com/file/d/17w0x.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
   <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
-  <td><a href="https://drive.google.com/file/d/19p.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
   <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
   <td>&nbsp;</td>
@@ -79,15 +79,15 @@
   <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[155호] | ---------------</th>
  </tr>
  <tr>
-  <td><a href="https://drive.google.com/file/d/1.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
-  <td><a href="url?id=33" target="_blank">요약</a></td>
+  <td><a href="https://drive.google.com/file/d/1qtsn1ArYo8TSSqRhESZKoNamp_XGbmx1/view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p4" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
-  <td><a href="url?id=34" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://drive.google.com/file/d/1C2XEjqCNAGLaxJy6kK4yG9SKPwxXs-UB/view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
   <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p5" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-  <td><a href="https://drive.google.com/file/d/3.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
-  <td><a href="https://github.com/clclub1975/clmb7" target="_blank">요약</a></td>
+  <td><a href="https://drive.google.com/file/d/1AAfZasiE5Fth6zxXt-s3hRVJVOXqFF68/view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p6" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
  </tr>
@@ -100,7 +100,7 @@
  </tr>
  <tr>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-  <td><a href="https://drive.google.com/file/d/4.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://drive.google.com/file/d/1P2kSJFxnAKp22TkkPLX4GVLFzQ6Yo2Tv/view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
   <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p7" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
