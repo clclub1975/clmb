@@ -9,7 +9,7 @@
   </tr>
   <tr>
     <td style="border: 1px solid #d0d7de; padding: 6px;"><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank" style="color: #d9534f; font-weight: bold; text-decoration: none;">회보</a></td>
-    <td style="border: 1px solid #d0d7de; padding: 6px;"><a href="https://drive.google.com/file/d/1HI9G7vevnFgdjJ57igO30TMvy6bVnvH6/view#slide=id.p1" target="_blank">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 6px;"><a href="https://drive.google.com/file/d/1HI9G7vevnFgdjJ57igO30TMvy6bVnvH6/view" target="_blank">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 6px;">교정</td>
     <td style="border: 1px solid #d0d7de; padding: 6px;"><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view" target="_blank" style="color: #d9534f; font-weight: bold; text-decoration: none;">회보</a></td>
     <td style="border: 1px solid #d0d7de; padding: 6px;"><a href="https://drive.google.com/file/d/1HI9G7vevnFgdjJ57igO30TMvy6bVnvH6/view#slide=id.p2" target="_blank">요약</a></td>
