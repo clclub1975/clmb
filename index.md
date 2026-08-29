@@ -18,15 +18,15 @@
 
 <table style="text-align: center; width: 100%; border-collapse: collapse; table-layout: fixed;">
  <tr>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;"><span style="color: #d9534f; font-weight: bold;">[001호]</span> | 1984년 3월호</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;"><span style="color: #d9534f; font-weight: bold;">[002호]</span> | 1984년 4월호</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;"><span style="color: #d9534f; font-weight: bold;">[003호]</span> | 1984년 5월호</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[004호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[005호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;"><span style="color: #d9534f; font-weight: bold;">[001호]</span> | 1984년 3월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;"><span style="color: #d9534f; font-weight: bold;">[002호]</span> | 1984년 4월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;"><span style="color: #d9534f; font-weight: bold;">[003호]</span> | 1984년 5월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[004호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[005호] | ---------------</th>
  </tr>
  <tr>
-  <td><a href="https://drive.google.com/file/d/187aFp_bXgJkQ3E.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
-  <td><a href="url?id=27" target="_blank">요약</a></td>
+  <td><a href="url?id=26" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="https://github.com/clclub1975/clmb/blob/main/url?id=27" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
   <td><a href="https://drive.google.com/file/d/17w0x.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
   <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></td>
@@ -42,61 +42,61 @@
   <td>&nbsp;</td>
  </tr>
  <tr>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[006호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[007호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[008호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[009호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[010호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[006호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[007호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[008호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[009호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[010호] | ---------------</th>
  </tr>
  <tr>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
  </tr>
  <tr>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[101호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[102호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[103호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[104호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[105호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[101호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[102호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[103호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[104호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[105호] | ---------------</th>
  </tr>
  <tr>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
  </tr>
  <tr>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[106호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[107호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[108호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[109호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[110호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[106호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[107호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[108호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[109호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[110호] | ---------------</th>
  </tr>
  <tr>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
  </tr>
  <tr>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;"><span style="color: #d9534f; font-weight: bold;">[151호]</span> | 1997년 2월호</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;"><span style="color: #d9534f; font-weight: bold;">[152호]</span> | 1997년 3월호</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[153호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;"><span style="color: #d9534f; font-weight: bold;">[154호]</span> | 1997년 5월호</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[155호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;"><span style="color: #d9534f; font-weight: bold;">[151호]</span> | 1997년 2월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;"><span style="color: #d9534f; font-weight: bold;">[152호]</span> | 1997년 3월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[153호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;"><span style="color: #d9534f; font-weight: bold;">[154호]</span> | 1997년 5월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[155호] | ---------------</th>
  </tr>
  <tr>
   <td><a href="https://drive.google.com/file/d/1.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
-  <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p4" target="_blank">요약</a></td>
+  <td><a href="url?id=33" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
-  <td><a href="https://drive.google.com/file/d/2.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
+  <td><a href="url?id=34" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
   <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p5" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
   <td><a href="https://drive.google.com/file/d/3.../view?usp=sharing" target="_blank" style="color: #333; text-decoration: none;">회보</a></td>
-  <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p6" target="_blank">요약</a></td>
+  <td><a href="https://github.com/clclub1975/clmb7" target="_blank">요약</a></td>
   <td><span style="color: #888; font-size: 12px;">교정</span></td>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
  </tr>
  <tr>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[156호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;"><span style="color: #d9534f; font-weight: bold;">[157호]</span> | 1997년 8월호</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[158호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[159호] | ---------------</th>
-  <th colspan="3" style="background-color: #d0d7de; padding: 10px;">[160호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[156호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;"><span style="color: #d9534f; font-weight: bold;">[157호]</span> | 1997년 8월호</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[158호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[159호] | ---------------</th>
+  <th colspan="3" style="background-color: #d0d7de; padding: 10px; color: #333; font-weight: normal;">[160호] | ---------------</th>
  </tr>
  <tr>
   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
