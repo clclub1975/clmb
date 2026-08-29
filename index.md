@@ -16,16 +16,112 @@
 
 <h3 style="color: #333; margin-bottom: 10px;">📋 회보 요약 및 교정 현황 (예시)</h3>
 
-| [001호] | 1984년 3월호 | [002호] | 1984년 4월호 | [003호] | 1984년 5월호 | [004호] | --------------- | [005호] | --------------- |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| [회보](https://drive.google.com/file/d/189Gz_B985gV9-l.../view?usp=sharing) | [요약](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1) | 교정 | [회보](https://drive.google.com/file/d/17w0x.../view?usp=sharing) | [요약](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2) | 교정 | [회보](https://drive.google.com/file/d/19p.../view?usp=sharing) | [요약](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3) | 교정 | &nbsp; |
-| [006호] | --------------- | [007호] | --------------- | [008호] | --------------- | [009호] | --------------- | [010호] | --------------- |
-| &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| [101호] | --------------- | [102호] | --------------- | [103호] | --------------- | [104호] | --------------- | [105호] | --------------- |
-| &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| [106호] | --------------- | [107호] | --------------- | [108호] | --------------- | [109호] | --------------- | [110호] | --------------- |
-| &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| [151호] | 1997년 2월호 | [152호] | 1997년 3월호 | [153호] | --------------- | [154호] | 1997년 5월호 | [155호] | --------------- |
-| [회보](https://drive.google.com/file/d/1.../view?usp=sharing) | [요약](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p4) | 교정 | [회보](https://drive.google.com/file/d/2.../view?usp=sharing) | [요약](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p5) | 교정 | &nbsp; | &nbsp; | [회보](https://drive.google.com/file/d/3.../view?usp=sharing) | [요약](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p6) | 교정 | &nbsp; |
-| [156호] | --------------- | [157호] | 1997년 8월호 | [158호] | --------------- | [159호] | --------------- | [160호] | --------------- |
-| &nbsp; | &nbsp; | &nbsp; | [회보](https://drive.google.com/file/d/4.../view?usp=sharing) | [요약](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p7) | 교정 | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
+<table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #d0d7de; font-family: sans-serif;">
+  <colgroup>
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+    <col style="width: 10%;">
+  </colgroup>
+  <tr style="background-color: #f6f8fa;">
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;"><b>[001호]</b> | 1984년 3월호</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;"><b>[002호]</b> | 1984년 4월호</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;"><b>[003호]</b> | 1984년 5월호</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[004호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[005호] | ---------------</th>
+  </tr>
+  <tr>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/189Gz_B985gV9-l.../view?usp=sharing">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/17w0x.../view?usp=sharing">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="url?id=30">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px; color: #888;">교정</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+  </tr>
+  <tr style="background-color: #f6f8fa;">
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[006호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[007호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[008호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[009호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[010호] | ---------------</th>
+  </tr>
+  <tr>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+  </tr>
+  <tr style="background-color: #f6f8fa;">
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[101호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[102호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[103호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[104호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[105호] | ---------------</th>
+  </tr>
+  <tr>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+  </tr>
+  <tr style="background-color: #f6f8fa;">
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[106호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[107호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[108호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[109호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[110호] | ---------------</th>
+  </tr>
+  <tr>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+  </tr>
+  <tr style="background-color: #f6f8fa;">
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;"><b>[151호]</b> | 1997년 2월호</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;"><b>[152호]</b> | 1997년 3월호</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[153호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;"><b>[154호]</b> | 1997년 5월호</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[155호] | ---------------</th>
+  </tr>
+  <tr>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/1.../view?usp=sharing">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p4">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/2.../view?usp=sharing">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://github.com/clclub1975/clmb5">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="url?id=36">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p6">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+  </tr>
+  <tr style="background-color: #f6f8fa;">
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[156호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;"><b>[157호]</b> | 1997년 8월호</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[158호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[159호] | ---------------</th>
+    <th colspan="2" style="border: 1px solid #d0d7de; padding: 10px; font-weight: normal;">[160호] | ---------------</th>
+  </tr>
+  <tr>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/4.../view?usp=sharing">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p7">요약</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px;">&nbsp;</td>
+  </tr>
+</table>
