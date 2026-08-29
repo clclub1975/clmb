@@ -4,7 +4,7 @@
     본 페이지는 제미나이가 요약한 촛불회 회보 내용을 회원 여러분과 함께 검토하고 교정하기 위한 <strong>준비 현황판</strong>입니다.
   </p>
   <p style="margin-bottom: 5px; color: #856404;">
-    본 페이지는 퍼스트 베타(First Beta) 버전이며, 레이아웃과 디자인은 수시로 변경될 수 있음을 알려드립니다.
+    본 페이지는 퍼스트 베타(First Beta) 버전이며, 레이아웃과 디자인은 추후 순차적으로 개선될 예정입니다.
   </p>
   <ul style="margin-bottom: 0; color: #856404; font-size: 14px;">
     <li>현재는 진척 상황을 공유하는 단계이며, 향후 구글 폼이 준비되면 '교정'란을 통해 본격적인 피드백 수렴이 진행될 예정입니다.</li>
@@ -27,22 +27,23 @@
   </tr>
   <!-- 1행: 세부 항목 (회보 / 요약 / 교정) -->
   <tr>
-    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/189Gz_B985gV9-l.../view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
-    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link" target="_blank" style="color: #0969da; text-decoration: none;">요약</a></td>
+    <!-- 001호 -->
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/189_.../view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #888; font-size: 13px;">교정</td>
-    
+    <!-- 002호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/17w0x.../view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #888; font-size: 13px;">교정</td>
-    
-    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">회보</a></td>
+    <!-- 003호 -->
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #888; font-size: 13px;">교정</td>
-
+    <!-- 004호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
-
+    <!-- 005호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
@@ -57,6 +58,13 @@
     <td colspan="3" style="border: 1px solid #d0d7de; padding: 10px; color: #888;">010호 | ---------------</td>
   </tr>
   <!-- 2행: 세부 항목 (빈 칸) -->
+  <tr>
+    <td colspan="3" style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
+    <td colspan="3" style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
+    <td colspan="3" style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
+    <td colspan="3" style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
+    <td colspan="3" style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
+  </tr>
   <tr>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
@@ -75,22 +83,23 @@
   </tr>
   <!-- 3행: 세부 항목 -->
   <tr>
-    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">회보</a></td>
+    <!-- 151호 -->
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/1qtsn1ArYo8TSSqRhESZKoNamp_XGbmx1/view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #888; font-size: 13px;">교정</td>
-    
-    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">회보</a></td>
+    <!-- 152호 -->
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/1C2XEjqCNAGLaxJy6kK4yG9SKPwxXs-UB/view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #888; font-size: 13px;">교정</td>
-    
+    <!-- 153호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
-
-    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">회보</a></td>
+    <!-- 154호 -->
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/1AAfZasiE5Fth6zxXt-s3hRVJVOXqFF68/view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #888; font-size: 13px;">교정</td>
-
+    <!-- 155호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
@@ -106,14 +115,17 @@
   </tr>
   <!-- 4행: 세부 항목 -->
   <tr>
+    <!-- 156호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
-    
-    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">회보</a></td>
+    <!-- 157호 -->
+    <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="https://drive.google.com/file/d/1P2kSJFxnAKp22TkkPLX4GVLFzQ6Yo2Tv/view?usp=sharing" target="_blank" style="color: #0969da; text-decoration: none;">회보</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px;"><a href="#" style="color: #0969da; text-decoration: none;">요약</a></td>
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #888; font-size: 13px;">교정</td>
-    
+    <!-- 158호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
+    <!-- 159호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
+    <!-- 160호 -->
     <td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td><td style="border: 1px solid #d0d7de; padding: 8px; color: #ccc;">&nbsp;</td>
   </tr>
 </table>
