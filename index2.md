@@ -1,42 +1,110 @@
 ---
 layout: default
-title: 촛불회보 기고문 검색
+title: 촛불회보 기고문 아카이브
 ---
 
-# 촛불회보 기고문 검색
+# 촛불회보 기고문 아카이브
 
-회보의 발행월, 일련번호, 그리고 기고문 정보를 조회하고 전문을 확인할 수 있습니다.
+기수, 기고자, 글 제목을 순서대로 선택하여 원하는 기고문 전문을 확인하세요.
 
-<div class="search-section" style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-  
-  <!-- 1. 메뉴에서 고르기 -->
-  <div style="margin-bottom: 15px;">
-    <label for="menu-select"><strong>1. 메뉴에서 고르기:</strong></label><br>
-    <select id="menu-select" style="width: 100%; max-width: 400px; padding: 8px; margin-top: 5px;">
-      <option value="">-- 기수/회차 선택 --</option>
-      <option value="001">001호 (1984년 3월호) - 홍길동</option>
-      <!-- 필요한 항목들을 옵션으로 추가 -->
-    </select>
-  </div>
+<div style="margin-bottom: 20px; padding: 15px; background: #f6f8fa; border-radius: 6px;">
+  <!-- 1단계: 기수 선택 -->
+  <label for="cohortSelect" style="font-weight: bold; display: block; margin-bottom: 5px;">1. 기수 선택</label>
+  <select id="cohortSelect" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #d1d5db;">
+    <option value="">-- 기수를 선택하세요 --</option>
+  </select>
 
-  <!-- 2. 직접 타이핑을 치거나 -->
-  <div>
-    <label for="direct-input"><strong>2. 직접 타이핑을 치거나:</strong></label><br>
-    <input type="text" id="direct-input" placeholder="기수, 이름 또는 키워드를 입력하세요" style="width: 100%; max-width: 400px; padding: 8px; margin-top: 5px;">
-  </div>
+  <!-- 2단계: 기고자 선택 -->
+  <label for="authorSelect" style="font-weight: bold; display: block; margin-bottom: 5px;">2. 기고자 선택</label>
+  <select id="authorSelect" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #d1d5db;" disabled>
+    <option value="">-- 기고자를 선택하세요 --</option>
+  </select>
 
+  <!-- 3단계: 기고문 제목 선택 -->
+  <label for="articleSelect" style="font-weight: bold; display: block; margin-bottom: 5px;">3. 기고문 선택</label>
+  <select id="articleSelect" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #d1d5db;" disabled>
+    <option value="">-- 기고문을 선택하세요 --</option>
+  </select>
 </div>
 
-## 검색 및 교정 현황 목록
+<h2>기고문 전문 보기</h2>
+<div id="articleViewer" style="padding: 20px; border: 1px solid #e5e7eb; border-radius: 6px; background: #ffffff; min-height: 150px; white-space: pre-wrap; line-height: 1.6;">
+  선택된 기고문 전문이 이곳에 표시됩니다.
+</div>
 
-| 기수 | 이름 | 기고문 정보 | 상태 | 링크 |
-| :--- | :--- | :--- | :--- | :--- |
-| 001호 | 홍길동 | 1984년 3월호 기고문 전문 | 교정완료 | [전문 보기](./articles/001_hong.md) |
-| - | - | - | 교정중 | - |
-| - | - | - | 교정전 | - |
+<script>
+  // 구글 시트(또는 별도 목록 시트) 데이터를 연동하기 위한 예시 데이터 구조
+  // (실제 운용 시에는 구글 시트를 CSV나 JSON 형태로 불러와서 이 자바스크립트 배열에 연결합니다)
+  const articlesData = [
+    { id: "CL001-01", cohort: "7기", author: "김민수", title: "월보를 내며", content: "이번 해로 우리 촛불회가 결성된지 횟수로 10년이 됩니다...\n\n(하략)" },
+    { id: "CL001-03", cohort: "6기", author: "이준호", title: "한 회기를 보내며", content: "지난 6개월동안 나는 촛불회의 발전을 위해 무엇을 했던가?..." },
+    { id: "CL001-04", cohort: "7기", author: "백찬하", title: "촛불로 지새운 밤에", content: "한잔의 커피로\n쓰디쓴 시소를 마시며 우린\n걸음을 이야기 했고\n자욱한 담배 연기를 뿌리며 우린..." }
+  ];
 
----
+  const cohortSelect = document.getElementById('cohortSelect');
+  const authorSelect = document.getElementById('authorSelect');
+  const articleSelect = document.getElementById('articleSelect');
+  const articleViewer = document.getElementById('articleViewer');
 
-## 기고문 전문 보기
-> **선택된 기고문 내용이 이 영역에 동적으로 표시됩니다.**
-> (JavaScript를 연동하여 드롭다운 선택이나 검색어 입력 시 아래 영역에 해당 전문 마크다운 내용이나 PDF 링크가 불러와지도록 구성할 수 있습니다.)
+  // 초기 기수 목록 세팅 (중복 제거)
+  const cohorts = [...new Set(articlesData.map(item => item.cohort))];
+  cohorts.forEach(cohort => {
+    const option = document.createElement('option');
+    option.value = cohort;
+    option.textContent = cohort;
+    cohortSelect.appendChild(option);
+  });
+
+  // 1단계: 기수 선택 시
+  cohortSelect.addEventListener('change', function() {
+    const selectedCohort = this.value;
+    authorSelect.innerHTML = '<option value="">-- 기고자를 선택하세요 --</option>';
+    articleSelect.innerHTML = '<option value="">-- 기고문을 선택하세요 --</option>';
+    authorSelect.disabled = !selectedCohort;
+    articleSelect.disabled = true;
+    articleViewer.textContent = '선택된 기고문 전문이 이곳에 표시됩니다.';
+
+    if (!selectedCohort) return;
+
+    const filteredAuthors = [...new Set(articlesData.filter(item => item.cohort === selectedCohort).map(item => item.author))];
+    filteredAuthors.forEach(author => {
+      const option = document.createElement('option');
+      option.value = author;
+      option.textContent = author;
+      authorSelect.appendChild(option);
+    });
+  });
+
+  // 2단계: 기고자 선택 시
+  authorSelect.addEventListener('change', function() {
+    const selectedCohort = cohortSelect.value;
+    const selectedAuthor = this.value;
+    articleSelect.innerHTML = '<option value="">-- 기고문을 선택하세요 --</option>';
+    articleSelect.disabled = !selectedAuthor;
+    articleViewer.textContent = '선택된 기고문 전문이 이곳에 표시됩니다.';
+
+    if (!selectedAuthor) return;
+
+    const filteredArticles = articlesData.filter(item => item.cohort === selectedCohort && item.author === selectedAuthor);
+    filteredArticles.forEach(article => {
+      const option = document.createElement('option');
+      option.value = article.id;
+      option.textContent = article.title;
+      articleSelect.appendChild(option);
+    });
+  });
+
+  // 3단계: 기고문 선택 시 전문 출력
+  articleSelect.addEventListener('change', function() {
+    const selectedId = this.value;
+    if (!selectedId) {
+      articleViewer.textContent = '선택된 기고문 전문이 이곳에 표시됩니다.';
+      return;
+    }
+
+    const article = articlesData.find(item => item.id === selectedId);
+    if (article) {
+      articleViewer.textContent = `[${article.title}]\n기고자: ${article.author} (${article.cohort})\n\n${article.content}`;
+    }
+  });
+</script>
