@@ -89,6 +89,7 @@
             <label for="cohortSelect">1. 기수 선택</label>
             <select id="cohortSelect">
                 <option value="">-- 기수를 선택하세요 --</option>
+                <option value="전체">전체</option>
             </select>
         </div>
 
@@ -139,7 +140,7 @@
             { id: "CL003-05", vol: "통권 003호", date: "1985년 3월", cohort: "6기", author: "김찬욱", type: "시", title: "보내는 마음", content: "떠나보내는 아쉬움과 격려를 담아..." },
             { id: "CL003-06", vol: "통권 003호", date: "1985년 3월", cohort: "3기", author: "김종민", type: "기고문", title: "후배들에게 바라는 마음", content: "OB 선배로서 후배들에게 전하는 조언..." },
             { id: "CL003-07", vol: "통권 003호", date: "1985년 3월", cohort: "7기", author: "백찬하", type: "시", title: "비망록 (제2회)", content: "두 번째 비망록..." },
-            { id: "CL003-08", vol: "통권 003호", date: "1985년 3월", cohort: "6기", author: "이준호", type: "기고문", title: "中國語会話 study 經過表", caption: "중국어 회화 스터디 경과보고", content: "스터디 활동 보고서..." }
+            { id: "CL003-08", vol: "통권 003호", date: "1985년 3월", cohort: "6기", author: "이준호", type: "기고문", title: "中國語会話 study 經過表", content: "스터디 활동 보고서..." }
         ];
 
         const cohortSelect = document.getElementById('cohortSelect');
@@ -148,7 +149,7 @@
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
 
-        // '기수별 기고자' 시트 기준 기고자가 1명 이상인 기수 목록만 추출 (숫자 기수 우선 정렬 + '기록 없음' 맨 뒤)
+        // 기고자가 존재하는 기수만 추출하여 정렬 후 기수 선택 드롭다운에 추가 ('전체' 다음으로 배치)
         const cohortsWithAuthors = [...new Set(articlesData.map(item => item.cohort))].sort((a, b) => {
             if (a === "기록 없음") return 1;
             if (b === "기록 없음") return -1;
@@ -175,7 +176,14 @@
 
             if (!selectedCohort) return;
 
-            const filteredAuthors = [...new Set(articlesData.filter(item => item.cohort === selectedCohort).map(item => item.author))].sort();
+            // '전체'를 선택한 경우 모든 기고자 목록 표시, 특정 기수를 선택한 경우 해당 기수의 기고자만 표시
+            let filteredAuthors = [];
+            if (selectedCohort === "전체") {
+                filteredAuthors = [...new Set(articlesData.map(item => item.author))].sort();
+            } else {
+                filteredAuthors = [...new Set(articlesData.filter(item => item.cohort === selectedCohort).map(item => item.author))].sort();
+            }
+
             filteredAuthors.forEach(author => {
                 const option = document.createElement('option');
                 option.value = author;
@@ -196,10 +204,17 @@
 
             if (!selectedAuthor) return;
 
-            const filteredArticles = articlesData.filter(item => item.cohort === selectedCohort && item.author === selectedAuthor);
+            // '전체' 기수이거나 특정 기수인 경우에 따른 기고문 필터링
+            let filteredArticles = [];
+            if (selectedCohort === "전체") {
+                filteredArticles = articlesData.filter(item => item.author === selectedAuthor);
+            } else {
+                filteredArticles = articlesData.filter(item => item.cohort === selectedCohort && item.author === selectedAuthor);
+            }
+
             filteredArticles.forEach(article => {
                 const option = document.createElement('option');
-                option.value = article.id; // value에 관리 ID를 숨겨서 처리
+                option.value = article.id; // value에 관리 ID 숨김 처리
                 option.textContent = article.title;
                 articleSelect.appendChild(option);
             });
