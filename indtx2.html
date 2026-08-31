@@ -117,7 +117,6 @@
     </div>
 
     <script>
-        // 복사하신 구글 시트 웹에 게시 CSV 링크 연동
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6mZQwpFNu30Chf62zXmSiBGOE36xjEGRrhaW9p90W4M7BNT0xGKEbW3mrKSc9C1UfZwt9ry4MfOMN/pub?gid=251511332&single=true&output=csv';
 
         let articlesData = [];
@@ -128,38 +127,61 @@
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
 
-        // CSV 텍스트 파서 함수
+        // 큰따옴표와 줄바꿈이 포함된 CSV 전문을 완벽하게 파싱하는 함수
         function parseCSV(text) {
-            const lines = text.split('\n');
-            const result = [];
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                const row = [];
-                let inQuotes = false;
-                let entry = '';
-                for (let char of lines[i]) {
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        row.push(entry.trim());
-                        entry = '';
+            const rows = [];
+            let row = [];
+            let inQuotes = false;
+            let field = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                let next = text[i + 1];
+                
+                if (c === '"') {
+                    if (inQuotes && next === '"') {
+                        field += '"';
+                        i++; // 따옴표 이스케이프 처리
                     } else {
-                        entry += char;
+                        inQuotes = !inQuotes;
                     }
+                } else if (c === ',' && !inQuotes) {
+                    row.push(field.trim());
+                    field = '';
+                } else if ((c === '\r' && next === '\n') && !inQuotes) {
+                    row.push(field.trim());
+                    rows.push(row);
+                    row = [];
+                    field = '';
+                    i++; // \r\n 처리
+                } else if (c === '\n' && !inQuotes) {
+                    row.push(field.trim());
+                    rows.push(row);
+                    row = [];
+                    field = '';
+                } else {
+                    field += c;
                 }
-                row.push(entry.trim());
+            }
+            if (field || row.length > 0) {
+                row.push(field.trim());
+                rows.push(row);
+            }
 
-                // 'R1_CL_기고문전문' 컬럼 순서 매핑 (관리 ID, 통권 호수, 발행년월, 기수, 기고자, 글 종류, 글 제목, 기고문 전문)
-                if (row.length >= 8) {
+            const result = [];
+            // 첫 번째 줄(헤더)을 제외하고 데이터 매핑
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (r.length >= 8 && r[0]) {
                     result.push({
-                        id: row[0].replace(/"/g, ''),
-                        vol: row[1].replace(/"/g, ''),
-                        date: row[2].replace(/"/g, ''),
-                        cohort: row[3].replace(/"/g, ''),
-                        author: row[4].replace(/"/g, ''),
-                        type: row[5].replace(/"/g, ''),
-                        title: row[6].replace(/"/g, ''),
-                        content: (row[7] || '').replace(/"/g, '').replace(/\\n/g, '\n')
+                        id: r[0],
+                        vol: r[1],
+                        date: r[2],
+                        cohort: r[3],
+                        author: r[4],
+                        type: r[5],
+                        title: r[6],
+                        content: r[7] // H열 전문 내용을 가공 없이 통째로 반영
                     });
                 }
             }
@@ -256,7 +278,7 @@
             });
         });
 
-        // 3단계: 기고문 선택 시 전문 출력
+        // 3단계: 기고문 선택 시 H열 전문 통째로 출력
         articleSelect.addEventListener('change', function() {
             const selectedId = this.value;
             if (!selectedId) {
@@ -271,11 +293,10 @@
                 metaInfo.style.display = 'block';
                 metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type} | 관리번호: ${article.id}`;
                 contentBody.className = '';
-                contentBody.textContent = article.content;
+                contentBody.textContent = article.content; // H열의 원본 텍스트 그대로 반영
             }
         });
 
-        // 데이터 로드 실행
         loadSheetData();
     </script>
 </body>
