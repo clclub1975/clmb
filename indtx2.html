@@ -63,6 +63,7 @@
             border-radius: 6px; 
             margin-bottom: 20px; 
             border-left: 4px solid #2563eb;
+            display: none;
         }
         #contentBody { 
             white-space: pre-wrap; 
@@ -87,9 +88,8 @@
         <!-- 1단계: 기수 선택 -->
         <div class="filter-group">
             <label for="cohortSelect">1. 기수 선택</label>
-            <select id="cohortSelect">
-                <option value="">-- 기수를 선택하세요 --</option>
-                <option value="전체">전체</option>
+            <select id="cohortSelect" disabled>
+                <option value="">데이터 불러오는 중...</option>
             </select>
         </div>
 
@@ -112,36 +112,15 @@
 
     <!-- 기고문 전문 출력 영역 -->
     <div id="articleViewer">
-        <div class="meta-info" id="metaInfo" style="display: none;"></div>
-        <div id="contentBody" class="placeholder-text">원하시는 기고문을 선택하시면 이곳에 전문이 표시됩니다.</div>
+        <div class="meta-info" id="metaInfo"></div>
+        <div id="contentBody" class="placeholder-text">구글 시트에서 데이터를 불러오고 있습니다. 잠시만 기다려주세요.</div>
     </div>
 
     <script>
-        // 구글 시트 '기고문 전문' 데이터베이스 기반 아카이브 데이터
-        const articlesData = [
-            { id: "CL001-01", vol: "통권 001호", date: "1984년 3월", cohort: "7기", author: "김민수", type: "창간사", title: "월보를 내며", content: "이번 해로 우리 촛불회가 결성된지 횟수로 10년이 됩니다.\n10년이면 江山도 변한다는 말이 있듯이 큰 변혁이 기대되는 시기입니다. 특히 우리의 봉사 정신과 회원간의 단결이 어느 때보다 요구되고 있습니다.\n월보 발간에 대한 회원 여러분들의 요망에 부응하여 여기에 작은 결실을 맺어서 보여드립니다.\n본지는 회원들의 적극적인 참여만으로 엮어질 수 있습니다. 많은 질책과 성원을 바랍니다." },
-            { id: "CL001-02", vol: "통권 001호", date: "1984년 3월", cohort: "기록 없음", author: "김종태", type: "패러디", title: "라면신경", content: "-라면新經-\n김종태\n\n구수하사 배고픈 자를 배부르게 하여 주시는 라면님이여,\n라면님을 내가 믿사오며, 그의 자매품 소고기 라면을 믿사오니, 모든 공장에서 생산되어 상인들의 손을 거쳐 식당의 손에 들어가 고난을 당하사 끓는 물에 죽으시고, 끓으신지 3분만에 상에 오르사 유능한젓가락 우편에 앉아 계시다가 저리로서백고픈자를 배부르게 하심이라,\n입속으로 들어가는 것과, 위 속에 소화되는 것과 창문을 통해 나와 거름이 되는 것을 영원히 믿사옵나이다.\n라면." },
-            { id: "CL001-03", vol: "통권 001호", date: "1984년 3월", cohort: "6기", author: "이준호", type: "이임사", title: "한 회기를 보내며", content: "“지난 6개월동안 나는 촛불회의 발전을 위해 무엇을 했던가?”\n이 질문이 이임사를 쓰는 지금 다시 한번 나를 당혹하게 만든다. 어느 회기의 회장이든지 촛불회를 더 발전적인 club으로 이끌어 가려고 굳게 다짐하는 것은 마찬가지 일 것이다. 나도 예외는 아니었으나 굳게 다짐한 처음의 결정은 시간이 갈수록 의욕을 잃어 버리게 되었고 스스로의 나태로 결국 고배를 들고 말았다. 그러나 이 6개월의 기간은 나의 인생 과정에 있어서 커다란 경험이 되었기에 한층 더 죄책감을 느끼게 한다. 나를 포함한 6회기 회장단의 가장 큰 실수는 회원들 간 신뢰의 분위기를 조성하지 못하였며 발전적이고 참신한 활동 계획이 적었다는 점 등을 들 수겠다. 사실 따지고 보면 회장인 나의 자질에 문제가 있었던 것 같다. 회원들을 포용하지도 못했고 O.B촛불회에갓 들어온 후배들에 대한 적절한 대응책도 미비했었다.\n\n물러난 지금 이러쿵 저러쿵 얘기 하는 것이 뻔뻔스럽게 느껴지기도 하지만 재임 기간이 끝날 지금 돌이켜 보며 前회장으로서 7기회장단과 회원들께 꼭 당부하고자하는 바람이 있다면 그것은 바로 긍정적이고 적극적인 “行動” 바로 지금 우리는 촛불회의 10년 역사가 열심히 활동하는 것을 느낄수 있지 않겠는가? 10년, 아니 이제 11년이 되는 지금 이 상태에서 우리 회원들은 그 동안의 불신과 신뢰하지 못하는 마음을 버리고 인내를 가지고 우리 촛불회가 지향하는 이념과 목적하에서 하나가 되어야 함이 마땅하지 않겠는가?\n\n하여 우리는 서로서로 많이 그리고 알차게 “對話”를 통해 이를 行動으로 옮겨 회의 발전에 도움이 되도록 노력해야 하겠다.\n“行動”하는 후배들의 모습을 그리며.....\n촛불로 지새운 밤에\n회장 6. 김준호" },
-            { id: "CL001-04", vol: "통권 001호", date: "1984년 3월", cohort: "6기", author: "김찬욱", type: "시", title: "촛불로 지새운 밤에", content: "한잔의 커피로 쓰디쓴 시소를 마시며 우린 걸음을 이야기 했고 자욱한 담배 연기를 뿌리며 우린 젊음의 苦惱를 吐露 하였 다.\n20세를 갓 넘긴 햘은 생을 살아오면서 부딪는 술잔 마다 진한 아픔을 안겨준 수많은 일들." },
-            { id: "CL001-05", vol: "통권 001호", date: "1984년 3월", cohort: "6기", author: "박기석", type: "시", title: "하늘을 우러러...", content: "하늘을 우러러 한점 부끄럼이 없기를 바라는 마음으로...\n젊은 날의 찬란한 기록을 남깁니다." },
-            { id: "CL001-06", vol: "통권 001호", date: "1984년 3월", cohort: "7기", author: "백찬하", type: "시", title: "Cupid의 화살", content: "사랑의 화살이 날아와 박히는 순간,\n우리의 가슴은 걷잡을 수 없는 열정으로 물듭니다." },
-            { id: "CL001-07", vol: "통권 001호", date: "1984년 3월", cohort: "5기", author: "이광식", type: "기고문", title: "촛불의 후배에게", content: "사랑하는 촛불회 후배들에게 전하는 격려와 제언의 메시지..." },
-            { id: "CL002-01", vol: "통권 002호", date: "1984년 9월", cohort: "7기", author: "송미경", type: "수필", title: "감사하는 마음으로", content: "지나온 시간들을 돌아보며 감사했던 일상의 기록들..." },
-            { id: "CL002-02", vol: "통권 002호", date: "1984년 9월", cohort: "6기", author: "이준호", type: "수필", title: "봄 마당", content: "새로운 계절을 맞이하며 느꼈던 단상..." },
-            { id: "CL002-03", vol: "통권 002호", date: "1984년 9월", cohort: "7기", author: "윤은미", type: "수필", title: "5인의 대화", content: "다섯 사람이 모여 나누었던 진솔한 이야기보따리..." },
-            { id: "CL002-04", vol: "통권 002호", date: "1984년 9월", cohort: "6기", author: "김금숙", type: "서간문", title: "XXX에게", content: "그리운 친구에게 보내는 편지..." },
-            { id: "CL002-05", vol: "통권 002호", date: "1984년 9월", cohort: "4기", author: "김동훈", type: "칼럼", title: "촛불학회(가칭)", content: "우리의 발전 방향에 대한 제언..." },
-            { id: "CL002-06", vol: "통권 002호", date: "1984년 9월", cohort: "7기", author: "백찬하", type: "시", title: "비망록", content: "지나간 날들의 기억을 더듬어..." },
-            { id: "CL002-07", vol: "통권 002호", date: "1984년 9월", cohort: "6기", author: "박기석", type: "시", title: "봄", content: "봄이 오는 길목에서..." },
-            { id: "CL003-01", vol: "통권 003호", date: "1985년 3월", cohort: "6기", author: "김찬욱", type: "시", title: "빈들에 서서", content: "광활한 들판에 홀로 서서..." },
-            { id: "CL003-02", vol: "통권 003호", date: "1985년 3월", cohort: "7기", author: "윤은미", type: "수필", title: "TV에서 본 성로원 아기집", content: "봉사 활동을 다녀온 후의 따뜻한 소감..." },
-            { id: "CL003-03", vol: "통권 003호", date: "1985년 3월", cohort: "8기", author: "고탁", type: "기고문", title: "후배가 바라는 마음", content: "신입 기수로서 바라본 촛불회의 모습..." },
-            { id: "CL003-04", vol: "통권 003호", date: "1985년 3월", cohort: "8기", author: "정선희", type: "기고문", title: "후배가 바라는 마음", content: "선배들과 함께 발맞추어 나아가며..." },
-            { id: "CL003-05", vol: "통권 003호", date: "1985년 3월", cohort: "6기", author: "김찬욱", type: "시", title: "보내는 마음", content: "떠나보내는 아쉬움과 격려를 담아..." },
-            { id: "CL003-06", vol: "통권 003호", date: "1985년 3월", cohort: "3기", author: "김종민", type: "기고문", title: "후배들에게 바라는 마음", content: "OB 선배로서 후배들에게 전하는 조언..." },
-            { id: "CL003-07", vol: "통권 003호", date: "1985년 3월", cohort: "7기", author: "백찬하", type: "시", title: "비망록 (제2회)", content: "두 번째 비망록..." },
-            { id: "CL003-08", vol: "통권 003호", date: "1985년 3월", cohort: "6기", author: "이준호", type: "기고문", title: "中國語会話 study 經過表", content: "스터디 활동 보고서..." }
-        ];
+        // 복사하신 구글 시트 웹에 게시 CSV 링크 연동
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6mZQwpFNu30Chf62zXmSiBGOE36xjEGRrhaW9p90W4M7BNT0xGKEbW3mrKSc9C1UfZwt9ry4MfOMN/pub?gid=251511332&single=true&output=csv';
+
+        let articlesData = [];
 
         const cohortSelect = document.getElementById('cohortSelect');
         const authorSelect = document.getElementById('authorSelect');
@@ -149,19 +128,78 @@
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
 
-        // 기고자가 존재하는 기수만 추출하여 정렬 후 기수 선택 드롭다운에 추가 ('전체' 다음으로 배치)
-        const cohortsWithAuthors = [...new Set(articlesData.map(item => item.cohort))].sort((a, b) => {
-            if (a === "기록 없음") return 1;
-            if (b === "기록 없음") return -1;
-            return parseInt(a) - parseInt(b);
-        });
+        // CSV 텍스트 파서 함수
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const result = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const row = [];
+                let inQuotes = false;
+                let entry = '';
+                for (let char of lines[i]) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        row.push(entry.trim());
+                        entry = '';
+                    } else {
+                        entry += char;
+                    }
+                }
+                row.push(entry.trim());
 
-        cohortsWithAuthors.forEach(cohort => {
-            const option = document.createElement('option');
-            option.value = cohort;
-            option.textContent = cohort;
-            cohortSelect.appendChild(option);
-        });
+                // 'R1_CL_기고문전문' 컬럼 순서 매핑 (관리 ID, 통권 호수, 발행년월, 기수, 기고자, 글 종류, 글 제목, 기고문 전문)
+                if (row.length >= 8) {
+                    result.push({
+                        id: row[0].replace(/"/g, ''),
+                        vol: row[1].replace(/"/g, ''),
+                        date: row[2].replace(/"/g, ''),
+                        cohort: row[3].replace(/"/g, ''),
+                        author: row[4].replace(/"/g, ''),
+                        type: row[5].replace(/"/g, ''),
+                        title: row[6].replace(/"/g, ''),
+                        content: (row[7] || '').replace(/"/g, '').replace(/\\n/g, '\n')
+                    });
+                }
+            }
+            return result;
+        }
+
+        // 구글 시트 데이터 비동기 로드
+        async function loadSheetData() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const csvText = await response.text();
+                articlesData = parseCSV(csvText);
+
+                initDropdowns();
+            } catch (error) {
+                contentBody.textContent = '구글 시트 데이터를 불러오는 데 실패했습니다. 네트워크 연결을 확인해주세요.';
+                console.error(error);
+            }
+        }
+
+        function initDropdowns() {
+            cohortSelect.innerHTML = '<option value="">-- 기수를 선택하세요 --</option><option value="전체">전체</option>';
+            
+            const cohortsWithAuthors = [...new Set(articlesData.map(item => item.cohort))].sort((a, b) => {
+                if (a === "기록 없음") return 1;
+                if (b === "기록 없음") return -1;
+                return parseInt(a || 0) - parseInt(b || 0);
+            });
+
+            cohortsWithAuthors.forEach(cohort => {
+                if (!cohort) return;
+                const option = document.createElement('option');
+                option.value = cohort;
+                option.textContent = cohort;
+                cohortSelect.appendChild(option);
+            });
+
+            cohortSelect.disabled = false;
+            contentBody.textContent = '원하시는 기고문을 선택하시면 이곳에 전문이 표시됩니다.';
+        }
 
         // 1단계: 기수 선택 시
         cohortSelect.addEventListener('change', function() {
@@ -176,7 +214,6 @@
 
             if (!selectedCohort) return;
 
-            // '전체'를 선택한 경우 모든 기고자 목록 표시, 특정 기수를 선택한 경우 해당 기수의 기고자만 표시
             let filteredAuthors = [];
             if (selectedCohort === "전체") {
                 filteredAuthors = [...new Set(articlesData.map(item => item.author))].sort();
@@ -204,7 +241,6 @@
 
             if (!selectedAuthor) return;
 
-            // '전체' 기수이거나 특정 기수인 경우에 따른 기고문 필터링
             let filteredArticles = [];
             if (selectedCohort === "전체") {
                 filteredArticles = articlesData.filter(item => item.author === selectedAuthor);
@@ -214,7 +250,7 @@
 
             filteredArticles.forEach(article => {
                 const option = document.createElement('option');
-                option.value = article.id; // value에 관리 ID 숨김 처리
+                option.value = article.id;
                 option.textContent = article.title;
                 articleSelect.appendChild(option);
             });
@@ -238,6 +274,9 @@
                 contentBody.textContent = article.content;
             }
         });
+
+        // 데이터 로드 실행
+        loadSheetData();
     </script>
 </body>
 </html>
