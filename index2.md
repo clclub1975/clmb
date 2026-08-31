@@ -14,11 +14,15 @@
     </p>
 </div>
 
----
-
-> 💡 **[기고문 전문 보기](articles.html)**
+<br>
 
 ---
+
+ 💡 **[기고문 전문 보기](articles.html)**
+
+---
+<br>
+
 📋 회보 요약 및 교정 현황 (예시)
 <table style="text-align: center; width: 100%; border-collapse: collapse; table-layout: fixed;">
     <tr>
