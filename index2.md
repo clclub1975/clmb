@@ -33,10 +33,10 @@ title: 촛불회보 기고문 아카이브
 </div>
 
 <script>
-  // 구글 시트(또는 별도 목록 시트) 데이터를 연동하기 위한 예시 데이터 구조
-  // (실제 운용 시에는 구글 시트를 CSV나 JSON 형태로 불러와서 이 자바스크립트 배열에 연결합니다)
+  // 1기부터 10기까지 포함한 예시 데이터 구조 (추후 구글 시트 연동 가능)
   const articlesData = [
     { id: "CL001-01", cohort: "7기", author: "김민수", title: "월보를 내며", content: "이번 해로 우리 촛불회가 결성된지 횟수로 10년이 됩니다...\n\n(하략)" },
+    { id: "CL001-02", cohort: "3기", author: "김철수", title: "초창기의 기억", content: "처음 모임을 시작했을 때의 회고..." },
     { id: "CL001-03", cohort: "6기", author: "이준호", title: "한 회기를 보내며", content: "지난 6개월동안 나는 촛불회의 발전을 위해 무엇을 했던가?..." },
     { id: "CL001-04", cohort: "7기", author: "백찬하", title: "촛불로 지새운 밤에", content: "한잔의 커피로\n쓰디쓴 시소를 마시며 우린\n걸음을 이야기 했고\n자욱한 담배 연기를 뿌리며 우린..." }
   ];
@@ -46,14 +46,13 @@ title: 촛불회보 기고문 아카이브
   const articleSelect = document.getElementById('articleSelect');
   const articleViewer = document.getElementById('articleViewer');
 
-  // 초기 기수 목록 세팅 (중복 제거)
-  const cohorts = [...new Set(articlesData.map(item => item.cohort))];
-  cohorts.forEach(cohort => {
+  // 1기부터 10기까지 강제로 드롭다운 옵션 생성
+  for (let i = 1; i <= 10; i++) {
     const option = document.createElement('option');
-    option.value = cohort;
-    option.textContent = cohort;
+    option.value = i + "기";
+    option.textContent = i + "기";
     cohortSelect.appendChild(option);
-  });
+  }
 
   // 1단계: 기수 선택 시
   cohortSelect.addEventListener('change', function() {
@@ -66,7 +65,17 @@ title: 촛불회보 기고문 아카이브
 
     if (!selectedCohort) return;
 
+    // 해당 기수에 속한 기고자 필터링
     const filteredAuthors = [...new Set(articlesData.filter(item => item.cohort === selectedCohort).map(item => item.author))];
+    
+    if (filteredAuthors.length === 0) {
+      const option = document.createElement('option');
+      option.value = "";
+      option.textContent = "등록된 기고자가 없습니다.";
+      authorSelect.appendChild(option);
+      return;
+    }
+
     filteredAuthors.forEach(author => {
       const option = document.createElement('option');
       option.value = author;
