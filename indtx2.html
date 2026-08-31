@@ -127,61 +127,54 @@
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
 
-        // 큰따옴표와 줄바꿈이 포함된 CSV 전문을 완벽하게 파싱하는 함수
+        // 따옴표와 줄바꿈(셀 내부 줄바꿈)을 완벽하게 처리하는 표준 CSV 파서
         function parseCSV(text) {
-            const rows = [];
-            let row = [];
+            let lines = [];
+            let row = [''];
             let inQuotes = false;
-            let field = '';
             
             for (let i = 0; i < text.length; i++) {
                 let c = text[i];
-                let next = text[i + 1];
-                
+                let nextC = text[i + 1];
+
                 if (c === '"') {
-                    if (inQuotes && next === '"') {
-                        field += '"';
-                        i++; // 따옴표 이스케이프 처리
+                    if (inQuotes && nextC === '"') {
+                        row[row.length - 1] += '"';
+                        i++;
                     } else {
                         inQuotes = !inQuotes;
                     }
                 } else if (c === ',' && !inQuotes) {
-                    row.push(field.trim());
-                    field = '';
-                } else if ((c === '\r' && next === '\n') && !inQuotes) {
-                    row.push(field.trim());
-                    rows.push(row);
-                    row = [];
-                    field = '';
-                    i++; // \r\n 처리
+                    row.push('');
+                } else if ((c === '\r' && nextC === '\n') && !inQuotes) {
+                    lines.push(row);
+                    row = [''];
+                    i++;
                 } else if (c === '\n' && !inQuotes) {
-                    row.push(field.trim());
-                    rows.push(row);
-                    row = [];
-                    field = '';
+                    lines.push(row);
+                    row = [''];
                 } else {
-                    field += c;
+                    row[row.length - 1] += c;
                 }
             }
-            if (field || row.length > 0) {
-                row.push(field.trim());
-                rows.push(row);
+            if (row.length > 1 || row[0] !== '') {
+                lines.push(row);
             }
 
             const result = [];
             // 첫 번째 줄(헤더)을 제외하고 데이터 매핑
-            for (let i = 1; i < rows.length; i++) {
-                const r = rows[i];
-                if (r.length >= 8 && r[0]) {
+            for (let i = 1; i < lines.length; i++) {
+                const r = lines[i];
+                if (r.length >= 8 && r[0].trim() !== '') {
                     result.push({
-                        id: r[0],
-                        vol: r[1],
-                        date: r[2],
-                        cohort: r[3],
-                        author: r[4],
-                        type: r[5],
-                        title: r[6],
-                        content: r[7] // H열 전문 내용을 가공 없이 통째로 반영
+                        id: r[0].trim(),
+                        vol: r[1] ? r[1].trim() : '',
+                        date: r[2] ? r[2].trim() : '',
+                        cohort: r[3] ? r[3].trim() : '',
+                        author: r[4] ? r[4].trim() : '',
+                        type: r[5] ? r[5].trim() : '',
+                        title: r[6] ? r[6].trim() : '',
+                        content: r[7] ? r[7].trim() : '' // H열 전문 전체 통째로 반영
                     });
                 }
             }
@@ -205,14 +198,18 @@
         function initDropdowns() {
             cohortSelect.innerHTML = '<option value="">-- 기수를 선택하세요 --</option><option value="전체">전체</option>';
             
-            const cohortsWithAuthors = [...new Set(articlesData.map(item => item.cohort))].sort((a, b) => {
-                if (a === "기록 없음") return 1;
-                if (b === "기록 없음") return -1;
-                return parseInt(a || 0) - parseInt(b || 0);
+            // 기수 열에 이상한 문장이나 텍스트가 섞이는 것을 방지하기 위해 정규식 검증 (예: '숫자기' 또는 '기록 없음' 만 허용)
+            const validCohorts = articlesData.map(item => item.cohort).filter(cohort => {
+                return cohort && (/^\d+기$/.test(cohort) || cohort === '기록 없음');
             });
 
-            cohortsWithAuthors.forEach(cohort => {
-                if (!cohort) return;
+            const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
+                if (a === "기록 없음") return 1;
+                if (b === "기록 없음") return -1;
+                return parseInt(a) - parseInt(b);
+            });
+
+            sortedCohorts.forEach(cohort => {
                 const option = document.createElement('option');
                 option.value = cohort;
                 option.textContent = cohort;
@@ -238,9 +235,9 @@
 
             let filteredAuthors = [];
             if (selectedCohort === "전체") {
-                filteredAuthors = [...new Set(articlesData.map(item => item.author))].sort();
+                filteredAuthors = [...new Set(articlesData.map(item => item.author))].filter(Boolean).sort();
             } else {
-                filteredAuthors = [...new Set(articlesData.filter(item => item.cohort === selectedCohort).map(item => item.author))].sort();
+                filteredAuthors = [...new Set(articlesData.filter(item => item.cohort === selectedCohort).map(item => item.author))].filter(Boolean).sort();
             }
 
             filteredAuthors.forEach(author => {
@@ -278,7 +275,7 @@
             });
         });
 
-        // 3단계: 기고문 선택 시 H열 전문 통째로 출력
+        // 3단계: 기고문 선택 시 H열 전문 전체 통째로 출력
         articleSelect.addEventListener('change', function() {
             const selectedId = this.value;
             if (!selectedId) {
@@ -293,7 +290,7 @@
                 metaInfo.style.display = 'block';
                 metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type} | 관리번호: ${article.id}`;
                 contentBody.className = '';
-                contentBody.textContent = article.content; // H열의 원본 텍스트 그대로 반영
+                contentBody.textContent = article.content; // H열의 원본 텍스트 전체 통째로 출력
             }
         });
 
