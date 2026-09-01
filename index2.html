@@ -3,28 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v1.3</title>
+    <title>촛불회 AI 추억 스토리 생성기 v1.4</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
         .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
-        .input-group { display: flex; gap: 10px; margin-top: 20px; }
+        .input-group { display: flex; gap: 10px; margin-top: 15px; }
         input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
         button { padding: 12px 24px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
         button:hover { background-color: #2980b9; }
+        
+        /* 추천 질문 버튼 영역 스타일 */
+        .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .chip { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 16px; padding: 6px 12px; font-size: 13px; cursor: pointer; color: #475569; transition: all 0.2s; }
+        .chip:hover { background: #3498db; color: white; border-color: #3498db; }
+
+        /* 데이터 구조 가이드 박스 스타일 */
+        .guide-box { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 12px; margin-top: 15px; font-size: 13px; color: #92400e; }
+        .guide-box ul { margin: 5px 0 0 20px; padding: 0; }
+
         .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         .loading { color: #666; font-style: italic; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v1.3</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v1.4</span></h1>
     <div class="chat-container">
         <p>구글 시트의 촛불회보 데이터를 바탕으로 궁금한 점을 물어보세요!</p>
+        
         <div class="input-group">
             <input type="text" id="userQuery" placeholder="예: 기고문을 제일 많이 기고한 회원은 누구야?" onkeypress="if(event.key === 'Enter') askAI();">
             <button onclick="askAI()">질문하기</button>
         </div>
+
+        <!-- 💡 회원들을 위한 추천 질문 버튼들 -->
+        <div class="chip-container">
+            <span style="font-size: 13px; font-weight: bold; align-self: center; margin-right: 4px;">추천 질문:</span>
+            <div class="chip" onclick="setQuery('기고문을 제일 많이 기고한 회원은 누구야?')">🏆 최다 기고 회원 찾기</div>
+            <div class="chip" onclick="setQuery('통권 1호의 주요 이벤트와 기고자 목록을 알려줘')">📖 통권 1호 파헤치기</div>
+            <div class="chip" onclick="setQuery('특정 기수가 작성한 글 목록을 찾아줘')">✍️ 기수별 글 찾아보기</div>
+        </div>
+
+        <!-- 💡 데이터 구조(열) 안내 가이드 -->
+        <div class="guide-box">
+            💡 <strong>무엇을 참고하여 답변하나요?</strong> (데이터베이스 항목 안내)
+            <ul>
+                <li><strong>통권 호수 및 발행월</strong>: 각 회보가 발행된 시기와 호수 정보</li>
+                <li><strong>기고문 작성자 (필자)</strong>: 글을 쓴 회원 이름과 기수</li>
+                <li><strong>주요 이벤트 및 내용</strong>: 회보에 담긴 행사, 수필, 제언 등의 요약 기록</li>
+            </ul>
+        </div>
+
         <h3>AI 답변 결과</h3>
         <div id="aiResult" class="result-box">질문을 입력하고 버튼을 눌러주세요.</div>
     </div>
@@ -35,6 +65,12 @@
 
         // 2. 발급받으신 Gemini API 키 적용 완료
         const GEMINI_API_KEY = "AQ.Ab8RN6J1d4AItxdkOrV2x29Z5le8d4vz0DqpAqgOfsbYUgNFpQ"; 
+
+        // 추천 버튼을 누르면 입력창에 글이 쏙 들어가게 해주는 함수
+        function setQuery(text) {
+            document.getElementById("userQuery").value = text;
+            document.getElementById("userQuery").focus();
+        }
 
         // CSV 파서 함수
         function parseCSV(text) {
@@ -58,30 +94,29 @@
             let query = queryInput.value.trim();
             const resultBox = document.getElementById("aiResult");
 
-            // 질문이 비어있으면 예시 질문을 자동으로 입력하고 실행
             if (!query) {
                 query = "기고문을 제일 많이 기고한 회원은 누구야?";
                 queryInput.value = query; 
             }
 
-            resultBox.innerHTML = "<span class='loading'>데이터를 분석하고 AI 답변을 생성하는 중입니다...</span>";
+            resultBox.innerHTML = "<span class='loading'>데이터의 항목(통권 호수, 작성자, 주요 이벤트 등)을 분석하고 AI 답변을 생성하는 중입니다...</span>";
 
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
                 const sheetData = parseCSV(csvText);
 
+                // AI에게 데이터 구조(열)를 명확히 인지시키는 프롬프트
                 const promptText = `
 당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다.
 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
 ${JSON.stringify(sheetData)}
 
-위 데이터의 각 행과 열(기고문 작성자, 필자, 이름 등)을 꼼꼼히 대조하고 분석해 주세요. 
-사용자의 질문에 대해 단순히 "데이터가 없다"고 하지 말고, 데이터에 포함된 기고자 명단과 횟수를 직접 계산하거나 유추하여 성실하고 구체적으로 답변해 주세요.
+이 데이터는 '통권 호수', '발행월', '기고문 작성자(필자)', '주요 이벤트 및 내용' 등의 열(Column) 항목들로 구성되어 있습니다.
+사용자의 질문에 답할 때 위 데이터의 각 열 항목을 정확히 대조하고 분석해 주세요. 단순 추측이 아니라 데이터에 명시된 내용을 바탕으로 구체적이고 신뢰성 있게 답변해 주세요.
 질문: ${query}
 `;
 
-                // 현재 계정에서 안정적으로 작동하는 3.5-flash-lite 모델 사용
                 const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -90,7 +125,6 @@ ${JSON.stringify(sheetData)}
 
                 const data = await apiResponse.json();
 
-                // 성공 시 화면 출력
                 if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
                     resultBox.innerHTML = answer.replace(/\n/g, "<br>");
