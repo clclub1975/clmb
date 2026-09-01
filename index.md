@@ -18,7 +18,7 @@
 
 ---
 
- 💡 **[기고문 전문 보기](articles.html)**
+ 💡 **[기고문 전문 보기](HOME2/articles.html)**
 
 ---
 <br>
