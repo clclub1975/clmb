@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기</title>
+    <title>촛불회 AI 추억 스토리 생성기 v1.1</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
+        .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
         .input-group { display: flex; gap: 10px; margin-top: 20px; }
         input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
@@ -17,7 +18,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기</h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v1.1</span></h1>
     <div class="chat-container">
         <p>구글 시트의 촛불회보 데이터를 바탕으로 궁금한 점을 물어보세요!</p>
         <div class="input-group">
@@ -77,7 +78,7 @@ ${JSON.stringify(sheetData)}
 질문: ${query}
 `;
                 // 최신 표준 모델 사용 (gemini-1.5-flash)
-                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
