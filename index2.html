@@ -17,30 +17,29 @@
     </style>
 </head>
 <body>
-
     <h1>🕯️ 촛불회 AI 추억 스토리 생성기</h1>
-    
     <div class="chat-container">
         <p>구글 시트의 촛불회보 데이터를 바탕으로 궁금한 점을 물어보세요!</p>
         <div class="input-group">
             <input type="text" id="userQuery" placeholder="예: 통권 5호의 주요 이벤트가 뭐야?" onkeypress="if(event.key === 'Enter') askAI();">
             <button onclick="askAI()">질문하기</button>
         </div>
-        
         <h3>AI 답변 결과</h3>
         <div id="aiResult" class="result-box">질문을 입력하고 버튼을 눌러주세요.</div>
     </div>
 
     <script>
-        // 구글 시트 웹에 게시된 CSV 링크
+        // 1. 구글 시트 웹에 게시된 CSV 링크
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
 
-        // 간단한 CSV 파서 함수
+        // 2. 발급받으신 Gemini API 키를 아래 따옴표 안에 넣어주세요.
+        const GEMINI_API_KEY = "여기에_복사한_API_키를_붙여넣으세요"; 
+
+        // 간단한 CSV 파서 함수 (구글 시트 데이터를 JSON 객체 배열로 변환)
         function parseCSV(text) {
             let lines = text.split("\n");
             let result = [];
             let headers = lines[0].split(",");
-
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 let currentLine = lines[i].split(",");
@@ -65,33 +64,51 @@
             resultBox.innerHTML = "<span class='loading'>데이터를 분석하고 AI 답변을 생성하는 중입니다...</span>";
 
             try {
-                // 1. 구글 시트 CSV 데이터 불러오기
+                // 1단계: 구글 시트 데이터 불러오기 및 JSON 변환
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
                 const sheetData = parseCSV(csvText);
 
-                // 2. 데이터 기반 간단 검색 및 응답 시뮬레이션 (추후 LLM API와 연동할 부분)
-                // 현재는 시트 내용을 활용해 키워드 매칭 방식으로 답변을 구성합니다.
-                let matchedInfo = sheetData.filter(row => JSON.stringify(row).includes(query));
+                // 2단계: AI에게 보낼 지시문(Prompt) 만들기
+                const promptText = `
+당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다.
+다음은 촛불회보의 요약 데이터베이스입니다:
+${JSON.stringify(sheetData)}
 
-                let answer = "";
-                if (matchedInfo.length > 0) {
-                    answer = `🔍 관련 촛불회보 데이터를 찾았습니다:\n\n`;
-                    matchedInfo.forEach((item, index) => {
-                        answer += `- [${item['통권 호수'] || '기록'} / ${item['발행월'] || ''}] ${item['한줄 요약'] || item['주요 이벤트'] || '상세 내용 참조'}\n`;
-                    });
+위 데이터를 꼼꼼히 읽고, 다음 질문에 자연스럽고 친절한 문장으로 답변해 주세요. 데이터에 없는 내용은 지어내지 마세요.
+질문: ${query}
+`;
+
+                // 3단계: Gemini API 호출하기
+                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: promptText }]
+                        }]
+                    })
+                });
+
+                const data = await apiResponse.json();
+
+                // 4단계: AI의 답변 화면에 출력하기
+                if (data.candidates && data.candidates.length > 0) {
+                    let answer = data.candidates[0].content.parts[0].text;
+                    answer = answer.replace(/\n/g, "<br>"); // 줄바꿈 처리
+                    resultBox.innerHTML = answer;
                 } else {
-                    answer = `입력하신 검색어("${query}")와 일치하는 명확한 회보 내용을 시트에서 찾지 못했습니다. 다른 키워드로 질문해 주세요.`;
+                    resultBox.innerHTML = "AI가 답변을 생성하지 못했습니다. (데이터 형식을 확인해 주세요)";
+                    console.log("API 응답 에러:", data);
                 }
-
-                resultBox.innerHTML = answer;
 
             } catch (error) {
                 console.error(error);
-                resultBox.innerHTML = "데이터를 불러오는 중 오류가 발생했습니다. 네트워크 연결을 확인해 주세요.";
+                resultBox.innerHTML = "오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
             }
         }
     </script>
-
 </body>
 </html>
