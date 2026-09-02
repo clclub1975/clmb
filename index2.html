@@ -1,29 +1,104 @@
-<!-- v3.10: B열(발행년월) 연도 추출 및 최소/최대 연도 계산 정밀 검증 Debug 코드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v3.10 (Debug)</title>
+    <title>촛불회 AI 추억 스토리 생성기 v2.2</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
         .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
-        .debug-box { margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #3498db; border-radius: 4px; white-space: pre-wrap; font-family: monospace; font-size: 13px; max-height: 450px; overflow-y: auto; }
+        
+        .control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        label { font-weight: bold; min-width: 80px; }
+        select, input[type="text"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
+        
+        /* 토글 버튼 스타일 */
+        .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
+        .toggle-btn:hover { background: #cbd5e1; }
+
+        /* 체크박스 패널 (숨김/펼침) */
+        .checkbox-panel { display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+
+        /* 하단 질문/버튼 입력 라인 */
+        .input-group { display: flex; gap: 8px; margin-top: 15px; }
+        input[type="text"] { flex: 1; }
+        button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button.submit-btn:hover { background-color: #2980b9; }
+
+        .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
+        .loading { color: #666; font-style: italic; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.10 (Debug)</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v2.2</span></h1>
     <div class="chat-container">
-        <h3>🔍 B열(발행년월) 연도 추출 및 최소/최대값 검증 결과</h3>
-        <div id="debugResult" class="debug-box">B열 데이터를 분석하는 중입니다...</div>
+        
+        <!-- 1. 상단 검색 기간 설정 영역 -->
+        <div class="control-row">
+            <label>검색기간:</label>
+            <select id="criteriaType" onchange="initPeriodOptions()">
+                <option value="volume">통권기준</option>
+                <option value="year">년도기준</option>
+            </select>
+            <select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
+            <span>~</span>
+            <select id="endPeriod"></select>
+        </div>
+
+        <!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 -->
+        <div class="control-row">
+            <label>참고항목:</label>
+            <button class="toggle-btn" onclick="toggleCheckboxPanel()">📂 참고할 항목 선택하기 (열기/닫기)</button>
+        </div>
+
+        <div id="checkboxPanel" class="checkbox-panel">
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">💡 AI가 집중적으로 분석할 항목을 체크해주세요. (선택하지 않으면 전체 항목 참고)</div>
+            <div id="checkboxContainer" class="checkbox-grid">
+                <span style="color:#888; font-style:italic;">데이터 로딩 중 원본 시트의 항목을 불러오는 중입니다...</span>
+            </div>
+        </div>
+
+        <!-- 3. 자연어 질문 입력창과 버튼 -->
+        <div class="input-group">
+            <input type="text" id="userQuery" placeholder="예: 주요 봉사기관들에는 어떤 곳들이 있어?" onkeypress="if(event.key === 'Enter') askAI();">
+            <button class="submit-btn" onclick="askAI()">질문하기</button>
+        </div>
+
+        <h3>AI 답변 결과</h3>
+        <div id="aiResult" class="result-box">데이터를 불러오는 중입니다... 잠시만 기다려주세요.</div>
     </div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
+        const GEMINI_API_KEY = "AQ.Ab8RN6J1d4AItxdkOrV2x29Z5le8d4vz0DqpAqgOfsbYUgNFpQ"; 
 
-        function parseCSVStrict(text) {
+        let globalSheetData = [];
+        let globalHeaders = [];
+
+        window.onload = async function() {
+            try {
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                
+                const parsed = parseCSVStrictWithHeaders(csvText);
+                globalSheetData = parsed.data;
+                globalHeaders = parsed.headers;
+
+                renderCheckboxes(globalHeaders);
+                initPeriodOptions();
+
+                document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
+            } catch (error) {
+                document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
+            }
+        };
+
+        // 엄격한 CSV 전용 파서 (따옴표 및 내부 줄바꿈 완벽 대응)
+        function parseCSVStrictWithHeaders(text) {
             let rows = [];
             let currentRow = [];
             let currentField = "";
@@ -70,55 +145,170 @@
                 currentRow.push(currentField.trim());
                 rows.push(currentRow);
             }
-            return rows;
+
+            if (rows.length === 0) return { headers: [], data: [] };
+
+            let headers = rows[0].map(h => h.trim());
+            let result = [];
+            for (let i = 1; i < rows.length; i++) {
+                let cols = rows[i];
+                if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
+                let obj = {};
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j]] = cols[j] ? cols[j].trim() : "";
+                }
+                result.push(obj);
+            }
+            return { headers: headers, data: result };
         }
 
-        window.onload = async function() {
-            try {
-                const response = await fetch(CSV_URL + "&t=" + new Date().getTime());
-                const csvText = await response.text();
-                
-                let table = parseCSVStrict(csvText);
-                if (table.length === 0) throw new Error("CSV 데이터가 비어있습니다.");
+        function renderCheckboxes(headers) {
+            const container = document.getElementById("checkboxContainer");
+            container.innerHTML = "";
+            headers.forEach(header => {
+                if (!header) return;
+                let label = document.createElement("label");
+                label.className = "checkbox-item";
+                label.innerHTML = `<input type="checkbox" name="targetCol" value="${header}"> ${header}`;
+                container.appendChild(label);
+            });
+        }
 
-                let headers = table[0];
-                let colB_Name = headers[1] || "B열";
+        function toggleCheckboxPanel() {
+            const panel = document.getElementById("checkboxPanel");
+            panel.style.display = panel.style.display === "block" ? "none" : "block";
+        }
 
-                let rawB = [];
-                let parsedYears = [];
+        function initPeriodOptions() {
+            const type = document.getElementById("criteriaType").value;
+            const startSelect = document.getElementById("startPeriod");
+            startSelect.innerHTML = "";
 
-                // 2행부터 B열(인덱스 1) 순회
-                for (let i = 1; i < table.length; i++) {
-                    let cols = table[i];
-                    if (!cols || cols.length < 2) continue;
+            let allOpt = document.createElement("option");
+            allOpt.value = "전체";
+            allOpt.text = "전체";
+            startSelect.appendChild(allOpt);
 
-                    let valB = cols[1] || "";
-                    rawB.push(valB);
+            if (type === "volume") {
+                let volumes = globalSheetData.map(row => row["통권 호수"] || row["통권호수"] || "").filter(v => v !== "");
+                let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
+                let minNum = nums.length > 0 ? Math.min(...nums) : 1;
+                let maxNum = nums.length > 0 ? Math.max(...nums) : 30;
 
-                    // B열에서 4자리 연도 패턴(19xx 또는 20xx) 추출
-                    let match = valB.match(/(19[8-9][0-9]|20[0-9][0-9])/);
-                    if (match) {
-                        let y = parseInt(match[0], 10);
-                        if (!isNaN(y)) parsedYears.push(y);
-                    }
+                for (let i = minNum; i <= maxNum; i++) {
+                    let opt = document.createElement("option");
+                    let valStr = String(i).padStart(3, '0') + "호";
+                    opt.value = valStr;
+                    opt.text = valStr;
+                    startSelect.appendChild(opt);
+                }
+            } else {
+                let years = globalSheetData.map(row => row["발행월"] || row["발행 일자"] || "").join(" ");
+                let yearMatches = years.match(/19[8-9][0-9]|20[0-9][0-9]/g);
+                let minYear = 1984;
+                let maxYear = new Date().getFullYear();
+
+                if (yearMatches && yearMatches.length > 0) {
+                    let yNums = yearMatches.map(y => parseInt(y));
+                    minYear = Math.min(...yNums);
+                    maxYear = Math.max(...yNums);
                 }
 
-                // B열 연도 최소값/최대값 계산
-                let minYear = parsedYears.length > 0 ? Math.min(...parsedYears) : "없음";
-                let maxYear = parsedYears.length > 0 ? Math.max(...parsedYears) : "없음";
-
-                // 결과 출력 리포트
-                let report = `[타겟 컬럼 정보]\n- 두 번째 열 이름 (B열): "${colB_Name}"\n\n`;
-                report += `[B열(발행년월) 원본 값 목록]\n${JSON.stringify(rawB, null, 2)}\n\n`;
-                report += `[B열에서 추출한 순수 연도 목록]\n${JSON.stringify(parsedYears, null, 2)}\n\n`;
-                report += `🎯 B열 최종 계산된 최소 연도: ${minYear}년 / 최대 연도: ${maxYear}년`;
-
-                document.getElementById("debugResult").innerHTML = report;
-
-            } catch (error) {
-                document.getElementById("debugResult").innerHTML = `<span style="color:red;">[에러 발생] ${error.message}</span>`;
+                for (let y = minYear; y <= maxYear; y++) {
+                    let opt = document.createElement("option");
+                    let valStr = y + "년";
+                    opt.value = valStr;
+                    opt.text = valStr;
+                    startSelect.appendChild(opt);
+                }
             }
-        };
+            updateEndPeriodOptions();
+        }
+
+        function updateEndPeriodOptions() {
+            const startSelect = document.getElementById("startPeriod");
+            const endSelect = document.getElementById("endPeriod");
+            endSelect.innerHTML = "";
+
+            if (startSelect.value === "전체") {
+                let opt = document.createElement("option");
+                opt.value = "전체";
+                opt.text = "전체";
+                endSelect.appendChild(opt);
+                return;
+            }
+
+            const selectedStartIndex = startSelect.selectedIndex;
+            for (let i = selectedStartIndex; i < startSelect.options.length; i++) {
+                let opt = document.createElement("option");
+                opt.value = startSelect.options[i].value;
+                opt.text = startSelect.options[i].value;
+                endSelect.appendChild(opt);
+            }
+            if (endSelect.options.length > 0) {
+                endSelect.selectedIndex = endSelect.options.length - 1;
+            }
+        }
+
+        async function askAI() {
+            let queryInput = document.getElementById("userQuery");
+            let query = queryInput.value.trim();
+            const resultBox = document.getElementById("aiResult");
+
+            if (!query) {
+                query = "주요 봉사기관들에는 어떤 곳들이 있어?";
+                queryInput.value = query; 
+            }
+
+            const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
+            const startVal = document.getElementById("startPeriod").value;
+            const endVal = document.getElementById("endPeriod").value;
+            
+            let checkedCols = [];
+            document.querySelectorAll('input[name="targetCol"]:checked').forEach((cb) => {
+                checkedCols.push(cb.value);
+            });
+            let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
+
+            let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
+
+            resultBox.innerHTML = `<span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
+
+            try {
+                const promptText = `
+당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다.
+다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
+${JSON.stringify(globalSheetData)}
+
+[검색 조건]
+- 기간 기준: ${criteria} (${periodText})
+- 집중 참고 항목: ${targetColumnsText}
+
+[사용자 질문]
+"${query}"
+
+위 조건과 지정된 항목들을 면밀히 대조하고 분석하여, 데이터에 기반한 구체적이고 신뢰성 있는 답변을 작성해 주세요.
+`;
+
+                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                });
+
+                const data = await apiResponse.json();
+
+                if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
+                    let answer = data.candidates[0].content.parts[0].text;
+                    resultBox.innerHTML = answer.replace(/\n/g, "<br>");
+                } else {
+                    let errorMsg = data.error && data.error.message ? data.error.message : JSON.stringify(data);
+                    resultBox.innerHTML = `<strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span>`;
+                }
+            } catch (error) {
+                resultBox.innerHTML = `<strong style="color:red;">[시스템 에러]</strong><br>${error.message}`;
+            }
+        }
     </script>
 </body>
 </html>
