@@ -1,38 +1,92 @@
-<!-- v3.7: A열 및 B열 원본 데이터 디버깅 및 최소/최대값 산출 테스트 -->
+<!-- v3.8: 진짜 CSV 전용 파서(따옴표 및 내부 줄바꿈 완벽 대응) 적용 Debug 코드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v3.7 (Debug)</title>
+    <title>촛불회 AI 추억 스토리 생성기 v3.8 (Debug)</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
         .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
-        .debug-box { margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #3498db; border-radius: 4px; white-space: pre-wrap; font-family: monospace; font-size: 13px; max-height: 400px; overflow-y: auto; }
+        .debug-box { margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #3498db; border-radius: 4px; white-space: pre-wrap; font-family: monospace; font-size: 13px; max-height: 450px; overflow-y: auto; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.7 (Debug)</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.8 (Debug)</span></h1>
     <div class="chat-container">
-        <h3>🔍 A열(통권) & B열(발행월) 원본 데이터 검증 결과</h3>
-        <div id="debugResult" class="debug-box">데이터를 분석하는 중입니다...</div>
+        <h3>🔍 전용 CSV 파서 기반 A열(통권) & B열(발행월) 검증 결과</h3>
+        <div id="debugResult" class="debug-box">데이터를 정밀 파싱하는 중입니다...</div>
     </div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
+
+        // 💡 셀 내부의 따옴표와 줄바꿈을 완벽히 존중하는 표준 CSV 파서 함수
+        function parseCSVStrict(text) {
+            let rows = [];
+            let currentRow = [];
+            let currentField = "";
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                let nextC = text[i + 1];
+
+                if (inQuotes) {
+                    if (c === '"') {
+                        if (nextC === '"') {
+                            currentField += '"'; // 따옴표 이스케이프 처리 ("")
+                            i++;
+                        } else {
+                            inQuotes = false; // 따옴표 닫힘
+                        }
+                    } else {
+                        currentField += c; // 따옴표 안의 문자는 쉼표든 줄바꿈이든 그냥 데이터로 취급
+                    }
+                } else {
+                    if (c === '"') {
+                        inQuotes = true; // 따옴표 열림
+                    } else if (c === ',') {
+                        currentRow.push(currentField.trim());
+                        currentField = "";
+                    } else if (c === '\r' && nextC === '\n') {
+                        // 윈도우식 줄바꿈(\r\n) 처리
+                        currentRow.push(currentField.trim());
+                        rows.push(currentRow);
+                        currentRow = [];
+                        currentField = "";
+                        i++;
+                    } else if (c === '\n') {
+                        // 유닉스식 줄바꿈(\n) 처리
+                        currentRow.push(currentField.trim());
+                        rows.push(currentRow);
+                        currentRow = [];
+                        currentField = "";
+                    } else {
+                        currentField += c;
+                    }
+                }
+            }
+            // 마지막 남은 필드/행 추가
+            if (currentField !== "" || currentRow.length > 0) {
+                currentRow.push(currentField.trim());
+                rows.push(currentRow);
+            }
+            return rows;
+        }
 
         window.onload = async function() {
             try {
                 const response = await fetch(CSV_URL + "&t=" + new Date().getTime());
                 const csvText = await response.text();
                 
-                // 1. CSV 라인별 분리 파싱
-                let lines = csvText.trim().split("\n");
-                if (lines.length === 0) throw new Error("CSV 데이터가 비어있습니다.");
+                // 엄격한 전용 파서로 CSV 전체 행렬 분리
+                let table = parseCSVStrict(csvText);
+                if (table.length === 0) throw new Error("CSV 데이터가 비어있습니다.");
 
-                let headers = lines[0].split(",").map(h => h.trim().replace(/^"(.*)"$/, '$1'));
+                let headers = table[0];
                 let colA_Name = headers[0] || "A열";
                 let colB_Name = headers[1] || "B열";
 
@@ -40,33 +94,38 @@
                 let rawB = [];
                 let parsedNumbers = [];
 
-                for (let i = 1; i < lines.length; i++) {
-                    if (!lines[i].trim()) continue;
-                    let cols = lines[i].split(",").map(c => c.trim().replace(/^"(.*)"$/, '$1'));
-                    
+                // 1행(헤더)을 제외하고 실제 데이터 행(2행부터) 순회
+                for (let i = 1; i < table.length; i++) {
+                    let cols = table[i];
+                    if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
+
                     let valA = cols[0] || "";
                     let valB = cols[1] || "";
                     
                     rawA.push(valA);
                     rawB.push(valB);
 
-                    // A열에서 숫자 추출 테스트
-                    let matchedNum = valA.replace(/[^0-9]/g, '');
-                    if (matchedNum !== "") {
-                        parsedNumbers.push(Number(matchedNum));
+                    // A열에서 통권 호수 순수 숫자만 추출 (예: "통권 001호" -> 1)
+                    if (valA !== "") {
+                        let matchedNum = valA.replace(/[^0-9]/g, '');
+                        if (matchedNum !== "") {
+                            let n = parseInt(matchedNum, 10);
+                            if (!isNaN(n)) parsedNumbers.push(n);
+                        }
                     }
                 }
 
-                // 2. 최소값 / 최대값 계산 테스트
+                // 최소값 / 최대값 계산
                 let minVal = parsedNumbers.length > 0 ? Math.min(...parsedNumbers) : "없음";
                 let maxVal = parsedNumbers.length > 0 ? Math.max(...parsedNumbers) : "없음";
 
-                // 3. 결과를 화면에 그대로 출력
+                // 결과 출력 리포트 작성
                 let report = `[헤더 정보]\n- 첫 번째 열 이름 (A열): "${colA_Name}"\n- 두 번째 열 이름 (B열): "${colB_Name}"\n\n`;
-                report += `[A열(통권 호수) 원본 값 목록]\n${JSON.stringify(rawA, null, 2)}\n\n`;
+                report += `[전체 파싱된 데이터 행 수]: ${table.length - 1}개\n\n`;
+                report += `[A열(통권 호수) 값 목록 (밀림 현상 없음)]\n${JSON.stringify(rawA, null, 2)}\n\n`;
                 report += `[A열에서 추출한 순수 숫자 목록]\n${JSON.stringify(parsedNumbers, null, 2)}\n\n`;
                 report += `🎯 최종 계산된 최소값: ${minVal} / 최대값: ${maxVal}\n\n`;
-                report += `[B열(발행월 등) 원본 값 목록]\n${JSON.stringify(rawB, null, 2)}`;
+                report += `[B열(발행월 등) 값 목록]\n${JSON.stringify(rawB, null, 2)}`;
 
                 document.getElementById("debugResult").innerHTML = report;
 
