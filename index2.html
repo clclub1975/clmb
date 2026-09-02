@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v2.7</title>
+    <title>촛불회 AI 추억 스토리 생성기 v2.8</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -18,7 +18,7 @@
         .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
         .toggle-btn:hover { background: #cbd5e1; }
 
-        /* 체크박스 패널 스타일 */
+        /* 체크박스 패널 스타일 (안전한 block/none 제어) */
         .checkbox-panel { display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
         .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v2.7</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v2.8</span></h1>
     <div class="chat-container">
         
         <!-- 1. 상단 검색 기간 설정 영역 -->
@@ -49,14 +49,14 @@
             <select id="endPeriod"></select>
         </div>
 
-        <!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 (v1.3 감성의 안정적인 구조) -->
+        <!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 -->
         <div class="control-row">
             <label>참고항목:</label>
             <button type="button" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 참고할 항목 선택하기 (열기/닫기)</button>
         </div>
 
         <div id="checkboxPanel" class="checkbox-panel">
-            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">💡 AI가 집중적으로 참고할 항목들을 체크해주세요. (체크하지 않으면 전체 항목 참고)</div>
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">💡 AI가 집중적으로 참고할 항목들을 체크해주세요. (선택하지 않으면 전체 항목 참고)</div>
             <div class="checkbox-grid">
                 <label class="checkbox-item"><input type="checkbox" name="targetCol" value="통권 호수"> 통권 호수</label>
                 <label class="checkbox-item"><input type="checkbox" name="targetCol" value="발행월"> 발행월</label>
@@ -95,9 +95,8 @@
                 globalHeaders = parsed.headers;
 
                 initPeriodOptions();
-                document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
             } catch (error) {
-                document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
+                console.error("데이터 로딩 중 에러 발생:", error);
             }
         };
 
@@ -120,11 +119,15 @@
             return { headers: headers, data: result };
         }
 
-        // 체크박스 패널 토글 함수 (안정성 강화)
+        // 체크박스 패널 토글 함수 (안전하게 display 제어)
         function toggleCheckboxPanel() {
             const panel = document.getElementById("checkboxPanel");
             if (!panel) return;
-            panel.style.display = (panel.style.display === "block") ? "none" : "block";
+            if (panel.style.display === "block") {
+                panel.style.display = "none";
+            } else {
+                panel.style.display = "block";
+            }
         }
 
         function initPeriodOptions() {
@@ -138,10 +141,8 @@
             allOpt.text = "전체";
             startSelect.appendChild(allOpt);
 
-            if (globalHeaders.length === 0) return;
-
             if (type === "volume") {
-                let firstColKey = globalHeaders[0];
+                let firstColKey = globalHeaders.length > 0 ? globalHeaders[0] : "통권 호수";
                 let volumes = globalSheetData.map(row => row[firstColKey] || "").filter(v => v !== "");
                 let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
                 
@@ -156,7 +157,7 @@
                     startSelect.appendChild(opt);
                 }
             } else {
-                let secondColKey = globalHeaders[1] || globalHeaders[0];
+                let secondColKey = globalHeaders.length > 1 ? globalHeaders[1] : (globalHeaders.length > 0 ? globalHeaders[0] : "발행월");
                 let yearsText = globalSheetData.map(row => row[secondColKey] || "").join(" ");
                 let yearMatches = yearsText.match(/19[8-9][0-9]|20[0-9][0-9]/g);
                 
