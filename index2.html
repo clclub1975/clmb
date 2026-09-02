@@ -1,10 +1,10 @@
-<!-- v3.3: 구글 시트 CSV fetch 통신 안정화 및 비동기 파싱 에러 원천 차단 -->
+<!-- v3.4: 최소/최대값 추출 로직 단순화 및 강력한 데이터 정규화 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v3.3</title>
+    <title>촛불회 AI 추억 스토리 생성기 v3.4</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.3</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.4</span></h1>
     <div class="chat-container">
         
         <!-- 1. 상단 검색 기간 설정 영역 -->
@@ -82,10 +82,7 @@
 
         window.onload = async function() {
             try {
-                // 캐시 방지용 타임스탬프 추가로 최신 시트 데이터 안정적 수신
                 const response = await fetch(CSV_URL + "&t=" + new Date().getTime());
-                if (!response.ok) throw new Error("구글 시트 데이터를 불러오지 못했습니다. (네트워크 상태 확인)");
-                
                 const csvText = await response.text();
                 const parsed = parseCSV(csvText);
                 
@@ -93,7 +90,7 @@
                 globalHeaders = parsed.headers;
 
                 if (globalHeaders.length === 0 || globalSheetData.length === 0) {
-                    throw new Error("시트 데이터가 비어있거나 올바른 형태가 아닙니다.");
+                    throw new Error("시트 데이터를 읽어오지 못했습니다.");
                 }
 
                 renderCheckboxes(globalHeaders);
@@ -143,6 +140,7 @@
             panel.style.display = (panel.style.display === "block") ? "none" : "block";
         }
 
+        // 💡 최소/최대값 탐색 오류를 해결한 안정적인 기간 옵션 생성 로직
         function initPeriodOptions() {
             const type = document.getElementById("criteriaType").value;
             const startSelect = document.getElementById("startPeriod");
@@ -159,23 +157,21 @@
             if (type === "volume") {
                 let firstColKey = globalHeaders[0];
                 let nums = [];
-                for (let i = 0; i < globalSheetData.length; i++) {
-                    let val = globalSheetData[i][firstColKey];
-                    if (val) {
-                        let n = parseInt(String(val).replace(/[^0-9]/g, ''));
-                        if (!isNaN(n)) nums.push(n);
-                    }
-                }
                 
-                let minNum = 1, maxNum = 1;
-                if (nums.length > 0) {
-                    minNum = nums[0];
-                    maxNum = nums[0];
-                    for (let j = 1; j < nums.length; j++) {
-                        if (nums[j] < minNum) minNum = nums[j];
-                        if (nums[j] > maxNum) maxNum = nums[j];
+                globalSheetData.forEach(row => {
+                    let val = row[firstColKey];
+                    if (val) {
+                        // 문자열에서 숫자만 추출 (예: "001호" -> 1, "통권 15호" -> 15)
+                        let matched = String(val).replace(/[^0-9]/g, '');
+                        if (matched !== "") {
+                            let n = parseInt(matched, 10);
+                            if (!isNaN(n)) nums.push(n);
+                        }
                     }
-                }
+                });
+
+                let minNum = nums.length > 0 ? Math.min(...nums) : 1;
+                let maxNum = nums.length > 0 ? Math.max(...nums) : 1;
 
                 for (let i = minNum; i <= maxNum; i++) {
                     let opt = document.createElement("option");
@@ -187,25 +183,20 @@
             } else {
                 let secondColKey = globalHeaders[1] || globalHeaders[0];
                 let years = [];
-                for (let i = 0; i < globalSheetData.length; i++) {
-                    let val = globalSheetData[i][secondColKey] || globalSheetData[i][globalHeaders[0]];
+
+                globalSheetData.forEach(row => {
+                    let val = row[secondColKey] || row[globalHeaders[0]];
                     if (val) {
-                        let matches = String(val).match(/(19[8-9][0-9]|20[0-9][0-9])/g);
+                        // 4자리 연도 패턴 추출 (1900~2099년 사이)
+                        let matches = String(val).match(/20[0-9]{2}|19[0-9]{2}/g);
                         if (matches) {
-                            for(let m of matches) years.push(parseInt(m));
+                            matches.forEach(y => years.push(parseInt(y, 10)));
                         }
                     }
-                }
-                
-                let minYear = 1984, maxYear = new Date().getFullYear();
-                if (years.length > 0) {
-                    minYear = years[0];
-                    maxYear = years[0];
-                    for (let j = 1; j < years.length; j++) {
-                        if (years[j] < minYear) minYear = years[j];
-                        if (years[j] > maxYear) maxYear = years[j];
-                    }
-                }
+                });
+
+                let minYear = years.length > 0 ? Math.min(...years) : 1984;
+                let maxYear = years.length > 0 ? Math.max(...years) : new Date().getFullYear();
 
                 for (let y = minYear; y <= maxYear; y++) {
                     let opt = document.createElement("option");
