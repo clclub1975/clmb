@@ -1,10 +1,10 @@
-<!-- v3.8: 진짜 CSV 전용 파서(따옴표 및 내부 줄바꿈 완벽 대응) 적용 Debug 코드 -->
+<!-- v3.9: 전체 열(Headers) 및 행 데이터 구조 정밀 검증 확장 Debug 코드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v3.8 (Debug)</title>
+    <title>촛불회 AI 추억 스토리 생성기 v3.9 (Debug)</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -14,16 +14,15 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.8 (Debug)</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.9 (Debug)</span></h1>
     <div class="chat-container">
-        <h3>🔍 전용 CSV 파서 기반 A열(통권) & B열(발행월) 검증 결과</h3>
-        <div id="debugResult" class="debug-box">데이터를 정밀 파싱하는 중입니다...</div>
+        <h3>🔍 전체 컬럼 및 행 데이터 구조 정밀 검증 결과</h3>
+        <div id="debugResult" class="debug-box">전체 데이터를 매핑하는 중입니다...</div>
     </div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
 
-        // 💡 셀 내부의 따옴표와 줄바꿈을 완벽히 존중하는 표준 CSV 파서 함수
         function parseCSVStrict(text) {
             let rows = [];
             let currentRow = [];
@@ -37,29 +36,27 @@
                 if (inQuotes) {
                     if (c === '"') {
                         if (nextC === '"') {
-                            currentField += '"'; // 따옴표 이스케이프 처리 ("")
+                            currentField += '"';
                             i++;
                         } else {
-                            inQuotes = false; // 따옴표 닫힘
+                            inQuotes = false;
                         }
                     } else {
-                        currentField += c; // 따옴표 안의 문자는 쉼표든 줄바꿈이든 그냥 데이터로 취급
+                        currentField += c;
                     }
                 } else {
                     if (c === '"') {
-                        inQuotes = true; // 따옴표 열림
+                        inQuotes = true;
                     } else if (c === ',') {
                         currentRow.push(currentField.trim());
                         currentField = "";
                     } else if (c === '\r' && nextC === '\n') {
-                        // 윈도우식 줄바꿈(\r\n) 처리
                         currentRow.push(currentField.trim());
                         rows.push(currentRow);
                         currentRow = [];
                         currentField = "";
                         i++;
                     } else if (c === '\n') {
-                        // 유닉스식 줄바꿈(\n) 처리
                         currentRow.push(currentField.trim());
                         rows.push(currentRow);
                         currentRow = [];
@@ -69,7 +66,6 @@
                     }
                 }
             }
-            // 마지막 남은 필드/행 추가
             if (currentField !== "" || currentRow.length > 0) {
                 currentRow.push(currentField.trim());
                 rows.push(currentRow);
@@ -82,50 +78,29 @@
                 const response = await fetch(CSV_URL + "&t=" + new Date().getTime());
                 const csvText = await response.text();
                 
-                // 엄격한 전용 파서로 CSV 전체 행렬 분리
                 let table = parseCSVStrict(csvText);
                 if (table.length === 0) throw new Error("CSV 데이터가 비어있습니다.");
 
                 let headers = table[0];
-                let colA_Name = headers[0] || "A열";
-                let colB_Name = headers[1] || "B열";
+                let structuredData = [];
 
-                let rawA = [];
-                let rawB = [];
-                let parsedNumbers = [];
-
-                // 1행(헤더)을 제외하고 실제 데이터 행(2행부터) 순회
+                // 각 행을 헤더와 매칭하여 JSON 객체 배열 형태로 변환 테스트
                 for (let i = 1; i < table.length; i++) {
                     let cols = table[i];
                     if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
 
-                    let valA = cols[0] || "";
-                    let valB = cols[1] || "";
-                    
-                    rawA.push(valA);
-                    rawB.push(valB);
-
-                    // A열에서 통권 호수 순수 숫자만 추출 (예: "통권 001호" -> 1)
-                    if (valA !== "") {
-                        let matchedNum = valA.replace(/[^0-9]/g, '');
-                        if (matchedNum !== "") {
-                            let n = parseInt(matchedNum, 10);
-                            if (!isNaN(n)) parsedNumbers.push(n);
-                        }
+                    let rowObj = {};
+                    for (let j = 0; j < headers.length; j++) {
+                        let headerName = headers[j] || `Col_${j}`;
+                        rowObj[headerName] = cols[j] || "";
                     }
+                    structuredData.push(rowObj);
                 }
 
-                // 최소값 / 최대값 계산
-                let minVal = parsedNumbers.length > 0 ? Math.min(...parsedNumbers) : "없음";
-                let maxVal = parsedNumbers.length > 0 ? Math.max(...parsedNumbers) : "없음";
-
                 // 결과 출력 리포트 작성
-                let report = `[헤더 정보]\n- 첫 번째 열 이름 (A열): "${colA_Name}"\n- 두 번째 열 이름 (B열): "${colB_Name}"\n\n`;
-                report += `[전체 파싱된 데이터 행 수]: ${table.length - 1}개\n\n`;
-                report += `[A열(통권 호수) 값 목록 (밀림 현상 없음)]\n${JSON.stringify(rawA, null, 2)}\n\n`;
-                report += `[A열에서 추출한 순수 숫자 목록]\n${JSON.stringify(parsedNumbers, null, 2)}\n\n`;
-                report += `🎯 최종 계산된 최소값: ${minVal} / 최대값: ${maxVal}\n\n`;
-                report += `[B열(발행월 등) 값 목록]\n${JSON.stringify(rawB, null, 2)}`;
+                let report = `[시트 전체 헤더 항목 목록 (${headers.length}개 컬럼)]\n${JSON.stringify(headers, null, 2)}\n\n`;
+                report += `[파싱된 전체 데이터 행 수]: ${structuredData.length}개\n\n`;
+                report += `[전체 행 데이터 JSON 객체 매핑 결과 샘플]\n${JSON.stringify(structuredData, null, 2)}`;
 
                 document.getElementById("debugResult").innerHTML = report;
 
