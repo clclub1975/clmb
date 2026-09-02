@@ -1,10 +1,10 @@
-<!-- v3.9: 전체 열(Headers) 및 행 데이터 구조 정밀 검증 확장 Debug 코드 -->
+<!-- v3.10: B열(발행년월) 연도 추출 및 최소/최대 연도 계산 정밀 검증 Debug 코드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v3.9 (Debug)</title>
+    <title>촛불회 AI 추억 스토리 생성기 v3.10 (Debug)</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -14,10 +14,10 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.9 (Debug)</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.10 (Debug)</span></h1>
     <div class="chat-container">
-        <h3>🔍 전체 컬럼 및 행 데이터 구조 정밀 검증 결과</h3>
-        <div id="debugResult" class="debug-box">전체 데이터를 매핑하는 중입니다...</div>
+        <h3>🔍 B열(발행년월) 연도 추출 및 최소/최대값 검증 결과</h3>
+        <div id="debugResult" class="debug-box">B열 데이터를 분석하는 중입니다...</div>
     </div>
 
     <script>
@@ -82,25 +82,36 @@
                 if (table.length === 0) throw new Error("CSV 데이터가 비어있습니다.");
 
                 let headers = table[0];
-                let structuredData = [];
+                let colB_Name = headers[1] || "B열";
 
-                // 각 행을 헤더와 매칭하여 JSON 객체 배열 형태로 변환 테스트
+                let rawB = [];
+                let parsedYears = [];
+
+                // 2행부터 B열(인덱스 1) 순회
                 for (let i = 1; i < table.length; i++) {
                     let cols = table[i];
-                    if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
+                    if (!cols || cols.length < 2) continue;
 
-                    let rowObj = {};
-                    for (let j = 0; j < headers.length; j++) {
-                        let headerName = headers[j] || `Col_${j}`;
-                        rowObj[headerName] = cols[j] || "";
+                    let valB = cols[1] || "";
+                    rawB.push(valB);
+
+                    // B열에서 4자리 연도 패턴(19xx 또는 20xx) 추출
+                    let match = valB.match(/(19[8-9][0-9]|20[0-9][0-9])/);
+                    if (match) {
+                        let y = parseInt(match[0], 10);
+                        if (!isNaN(y)) parsedYears.push(y);
                     }
-                    structuredData.push(rowObj);
                 }
 
-                // 결과 출력 리포트 작성
-                let report = `[시트 전체 헤더 항목 목록 (${headers.length}개 컬럼)]\n${JSON.stringify(headers, null, 2)}\n\n`;
-                report += `[파싱된 전체 데이터 행 수]: ${structuredData.length}개\n\n`;
-                report += `[전체 행 데이터 JSON 객체 매핑 결과 샘플]\n${JSON.stringify(structuredData, null, 2)}`;
+                // B열 연도 최소값/최대값 계산
+                let minYear = parsedYears.length > 0 ? Math.min(...parsedYears) : "없음";
+                let maxYear = parsedYears.length > 0 ? Math.max(...parsedYears) : "없음";
+
+                // 결과 출력 리포트
+                let report = `[타겟 컬럼 정보]\n- 두 번째 열 이름 (B열): "${colB_Name}"\n\n`;
+                report += `[B열(발행년월) 원본 값 목록]\n${JSON.stringify(rawB, null, 2)}\n\n`;
+                report += `[B열에서 추출한 순수 연도 목록]\n${JSON.stringify(parsedYears, null, 2)}\n\n`;
+                report += `🎯 B열 최종 계산된 최소 연도: ${minYear}년 / 최대 연도: ${maxYear}년`;
 
                 document.getElementById("debugResult").innerHTML = report;
 
