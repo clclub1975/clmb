@@ -3,207 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v2.8</title>
+    <title>촛불회 AI 추억 스토리 생성기 v1.3 (Clean)</title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+        body { font-family: 'Malgun Gothic', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
         .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
-        
-        .control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-        label { font-weight: bold; min-width: 80px; }
-        select, input[type="text"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
-        
-        /* 토글 버튼 스타일 */
-        .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
-        .toggle-btn:hover { background: #cbd5e1; }
-
-        /* 체크박스 패널 스타일 (안전한 block/none 제어) */
-        .checkbox-panel { display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
-        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
-
-        /* 하단 질문/버튼 입력 라인 */
-        .input-group { display: flex; gap: 8px; margin-top: 15px; }
-        input[type="text"] { flex: 1; }
-        button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button.submit-btn:hover { background-color: #2980b9; }
-
+        .input-group { display: flex; gap: 10px; margin-top: 20px; }
+        input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 12px 24px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #2980b9; }
         .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         .loading { color: #666; font-style: italic; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v2.8</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v1.3</span></h1>
     <div class="chat-container">
-        
-        <!-- 1. 상단 검색 기간 설정 영역 -->
-        <div class="control-row">
-            <label>검색기간:</label>
-            <select id="criteriaType" onchange="initPeriodOptions()">
-                <option value="volume">통권기준</option>
-                <option value="year">년도기준</option>
-            </select>
-            <select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
-            <span>~</span>
-            <select id="endPeriod"></select>
-        </div>
-
-        <!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 -->
-        <div class="control-row">
-            <label>참고항목:</label>
-            <button type="button" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 참고할 항목 선택하기 (열기/닫기)</button>
-        </div>
-
-        <div id="checkboxPanel" class="checkbox-panel">
-            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">💡 AI가 집중적으로 참고할 항목들을 체크해주세요. (선택하지 않으면 전체 항목 참고)</div>
-            <div class="checkbox-grid">
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="통권 호수"> 통권 호수</label>
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="발행월"> 발행월</label>
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="회보 요약"> 회보 요약</label>
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="교정 문서"> 교정 문서</label>
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="기수 및 이름"> 기수 및 이름</label>
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="기고문"> 기고문</label>
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="행사1 상세"> 행사1 상세</label>
-                <label class="checkbox-item"><input type="checkbox" name="targetCol" value="행사2 상세"> 행사2 상세</label>
-            </div>
-        </div>
-
-        <!-- 3. 자연어 질문 입력창과 버튼 -->
+        <p>구글 시트의 촛불회보 데이터를 바탕으로 궁금한 점을 물어보세요!</p>
         <div class="input-group">
-            <input type="text" id="userQuery" placeholder="예: 주요 봉사기관들에는 어떤 곳들이 있어?" onkeypress="if(event.key === 'Enter') askAI();">
-            <button type="button" class="submit-btn" onclick="askAI()">질문하기</button>
+            <input type="text" id="userQuery" placeholder="예: 기고문을 제일 많이 기고한 회원은 누구야?" onkeypress="if(event.key === 'Enter') askAI();">
+            <button onclick="askAI()">질문하기</button>
         </div>
-
         <h3>AI 답변 결과</h3>
-        <div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
+        <div id="aiResult" class="result-box">질문을 입력하고 버튼을 눌러주세요.</div>
     </div>
 
     <script>
+        // 1. 구글 시트 웹에 게시된 CSV 링크
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
+
+        // 2. 발급받으신 Gemini API 키 적용 완료
         const GEMINI_API_KEY = "AQ.Ab8RN6J1d4AItxdkOrV2x29Z5le8d4vz0DqpAqgOfsbYUgNFpQ"; 
 
-        let globalSheetData = [];
-        let globalHeaders = [];
-
-        window.onload = async function() {
-            try {
-                const response = await fetch(CSV_URL);
-                const csvText = await response.text();
-                const parsed = parseCSVWithHeaders(csvText);
-                globalSheetData = parsed.data;
-                globalHeaders = parsed.headers;
-
-                initPeriodOptions();
-            } catch (error) {
-                console.error("데이터 로딩 중 에러 발생:", error);
-            }
-        };
-
-        function parseCSVWithHeaders(text) {
+        // CSV 파서 함수
+        function parseCSV(text) {
             let lines = text.split("\n");
-            if (lines.length === 0) return { headers: [], data: [] };
-            
-            let headers = lines[0].split(",").map(h => h.trim().replace(/^"(.*)"$/, '$1'));
             let result = [];
+            let headers = lines[0].split(",");
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 let currentLine = lines[i].split(",");
                 let obj = {};
                 for (let j = 0; j < headers.length; j++) {
-                    let val = currentLine[j] ? currentLine[j].trim() : "";
-                    obj[headers[j]] = val.replace(/^"(.*)"$/, '$1');
+                    obj[headers[j].trim()] = currentLine[j] ? currentLine[j].trim() : "";
                 }
                 result.push(obj);
             }
-            return { headers: headers, data: result };
-        }
-
-        // 체크박스 패널 토글 함수 (안전하게 display 제어)
-        function toggleCheckboxPanel() {
-            const panel = document.getElementById("checkboxPanel");
-            if (!panel) return;
-            if (panel.style.display === "block") {
-                panel.style.display = "none";
-            } else {
-                panel.style.display = "block";
-            }
-        }
-
-        function initPeriodOptions() {
-            const type = document.getElementById("criteriaType").value;
-            const startSelect = document.getElementById("startPeriod");
-            if (!startSelect) return;
-            startSelect.innerHTML = "";
-
-            let allOpt = document.createElement("option");
-            allOpt.value = "전체";
-            allOpt.text = "전체";
-            startSelect.appendChild(allOpt);
-
-            if (type === "volume") {
-                let firstColKey = globalHeaders.length > 0 ? globalHeaders[0] : "통권 호수";
-                let volumes = globalSheetData.map(row => row[firstColKey] || "").filter(v => v !== "");
-                let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
-                
-                let minNum = nums.length > 0 ? Math.min(...nums) : 1;
-                let maxNum = nums.length > 0 ? Math.max(...nums) : 30;
-
-                for (let i = minNum; i <= maxNum; i++) {
-                    let opt = document.createElement("option");
-                    let valStr = String(i).padStart(3, '0') + "호";
-                    opt.value = valStr;
-                    opt.text = valStr;
-                    startSelect.appendChild(opt);
-                }
-            } else {
-                let secondColKey = globalHeaders.length > 1 ? globalHeaders[1] : (globalHeaders.length > 0 ? globalHeaders[0] : "발행월");
-                let yearsText = globalSheetData.map(row => row[secondColKey] || "").join(" ");
-                let yearMatches = yearsText.match(/19[8-9][0-9]|20[0-9][0-9]/g);
-                
-                let minYear = 1984;
-                let maxYear = 2025;
-                if (yearMatches && yearMatches.length > 0) {
-                    let yNums = yearMatches.map(y => parseInt(y));
-                    minYear = Math.min(...yNums);
-                    maxYear = Math.max(...yNums);
-                }
-
-                for (let y = minYear; y <= maxYear; y++) {
-                    let opt = document.createElement("option");
-                    let valStr = y + "년";
-                    opt.value = valStr;
-                    opt.text = valStr;
-                    startSelect.appendChild(opt);
-                }
-            }
-            updateEndPeriodOptions();
-        }
-
-        function updateEndPeriodOptions() {
-            const startSelect = document.getElementById("startPeriod");
-            const endSelect = document.getElementById("endPeriod");
-            if (!startSelect || !endSelect) return;
-            endSelect.innerHTML = "";
-
-            if (startSelect.value === "전체") {
-                let opt = document.createElement("option");
-                opt.value = "전체";
-                opt.text = "전체";
-                endSelect.appendChild(opt);
-                return;
-            }
-
-            const selectedStartIndex = startSelect.selectedIndex;
-            for (let i = selectedStartIndex; i < startSelect.options.length; i++) {
-                let opt = document.createElement("option");
-                opt.value = startSelect.options[i].value;
-                opt.text = startSelect.options[i].value;
-                endSelect.appendChild(opt);
-            }
-            if (endSelect.options.length > 0) {
-                endSelect.selectedIndex = endSelect.options.length - 1;
-            }
+            return result;
         }
 
         async function askAI() {
@@ -211,41 +58,30 @@
             let query = queryInput.value.trim();
             const resultBox = document.getElementById("aiResult");
 
+            // 질문이 비어있으면 예시 질문을 자동으로 입력하고 실행
             if (!query) {
-                query = "주요 봉사기관들에는 어떤 곳들이 있어?";
+                query = "기고문을 제일 많이 기고한 회원은 누구야?";
                 queryInput.value = query; 
             }
 
-            const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
-            const startVal = document.getElementById("startPeriod").value;
-            const endVal = document.getElementById("endPeriod").value;
-            
-            let checkedCols = [];
-            document.querySelectorAll('input[name="targetCol"]:checked').forEach((cb) => {
-                checkedCols.push(cb.value);
-            });
-            let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
-
-            let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
-
-            resultBox.innerHTML = `<span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
+            resultBox.innerHTML = "<span class='loading'>데이터를 분석하고 AI 답변을 생성하는 중입니다...</span>";
 
             try {
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                const sheetData = parseCSV(csvText);
+
                 const promptText = `
 당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다.
 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
-${JSON.stringify(globalSheetData)}
+${JSON.stringify(sheetData)}
 
-[검색 조건]
-- 기간 기준: ${criteria} (${periodText})
-- 집중 참고 항목: ${targetColumnsText}
-
-[사용자 질문]
-"${query}"
-
-위 조건과 지정된 항목들을 면밀히 대조하고 분석하여, 데이터에 기반한 구체적이고 신뢰성 있는 답변을 작성해 주세요.
+위 데이터의 각 행과 열(통권 호수, 기고문 작성자, 필자, 주요 이벤트 등)을 꼼꼼히 대조하고 분석해 주세요. 
+사용자의 질문에 대해 데이터에 포함된 내용을 바탕으로 성실하고 구체적으로 답변해 주세요.
+질문: ${query}
 `;
 
+                // 계정에서 안정적으로 작동하는 3.5-flash-lite 모델 사용
                 const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -254,6 +90,7 @@ ${JSON.stringify(globalSheetData)}
 
                 const data = await apiResponse.json();
 
+                // 성공 시 화면 출력
                 if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
                     resultBox.innerHTML = answer.replace(/\n/g, "<br>");
