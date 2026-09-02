@@ -1,9 +1,10 @@
+<!-- v3.1: 원본 시트 A/B열 기반 기간 드롭다운 동적 최소/최대값 연동 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v2.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v3.1</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -34,7 +35,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v2.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.1</span></h1>
     <div class="chat-container">
         
         <!-- 1. 상단 검색 기간 설정 영역 -->
@@ -90,7 +91,7 @@
 
                 // 체크박스 목록 자동 생성
                 renderCheckboxes(globalHeaders);
-                // 기간 드롭다운 초기화
+                // 기간 드롭다운 초기화 (A, B열 데이터 기반 동적 범위 산출)
                 initPeriodOptions();
 
                 document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
@@ -103,14 +104,15 @@
             let lines = text.split("\n");
             if (lines.length === 0) return { headers: [], data: [] };
             
-            let headers = lines[0].split(",").map(h => h.trim());
+            let headers = lines[0].split(",").map(h => h.trim().replace(/^"(.*)"$/, '$1'));
             let result = [];
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 let currentLine = lines[i].split(",");
                 let obj = {};
                 for (let j = 0; j < headers.length; j++) {
-                    obj[headers[j]] = currentLine[j] ? currentLine[j].trim() : "";
+                    let val = currentLine[j] ? currentLine[j].trim() : "";
+                    obj[headers[j]] = val.replace(/^"(.*)"$/, '$1');
                 }
                 result.push(obj);
             }
@@ -120,6 +122,7 @@
         // 원본 시트의 모든 열 제목을 체크박스로 렌더링
         function renderCheckboxes(headers) {
             const container = document.getElementById("checkboxContainer");
+            if (!container) return;
             container.innerHTML = "";
             headers.forEach(header => {
                 if (!header) return;
@@ -132,29 +135,33 @@
 
         function toggleCheckboxPanel() {
             const panel = document.getElementById("checkboxPanel");
+            if (!panel) return;
             panel.style.display = panel.style.display === "block" ? "none" : "block";
         }
 
-        // 통권번호 또는 발행년월 열에서 실제 최소/최대값을 찾아 드롭다운 구성
+        // 💡 원본 시트 A열(통권 호수) 및 B열(발행월)에서 실제 최소값/최대값을 찾아 동적으로 구성
         function initPeriodOptions() {
             const type = document.getElementById("criteriaType").value;
             const startSelect = document.getElementById("startPeriod");
+            if (!startSelect) return;
             startSelect.innerHTML = "";
 
-            // 1. 맨 위에 '전체' 옵션 추가
+            // 맨 위에 '전체' 옵션 추가
             let allOpt = document.createElement("option");
             allOpt.value = "전체";
             allOpt.text = "전체";
             startSelect.appendChild(allOpt);
 
+            if (globalHeaders.length === 0) return;
+
             if (type === "volume") {
-                // 데이터에서 통권 호수 값들을 추출하여 정렬
-                let volumes = globalSheetData.map(row => row["통권 호수"] || row["통권호수"] || "").filter(v => v !== "");
-                // 숫들만 추출해서 min, max 파악
+                // 첫 번째 열 (A열: 통권 호수) 데이터에서 값 추출
+                let firstColKey = globalHeaders[0];
+                let volumes = globalSheetData.map(row => row[firstColKey] || "").filter(v => v !== "");
                 let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
                 
                 let minNum = nums.length > 0 ? Math.min(...nums) : 1;
-                let maxNum = nums.length > 0 ? Math.max(...nums) : 30;
+                let maxNum = nums.length > 0 ? Math.max(...nums) : 1; // 하드코딩 제거, 시트 실제 최대값 반영
 
                 for (let i = minNum; i <= maxNum; i++) {
                     let opt = document.createElement("option");
@@ -164,16 +171,17 @@
                     startSelect.appendChild(opt);
                 }
             } else {
-                // 년도 기준 (발행월 등에서 년도 추출)
-                let years = globalSheetData.map(row => row["발행월"] || row["발행 일자"] || "").join(" ");
-                let yearMatches = years.match(/19[8-9][0-9]|20[0-9][0-9]/g);
+                // 두 번째 열 (B열: 발행월) 또는 전체 데이터에서 연도 추출 후 실제 데이터 내 최소/최대값 계산
+                let secondColKey = globalHeaders[1] || globalHeaders[0];
+                let yearsText = globalSheetData.map(row => row[secondColKey] || "").join(" ");
+                let yearMatches = yearsText.match(/19[8-9][0-9]|20[0-9][0-9]/g);
                 
                 let minYear = 1984;
                 let maxYear = new Date().getFullYear();
                 if (yearMatches && yearMatches.length > 0) {
                     let yNums = yearMatches.map(y => parseInt(y));
                     minYear = Math.min(...yNums);
-                    maxYear = Math.max(...yNums);
+                    maxYear = Math.max(...yNums); // 시트에 기록된 실제 마지막 발행 연도 반영
                 }
 
                 for (let y = minYear; y <= maxYear; y++) {
@@ -190,9 +198,9 @@
         function updateEndPeriodOptions() {
             const startSelect = document.getElementById("startPeriod");
             const endSelect = document.getElementById("endPeriod");
+            if (!startSelect || !endSelect) return;
             endSelect.innerHTML = "";
 
-            // 만약 '전체'를 선택했다면 끝점도 '전체'로 고정
             if (startSelect.value === "전체") {
                 let opt = document.createElement("option");
                 opt.value = "전체";
@@ -202,7 +210,7 @@
             }
 
             const selectedStartIndex = startSelect.selectedIndex;
-            // '전체'가 첫 번째이므로 실제 값들은 인덱스가 1부터 시작함에 유의
+            // '전체'가 첫 번째이므로 실제 값들은 인덱스가 1부터 시작
             for (let i = selectedStartIndex; i < startSelect.options.length; i++) {
                 let opt = document.createElement("option");
                 opt.value = startSelect.options[i].value;
