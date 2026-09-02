@@ -1,9 +1,10 @@
+<!-- v4.2 적용: API Key 하드코딩 제거 및 브라우저 로컬 스토리지 기반 안전 보관 방식 도입 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v2.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v4.2</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -12,8 +13,14 @@
         
         .control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
         label { font-weight: bold; min-width: 80px; }
-        select, input[type="text"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
+        select, input[type="text"], input[type="password"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
         
+        /* 설정 영역 스타일 */
+        .api-row { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .api-row input { flex: 1; }
+        .api-save-btn { background: #ffc107; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .api-save-btn:hover { background: #e0a800; }
+
         /* 토글 버튼 스타일 */
         .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
         .toggle-btn:hover { background: #cbd5e1; }
@@ -34,9 +41,17 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v2.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v4.2</span></h1>
     <div class="chat-container">
         
+        <!-- API 키 설정 바 (브라우저 로컬에만 안전하게 저장됨) -->
+        <div class="api-row">
+            <label style="min-width:auto;">🔑 API Key:</label>
+            <input type="password" id="apiKeyInput" placeholder="Gemini API Key를 입력하세요 (브라우저에만 저장됨)">
+            <button type="button" class="api-save-btn" onclick="saveApiKey()">저장</button>
+            <span id="apiKeyStatus" style="color: #28a745; font-size: 13px; font-weight: bold;"></span>
+        </div>
+
         <!-- 1. 상단 검색 기간 설정 영역 -->
         <div class="control-row">
             <label>검색기간:</label>
@@ -74,12 +89,18 @@
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
-        const GEMINI_API_KEY = "AQ.Ab8RN6J1d4AItxdkOrV2x29Z5le8d4vz0DqpAqgOfsbYUgNFpQ"; 
 
         let globalSheetData = [];
         let globalHeaders = [];
 
         window.onload = async function() {
+            // 저장된 API 키 불러오기 확인
+            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+            if (savedKey) {
+                document.getElementById("apiKeyInput").value = savedKey;
+                document.getElementById("apiKeyStatus").innerText = "✔ 저장됨";
+            }
+
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
@@ -96,6 +117,17 @@
                 document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
             }
         };
+
+        function saveApiKey() {
+            let keyVal = document.getElementById("apiKeyInput").value.trim();
+            if (!keyVal) {
+                alert("API Key를 입력해주세요.");
+                return;
+            }
+            localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+            document.getElementById("apiKeyStatus").innerText = "✔ 저장됨";
+            alert("API Key가 브라우저에 안전하게 저장되었습니다.");
+        }
 
         // 엄격한 CSV 전용 파서 (따옴표 및 내부 줄바꿈 완벽 대응)
         function parseCSVStrictWithHeaders(text) {
@@ -251,6 +283,13 @@
         }
 
         async function askAI() {
+            let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
+            if (!apiKey) {
+                alert("상단에 Gemini API Key를 입력하고 [저장] 버튼을 눌러주세요.");
+                document.getElementById("apiKeyInput").focus();
+                return;
+            }
+
             let queryInput = document.getElementById("userQuery");
             let query = queryInput.value.trim();
             const resultBox = document.getElementById("aiResult");
@@ -290,7 +329,7 @@ ${JSON.stringify(globalSheetData)}
 위 조건과 지정된 항목들을 면밀히 대조하고 분석하여, 데이터에 기반한 구체적이고 신뢰성 있는 답변을 작성해 주세요.
 `;
 
-                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`, {
+                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
