@@ -1,10 +1,10 @@
-<!-- v3.2: 구글 시트 기반 기간 연동 최소/최대값 추출 로직 안정성 완벽 강화 및 에러 해결 -->
+<!-- v3.3: 구글 시트 CSV fetch 통신 안정화 및 비동기 파싱 에러 원천 차단 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v3.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v3.3</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v3.3</span></h1>
     <div class="chat-container">
         
         <!-- 1. 상단 검색 기간 설정 영역 -->
@@ -53,7 +53,7 @@
         <!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 -->
         <div class="control-row">
             <label>참고항목:</label>
-            <button class="toggle-btn" onclick="toggleCheckboxPanel()">📂 참고할 항목 선택하기 (열기/닫기)</button>
+            <button type="button" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 참고할 항목 선택하기 (열기/닫기)</button>
         </div>
 
         <div id="checkboxPanel" class="checkbox-panel">
@@ -66,7 +66,7 @@
         <!-- 3. 자연어 질문 입력창과 버튼 -->
         <div class="input-group">
             <input type="text" id="userQuery" placeholder="예: 주요 봉사기관들에는 어떤 곳들이 있어?" onkeypress="if(event.key === 'Enter') askAI();">
-            <button class="submit-btn" onclick="askAI()">질문하기</button>
+            <button type="button" class="submit-btn" onclick="askAI()">질문하기</button>
         </div>
 
         <h3>AI 답변 결과</h3>
@@ -82,12 +82,19 @@
 
         window.onload = async function() {
             try {
-                const response = await fetch(CSV_URL);
-                const csvText = await response.text();
+                // 캐시 방지용 타임스탬프 추가로 최신 시트 데이터 안정적 수신
+                const response = await fetch(CSV_URL + "&t=" + new Date().getTime());
+                if (!response.ok) throw new Error("구글 시트 데이터를 불러오지 못했습니다. (네트워크 상태 확인)");
                 
+                const csvText = await response.text();
                 const parsed = parseCSV(csvText);
+                
                 globalSheetData = parsed.data;
                 globalHeaders = parsed.headers;
+
+                if (globalHeaders.length === 0 || globalSheetData.length === 0) {
+                    throw new Error("시트 데이터가 비어있거나 올바른 형태가 아닙니다.");
+                }
 
                 renderCheckboxes(globalHeaders);
                 initPeriodOptions();
@@ -100,8 +107,10 @@
 
         function parseCSV(text) {
             let lines = text.split("\n");
-            let result = [];
+            if (lines.length === 0) return { headers: [], data: [] };
+            
             let headers = lines[0].split(",").map(h => h.trim().replace(/^"(.*)"$/, '$1'));
+            let result = [];
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 let currentLine = lines[i].split(",");
@@ -131,7 +140,7 @@
         function toggleCheckboxPanel() {
             const panel = document.getElementById("checkboxPanel");
             if (!panel) return;
-            panel.style.display = panel.style.display === "block" ? "none" : "block";
+            panel.style.display = (panel.style.display === "block") ? "none" : "block";
         }
 
         function initPeriodOptions() {
