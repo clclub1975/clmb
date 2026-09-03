@@ -1,354 +1,429 @@
-<!-- v4.8 적용: 돋보기(🔍) 글머리 아이콘 반영 및 표준 규약 정돈 -->
+<!-- v4.8 적용: 돋보기(🔍) 아이콘을 h1 타이틀 영역에만 적용한 버전 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>촛불회 AI 추억 스토리 생성기 v4.8</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
-        h1 { color: #2c3e50; text-align: center; }
-        .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
-        .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
-        .control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-        label { font-weight: bold; min-width: 80px; }
-        select, input[type="text"], input[type="password"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
-        /* API 가이드 박스 스타일 */
-        .api-box { background: #fff8e1; border: 1px solid #ffe0b2; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .api-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-        .api-row input { flex: 1; }
-        .api-save-btn { background: #f57c00; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .api-save-btn:hover { background: #e65100; }
-        .guide-text { font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
-        .guide-text a { color: #0277bd; font-weight: bold; text-decoration: underline; }
-        /* 토글 버튼 스타일 */
-        .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
-        .toggle-btn:hover { background: #cbd5e1; }
-        /* 체크박스 패널 (숨김/펼침) */
-        .checkbox-panel { display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
-        /* 하단 질문/버튼 입력 라인 */
-        .input-group { display: flex; gap: 8px; margin-top: 15px; }
-        input[type="text"] { flex: 1; }
-        button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button.submit-btn:hover { background-color: #2980b9; }
-        .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
-        .loading { color: #666; font-style: italic; }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; }
+        .markdown-body h1 { font-size: 1.5rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .markdown-body h2 { font-size: 1.25rem; font-weight: bold; margin-top: 0.875rem; margin-bottom: 0.4rem; }
+        .markdown-body h3 { font-size: 1.1rem; font-weight: bold; margin-top: 0.75rem; margin-bottom: 0.3rem; }
+        .markdown-body p { margin-bottom: 0.75rem; line-height: 1.6; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.75rem; }
+        .markdown-body ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 0.75rem; }
+        .markdown-body li { margin-bottom: 0.25rem; }
+        .markdown-body strong { font-weight: bold; color: #1e293b; }
     </style>
 </head>
-<body>
-    <h1>🔍 촛불회 AI 추억 스토리 생성기<span class="version">v4.8</span></h1>
-    <div class="chat-container">
-        <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
-        <div class="api-box">
-            <p class="guide-text">
-                📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
-            </p>
-            <div class="api-row">
-                <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
-                <button type="button" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
-                <span id="apiKeyStatus" style="color: #2e7d32; font-size: 13px; font-weight: bold;"></span>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-900 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                🔍 촛불회 AI 추억 스토리 생성기 <span class="text-xs bg-indigo-700 px-2 py-0.5 rounded text-indigo-200">v4.8</span>
+            </h1>
+            <button id="settings-btn" class="mt-2 md:mt-0 text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-200 px-3 py-1.5 rounded transition flex items-center gap-1">
+                ⚙️ API Key 설정
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+        <!-- API Key Guide Modal / Box -->
+        <div id="api-key-box" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900 shadow-sm hidden">
+            <h3 class="font-bold text-amber-900 mb-1 flex items-center gap-1">🔑 Google Gemini API Key 입력 필요</h3>
+            <p class="mb-2 text-amber-800">이 앱을 사용하려면 사용자님의 개인 Google AI Studio API Key가 필요합니다. 키는 브라우저에만 안전하게 저장되며 외부로 유출되지 않습니다.</p>
+            <div class="flex gap-2">
+                <input type="password" id="api-key-input" placeholder="AIzaSy..." class="flex-grow px-3 py-1.5 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+                <button id="save-key-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded font-medium transition">저장하기</button>
+            </div>
+            <p class="text-xs text-amber-700 mt-2">💡 키가 없으신가요? <a href="https://aistudio.google.com/" target="_blank" class="underline font-semibold text-amber-900">Google AI Studio</a>에서 무료로 발급받으실 수 있습니다.</p>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- CSV URL 입력 -->
+            <div class="md:col-span-3">
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">구글 스프레드시트 CSV 퍼블리시 링크</label>
+                <div class="flex gap-2">
+                    <input type="text" id="csv-url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="flex-grow px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="load-csv-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">데이터 로드</button>
+                </div>
+            </div>
+
+            <!-- 검색 기준 선택 -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">검색 기준</label>
+                <select id="search-mode" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="issue">통권기준 (001호 ~)</option>
+                    <option value="year">년도기준 (1984년 ~)</option>
+                </select>
+            </div>
+
+            <!-- 동적 드롭다운 (시작) -->
+            <div>
+                <label id="start-label" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">시작 통권</label>
+                <select id="start-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">데이터를 먼저 로드하세요</option>
+                </select>
+            </div>
+
+            <!-- 동적 드롭다운 (종료) -->
+            <div>
+                <label id="end-label" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">종료 통권</label>
+                <select id="end-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">데이터를 먼저 로드하세요</option>
+                </select>
             </div>
         </div>
 
-        <!-- 1. 상단 검색 기간 설정 영역 -->
-        <div class="control-row">
-            <label>검색기간:</label>
-            <select id="criteriaType" onchange="initPeriodOptions()">
-                <option value="volume">통권기준</option>
-                <option value="year">년도기준</option>
-            </select>
-            <select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
-            <span>~</span>
-            <select id="endPeriod"></select>
-        </div>
-
-        <!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 -->
-        <div class="control-row">
-            <label>참고항목:</label>
-            <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 참고할 목록 열기 ▼</button>
-        </div>
-        <div id="checkboxPanel" class="checkbox-panel">
-            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">항목을 선택하면 AI가 신속하고 정확하게 답변합니다. 선택하지 않으면 전체 항목을 참고합니다.</div>
-            <div id="checkboxContainer" class="checkbox-grid">
-                <span style="color:#888; font-style:italic;">데이터 로딩 중 원본 시트의 항목을 불러오는 중입니다...</span>
+        <!-- 참고 항목 토글 패널 -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <button id="toggle-panel-btn" class="w-full px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold flex justify-between items-center transition">
+                <span id="panel-title-text" class="flex items-center gap-2">📂 참고할 목록 닫기 ▲</span>
+                <span id="toggle-icon" class="text-xs text-slate-500">접기/펼치기</span>
+            </button>
+            <div id="checkbox-panel" class="p-5 border-t border-slate-200 space-y-3">
+                <p id="checkbox-guide-text" class="text-xs text-indigo-600 font-medium">
+                    항목을 선택하면 AI가 신속하고 정확하게 답변합니다. 선택하지 않으면 전체 항목을 참고합니다.
+                </p>
+                <div id="checkbox-container" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-slate-600">
+                    <span class="text-xs text-slate-400 col-span-full">CSV 데이터를 로드하면 시트 헤더가 체크박스로 자동 생성됩니다.</span>
+                </div>
             </div>
         </div>
 
-        <!-- 3. 자연어 질문 입력창과 버튼 -->
-        <div class="input-group">
-            <input type="text" id="userQuery" placeholder="예: 주요 봉사기관들에는 어떤 곳들이 있어?" onkeypress="if(event.key === 'Enter') askAI();">
-            <button class="submit-btn" onclick="askAI()">질문하기</button>
+        <!-- 프롬프트 및 생성 버튼 -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-200 space-y-3">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">추가 요청사항 (선택 입력)</label>
+            <textarea id="user-prompt" rows="3" placeholder="예: 1984년 창간호 당시 회원들의 열정과 소집단 활동 중심의 에피소드를 감동적인 스토리로 엮어주세요." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+            
+            <div class="flex justify-end">
+                <button id="generate-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow transition flex items-center gap-2">
+                    ✨ AI 추억 스토리 생성하기
+                </button>
+            </div>
         </div>
 
-        <h3>AI 답변 결과</h3>
-        <div id="aiResult" class="result-box">데이터를 불러오는 중입니다... 잠시만 기다려주세요.</div>
-    </div>
+        <!-- 결과 출력 영역 -->
+        <div id="result-container" class="bg-white rounded-xl shadow-sm p-6 border border-slate-200 hidden">
+            <h3 class="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                📜 생성된 추억 스토리
+            </h3>
+            <div id="result-content" class="markdown-body text-slate-700 text-sm space-y-3">
+                <!-- AI Output Render Area -->
+            </div>
+        </div>
 
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 text-xs text-slate-400">
+        &copy; 촛불회 AI Project. Powered by Gemini API (gemini-3.5-flash-lite).
+    </footer>
+
+    <!-- JavaScript 로직부 -->
     <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
-        let globalSheetData = [];
-        let globalHeaders = [];
-
-        window.onload = async function() {
-            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (savedKey) {
-                document.getElementById("apiKeyInput").value = savedKey;
-                document.getElementById("apiKeyStatus").innerText = "✔ 저장 완료됨";
-            }
-            try {
-                const response = await fetch(CSV_URL);
-                const csvText = await response.text();
-                const parsed = parseCSVStrictWithHeaders(csvText);
-                globalSheetData = parsed.data;
-                globalHeaders = parsed.headers;
-                renderCheckboxes(globalHeaders);
-                initPeriodOptions();
-                document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
-            } catch (error) {
-                document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
-            }
-        };
-
-        function saveApiKey() {
-            let keyVal = document.getElementById("apiKeyInput").value.trim();
-            if (!keyVal) {
-                alert("API Key를 입력해주세요.");
-                return;
-            }
-            localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
-            document.getElementById("apiKeyStatus").innerText = "✔ 저장 완료됨";
-            alert("API Key가 안전하게 저장되었습니다. 이제 자유롭게 질문하세요!");
-        }
-
-        // 엄격한 CSV 전용 파서 (따옴표 및 내부 줄바꿈 완벽 대응)
-        function parseCSVStrictWithHeaders(text) {
-            let rows = [];
-            let currentRow = [];
-            let currentField = "";
+        function parseCSV(text) {
+            let lines = [];
+            let row = [''];
             let inQuotes = false;
-
+            
             for (let i = 0; i < text.length; i++) {
                 let c = text[i];
                 let nextC = text[i + 1];
-
-                if (inQuotes) {
-                    if (c === '"') {
-                        if (nextC === '"') {
-                            currentField += '"';
-                            i++;
-                        } else {
-                            inQuotes = false;
-                        }
-                    } else {
-                        currentField += c;
-                    }
-                } else {
-                    if (c === '"') {
-                        inQuotes = true;
-                    } else if (c === ',') {
-                        currentRow.push(currentField.trim());
-                        currentField = "";
-                    } else if (c === '\r' && nextC === '\n') {
-                        currentRow.push(currentField.trim());
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentField = "";
+                
+                if (c === '"') {
+                    if (inQuotes && nextC === '"') {
+                        row[row.length - 1] += '"';
                         i++;
-                    } else if (c === '\n') {
-                        currentRow.push(currentField.trim());
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentField = "";
                     } else {
-                        currentField += c;
+                        inQuotes = !inQuotes;
                     }
+                } else if (c === ',' && !inQuotes) {
+                    row.push('');
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && nextC === '\n') { i++; }
+                    lines.push(row);
+                    row = [''];
+                } else {
+                    row[row.length - 1] += c;
                 }
             }
-            if (currentField !== "" || currentRow.length > 0) {
-                currentRow.push(currentField.trim());
-                rows.push(currentRow);
+            if (row.length > 1 || row[0] !== '') {
+                lines.push(row);
+            }
+            return lines;
+        }
+
+        let csvDataHeaders = [];
+        let csvDataRows = [];
+        let isPanelOpen = true;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const apiKeyBox = document.getElementById('api-key-box');
+            const apiKeyInput = document.getElementById('api-key-input');
+            const saveKeyBtn = document.getElementById('save-key-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+
+            let savedKey = localStorage.getItem('gemini_api_key');
+            if (!savedKey) {
+                apiKeyBox.classList.remove('hidden');
             }
 
-            if (rows.length === 0) return { headers: [], data: [] };
-
-            let headers = rows[0].map(h => h.trim());
-            let result = [];
-            for (let i = 1; i < rows.length; i++) {
-                let cols = rows[i];
-                if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
-                let obj = {};
-                for (let j = 0; j < headers.length; j++) {
-                    obj[headers[j]] = cols[j] ? cols[j].trim() : "";
+            settingsBtn.addEventListener('click', () => {
+                apiKeyBox.classList.toggle('hidden');
+                if(!apiKeyBox.classList.contains('hidden') && savedKey) {
+                    apiKeyInput.value = savedKey;
                 }
-                result.push(obj);
-            }
-            return { headers: headers, data: result };
-        }
-
-        function renderCheckboxes(headers) {
-            const container = document.getElementById("checkboxContainer");
-            container.innerHTML = "";
-            headers.forEach(header => {
-                if (!header) return;
-                let label = document.createElement("label");
-                label.className = "checkbox-item";
-                label.innerHTML = `<input type="checkbox" name="targetCol" value="${header}"> ${header}`;
-                container.appendChild(label);
-            });
-        }
-
-        function toggleCheckboxPanel() {
-            const panel = document.getElementById("checkboxPanel");
-            const btn = document.getElementById("toggleBtn");
-            if (panel.style.display === "block") {
-                panel.style.display = "none";
-                btn.innerHTML = "📁 참고할 목록 열기 ▼";
-            } else {
-                panel.style.display = "block";
-                btn.innerHTML = "📂 참고할 목록 닫기 ▲";
-            }
-        }
-
-        function initPeriodOptions() {
-            const type = document.getElementById("criteriaType").value;
-            const startSelect = document.getElementById("startPeriod");
-            startSelect.innerHTML = "";
-            
-            let allOpt = document.createElement("option");
-            allOpt.value = "전체";
-            allOpt.text = "전체";
-            startSelect.appendChild(allOpt);
-
-            if (type === "volume") {
-                let volumes = globalSheetData.map(row => row["통권 호수"] || row["통권호수"] || "").filter(v => v !== "");
-                let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
-                let minNum = nums.length > 0 ? Math.min(...nums) : 1;
-                let maxNum = nums.length > 0 ? Math.max(...nums) : 30;
-
-                for (let i = minNum; i <= maxNum; i++) {
-                    let opt = document.createElement("option");
-                    let valStr = String(i).padStart(3, '0') + "호";
-                    opt.value = valStr;
-                    opt.text = valStr;
-                    startSelect.appendChild(opt);
-                }
-            } else {
-                let years = globalSheetData.map(row => row["발행월"] || row["발행 일자"] || "").join(" ");
-                let yearMatches = years.match(/19[8-9][0-9]|20[0-9][0-9]/g);
-                let minYear = 1984;
-                let maxYear = new Date().getFullYear();
-
-                if (yearMatches && yearMatches.length > 0) {
-                    let yNums = yearMatches.map(y => parseInt(y));
-                    minYear = Math.min(...yNums);
-                    maxYear = Math.max(...yNums);
-                }
-
-                for (let y = minYear; y <= maxYear; y++) {
-                    let opt = document.createElement("option");
-                    let valStr = y + "년";
-                    opt.value = valStr;
-                    opt.text = valStr;
-                    startSelect.appendChild(opt);
-                }
-            }
-            updateEndPeriodOptions();
-        }
-
-        function updateEndPeriodOptions() {
-            const startSelect = document.getElementById("startPeriod");
-            const endSelect = document.getElementById("endPeriod");
-            endSelect.innerHTML = "";
-
-            if (startSelect.value === "전체") {
-                let opt = document.createElement("option");
-                opt.value = "전체";
-                opt.text = "전체";
-                endSelect.appendChild(opt);
-                return;
-            }
-
-            const selectedStartIndex = startSelect.selectedIndex;
-            for (let i = selectedStartIndex; i < startSelect.options.length; i++) {
-                let opt = document.createElement("option");
-                opt.value = startSelect.options[i].value;
-                opt.text = startSelect.options[i].value;
-                endSelect.appendChild(opt);
-            }
-            if (endSelect.options.length > 0) {
-                endSelect.selectedIndex = endSelect.options.length - 1;
-            }
-        }
-
-        async function askAI() {
-            let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (!apiKey) {
-                alert("상단 안내란을 참고하여 Gemini API Key를 입력하고 [키 저장하기] 버튼을 눌러주세요.");
-                document.getElementById("apiKeyInput").focus();
-                return;
-            }
-
-            let queryInput = document.getElementById("userQuery");
-            let query = queryInput.value.trim();
-            const resultBox = document.getElementById("aiResult");
-
-            if (!query) {
-                query = "주요 봉사기관들에는 어떤 곳들이 있어?";
-                queryInput.value = query;
-            }
-
-            const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
-            const startVal = document.getElementById("startPeriod").value;
-            const endVal = document.getElementById("endPeriod").value;
-
-            let checkedCols = [];
-            document.querySelectorAll('input[name="targetCol"]:checked').forEach((cb) => {
-                checkedCols.push(cb.value);
             });
 
-            let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
-            let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
+            saveKeyBtn.addEventListener('click', () => {
+                const key = apiKeyInput.value.trim();
+                if (key) {
+                    localStorage.setItem('gemini_api_key', key);
+                    savedKey = key;
+                    apiKeyBox.classList.add('hidden');
+                    alert('API Key가 안전하게 저장되었습니다.');
+                } else {
+                    alert('유효한 API Key를 입력해주세요.');
+                }
+            });
 
-            resultBox.innerHTML = `<span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
+            const togglePanelBtn = document.getElementById('toggle-panel-btn');
+            const checkboxPanel = document.getElementById('checkbox-panel');
+            const panelTitleText = document.getElementById('panel-title-text');
 
-            try {
-                const promptText = `
-당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
-${JSON.stringify(globalSheetData)}
+            togglePanelBtn.addEventListener('click', () => {
+                isPanelOpen = !isPanelOpen;
+                if (isPanelOpen) {
+                    checkboxPanel.classList.remove('hidden');
+                    panelTitleText.innerHTML = '📂 참고할 목록 닫기 ▲';
+                } else {
+                    checkboxPanel.classList.add('hidden');
+                    panelTitleText.innerHTML = '📁 참고할 목록 열기 ▼';
+                }
+            });
 
-[검색 조건]
-- 기간 기준: ${criteria} (${periodText})
-- 집중 참고 항목: ${targetColumnsText}
+            const searchModeSelect = document.getElementById('search-mode');
+            searchModeSelect.addEventListener('change', () => {
+                updateDropdownOptions();
+            });
 
-[사용자 질문]
-"${query}"
+            const loadCsvBtn = document.getElementById('load-csv-btn');
+            loadCsvBtn.addEventListener('click', async () => {
+                const url = document.getElementById('csv-url').value.trim();
+                if (!url) {
+                    alert('CSV 퍼블리시 URL을 입력해주세요.');
+                    return;
+                }
 
-위 조건과 지정된 항목들을 면밀히 대조하고 분석하여, 데이터에 기반한 구체적이고 신뢰성 있는 답변을 작성해 주세요.
-                `;
+                loadCsvBtn.textContent = '로드 중...';
+                loadCsvBtn.disabled = true;
 
-                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }] }]
-                    })
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
+                    const csvText = await response.text();
+                    
+                    const parsed = parseCSV(csvText);
+                    if (parsed.length < 2) {
+                        alert('CSV 데이터에 유효한 내용이 없습니다.');
+                        return;
+                    }
+
+                    csvDataHeaders = parsed[0];
+                    csvDataRows = parsed.slice(1).filter(row => row.length === csvDataHeaders.length && row.some(cell => cell.trim() !== ''));
+
+                    updateDropdownOptions();
+                    renderCheckboxes();
+
+                    alert(`데이터 로드 성공! 총 ${csvDataRows.length}개의 호수 데이터가 연동되었습니다.`);
+                } catch (error) {
+                    console.error(error);
+                    alert('CSV 데이터를 불러오는 중 오류가 발생했습니다. 퍼블리시 링크 및 CORS 설정을 확인해주세요.');
+                } finally {
+                    loadCsvBtn.textContent = '데이터 로드';
+                    loadCsvBtn.disabled = false;
+                }
+            });
+
+            const generateBtn = document.getElementById('generate-btn');
+            generateBtn.addEventListener('click', async () => {
+                const currentKey = localStorage.getItem('gemini_api_key');
+                if (!currentKey) {
+                    apiKeyBox.classList.remove('hidden');
+                    alert('상단의 API Key 설정란에 Gemini API Key를 먼저 입력해주세요.');
+                    return;
+                }
+
+                if (csvDataRows.length === 0) {
+                    alert('먼저 CSV 데이터를 로드해주세요.');
+                    return;
+                }
+
+                const searchMode = document.getElementById('search-mode').value;
+                const startVal = document.getElementById('start-select').value;
+                const endVal = document.getElementById('end-select').value;
+                const userPrompt = document.getElementById('user-prompt').value.trim();
+
+                const selectedHeaders = Array.from(document.querySelectorAll('.header-checkbox:checked')).map(cb => cb.value);
+
+                let filteredRows = [];
+                let startIndex = -1;
+                let endIndex = -1;
+
+                if (searchMode === 'issue') {
+                    startIndex = csvDataRows.findIndex(r => r[0] === startVal);
+                    endIndex = csvDataRows.findIndex(r => r[0] === endVal);
+                } else {
+                    startIndex = csvDataRows.findIndex(r => r[1] && r[1].startsWith(startVal));
+                    endIndex = csvDataRows.map(r => r[1] && r[1].startsWith(endVal)).lastIndexOf(true);
+                }
+
+                if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
+                    filteredRows = csvDataRows.slice(startIndex, endIndex + 1);
+                } else {
+                    filteredRows = csvDataRows;
+                }
+
+                let payloadData = filteredRows.map(row => {
+                    let obj = {};
+                    csvDataHeaders.forEach((header, idx) => {
+                        if (selectedHeaders.length === 0 || selectedHeaders.includes(header)) {
+                            obj[header] = row[idx];
+                        }
+                    });
+                    return obj;
                 });
 
-                const data = await apiResponse.json();
+                const systemInstruction = "당신은 촛불회(30년 이상 된 동아리)의 역사와 추억을 생생하게 되살려주는 전문 스토리텔러 AI입니다. 제공된 시트 데이터를 바탕으로 감동적이고 유익한 추억 스토리를 마크다운 형식으로 작성해주세요.";
+                const promptContent = `
+[사용자 추가 요청사항]
+${userPrompt ? userPrompt : "선택된 기간의 주요 이벤트와 회원 동정, 에피소드를 중심으로 감동적인 추억 스토리를 작성해줘."}
 
-                if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
-                    let answer = data.candidates[0].content.parts[0].text;
-                    resultBox.innerHTML = answer.replace(/\n/g, "<br>");
-                } else {
-                    let errorMsg = data.error && data.error.message ? data.error.message : JSON.stringify(data);
-                    resultBox.innerHTML = `<strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span>`;
+[참고 데이터 (${searchMode === 'issue' ? '통권' : '년도'} 범위: ${startVal} ~ ${endVal})]
+${JSON.stringify(payloadData, null, 2)}
+                `;
+
+                generateBtn.textContent = 'AI가 스토리를 생성하는 중...';
+                generateBtn.disabled = true;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${currentKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [
+                                { role: 'user', parts: [{ text: systemInstruction + "\n\n" + promptContent }] }
+                            ]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.error?.message || 'API 호출에 실패했습니다.');
+                    }
+
+                    const data = await response.json();
+                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 생성하지 못했습니다.';
+
+                    const resultContainer = document.getElementById('result-container');
+                    const resultContent = document.getElementById('result-content');
+                    
+                    resultContainer.classList.remove('hidden');
+                    resultContent.innerHTML = marked.parse(aiText);
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                } catch (error) {
+                    console.error(error);
+                    alert(`오류 발생: ${error.message}`);
+                } finally {
+                    generateBtn.textContent = '✨ AI 추억 스토리 생성하기';
+                    generateBtn.disabled = false;
                 }
-            } catch (error) {
-                resultBox.innerHTML = `<strong style="color:red;">[시스템 에러]</strong><br>${error.message}`;
+            });
+        });
+
+        function updateDropdownOptions() {
+            if (csvDataRows.length === 0) return;
+
+            const searchMode = document.getElementById('search-mode').value;
+            const startSelect = document.getElementById('start-select');
+            const endSelect = document.getElementById('end-select');
+            const startLabel = document.getElementById('start-label');
+            const endLabel = document.getElementById('end-label');
+
+            startSelect.innerHTML = '';
+            endSelect.innerHTML = '';
+
+            if (searchMode === 'issue') {
+                startLabel.textContent = '시작 통권';
+                endLabel.textContent = '종료 통권';
+
+                csvDataRows.forEach(row => {
+                    const issueName = row[0];
+                    if (issueName) {
+                        startSelect.add(new Option(issueName, issueName));
+                        endSelect.add(new Option(issueName, issueName));
+                    }
+                });
+                if (endSelect.options.length > 0) {
+                    endSelect.selectedIndex = endSelect.options.length - 1;
+                }
+            } else {
+                startLabel.textContent = '시작 년도';
+                endLabel.textContent = '종료 년도';
+
+                const years = [...new Set(csvDataRows.map(row => {
+                    let val = row[1];
+                    if (!val) return '';
+                    let match = val.match(/(\d{4})/);
+                    return match ? match[1] : '';
+                }))].filter(y => y !== '').sort();
+
+                years.forEach(year => {
+                    startSelect.add(new Option(year + '년', year));
+                    endSelect.add(new Option(year + '년', year));
+                });
+                if (endSelect.options.length > 0) {
+                    endSelect.selectedIndex = endSelect.options.length - 1;
+                }
             }
+        }
+
+        function renderCheckboxes() {
+            const container = document.getElementById('checkbox-container');
+            container.innerHTML = '';
+
+            csvDataHeaders.forEach(header => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 cursor-pointer hover:text-indigo-600 transition';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = header;
+                checkbox.className = 'header-checkbox rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4';
+                checkbox.checked = true;
+
+                const span = document.createElement('span');
+                span.textContent = header;
+                span.className = 'text-xs truncate';
+
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                container.appendChild(label);
+            });
         }
     </script>
 </body>
