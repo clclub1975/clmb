@@ -1,10 +1,10 @@
-<!-- v6.6 적용: AI 답변 결과 영역 상단에 질문 내용 표시 기능 추가, v6.6 버전 업그레이드 -->
+<!-- v6.7 적용: AI 답변 결과 영역 상단 질문 영역 패딩 제거 및 구분선(------) 적용, v6.7 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v6.6</title>
+    <title>촛불회 AI 추억 스토리 생성기 v6.7</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -43,12 +43,13 @@
         button.submit-btn:hover { background-color: #2980b9; }
         .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         .loading { color: #666; font-style: italic; }
-        /* 질문 표시 영역 스타일 */
-        .result-question { font-weight: bold; color: #2c3e50; background: #f1f5f9; padding: 10px 12px; border-radius: 4px; margin-bottom: 12px; border-left: 4px solid #3498db; }
+        /* 질문 표시 영역 스타일 (상하 빈공간 제거 및 간결화) */
+        .result-question { font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+        .result-divider { color: #888; margin: 8px 0; font-family: monospace; font-weight: bold; letter-spacing: -1px; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.6</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.7</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -388,9 +389,10 @@
             let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
             let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
 
-            // 답변 결과 창 상단에 질문 내용 먼저 표시 후 로딩 표시
+            // 상단 질문 영역 패딩을 없애고 "------------------------" 형식의 줄로 구분
             resultBox.innerHTML = `
                 <div class="result-question">Q. ${query}</div>
+                <div class="result-divider">--------------------------------------------------------------------------------</div>
                 <span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>
             `;
 
@@ -421,21 +423,24 @@ ${JSON.stringify(globalSheetData)}
 
                 if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
-                    // 결과 상단에 질문을 고정하고 그 아래에 답변 출력
+                    // 답변 출력 시에도 상단 질문과 구분선 적용
                     resultBox.innerHTML = `
                         <div class="result-question">Q. ${query}</div>
+                        <div class="result-divider">--------------------------------------------------------------------------------</div>
                         <div>${answer.replace(/\n/g, "<br>")}</div>
                     `;
                 } else {
                     let errorMsg = data.error && data.error.message ? data.error.message : JSON.stringify(data);
                     resultBox.innerHTML = `
                         <div class="result-question">Q. ${query}</div>
+                        <div class="result-divider">--------------------------------------------------------------------------------</div>
                         <strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span>
                     `;
                 }
             } catch (error) {
                 resultBox.innerHTML = `
                     <div class="result-question">Q. ${query}</div>
+                    <div class="result-divider">--------------------------------------------------------------------------------</div>
                     <strong style="color:red;">[시스템 에러]</strong><br>${error.message}
                 `;
             }
