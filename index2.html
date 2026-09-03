@@ -1,10 +1,10 @@
-<!-- v4.8 적용: 안전한 형태의 텍스트 심볼 글머리표(▶) 적용 완료 -->
+<!-- v5.1 적용: 안내 문구 수정, 키 저장 버튼 상태 변경 및 키 삭제 기능 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v4.8</title>
+    <title>촛불회 AI 추억 스토리 생성기 v5.1</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -19,6 +19,9 @@
         .api-row input { flex: 1; }
         .api-save-btn { background: #f57c00; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
         .api-save-btn:hover { background: #e65100; }
+        .api-save-btn:disabled { background: #bdbdbd; cursor: not-allowed; }
+        .api-del-btn { background: #d32f2f; color: white; border: none; padding: 10px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .api-del-btn:hover { background: #c62828; }
         .guide-text { font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
         .guide-text a { color: #0277bd; font-weight: bold; text-decoration: underline; }
         /* 토글 버튼 스타일 */
@@ -38,7 +41,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v4.8</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.1</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -48,7 +51,8 @@
             </p>
             <div class="api-row">
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
-                <button type="button" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
+                <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
+                <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
                 <span id="apiKeyStatus" style="color: #2e7d32; font-size: 13px; font-weight: bold;"></span>
             </div>
         </div>
@@ -71,7 +75,7 @@
             <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 참고할 목록 열기 ▼</button>
         </div>
         <div id="checkboxPanel" class="checkbox-panel">
-            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">▶ 항목을 선택하면 AI가 신속하고 정확하게 답변합니다. 선택하지 않으면 전체 항목을 참고합니다.</div>
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">▶ 항목을 선택하면 AI가 좀 더 신속하고 정확하게 답변합니다. 선택하지 않으면 전체 항목을 참고합니다.</div>
             <div id="checkboxContainer" class="checkbox-grid">
                 <span style="color:#888; font-style:italic;">데이터 로딩 중 원본 시트의 항목을 불러오는 중입니다...</span>
             </div>
@@ -93,11 +97,7 @@
         let globalHeaders = [];
 
         window.onload = async function() {
-            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (savedKey) {
-                document.getElementById("apiKeyInput").value = savedKey;
-                document.getElementById("apiKeyStatus").innerText = "✔ 저장 완료됨";
-            }
+            checkApiKeyStatus();
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
@@ -112,6 +112,28 @@
             }
         };
 
+        function checkApiKeyStatus() {
+            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+            const saveBtn = document.getElementById("apiSaveBtn");
+            const delBtn = document.getElementById("apiDelBtn");
+            const statusSpan = document.getElementById("apiKeyStatus");
+            const inputField = document.getElementById("apiKeyInput");
+
+            if (savedKey) {
+                inputField.value = savedKey;
+                saveBtn.innerText = "키 저장완료";
+                saveBtn.disabled = true;
+                delBtn.style.display = "inline-block";
+                statusSpan.innerText = "✔ 저장 완료됨";
+            } else {
+                inputField.value = "";
+                saveBtn.innerText = "키 저장하기";
+                saveBtn.disabled = false;
+                delBtn.style.display = "none";
+                statusSpan.innerText = "";
+            }
+        }
+
         function saveApiKey() {
             let keyVal = document.getElementById("apiKeyInput").value.trim();
             if (!keyVal) {
@@ -119,8 +141,16 @@
                 return;
             }
             localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
-            document.getElementById("apiKeyStatus").innerText = "✔ 저장 완료됨";
+            checkApiKeyStatus();
             alert("API Key가 안전하게 저장되었습니다. 이제 자유롭게 질문하세요!");
+        }
+
+        function deleteApiKey() {
+            if (confirm("저장된 API Key를 삭제하시겠습니까?")) {
+                localStorage.removeItem("GEMINI_USER_API_KEY");
+                checkApiKeyStatus();
+                alert("API Key가 안전하게 삭제되었습니다.");
+            }
         }
 
         // 엄격한 CSV 전용 파서 (따옴표 및 내부 줄바꿈 완벽 대응)
