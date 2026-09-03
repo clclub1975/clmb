@@ -1,10 +1,10 @@
-<!-- v4.2 적용: API Key 하드코딩 제거 및 브라우저 로컬 스토리지 기반 안전 보관 방식 도입 -->
+<!-- v4.3 적용: API Key 입력란 및 초보자용 상세 가이드 안내 문구 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v4.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v4.3</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -15,11 +15,14 @@
         label { font-weight: bold; min-width: 80px; }
         select, input[type="text"], input[type="password"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
         
-        /* 설정 영역 스타일 */
-        .api-row { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        /* API 가이드 박스 스타일 */
+        .api-box { background: #fff8e1; border: 1px solid #ffe0b2; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .api-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
         .api-row input { flex: 1; }
-        .api-save-btn { background: #ffc107; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .api-save-btn:hover { background: #e0a800; }
+        .api-save-btn { background: #f57c00; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .api-save-btn:hover { background: #e65100; }
+        .guide-text { font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
+        .guide-text a { color: #0277bd; font-weight: bold; text-decoration: underline; }
 
         /* 토글 버튼 스타일 */
         .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
@@ -41,15 +44,22 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v4.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v4.3</span></h1>
     <div class="chat-container">
         
-        <!-- API 키 설정 바 (브라우저 로컬에만 안전하게 저장됨) -->
-        <div class="api-row">
-            <label style="min-width:auto;">🔑 API Key:</label>
-            <input type="password" id="apiKeyInput" placeholder="Gemini API Key를 입력하세요 (브라우저에만 저장됨)">
-            <button type="button" class="api-save-btn" onclick="saveApiKey()">저장</button>
-            <span id="apiKeyStatus" style="color: #28a745; font-size: 13px; font-weight: bold;"></span>
+        <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
+        <div class="api-box">
+            <p class="guide-text">
+                📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
+                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. 
+                <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 구글 계정으로 로그인하신 후 
+                <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
+            </p>
+            <div class="api-row">
+                <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
+                <button type="button" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
+                <span id="apiKeyStatus" style="color: #2e7d32; font-size: 13px; font-weight: bold;"></span>
+            </div>
         </div>
 
         <!-- 1. 상단 검색 기간 설정 영역 -->
@@ -94,11 +104,10 @@
         let globalHeaders = [];
 
         window.onload = async function() {
-            // 저장된 API 키 불러오기 확인
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
             if (savedKey) {
                 document.getElementById("apiKeyInput").value = savedKey;
-                document.getElementById("apiKeyStatus").innerText = "✔ 저장됨";
+                document.getElementById("apiKeyStatus").innerText = "✔ 저장 완료됨";
             }
 
             try {
@@ -125,8 +134,8 @@
                 return;
             }
             localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
-            document.getElementById("apiKeyStatus").innerText = "✔ 저장됨";
-            alert("API Key가 브라우저에 안전하게 저장되었습니다.");
+            document.getElementById("apiKeyStatus").innerText = "✔ 저장 완료됨";
+            alert("API Key가 안전하게 저장되었습니다. 이제 자유롭게 질문하세요!");
         }
 
         // 엄격한 CSV 전용 파서 (따옴표 및 내부 줄바꿈 완벽 대응)
@@ -285,7 +294,7 @@
         async function askAI() {
             let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
             if (!apiKey) {
-                alert("상단에 Gemini API Key를 입력하고 [저장] 버튼을 눌러주세요.");
+                alert("상단 안내란을 참고하여 Gemini API Key를 입력하고 [키 저장하기] 버튼을 눌러주세요.");
                 document.getElementById("apiKeyInput").focus();
                 return;
             }
