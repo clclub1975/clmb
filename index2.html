@@ -1,10 +1,10 @@
-<!-- v8.5 적용: 연속 대화 누적 아카이브(창3) 내부의 각 대화 항목 사이에 불필요한 공백을 완전히 제거하고, 창2와 동일한 컴팩트 정렬 및 '====' 구분선 위아래 1줄 간격 적용, v8.5 버전 업그레이드 -->
+<!-- v8.6 적용: 창2(최근 결과창)와 창3(누적 아카이브 창)에 내부 스크롤 기능(max-height 및 overflow-y: auto) 추가, v8.6 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v8.5</title>
+    <title>촛불회 AI 추억 스토리 생성기 v8.6</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -49,18 +49,18 @@
         .stop-btn { background-color: #e74c3c !important; }
         .stop-btn:hover { background-color: #c0392b !important; }
 
-        /* 창 2 (최근 결과창) 스타일 */
+        /* 창 2 (최근 결과창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
         .result-header-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 0; }
         .result-header-row h3 { margin: 0; }
         .copy-btn { background-color: #27ae60; color: white; border: none; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
         .copy-btn:hover { background-color: #219653; }
-        .result-box { margin-top: 8px; padding: 10px 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
+        .result-box { margin-top: 8px; padding: 10px 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; max-height: 450px; overflow-y: auto; white-space: pre-wrap; }
         
-        /* 창 3 (누적 대화 창) 스타일 */
+        /* 창 3 (누적 대화 창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
         .cumulative-section { margin-top: 30px; border-top: 2px dashed #cbd5e1; padding-top: 15px; display: none; }
         .cumulative-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
         .cumulative-header-row h3 { margin: 0; color: #8e44ad; }
-        .cumulative-box { margin-top: 8px; padding: 10px 15px; background: #fffdf9; border: 1px solid #dcdde1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
+        .cumulative-box { margin-top: 8px; padding: 10px 15px; background: #fffdf9; border: 1px solid #dcdde1; border-radius: 4px; min-height: 100px; max-height: 550px; overflow-y: auto; white-space: pre-wrap; }
         
         .loading { color: #666; font-style: italic; margin: 2px 0 0 0; padding: 0; display: block; line-height: 1.2; }
         .result-question { font-weight: bold; color: #2c3e50; margin: 0; padding: 0; line-height: 1.2; }
@@ -71,7 +71,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.5</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.6</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -540,6 +540,10 @@
             // 창 2 (최근 결과창)에 로딩 표시 (문자열 자체에 불필요한 줄바꿈 태그 원천 차단)
             resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
 
+            // 질문 직후 창 2 상단이 화면에 자연스럽게 보이도록 스크롤 포커스 이동
+            resultBox.scrollTop = 0;
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
             try {
                 let contextPrompt = "";
                 if (isSequential && conversationHistory.length > 0) {
@@ -578,6 +582,7 @@ ${contextPrompt}
                     // 창 2 결과 갱신 (창2와 완전히 동일한 단일 문자열 포맷 적용)
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
                     copyBtn.style.display = "inline-block";
+                    resultBox.scrollTop = 0; // 답변 완료 후 상단으로 스크롤 위치 초기화
 
                     if (!isSequential) {
                         lastSingleResult = {
@@ -624,6 +629,9 @@ ${contextPrompt}
             });
 
             cumulativeResultBox.innerHTML = htmlContent;
+            
+            // 연속 질문 완료 시 창 3(누적 아카이브 창)의 맨 아래로 부드럽게 스크롤 이동하여 방금 추가된 답변이 바로 보이도록 처리
+            cumulativeResultBox.scrollTop = cumulativeResultBox.scrollHeight;
         }
     </script>
 </body>
