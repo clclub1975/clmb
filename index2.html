@@ -1,10 +1,10 @@
-<!-- v5.3 적용: 공용 PC 보안 주의 사항 문구 추가 및 v5.3 버전 업그레이드 -->
+<!-- v5.4 적용: API Key 보안 주의 문구 위치를 입력창 아래로 이동 및 강조 시각화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v5.3</title>
+    <title>촛불회 AI 추억 스토리 생성기 v5.4</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -24,6 +24,8 @@
         .api-del-btn:hover { background: #c62828; }
         .guide-text { font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
         .guide-text a { color: #0277bd; font-weight: bold; text-decoration: underline; }
+        /* 보안 주의 사항 경고 배너 스타일 */
+        .security-alert { margin-top: 12px; padding: 8px 12px; background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; font-size: 12px; font-weight: bold; border-radius: 0 4px 4px 0; display: flex; align-items: center; gap: 6px; }
         /* 토글 버튼 스타일 */
         .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
         .toggle-btn:hover { background: #cbd5e1; }
@@ -41,19 +43,22 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.3</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.4</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
             <p class="guide-text">
                 📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)<br>
-                ⚠️ <b>[주의]</b> 공용 PC에서 개인 API Key를 사용하셨다면, 사용 후에는 반드시 키를 삭제하여 주시기 바랍니다.
+                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
             </p>
             <div class="api-row">
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
                 <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
                 <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
+            </div>
+            <!-- API Key 입력창 바로 아래로 이동한 보안 주의 문구 -->
+            <div class="security-alert">
+                ⚠️ <b>[주의]</b> 공용 PC에서 개인 API Key를 사용하셨다면, 사용 후에는 반드시 키를 삭제하여 주시기 바랍니다.
             </div>
         </div>
 
