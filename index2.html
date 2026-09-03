@@ -1,10 +1,10 @@
-<!-- v8.4 적용: 연속 대화 누적 아카이브(창3) 내부의 Q1 상단 및 항목 간 불필요한 빈 줄을 완전히 제거하고, 구분선 위아래에만 깔끔하게 한 줄 간격 유지, v8.4 버전 업그레이드 -->
+<!-- v8.5 적용: 연속 대화 누적 아카이브(창3) 내부의 각 대화 항목 사이에 불필요한 공백을 완전히 제거하고, 창2와 동일한 컴팩트 정렬 및 '====' 구분선 위아래 1줄 간격 적용, v8.5 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v8.4</title>
+    <title>촛불회 AI 추억 스토리 생성기 v8.5</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -66,12 +66,12 @@
         .result-question { font-weight: bold; color: #2c3e50; margin: 0; padding: 0; line-height: 1.2; }
         .result-divider { color: #888; margin: 2px 0 0 0; padding: 0; font-family: monospace; font-weight: bold; letter-spacing: -1px; line-height: 1; }
         .result-content { margin: 4px 0 0 0; padding: 0; line-height: 1.5; }
-        .cumulative-item { margin-bottom: 0; }
+        .cumulative-item { margin-top: 0; margin-bottom: 0; padding: 0; }
         .cumulative-separator { text-align: center; color: #b2bec3; margin: 10px 0; font-weight: bold; font-family: monospace; line-height: 1; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.4</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.5</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -537,7 +537,7 @@
             }
             copyBtn.style.display = "none";
 
-            // 창 2 (최근 결과창)에 로딩 표시
+            // 창 2 (최근 결과창)에 로딩 표시 (문자열 자체에 불필요한 줄바꿈 태그 원천 차단)
             resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
 
             try {
@@ -575,18 +575,16 @@ ${contextPrompt}
                 if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
                     
-                    // 창 2 결과 갱신
+                    // 창 2 결과 갱신 (창2와 완전히 동일한 단일 문자열 포맷 적용)
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
                     copyBtn.style.display = "inline-block";
 
                     if (!isSequential) {
-                        // 새로 질문하기인 경우 단발성 결과 캐시에 저장 (나중에 연속 질문 누를 때 Q1으로 활용)
                         lastSingleResult = {
                             q: query,
                             a: answer
                         };
                     } else {
-                        // 연속 질문인 경우 대화 기록 배열에 추가하고 창 3 (누적 창) 렌더링
                         conversationHistory.push({
                             q: `${qPrefix} ${query}`,
                             a: answer
@@ -613,7 +611,7 @@ ${contextPrompt}
             }
         }
 
-        // 창 3(누적 대화 아카이브) 렌더링 함수 (불필요한 빈 줄을 완전히 제거하고 '====' 구분선 위아래에만 명확하게 한 줄 공백 부여)
+        // 창 3(누적 대화 아카이브) 렌더링 함수: 창2와 동일한 구조를 유지하며, '====' 구분선 위아래에만 명확하게 공백(<br>)을 한 줄씩 부여
         function renderCumulativeHistory() {
             const cumulativeResultBox = document.getElementById("cumulativeResultBox");
             let htmlContent = "";
@@ -622,13 +620,7 @@ ${contextPrompt}
                 if (index > 0) {
                     htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
                 }
-                htmlContent += `
-                    <div class="cumulative-item">
-                        <div class="result-question">${item.q}</div>
-                        <div class="result-divider">--------------------------------------------------------------------------------</div>
-                        <div class="result-content">${item.a.replace(/\n/g, "<br>")}</div>
-                    </div>
-                `;
+                htmlContent += `<div class="cumulative-item"><div class="result-question">${item.q}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${item.a.replace(/\n/g, "<br>")}</div></div>`;
             });
 
             cumulativeResultBox.innerHTML = htmlContent;
