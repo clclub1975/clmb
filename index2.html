@@ -1,10 +1,10 @@
-<!-- v6.10 적용: 플레이스홀더 2줄 정렬(공백 4칸), 답변 결과 영역의 불필요한 빈 줄 및 여백 완전 제거, v6.10 버전 업그레이드 -->
+<!-- v7.1 적용: AI 답변 생성 중단(AbortController) 기능 추가, v7.1 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v6.10</title>
+    <title>촛불회 AI 추억 스토리 생성기 v7.1</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -41,6 +41,8 @@
         .clear-btn:hover { color: #333; }
         button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 44px; }
         button.submit-btn:hover { background-color: #2980b9; }
+        button.stop-btn { background-color: #e74c3c; }
+        button.stop-btn:hover { background-color: #c0392b; }
         /* 결과 창 컴팩트 정렬 스타일 (빈 줄 및 여백 완전 제거) */
         .result-box { margin-top: 20px; padding: 10px 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         .loading { color: #666; font-style: italic; margin: 2px 0 0 0; padding: 0; display: block; line-height: 1.2; }
@@ -50,7 +52,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.10</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v7.1</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -100,7 +102,7 @@
     (이 질문은 '봉사활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
                 <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
             </div>
-            <button class="submit-btn" onclick="askAI()">질문하기</button>
+            <button type="button" id="submitBtn" class="submit-btn" onclick="handleAction()">질문하기</button>
         </div>
 
         <h3>AI 답변 결과</h3>
@@ -111,6 +113,7 @@
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
         let globalSheetData = [];
         let globalHeaders = [];
+        let currentController = null; // AI 생성 중단(AbortController)을 위한 전역 변수
 
         window.onload = async function() {
             checkApiKeyStatus();
@@ -177,7 +180,7 @@
         function handleKeyDown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
-                askAI();
+                handleAction();
             }
         }
 
@@ -359,6 +362,18 @@
             }
         }
 
+        // 버튼 클릭 시 상태에 따라 질문하기 또는 생성 중단 수행
+        function handleAction() {
+            const submitBtn = document.getElementById("submitBtn");
+            if (currentController) {
+                // 생성 중단 실행
+                currentController.abort();
+            } else {
+                // 질문 실행
+                askAI();
+            }
+        }
+
         async function askAI() {
             let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
             if (!apiKey) {
@@ -390,7 +405,15 @@
             let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
             let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
 
-            // 렌더링 시 불필요한 줄바꿈(\n)이나 HTML 태그 간 공백을 철저히 제거하여 컴팩트하게 구성
+            // 새로운 AbortController 생성
+            currentController = new AbortController();
+            const signal = currentController.signal;
+
+            // 버튼 상태를 '생성 중단'으로 변경
+            const submitBtn = document.getElementById("submitBtn");
+            submitBtn.innerText = "생성 중단";
+            submitBtn.classList.add("stop-btn");
+
             resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
 
             try {
@@ -413,7 +436,8 @@ ${JSON.stringify(globalSheetData)}
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: promptText }] }]
-                    })
+                    }),
+                    signal: signal // AbortController 신호 연결
                 });
 
                 const data = await apiResponse.json();
@@ -426,7 +450,16 @@ ${JSON.stringify(globalSheetData)}
                     resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span></div>`;
                 }
             } catch (error) {
-                resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
+                if (error.name === 'AbortError') {
+                    resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
+                } else {
+                    resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
+                }
+            } finally {
+                // 통신 종료 후 컨트롤러 초기화 및 버튼 원복
+                currentController = null;
+                submitBtn.innerText = "질문하기";
+                submitBtn.classList.remove("stop-btn");
             }
         }
     </script>
