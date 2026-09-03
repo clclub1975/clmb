@@ -1,20 +1,18 @@
-<!-- v4.6 적용: 참고항목 토글 버튼의 열림/닫힘 상태에 따른 아이콘 실시간 동적 변경 반영 -->
+<!-- v4.7 적용: 체크박스 패널 안내 문구 변경 및 최종 버전 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v4.6</title>
+    <title>촛불회 AI 추억 스토리 생성기 v4.7</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
         .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
-        
         .control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
         label { font-weight: bold; min-width: 80px; }
         select, input[type="text"], input[type="password"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
-        
         /* API 가이드 박스 스타일 */
         .api-box { background: #fff8e1; border: 1px solid #ffe0b2; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .api-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
@@ -23,37 +21,30 @@
         .api-save-btn:hover { background: #e65100; }
         .guide-text { font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
         .guide-text a { color: #0277bd; font-weight: bold; text-decoration: underline; }
-
         /* 토글 버튼 스타일 */
         .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
         .toggle-btn:hover { background: #cbd5e1; }
-
         /* 체크박스 패널 (숨김/펼침) */
         .checkbox-panel { display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
         .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
-
         /* 하단 질문/버튼 입력 라인 */
         .input-group { display: flex; gap: 8px; margin-top: 15px; }
         input[type="text"] { flex: 1; }
         button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button.submit-btn:hover { background-color: #2980b9; }
-
         .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         .loading { color: #666; font-style: italic; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v4.6</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v4.7</span></h1>
     <div class="chat-container">
-        
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
             <p class="guide-text">
                 📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. 
-                <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 
-                <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
+                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
             </p>
             <div class="api-row">
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
@@ -79,9 +70,8 @@
             <label>참고항목:</label>
             <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 참고할 목록 열기 ▼</button>
         </div>
-
         <div id="checkboxPanel" class="checkbox-panel">
-            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">💡 AI가 집중적으로 분석할 항목을 체크해주세요. (선택하지 않으면 전체 항목 참고)</div>
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">항목을 선택하면 AI가 신속하고 정확하게 답변합니다. 선택하지 않으면 전체 항목을 참고합니다.</div>
             <div id="checkboxContainer" class="checkbox-grid">
                 <span style="color:#888; font-style:italic;">데이터 로딩 중 원본 시트의 항목을 불러오는 중입니다...</span>
             </div>
@@ -99,7 +89,6 @@
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
-
         let globalSheetData = [];
         let globalHeaders = [];
 
@@ -109,18 +98,14 @@
                 document.getElementById("apiKeyInput").value = savedKey;
                 document.getElementById("apiKeyStatus").innerText = "✔ 저장 완료됨";
             }
-
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
-                
                 const parsed = parseCSVStrictWithHeaders(csvText);
                 globalSheetData = parsed.data;
                 globalHeaders = parsed.headers;
-
                 renderCheckboxes(globalHeaders);
                 initPeriodOptions();
-
                 document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
             } catch (error) {
                 document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
@@ -231,7 +216,7 @@
             const type = document.getElementById("criteriaType").value;
             const startSelect = document.getElementById("startPeriod");
             startSelect.innerHTML = "";
-
+            
             let allOpt = document.createElement("option");
             allOpt.value = "전체";
             allOpt.text = "전체";
@@ -312,27 +297,26 @@
 
             if (!query) {
                 query = "주요 봉사기관들에는 어떤 곳들이 있어?";
-                queryInput.value = query; 
+                queryInput.value = query;
             }
 
             const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
             const startVal = document.getElementById("startPeriod").value;
             const endVal = document.getElementById("endPeriod").value;
-            
+
             let checkedCols = [];
             document.querySelectorAll('input[name="targetCol"]:checked').forEach((cb) => {
                 checkedCols.push(cb.value);
             });
-            let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
 
+            let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
             let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
 
             resultBox.innerHTML = `<span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
 
             try {
                 const promptText = `
-당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다.
-다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
+당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
 ${JSON.stringify(globalSheetData)}
 
 [검색 조건]
@@ -343,12 +327,14 @@ ${JSON.stringify(globalSheetData)}
 "${query}"
 
 위 조건과 지정된 항목들을 면밀히 대조하고 분석하여, 데이터에 기반한 구체적이고 신뢰성 있는 답변을 작성해 주세요.
-`;
+                `;
 
                 const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }]
+                    })
                 });
 
                 const data = await apiResponse.json();
