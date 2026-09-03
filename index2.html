@@ -1,10 +1,10 @@
-<!-- v5.1 적용: 안내 문구 수정, 키 저장 버튼 상태 변경 및 키 삭제 기능 추가 -->
+<!-- v5.2 적용: '저장 완료됨' 텍스트 제거 및 v5.2 버전 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v5.1</title>
+    <title>촛불회 AI 추억 스토리 생성기 v5.2</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -41,7 +41,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.1</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.2</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -53,7 +53,6 @@
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
                 <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
                 <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
-                <span id="apiKeyStatus" style="color: #2e7d32; font-size: 13px; font-weight: bold;"></span>
             </div>
         </div>
 
@@ -116,7 +115,6 @@
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
             const saveBtn = document.getElementById("apiSaveBtn");
             const delBtn = document.getElementById("apiDelBtn");
-            const statusSpan = document.getElementById("apiKeyStatus");
             const inputField = document.getElementById("apiKeyInput");
 
             if (savedKey) {
@@ -124,13 +122,11 @@
                 saveBtn.innerText = "키 저장완료";
                 saveBtn.disabled = true;
                 delBtn.style.display = "inline-block";
-                statusSpan.innerText = "✔ 저장 완료됨";
             } else {
                 inputField.value = "";
                 saveBtn.innerText = "키 저장하기";
                 saveBtn.disabled = false;
                 delBtn.style.display = "none";
-                statusSpan.innerText = "";
             }
         }
 
