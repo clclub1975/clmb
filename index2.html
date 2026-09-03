@@ -1,10 +1,10 @@
-<!-- v6.4 적용: 질문 입력창을 textarea로 변경 및 자동 줄바꿈(Auto-resize) 기능 추가 -->
+<!-- v6.5 적용: 질문 입력창 플레이스홀더 2줄 정렬 및 줄바꿈 적용, v6.5 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v6.4</title>
+    <title>촛불회 AI 추억 스토리 생성기 v6.5</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -36,7 +36,7 @@
         /* 하단 질문/버튼 입력 라인 (텍스트area 적용) */
         .input-group { display: flex; gap: 8px; margin-top: 15px; align-items: flex-end; }
         .input-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
-        .input-wrapper textarea { width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; }
+        .input-wrapper textarea { width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; white-space: pre-wrap; }
         .clear-btn { position: absolute; right: 10px; top: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
         .clear-btn:hover { color: #333; }
         button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 44px; }
@@ -46,7 +46,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.4</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.5</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -92,7 +92,8 @@
         <!-- 3. 자연어 질문 입력창(textarea)과 버튼 -->
         <div class="input-group">
             <div class="input-wrapper">
-                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (이 질문은 '봉사활동' 항목을 체크하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
+                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.
+      (이 질문은 '봉사활동' 항목을 체크해서 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
                 <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
             </div>
             <button class="submit-btn" onclick="askAI()">질문하기</button>
@@ -168,7 +169,7 @@
             textarea.style.height = (textarea.scrollHeight - 6) + 'px';
         }
 
-        // Enter 키는 줄바꿈, Shift + Enter 또는 Ctrl + Enter 시 질문 전송 (원하실 경우 엔터로 바로 전송되게 하려면 조건 조정 가능)
+        // Enter 키는 줄바꿈, Shift + Enter 또는 Ctrl + Enter 시 질문 전송
         function handleKeyDown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
