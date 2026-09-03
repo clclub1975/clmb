@@ -1,10 +1,10 @@
-<!-- v5.4 적용: API Key 보안 주의 문구 위치를 입력창 아래로 이동 및 강조 시각화 -->
+<!-- v5.5 적용: API Key 보안 주의 문구 스타일을 상단 안내 박스와 통일 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v5.4</title>
+    <title>촛불회 AI 추억 스토리 생성기 v5.5</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -24,8 +24,8 @@
         .api-del-btn:hover { background: #c62828; }
         .guide-text { font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
         .guide-text a { color: #0277bd; font-weight: bold; text-decoration: underline; }
-        /* 보안 주의 사항 경고 배너 스타일 */
-        .security-alert { margin-top: 12px; padding: 8px 12px; background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; font-size: 12px; font-weight: bold; border-radius: 0 4px 4px 0; display: flex; align-items: center; gap: 6px; }
+        /* 보안 주의 사항 문구 스타일 (상단 박스와 통일) */
+        .security-alert { margin-top: 10px; font-size: 13px; color: #5d4037; line-height: 1.5; }
         /* 토글 버튼 스타일 */
         .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
         .toggle-btn:hover { background: #cbd5e1; }
@@ -43,7 +43,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.4</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.5</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -56,10 +56,10 @@
                 <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
                 <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
             </div>
-            <!-- API Key 입력창 바로 아래로 이동한 보안 주의 문구 -->
-            <div class="security-alert">
+            <!-- API Key 입력창 아래로 이동한 통일된 스타일의 보안 주의 문구 -->
+            <p class="security-alert">
                 ⚠️ <b>[주의]</b> 공용 PC에서 개인 API Key를 사용하셨다면, 사용 후에는 반드시 키를 삭제하여 주시기 바랍니다.
-            </div>
+            </p>
         </div>
 
         <!-- 1. 상단 검색 기간 설정 영역 -->
