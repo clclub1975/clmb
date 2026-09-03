@@ -1,10 +1,10 @@
-<!-- v7.1 적용: AI 답변 생성 중단(AbortController) 기능 추가, v7.1 버전 업그레이드 -->
+<!-- v7.2 적용: 페이지 로드 시 textarea에 남은 텍스트를 감지하여 초기화(X) 버튼 즉시 표시, v7.2 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v7.1</title>
+    <title>촛불회 AI 추억 스토리 생성기 v7.2</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -52,7 +52,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v7.1</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v7.2</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -117,7 +117,14 @@
 
         window.onload = async function() {
             checkApiKeyStatus();
+            
+            // 브라우저 캐시 등으로 textarea에 텍스트가 채워져 있는 경우 높이 및 X 버튼 즉시 동기화
+            const queryInput = document.getElementById("userQuery");
+            if (queryInput.value.length > 0) {
+                autoResize(queryInput);
+            }
             toggleClearButton();
+
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
