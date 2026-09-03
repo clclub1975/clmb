@@ -1,10 +1,10 @@
-<!-- v5.5 적용: API Key 보안 주의 문구 스타일을 상단 안내 박스와 통일 -->
+<!-- v6.1 적용: 질문 입력창 플레이스홀더 문구 변경 및 v6.1 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v5.5</title>
+    <title>촛불회 AI 추억 스토리 생성기 v6.1</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -43,7 +43,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v5.5</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.1</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -88,7 +88,7 @@
 
         <!-- 3. 자연어 질문 입력창과 버튼 -->
         <div class="input-group">
-            <input type="text" id="userQuery" placeholder="예: 주요 봉사기관들에는 어떤 곳들이 있어?" onkeypress="if(event.key === 'Enter') askAI();">
+            <input type="text" id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (참고항목에서 '봉사활동'을 체크하면 더 정확합니다)" onkeypress="if(event.key === 'Enter') askAI();">
             <button class="submit-btn" onclick="askAI()">질문하기</button>
         </div>
 
@@ -328,7 +328,7 @@
             const resultBox = document.getElementById("aiResult");
 
             if (!query) {
-                query = "주요 봉사기관들에는 어떤 곳들이 있어?";
+                query = "촛불회가 주로 봉사한 기관들을 정리해줘.";
                 queryInput.value = query;
             }
 
