@@ -1,10 +1,10 @@
-<!-- v6.2 적용: 질문 입력창 플레이스홀더 안내 문구 수정 및 v6.2 버전 업그레이드 -->
+<!-- v6.3 적용: 질문 입력창 우측 초기화(X) 버튼 추가 및 v6.3 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v6.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v6.3</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -34,8 +34,11 @@
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
         .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
         /* 하단 질문/버튼 입력 라인 */
-        .input-group { display: flex; gap: 8px; margin-top: 15px; }
-        input[type="text"] { flex: 1; }
+        .input-group { display: flex; gap: 8px; margin-top: 15px; position: relative; }
+        .input-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
+        .input-wrapper input[type="text"] { width: 100%; padding-right: 35px; }
+        .clear-btn { position: absolute; right: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
+        .clear-btn:hover { color: #333; }
         button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button.submit-btn:hover { background-color: #2980b9; }
         .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
@@ -43,7 +46,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.3</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -88,7 +91,10 @@
 
         <!-- 3. 자연어 질문 입력창과 버튼 -->
         <div class="input-group">
-            <input type="text" id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (이 질문은 '봉사활동' 항목을 체크하면 더 효율이 좋습니다)" onkeypress="if(event.key === 'Enter') askAI();">
+            <div class="input-wrapper">
+                <input type="text" id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (이 질문은 '봉사활동' 항목을 체크하면 더 효율적입니다)" oninput="toggleClearButton()" onkeypress="if(event.key === 'Enter') askAI();">
+                <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
+            </div>
             <button class="submit-btn" onclick="askAI()">질문하기</button>
         </div>
 
@@ -103,6 +109,7 @@
 
         window.onload = async function() {
             checkApiKeyStatus();
+            toggleClearButton();
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
@@ -153,6 +160,23 @@
                 checkApiKeyStatus();
                 alert("API Key가 안전하게 삭제되었습니다.");
             }
+        }
+
+        function toggleClearButton() {
+            const queryInput = document.getElementById("userQuery");
+            const clearBtn = document.getElementById("clearBtn");
+            if (queryInput.value.length > 0) {
+                clearBtn.style.display = "block";
+            } else {
+                clearBtn.style.display = "none";
+            }
+        }
+
+        function clearQuery() {
+            const queryInput = document.getElementById("userQuery");
+            queryInput.value = "";
+            toggleClearButton();
+            queryInput.focus();
         }
 
         // 엄격한 CSV 전용 파서 (따옴표 및 내부 줄바꿈 완벽 대응)
@@ -330,6 +354,7 @@
             if (!query) {
                 query = "촛불회가 주로 봉사한 기관들을 정리해줘.";
                 queryInput.value = query;
+                toggleClearButton();
             }
 
             const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
