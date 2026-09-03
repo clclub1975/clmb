@@ -1,10 +1,10 @@
-<!-- v7.2 적용: 페이지 로드 시 textarea에 남은 텍스트를 감지하여 초기화(X) 버튼 즉시 표시, v7.2 버전 업그레이드 -->
+<!-- v7.3 적용: 페이지 로드 및 지연 타이머를 통해 textarea의 초기 값 변화를 강제 감지하여 X 버튼 표시 수정, v7.3 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v7.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v7.3</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -52,13 +52,13 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v7.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v7.3</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
             <p class="guide-text">
                 📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
+                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="url?id=0" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
             </p>
             <div class="api-row">
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
@@ -118,12 +118,19 @@
         window.onload = async function() {
             checkApiKeyStatus();
             
-            // 브라우저 캐시 등으로 textarea에 텍스트가 채워져 있는 경우 높이 및 X 버튼 즉시 동기화
             const queryInput = document.getElementById("userQuery");
-            if (queryInput.value.length > 0) {
-                autoResize(queryInput);
-            }
-            toggleClearButton();
+            
+            // 즉시 및 브라우저 자동완성/복원 반영을 위해 지연 타이머를 두어 강제 동기화 수행
+            const checkAndResizeInput = () => {
+                if (queryInput.value.length > 0) {
+                    autoResize(queryInput);
+                }
+                toggleClearButton();
+            };
+
+            checkAndResizeInput();
+            setTimeout(checkAndResizeInput, 50);
+            setTimeout(checkAndResizeInput, 300);
 
             try {
                 const response = await fetch(CSV_URL);
