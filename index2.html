@@ -1,10 +1,10 @@
-<!-- v8.2 적용: '연속 질문하기' 시 직전 대화(Q1)가 누적 아카이브 창에 즉시 반영되도록 로직 수정, v8.2 버전 업그레이드 -->
+<!-- v8.3 적용: 누적 아카이브 창(창3) 내부의 불필요한 빈 줄을 제거하고, 항목 구분선('====') 위아래에만 공백을 한 줄씩 두어 컴팩트하게 정렬, v8.3 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v8.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v8.3</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -60,19 +60,18 @@
         .cumulative-section { margin-top: 30px; border-top: 2px dashed #cbd5e1; padding-top: 15px; display: none; }
         .cumulative-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
         .cumulative-header-row h3 { margin: 0; color: #8e44ad; }
-        .cumulative-box { margin-top: 8px; padding: 15px; background: #fffdf9; border: 1px solid #dcdde1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
+        .cumulative-box { margin-top: 8px; padding: 10px 15px; background: #fffdf9; border: 1px solid #dcdde1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         
         .loading { color: #666; font-style: italic; margin: 2px 0 0 0; padding: 0; display: block; line-height: 1.2; }
         .result-question { font-weight: bold; color: #2c3e50; margin: 0; padding: 0; line-height: 1.2; }
         .result-divider { color: #888; margin: 2px 0 0 0; padding: 0; font-family: monospace; font-weight: bold; letter-spacing: -1px; line-height: 1; }
         .result-content { margin: 4px 0 0 0; padding: 0; line-height: 1.5; }
-        .cumulative-item { margin-bottom: 20px; }
-        .cumulative-item:last-child { margin-bottom: 0; }
-        .cumulative-separator { text-align: center; color: #b2bec3; margin: 15px 0; font-weight: bold; font-family: monospace; }
+        .cumulative-item { margin-bottom: 0; }
+        .cumulative-separator { text-align: center; color: #b2bec3; margin: 12px 0; font-weight: bold; font-family: monospace; line-height: 1; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.3</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -614,14 +613,14 @@ ${contextPrompt}
             }
         }
 
-        // 창 3(누적 대화 아카이브) 렌더링 함수
+        // 창 3(누적 대화 아카이브) 렌더링 함수 (빈 줄 제거 및 '====' 선 위아래 공백 한 줄씩 적용)
         function renderCumulativeHistory() {
             const cumulativeResultBox = document.getElementById("cumulativeResultBox");
             let htmlContent = "";
 
             conversationHistory.forEach((item, index) => {
                 if (index > 0) {
-                    htmlContent += `<div class="cumulative-separator">================================================================================</div>`;
+                    htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
                 }
                 htmlContent += `
                     <div class="cumulative-item">
