@@ -1,10 +1,10 @@
-<!-- v6.3 적용: 질문 입력창 우측 초기화(X) 버튼 추가 및 v6.3 버전 업그레이드 -->
+<!-- v6.4 적용: 질문 입력창을 textarea로 변경 및 자동 줄바꿈(Auto-resize) 기능 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v6.3</title>
+    <title>촛불회 AI 추억 스토리 생성기 v6.4</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -33,20 +33,20 @@
         .checkbox-panel { display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
         .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
-        /* 하단 질문/버튼 입력 라인 */
-        .input-group { display: flex; gap: 8px; margin-top: 15px; position: relative; }
+        /* 하단 질문/버튼 입력 라인 (텍스트area 적용) */
+        .input-group { display: flex; gap: 8px; margin-top: 15px; align-items: flex-end; }
         .input-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
-        .input-wrapper input[type="text"] { width: 100%; padding-right: 35px; }
-        .clear-btn { position: absolute; right: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
+        .input-wrapper textarea { width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; }
+        .clear-btn { position: absolute; right: 10px; top: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
         .clear-btn:hover { color: #333; }
-        button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 44px; }
         button.submit-btn:hover { background-color: #2980b9; }
         .result-box { margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         .loading { color: #666; font-style: italic; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.3</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v6.4</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -89,10 +89,10 @@
             </div>
         </div>
 
-        <!-- 3. 자연어 질문 입력창과 버튼 -->
+        <!-- 3. 자연어 질문 입력창(textarea)과 버튼 -->
         <div class="input-group">
             <div class="input-wrapper">
-                <input type="text" id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (이 질문은 '봉사활동' 항목을 체크하면 더 효율적입니다)" oninput="toggleClearButton()" onkeypress="if(event.key === 'Enter') askAI();">
+                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (이 질문은 '봉사활동' 항목을 체크하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
                 <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
             </div>
             <button class="submit-btn" onclick="askAI()">질문하기</button>
@@ -162,6 +162,20 @@
             }
         }
 
+        // 텍스트area 자동 높이 조절 함수
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight - 6) + 'px';
+        }
+
+        // Enter 키는 줄바꿈, Shift + Enter 또는 Ctrl + Enter 시 질문 전송 (원하실 경우 엔터로 바로 전송되게 하려면 조건 조정 가능)
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                askAI();
+            }
+        }
+
         function toggleClearButton() {
             const queryInput = document.getElementById("userQuery");
             const clearBtn = document.getElementById("clearBtn");
@@ -175,6 +189,7 @@
         function clearQuery() {
             const queryInput = document.getElementById("userQuery");
             queryInput.value = "";
+            queryInput.style.height = 'auto';
             toggleClearButton();
             queryInput.focus();
         }
@@ -354,6 +369,7 @@
             if (!query) {
                 query = "촛불회가 주로 봉사한 기관들을 정리해줘.";
                 queryInput.value = query;
+                queryInput.style.height = 'auto';
                 toggleClearButton();
             }
 
