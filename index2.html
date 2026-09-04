@@ -1,10 +1,10 @@
-<!-- v9.7 적용: API 안내창 숨김 시 레이아웃 대칭 유지 및 '전체 초기화' 버튼 텍스트 변경 (버전 v9.7 업그레이드) -->
+<!-- v9.8 적용: API 안내창 내 '여기(Google AI Studio)' 하이퍼링크 정상 적용 및 버전 v9.8 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v9.7</title>
+    <title>촛불회 AI 추억 스토리 생성기 v9.8</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -62,7 +62,6 @@
             justify-content: space-between;
             align-items: center;
         }
-        /* 안내창이 숨겨졌을 때 헤더 하단 마진 제거를 위한 클래스 */
         .api-box.collapsed {
             padding-top: 12px;
             padding-bottom: 12px;
@@ -91,7 +90,7 @@
             background-color: #f5eef0;
         }
         .api-box-content {
-            display: block; /* 최초 접속 시 펼쳐진 상태 */
+            display: block;
             margin-top: 12px;
         }
         .api-row {
@@ -129,7 +128,6 @@
             background: #bdbdbd;
             cursor: not-allowed;
         }
-        /* 대기 상태 버튼 스타일 */
         .api-wait-btn {
             background: #e67e22 !important;
         }
@@ -196,14 +194,12 @@
             font-weight: bold;
             text-decoration: underline;
         }
-        /* 보안 주의 사항 문구 스타일 */
         .security-alert {
             margin-top: 10px;
             font-size: 13px;
             color: #5d4037;
             line-height: 1.5;
         }
-        /* 토글 버튼 스타일 */
         .toggle-btn {
             background: #eef2f5;
             border: 1px solid #cbd5e1;
@@ -217,7 +213,6 @@
         .toggle-btn:hover {
             background: #cbd5e1;
         }
-        /* 체크박스 패널 (숨김/펼침) */
         .checkbox-panel {
             display: none;
             background: #fff;
@@ -238,7 +233,6 @@
             font-size: 14px;
             cursor: pointer;
         }
-        /* 하단 질문/버튼 입력 라인 (텍스트area 적용) */
         .input-group {
             display: flex;
             gap: 8px;
@@ -281,7 +275,6 @@
         .clear-btn:hover {
             color: #333;
         }
-        /* 두 가지 질문 실행 및 초기화 버튼 영역 */
         .action-btn-group {
             display: flex;
             gap: 8px;
@@ -334,7 +327,6 @@
         .stop-btn:hover {
             background-color: #c0392b !important;
         }
-        /* 창 2 (최근 결과창) 스타일 */
         .result-header-row {
             display: flex;
             justify-content: space-between;
@@ -370,7 +362,6 @@
             overflow-y: auto;
             white-space: pre-wrap;
         }
-        /* 창 3 (누적 대화 창) 스타일 */
         .cumulative-section {
             margin-top: 30px;
             border-top: 2px dashed #cbd5e1;
@@ -443,7 +434,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.7</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.8</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div id="apiBox" class="api-box">
@@ -457,7 +448,7 @@
                     📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
                     이용을 위해 구글 AI 열쇠(API Key)가 필요합니다. 우선은 촛불회 공용 키로 자동 설정되어 있습니다.<br>
                     다만, 공용 키를 다수가 사용할 경우 AI 사용량 한도로 인해 서비스가 제한될 수 있으므로 <b>개인 무료 API Key</b> 사용을 권장합니다.<br>
-                    개인 키를 사용하시려면 <b>[키 삭제하기]</b>를 누른 뒤, [여기(Google AI Studio)](https://aistudio.google.com/app/apikey)를 눌러 로그인하시고 <b>[Create API key]</b>에서 키를 복사해 주세요. 그 후 아래 입력창에 키를 붙여넣고, 저장 버튼을 눌러 <b>[개인 키 저장대기]</b> 상태에서 한 번 더 눌러 저장해 주시면 됩니다! (최초 1회만 설정해두면 기기가 기억합니다.)
+                    개인 키를 사용하시려면 <b>[키 삭제하기]</b>를 누른 뒤, <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 로그인하시고 <b>[Create API key]</b>에서 키를 복사해 주세요. 그 후 아래 입력창에 키를 붙여넣고, 저장 버튼을 눌러 <b>[개인 키 저장대기]</b> 상태에서 한 번 더 눌러 저장해 주시면 됩니다! (최초 1회만 설정해두면 기기가 기억합니다.)
                 </p>
                 <div class="api-row">
                     <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
@@ -1103,7 +1094,7 @@ ${contextPrompt}
 
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    resultBox.innerHtml = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
+                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
                 } else {
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
                 }
