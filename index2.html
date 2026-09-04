@@ -1,10 +1,10 @@
-<!-- v9.3 적용: 플레이스홀더 내 안내 문구 줄바꿈 및 들여쓰기 반영 (버전 v9.3 업그레이드) -->
+<!-- v9.4 적용: API Key 드롭다운 저장 버튼('공용 키 저장하기' / '개인 키 저장하기') 및 안내 문구 고도화 (버전 v9.4 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v9.3</title>
+    <title>촛불회 AI 추억 스토리 생성기 v9.4</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -61,9 +61,16 @@
             align-items: center;
             gap: 10px;
             margin-top: 10px;
+            position: relative;
         }
         .api-row input {
             flex: 1;
+        }
+        
+        /* 드롭다운 버튼 컨테이너 스타일 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
         }
         .api-save-btn {
             background: #f57c00;
@@ -73,6 +80,9 @@
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .api-save-btn:hover {
             background: #e65100;
@@ -81,6 +91,42 @@
             background: #bdbdbd;
             cursor: not-allowed;
         }
+        /* 드롭다운 메뉴 스타일 */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            bottom: 100%;
+            margin-bottom: 5px;
+            background-color: #ffffff;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            z-index: 10;
+        }
+        .dropdown-content button {
+            color: #333;
+            padding: 10px 14px;
+            text-align: left;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .dropdown-content button:hover {
+            background-color: #f1f1f1;
+            color: #f57c00;
+        }
+        .dropdown-content button:first-child {
+            border-bottom: 1px solid #eee;
+        }
+        .show {
+            display: block;
+        }
+
         .api-del-btn {
             background: #d32f2f;
             color: white;
@@ -351,17 +397,30 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.3</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.4</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
             <p class="guide-text">
                 📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. [여기(Google AI Studio)](https://aistudio.google.com/app/apikey)를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
+                이용을 위해 구글 AI 열쇠(API Key)가 필요합니다. 우선은 촛불회 공용 키로 자동 설정되어 있습니다.<br>
+                다만, 공용 키를 다수가 사용할 경우 AI 사용량 한도로 인해 서비스가 제한될 수 있으므로 <b>개인 무료 API Key</b> 사용을 권장합니다.<br>
+                개인 키를 사용하시려면 <b>[키 삭제하기]</b>를 누른 뒤, <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 로그인하시고 <b>[Create API key]</b>에서 키를 복사해 주세요. 그 후 아래 입력창에 키를 붙여넣고, 저장 버튼의 화살표(▼)를 눌러 <b>[개인 키 저장하기]</b>를 선택해 주시면 됩니다! (최초 1회만 설정해두면 기기가 기억합니다.)
             </p>
             <div class="api-row">
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
-                <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="saveApiKey()">키 저장하기</button>
+                
+                <!-- 드롭다운 버튼 영역 -->
+                <div class="dropdown" id="apiDropdownContainer">
+                    <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="toggleDropdown()">
+                        <span id="apiSaveBtnText">공용 키 저장완료</span> <span id="dropdownArrow">▼</span>
+                    </button>
+                    <div id="apiDropdownMenu" class="dropdown-content">
+                        <button type="button" onclick="saveKeyChoice('shared')">공용 키 저장하기</button>
+                        <button type="button" onclick="saveKeyChoice('personal')">개인 키 저장하기</button>
+                    </div>
+                </div>
+
                 <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
             </div>
             <!-- API Key 입력창 아래로 이동한 통일된 스타일의 보안 주의 문구 -->
@@ -432,13 +491,13 @@
 
         let globalSheetData = [];
         let globalHeaders = [];
-        let currentController = null; // AI 생성 중단(AbortController)을 위한 전역 변수
-        let activeTaskType = null; // 현재 실행 중인 작업 구분 ("new" 또는 "sequential")
-        let conversationHistory = []; // 연속 질문을 위한 누적 데이터 배열
-        let lastSingleResult = null; // 직전에 단발성('새로 질문하기')으로 실행했던 질문과 답변 저장용 객체
+        let currentController = null;
+        let activeTaskType = null;
+        let conversationHistory = [];
+        let lastSingleResult = null;
 
         window.onload = async function() {
-            checkAndApplySharedApiKey();
+            checkAndApplyInitialApiKey();
             checkApiKeyStatus();
 
             const queryInput = document.getElementById("userQuery");
@@ -451,6 +510,19 @@
             checkAndResizeInput();
             setTimeout(checkAndResizeInput, 50);
             setTimeout(checkAndResizeInput, 300);
+
+            // 드롭다운 외부 클릭 시 닫기
+            window.onclick = function(event) {
+                if (!event.target.matches('.api-save-btn') && !event.target.matches('#apiSaveBtnText') && !event.target.matches('#dropdownArrow')) {
+                    let dropdowns = document.getElementsByClassName("dropdown-content");
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        let openDropdown = dropdowns[i];
+                        if (openDropdown.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        }
+                    }
+                }
+            };
 
             try {
                 const response = await fetch(CSV_URL);
@@ -466,51 +538,96 @@
             }
         };
 
-        function checkAndApplySharedApiKey() {
+        // 최초 접속 시 로컬스토리지에 키가 없으면 공용 키를 '공용(shared)' 타입으로 자동 저장
+        function checkAndApplyInitialApiKey() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+            let keyType = localStorage.getItem("GEMINI_KEY_TYPE");
             if (!savedKey && PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
                 localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
+                localStorage.setItem("GEMINI_KEY_TYPE", "shared");
             }
         }
 
         function checkApiKeyStatus() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+            let keyType = localStorage.getItem("GEMINI_KEY_TYPE");
+            const saveBtnText = document.getElementById("apiSaveBtnText");
+            const dropdownArrow = document.getElementById("dropdownArrow");
             const saveBtn = document.getElementById("apiSaveBtn");
             const delBtn = document.getElementById("apiDelBtn");
             const inputField = document.getElementById("apiKeyInput");
+
             if (savedKey) {
                 inputField.value = savedKey;
-                saveBtn.innerText = "키 저장완료";
-                saveBtn.disabled = true;
                 delBtn.style.display = "inline-block";
+
+                if (keyType === "personal") {
+                    saveBtnText.innerText = "개인 키 저장완료";
+                    saveBtn.disabled = true;
+                    dropdownArrow.style.display = "none";
+                } else {
+                    saveBtnText.innerText = "공용 키 저장완료";
+                    saveBtn.disabled = true;
+                    dropdownArrow.style.display = "none";
+                }
             } else {
+                // 키 삭제 후 상태 (입력 대기 상태 또는 드롭다운 선택 대기)
                 inputField.value = "";
-                saveBtn.innerText = "키 저장하기";
+                saveBtnText.innerText = "키 저장하기";
                 saveBtn.disabled = false;
+                dropdownArrow.style.display = "inline";
                 delBtn.style.display = "none";
             }
         }
 
-        function saveApiKey() {
-            let keyVal = document.getElementById("apiKeyInput").value.trim();
-            if (!keyVal) {
-                alert("API Key를 입력해주세요.");
-                return;
+        // 드롭다운 토글 함수
+        function toggleDropdown() {
+            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+            // 이미 저장 완료 상태(disabled)일 때는 드롭다운이 열리지 않음
+            if (savedKey) return;
+
+            document.getElementById("apiDropdownMenu").classList.toggle("show");
+        }
+
+        // 드롭다운 메뉴에서 '공용' 또는 '개인' 선택 시 처리
+        function saveKeyChoice(type) {
+            const inputField = document.getElementById("apiKeyInput");
+            const dropdownMenu = document.getElementById("apiDropdownMenu");
+            dropdownMenu.classList.remove('show');
+
+            if (type === 'shared') {
+                if (PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
+                    localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
+                    localStorage.setItem("GEMINI_KEY_TYPE", "shared");
+                    checkApiKeyStatus();
+                    alert("공용 키가 안전하게 적용되었습니다. 이제 자유롭게 질문하세요!");
+                } else {
+                    alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
+                }
+            } else if (type === 'personal') {
+                let keyVal = inputField.value.trim();
+                if (!keyVal) {
+                    alert("입력창에 본인의 Gemini API Key를 먼저 붙여넣은 뒤 [개인 키 저장하기]를 눌러주세요.");
+                    inputField.focus();
+                    return;
+                }
+                localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+                localStorage.setItem("GEMINI_KEY_TYPE", "personal");
+                checkApiKeyStatus();
+                alert("개인 키가 안전하게 저장되었습니다. 이제 자유롭게 질문하세요!");
             }
-            localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
-            checkApiKeyStatus();
-            alert("API Key가 안전하게 저장되었습니다. 이제 자유롭게 질문하세요!");
         }
 
         function deleteApiKey() {
             if (confirm("저장된 API Key를 삭제하시겠습니까?")) {
                 localStorage.removeItem("GEMINI_USER_API_KEY");
+                localStorage.removeItem("GEMINI_KEY_TYPE");
                 checkApiKeyStatus();
-                alert("API Key가 안전하게 삭제되었습니다.");
+                alert("API Key가 삭제되었습니다. 공용 키 또는 개인 키를 선택하여 다시 저장해주세요.");
+                document.getElementById("apiKeyInput").focus();
             }
         }
 
-        // 텍스트area 자동 높이 조절 함수
         function autoResize(textarea) {
             textarea.style.height = 'auto';
             textarea.style.height = (textarea.scrollHeight - 6) + 'px';
@@ -546,7 +663,6 @@
             queryInput.focus();
         }
 
-        // 질문창, 결과창(창2), 누적창(창3)을 모두 초기화하는 함수
         function resetAllContent() {
             if (currentController) {
                 currentController.abort();
@@ -578,7 +694,6 @@
             queryInput.focus();
         }
 
-        // 최근 결과 창 내용 복사 함수 (창 2)
         function copyResult() {
             const resultBox = document.getElementById("aiResult");
             let textToCopy = resultBox.innerText;
@@ -594,7 +709,6 @@
             });
         }
 
-        // 전체 누적 기록 복사 함수 (창 3)
         function copyCumulativeResult() {
             const cumulativeBox = document.getElementById("cumulativeResultBox");
             let textToCopy = cumulativeBox.innerText;
@@ -610,7 +724,6 @@
             });
         }
 
-        // 엄격한 CSV 전용 파서
         function parseCSVStrictWithHeaders(text) {
             let rows = [];
             let currentRow = [];
@@ -760,7 +873,6 @@
             }
         }
 
-        // 메인 AI 호출 및 분기 처리 함수 (isSequential: true이면 연속 질문, false이면 새로 질문)
         async function askAI(isSequential) {
             const targetType = isSequential ? "sequential" : "new";
             if (currentController && activeTaskType === targetType) {
@@ -774,7 +886,7 @@
 
             let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
             if (!apiKey) {
-                alert("상단 안내란을 참고하여 Gemini API Key를 입력하고 [키 저장하기] 버튼을 눌러주세요.");
+                alert("상단 안내란을 참고하여 Gemini API Key를 설정하거나 입력해주세요.");
                 document.getElementById("apiKeyInput").focus();
                 return;
             }
