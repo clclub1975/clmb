@@ -1,10 +1,10 @@
-<!-- v9.6 적용: API 키 안내창 접기/펼치기(숨기기) 기능 및 저장 상태 표시(배지) 구현 (버전 v9.6 업그레이드) -->
+<!-- v9.7 적용: API 안내창 숨김 시 레이아웃 대칭 유지 및 '전체 초기화' 버튼 텍스트 변경 (버전 v9.7 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v9.6</title>
+    <title>촛불회 AI 추억 스토리 생성기 v9.7</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -55,12 +55,17 @@
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+            transition: padding 0.2s ease;
         }
         .api-box-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+        }
+        /* 안내창이 숨겨졌을 때 헤더 하단 마진 제거를 위한 클래스 */
+        .api-box.collapsed {
+            padding-top: 12px;
+            padding-bottom: 12px;
         }
         .api-status-badge {
             font-size: 13px;
@@ -87,6 +92,7 @@
         }
         .api-box-content {
             display: block; /* 최초 접속 시 펼쳐진 상태 */
+            margin-top: 12px;
         }
         .api-row {
             display: flex;
@@ -275,7 +281,7 @@
         .clear-btn:hover {
             color: #333;
         }
-        /* 두 가지 질문 실행 및 전체 초기화 버튼 영역 */
+        /* 두 가지 질문 실행 및 초기화 버튼 영역 */
         .action-btn-group {
             display: flex;
             gap: 8px;
@@ -437,10 +443,10 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.6</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.7</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
-        <div class="api-box">
+        <div id="apiBox" class="api-box">
             <div class="api-box-header">
                 <span id="apiStatusBadge" class="api-status-badge">🟢 공용 키 사용 중</span>
                 <button type="button" id="apiToggleBoxBtn" class="api-toggle-box-btn" onclick="toggleApiBox()">안내 숨기기 ▲</button>
@@ -451,7 +457,7 @@
                     📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
                     이용을 위해 구글 AI 열쇠(API Key)가 필요합니다. 우선은 촛불회 공용 키로 자동 설정되어 있습니다.<br>
                     다만, 공용 키를 다수가 사용할 경우 AI 사용량 한도로 인해 서비스가 제한될 수 있으므로 <b>개인 무료 API Key</b> 사용을 권장합니다.<br>
-                    개인 키를 사용하시려면 <b>[키 삭제하기]</b>를 누른 뒤, <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 로그인하시고 <b>[Create API key]</b>에서 키를 복사해 주세요. 그 후 아래 입력창에 키를 붙여넣고, 저장 버튼을 눌러 <b>[개인 키 저장대기]</b> 상태에서 한 번 더 눌러 저장해 주시면 됩니다! (최초 1회만 설정해두면 기기가 기억합니다.)
+                    개인 키를 사용하시려면 <b>[키 삭제하기]</b>를 누른 뒤, [여기(Google AI Studio)](https://aistudio.google.com/app/apikey)를 눌러 로그인하시고 <b>[Create API key]</b>에서 키를 복사해 주세요. 그 후 아래 입력창에 키를 붙여넣고, 저장 버튼을 눌러 <b>[개인 키 저장대기]</b> 상태에서 한 번 더 눌러 저장해 주시면 됩니다! (최초 1회만 설정해두면 기기가 기억합니다.)
                 </p>
                 <div class="api-row">
                     <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
@@ -510,7 +516,7 @@
         <div class="action-btn-group">
             <button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기</button>
             <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)">연속 질문하기</button>
-            <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">전체 초기화</button>
+            <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
         </div>
 
         <!-- 창 2: 최근 AI 답변 결과 (단발성 확인용) -->
@@ -595,15 +601,18 @@
             }
         }
 
-        // 안내창 숨기기/펼치기 토글 함수
+        // 안내창 숨기기/펼치기 토글 함수 (a=b 레이아웃 대칭 맞춤 포함)
         function toggleApiBox() {
             const content = document.getElementById("apiBoxContent");
+            const box = document.getElementById("apiBox");
             const btn = document.getElementById("apiToggleBoxBtn");
             if (content.style.display === "none") {
                 content.style.display = "block";
+                box.classList.remove("collapsed");
                 btn.innerText = "안내 숨기기 ▲";
             } else {
                 content.style.display = "none";
+                box.classList.add("collapsed");
                 btn.innerText = "안내 펼치기 ▼";
             }
         }
@@ -1094,7 +1103,7 @@ ${contextPrompt}
 
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
+                    resultBox.innerHtml = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
                 } else {
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
                 }
@@ -1111,7 +1120,6 @@ ${contextPrompt}
         function renderCumulativeHistory() {
             const cumulativeResultBox = document.getElementById("cumulativeResultBox");
             let htmlContent = "";
-            conversationHistory.format = ""; // placeholder
             conversationHistory.forEach((item, index) => {
                 if (index > 0) {
                     htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
