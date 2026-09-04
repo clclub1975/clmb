@@ -1,344 +1,77 @@
-<!-- v9.1 적용: 로컬스토리지에 API Key가 없을 시 공용 API Key 자동 세팅 기능 추가 및 버전 v9.1로 업그레이드 -->
+<!-- v8.6 적용: 창2(최근 결과창)와 창3(누적 아카이브 창)에 내부 스크롤 기능(max-height 및 overflow-y: auto) 추가, v8.6 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v9.1</title>
+    <title>촛불회 AI 추억 스토리 생성기 v8.6</title>
     <style>
-        body {
-            font-family: 'Malgun Gothic', sans-serif;
-            max-width: 850px;
-            margin: 40px auto;
-            padding: 20px;
-            line-height: 1.6;
-            color: #333;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-        }
-        .version {
-            font-size: 0.4em;
-            color: #888;
-            vertical-align: middle;
-            margin-left: 10px;
-        }
-        .chat-container {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            background: #f9f9f9;
-        }
-        .control-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        label {
-            font-weight: bold;
-            min-width: 80px;
-        }
-        select, input[type="text"], input[type="password"] {
-            padding: 10px;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-        }
+        body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+        h1 { color: #2c3e50; text-align: center; }
+        .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
+        .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
+        .control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        label { font-weight: bold; min-width: 80px; }
+        select, input[type="text"], input[type="password"] { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
         /* API 가이드 박스 스타일 */
-        .api-box {
-            background: #fff8e1;
-            border: 1px solid #ffe0b2;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .api-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .api-row input {
-            flex: 1;
-        }
-        .api-save-btn {
-            background: #f57c00;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .api-save-btn:hover {
-            background: #e65100;
-        }
-        .api-save-btn:disabled {
-            background: #bdbdbd;
-            cursor: not-allowed;
-        }
-        .api-del-btn {
-            background: #d32f2f;
-            color: white;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .api-del-btn:hover {
-            background: #c62828;
-        }
-        .guide-text {
-            font-size: 13px;
-            color: #5d4037;
-            line-height: 1.5;
-            margin: 0;
-        }
-        .guide-text a {
-            color: #0277bd;
-            font-weight: bold;
-            text-decoration: underline;
-        }
+        .api-box { background: #fff8e1; border: 1px solid #ffe0b2; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .api-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .api-row input { flex: 1; }
+        .api-save-btn { background: #f57c00; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .api-save-btn:hover { background: #e65100; }
+        .api-save-btn:disabled { background: #bdbdbd; cursor: not-allowed; }
+        .api-del-btn { background: #d32f2f; color: white; border: none; padding: 10px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .api-del-btn:hover { background: #c62828; }
+        .guide-text { font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
+        .guide-text a { color: #0277bd; font-weight: bold; text-decoration: underline; }
         /* 보안 주의 사항 문구 스타일 (상단 박스와 통일) */
-        .security-alert {
-            margin-top: 10px;
-            font-size: 13px;
-            color: #5d4037;
-            line-height: 1.5;
-        }
+        .security-alert { margin-top: 10px; font-size: 13px; color: #5d4037; line-height: 1.5; }
         /* 토글 버튼 스타일 */
-        .toggle-btn {
-            background: #eef2f5;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 8px 14px;
-            font-size: 14px;
-            cursor: pointer;
-            color: #334155;
-            font-weight: bold;
-        }
-        .toggle-btn:hover {
-            background: #cbd5e1;
-        }
+        .toggle-btn { background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
+        .toggle-btn:hover { background: #cbd5e1; }
         /* 체크박스 패널 (숨김/펼침) */
-        .checkbox-panel {
-            display: none;
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 10px;
-        }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            cursor: pointer;
-        }
+        .checkbox-panel { display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
         /* 하단 질문/버튼 입력 라인 (텍스트area 적용) */
-        .input-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-            align-items: flex-end;
-        }
-        .input-wrapper {
-            position: relative;
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-        .input-wrapper textarea {
-            width: 100%;
-            padding: 10px;
-            padding-right: 35px;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-            font-family: 'Malgun Gothic', sans-serif;
-            resize: none;
-            overflow-y: hidden;
-            min-height: 44px;
-            line-height: 1.4;
-            white-space: pre-wrap;
-        }
-        .clear-btn {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            color: #999;
-            cursor: pointer;
-            font-weight: bold;
-            display: none;
-        }
-        .clear-btn:hover {
-            color: #333;
-        }
+        .input-group { display: flex; gap: 8px; margin-top: 15px; align-items: flex-end; }
+        .input-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
+        .input-wrapper textarea { width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; white-space: pre-wrap; }
+        .clear-btn { position: absolute; right: 10px; top: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
+        .clear-btn:hover { color: #333; }
+        
         /* 두 가지 질문 실행 버튼 영역 */
-        .action-btn-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .submit-btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .submit-btn:hover {
-            background-color: #2980b9;
-        }
-        .sequential-btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            background-color: #9b59b6;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .sequential-btn:hover {
-            background-color: #8e44ad;
-        }
-        .stop-btn {
-            background-color: #e74c3c !important;
-        }
-        .stop-btn:hover {
-            background-color: #c0392b !important;
-        }
+        .action-btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .submit-btn { flex: 1; padding: 12px; font-size: 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .submit-btn:hover { background-color: #2980b9; }
+        .sequential-btn { flex: 1; padding: 12px; font-size: 15px; background-color: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .sequential-btn:hover { background-color: #8e44ad; }
+        .stop-btn { background-color: #e74c3c !important; }
+        .stop-btn:hover { background-color: #c0392b !important; }
+
         /* 창 2 (최근 결과창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
-        .result-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            margin-bottom: 0;
-        }
-        .result-header-row h3 {
-            margin: 0;
-        }
-        .copy-btn {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            display: none;
-        }
-        .copy-btn:hover {
-            background-color: #219653;
-        }
-        .result-box {
-            margin-top: 8px;
-            padding: 10px 15px;
-            background: white;
-            border: 1px solid #e1e1e1;
-            border-radius: 4px;
-            min-height: 100px;
-            max-height: 450px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
+        .result-header-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 0; }
+        .result-header-row h3 { margin: 0; }
+        .copy-btn { background-color: #27ae60; color: white; border: none; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
+        .copy-btn:hover { background-color: #219653; }
+        .result-box { margin-top: 8px; padding: 10px 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; max-height: 450px; overflow-y: auto; white-space: pre-wrap; }
+        
         /* 창 3 (누적 대화 창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
-        .cumulative-section {
-            margin-top: 30px;
-            border-top: 2px dashed #cbd5e1;
-            padding-top: 15px;
-            display: none;
-        }
-        .cumulative-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0;
-        }
-        .cumulative-header-row h3 {
-            margin: 0;
-            color: #8e44ad;
-        }
-        .cumulative-box {
-            margin-top: 8px;
-            padding: 10px 15px;
-            background: #fffdf9;
-            border: 1px solid #dcdde1;
-            border-radius: 4px;
-            min-height: 100px;
-            max-height: 550px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .loading {
-            color: #666;
-            font-style: italic;
-            margin: 2px 0 0 0;
-            padding: 0;
-            display: block;
-            line-height: 1.2;
-        }
-        .result-question {
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 0;
-            padding: 0;
-            line-height: 1.2;
-        }
-        .result-divider {
-            color: #888;
-            margin: 2px 0 0 0;
-            padding: 0;
-            font-family: monospace;
-            font-weight: bold;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-        .result-content {
-            margin: 4px 0 0 0;
-            padding: 0;
-            line-height: 1.5;
-        }
-        .cumulative-item {
-            margin-top: 0;
-            margin-bottom: 0;
-            padding: 0;
-        }
-        .cumulative-separator {
-            text-align: center;
-            color: #b2bec3;
-            margin: 10px 0;
-            font-weight: bold;
-            font-family: monospace;
-            line-height: 1;
-        }
+        .cumulative-section { margin-top: 30px; border-top: 2px dashed #cbd5e1; padding-top: 15px; display: none; }
+        .cumulative-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
+        .cumulative-header-row h3 { margin: 0; color: #8e44ad; }
+        .cumulative-box { margin-top: 8px; padding: 10px 15px; background: #fffdf9; border: 1px solid #dcdde1; border-radius: 4px; min-height: 100px; max-height: 550px; overflow-y: auto; white-space: pre-wrap; }
+        
+        .loading { color: #666; font-style: italic; margin: 2px 0 0 0; padding: 0; display: block; line-height: 1.2; }
+        .result-question { font-weight: bold; color: #2c3e50; margin: 0; padding: 0; line-height: 1.2; }
+        .result-divider { color: #888; margin: 2px 0 0 0; padding: 0; font-family: monospace; font-weight: bold; letter-spacing: -1px; line-height: 1; }
+        .result-content { margin: 4px 0 0 0; padding: 0; line-height: 1.5; }
+        .cumulative-item { margin-top: 0; margin-bottom: 0; padding: 0; }
+        .cumulative-separator { text-align: center; color: #b2bec3; margin: 10px 0; font-weight: bold; font-family: monospace; line-height: 1; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.1</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.6</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
@@ -384,7 +117,8 @@
         <!-- 3. 자연어 질문 입력창(textarea)과 두 가지 실행 버튼 -->
         <div class="input-group">
             <div class="input-wrapper">
-                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (이 질문은 '봉사활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
+                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.
+    (이 질문은 '봉사활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
                 <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
             </div>
         </div>
@@ -412,10 +146,6 @@
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
-        
-        // 빌드 시점에 GitHub Actions Secrets에 의해 주입될 공용 API Key 플레이스홀더
-        const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
-
         let globalSheetData = [];
         let globalHeaders = [];
         let currentController = null; // AI 생성 중단(AbortController)을 위한 전역 변수
@@ -424,17 +154,17 @@
         let lastSingleResult = null; // 직전에 단발성('새로 질문하기')으로 실행했던 질문과 답변 저장용 객체
 
         window.onload = async function() {
-            // 페이지 로딩 시점에 로컬스토리지에 저장된 키가 없고 공용 키가 존재하면 자동으로 적용
-            checkAndApplySharedApiKey();
             checkApiKeyStatus();
-
+            
             const queryInput = document.getElementById("userQuery");
+            
             const checkAndResizeInput = () => {
                 if (queryInput.value.length > 0) {
                     autoResize(queryInput);
                 }
                 toggleClearButton();
             };
+
             checkAndResizeInput();
             setTimeout(checkAndResizeInput, 50);
             setTimeout(checkAndResizeInput, 300);
@@ -453,20 +183,12 @@
             }
         };
 
-        // GitHub Actions 빌드 시 주입되는 공용 API Key 자동 세팅 로직
-        function checkAndApplySharedApiKey() {
-            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            // 로컬스토리지에 저장된 키가 없고, 플레이스홀더가 실제 키 값으로 치환되어 들어온 경우 자동 세팅
-            if (!savedKey && PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
-                localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
-            }
-        }
-
         function checkApiKeyStatus() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
             const saveBtn = document.getElementById("apiSaveBtn");
             const delBtn = document.getElementById("apiDelBtn");
             const inputField = document.getElementById("apiKeyInput");
+
             if (savedKey) {
                 inputField.value = savedKey;
                 saveBtn.innerText = "키 저장완료";
@@ -540,6 +262,7 @@
         function copyResult() {
             const resultBox = document.getElementById("aiResult");
             let textToCopy = resultBox.innerText;
+            
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const copyBtn = document.getElementById("copyBtn");
                 let originalText = copyBtn.innerText;
@@ -556,6 +279,7 @@
         function copyCumulativeResult() {
             const cumulativeBox = document.getElementById("cumulativeResultBox");
             let textToCopy = cumulativeBox.innerText;
+            
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const cumulativeCopyBtn = document.getElementById("cumulativeCopyBtn");
                 let originalText = cumulativeCopyBtn.innerText;
@@ -574,9 +298,11 @@
             let currentRow = [];
             let currentField = "";
             let inQuotes = false;
+
             for (let i = 0; i < text.length; i++) {
                 let c = text[i];
                 let nextC = text[i + 1];
+
                 if (inQuotes) {
                     if (c === '"') {
                         if (nextC === '"') {
@@ -614,7 +340,9 @@
                 currentRow.push(currentField.trim());
                 rows.push(currentRow);
             }
+
             if (rows.length === 0) return { headers: [], data: [] };
+
             let headers = rows[0].map(h => h.trim());
             let result = [];
             for (let i = 1; i < rows.length; i++) {
@@ -657,6 +385,7 @@
             const type = document.getElementById("criteriaType").value;
             const startSelect = document.getElementById("startPeriod");
             startSelect.innerHTML = "";
+            
             let allOpt = document.createElement("option");
             allOpt.value = "전체";
             allOpt.text = "전체";
@@ -667,6 +396,7 @@
                 let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
                 let minNum = nums.length > 0 ? Math.min(...nums) : 1;
                 let maxNum = nums.length > 0 ? Math.max(...nums) : 30;
+
                 for (let i = minNum; i <= maxNum; i++) {
                     let opt = document.createElement("option");
                     let valStr = String(i).padStart(3, '0') + "호";
@@ -679,11 +409,13 @@
                 let yearMatches = years.match(/19[8-9][0-9]|20[0-9][0-9]/g);
                 let minYear = 1984;
                 let maxYear = new Date().getFullYear();
+
                 if (yearMatches && yearMatches.length > 0) {
                     let yNums = yearMatches.map(y => parseInt(y));
                     minYear = Math.min(...yNums);
                     maxYear = Math.max(...yNums);
                 }
+
                 for (let y = minYear; y <= maxYear; y++) {
                     let opt = document.createElement("option");
                     let valStr = y + "년";
@@ -699,6 +431,7 @@
             const startSelect = document.getElementById("startPeriod");
             const endSelect = document.getElementById("endPeriod");
             endSelect.innerHTML = "";
+
             if (startSelect.value === "전체") {
                 let opt = document.createElement("option");
                 opt.value = "전체";
@@ -706,6 +439,7 @@
                 endSelect.appendChild(opt);
                 return;
             }
+
             const selectedStartIndex = startSelect.selectedIndex;
             for (let i = selectedStartIndex; i < startSelect.options.length; i++) {
                 let opt = document.createElement("option");
@@ -721,10 +455,12 @@
         // 메인 AI 호출 및 분기 처리 함수 (isSequential: true이면 연속 질문, false이면 새로 질문)
         async function askAI(isSequential) {
             const targetType = isSequential ? "sequential" : "new";
+
             if (currentController && activeTaskType === targetType) {
                 currentController.abort();
                 return;
             }
+
             if (currentController) {
                 currentController.abort();
                 currentController = null;
@@ -778,6 +514,7 @@
             document.querySelectorAll('input[name="targetCol"]:checked').forEach((cb) => {
                 checkedCols.push(cb.value);
             });
+
             let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
             let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
 
@@ -798,7 +535,6 @@
                 submitBtn.innerText = "생성 중단";
                 submitBtn.classList.add("stop-btn");
             }
-
             copyBtn.style.display = "none";
 
             // 창 2 (최근 결과창)에 로딩 표시 (문자열 자체에 불필요한 줄바꿈 태그 원천 차단)
@@ -815,8 +551,7 @@
                 }
 
                 const promptText = `
-당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다.
-다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
+당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
 ${JSON.stringify(globalSheetData)}
 
 [검색 조건]
@@ -828,7 +563,7 @@ ${contextPrompt}
 "${query}"
 
 위 조건과 지정된 항목들을 면밀히 대조하고 분석하여, 데이터에 기반한 구체적이고 신뢰성 있는 답변을 작성해 주세요.
-`;
+                `;
 
                 const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -843,23 +578,28 @@ ${contextPrompt}
 
                 if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
-
+                    
                     // 창 2 결과 갱신 (창2와 완전히 동일한 단일 문자열 포맷 적용)
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
                     copyBtn.style.display = "inline-block";
                     resultBox.scrollTop = 0; // 답변 완료 후 상단으로 스크롤 위치 초기화
 
                     if (!isSequential) {
-                        lastSingleResult = { q: query, a: answer };
+                        lastSingleResult = {
+                            q: query,
+                            a: answer
+                        };
                     } else {
-                        conversationHistory.push({ q: `${qPrefix} ${query}`, a: answer });
+                        conversationHistory.push({
+                            q: `${qPrefix} ${query}`,
+                            a: answer
+                        });
                         renderCumulativeHistory();
                     }
                 } else {
                     let errorMsg = data.error && data.error.message ? data.error.message : JSON.stringify(data);
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span></div>`;
                 }
-
             } catch (error) {
                 if (error.name === 'AbortError') {
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
@@ -880,13 +620,16 @@ ${contextPrompt}
         function renderCumulativeHistory() {
             const cumulativeResultBox = document.getElementById("cumulativeResultBox");
             let htmlContent = "";
+
             conversationHistory.forEach((item, index) => {
                 if (index > 0) {
                     htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
                 }
                 htmlContent += `<div class="cumulative-item"><div class="result-question">${item.q}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${item.a.replace(/\n/g, "<br>")}</div></div>`;
             });
+
             cumulativeResultBox.innerHTML = htmlContent;
+            
             // 연속 질문 완료 시 창 3(누적 아카이브 창)의 맨 아래로 부드럽게 스크롤 이동하여 방금 추가된 답변이 바로 보이도록 처리
             cumulativeResultBox.scrollTop = cumulativeResultBox.scrollHeight;
         }
