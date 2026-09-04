@@ -14,15 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepare deploy folder & Inject API Key
+      - name: Inject API Key & Setup Git
         run: |
-          mkdir dist
-          cp index2.html dist/
-          sed -i 's/__SHARED_API_KEY__/${{ secrets.SHARED_GEMINI_API_KEY }}/g' dist/index2.html
+          sed -i 's/__SHARED_API_KEY__/${{ secrets.SHARED_GEMINI_API_KEY }}/g' index2.html
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.io"
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: gh-pages
+      - name: Deploy to gh-pages branch
+        run: |
+          git checkout --orphan gh-pages
+          git reset --soft
+          git rm -rf --cached . || true
+          git add index2.html
+          git commit -m "Deploy v9.1 with injected API Key"
+          git push origin gh-pages --force
