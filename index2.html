@@ -1,10 +1,10 @@
-<!-- v9.5 적용: '개인 키 저장하기' 선택 시 버튼이 '개인 키 저장대기'로 전환되고 클릭 시 최종 저장되는 직관적 UX 개선 (버전 v9.5 업그레이드) -->
+<!-- v9.6 적용: API 키 안내창 접기/펼치기(숨기기) 기능 및 저장 상태 표시(배지) 구현 (버전 v9.6 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v9.5</title>
+    <title>촛불회 AI 추억 스토리 생성기 v9.6</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -56,6 +56,38 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
+        .api-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .api-status-badge {
+            font-size: 13px;
+            font-weight: bold;
+            color: #d35400;
+            background: #ffecb3;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .api-toggle-box-btn {
+            background: none;
+            border: 1px solid #d7ccc8;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #5d4037;
+            cursor: pointer;
+            background-color: #fff;
+        }
+        .api-toggle-box-btn:hover {
+            background-color: #f5eef0;
+        }
+        .api-box-content {
+            display: block; /* 최초 접속 시 펼쳐진 상태 */
+        }
         .api-row {
             display: flex;
             align-items: center;
@@ -91,7 +123,7 @@
             background: #bdbdbd;
             cursor: not-allowed;
         }
-        /* 대기 상태 버튼 스타일 (주황빛 계열로 시인성 유지) */
+        /* 대기 상태 버튼 스타일 */
         .api-wait-btn {
             background: #e67e22 !important;
         }
@@ -158,7 +190,7 @@
             font-weight: bold;
             text-decoration: underline;
         }
-        /* 보안 주의 사항 문구 스타일 (상단 박스와 통일) */
+        /* 보안 주의 사항 문구 스타일 */
         .security-alert {
             margin-top: 10px;
             font-size: 13px;
@@ -296,7 +328,7 @@
         .stop-btn:hover {
             background-color: #c0392b !important;
         }
-        /* 창 2 (최근 결과창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
+        /* 창 2 (최근 결과창) 스타일 */
         .result-header-row {
             display: flex;
             justify-content: space-between;
@@ -332,7 +364,7 @@
             overflow-y: auto;
             white-space: pre-wrap;
         }
-        /* 창 3 (누적 대화 창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
+        /* 창 3 (누적 대화 창) 스타일 */
         .cumulative-section {
             margin-top: 30px;
             border-top: 2px dashed #cbd5e1;
@@ -405,36 +437,43 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.5</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.6</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
-            <p class="guide-text">
-                📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 AI 열쇠(API Key)가 필요합니다. 우선은 촛불회 공용 키로 자동 설정되어 있습니다.<br>
-                다만, 공용 키를 다수가 사용할 경우 AI 사용량 한도로 인해 서비스가 제한될 수 있으므로 <b>개인 무료 API Key</b> 사용을 권장합니다.<br>
-                개인 키를 사용하시려면 <b>[키 삭제하기]</b>를 누른 뒤, [여기(Google AI Studio)](https://aistudio.google.com/app/apikey)를 눌러 로그인하시고 <b>[Create API key]</b>에서 키를 복사해 주세요. 그 후 아래 입력창에 키를 붙여넣고, 저장 버튼을 눌러 <b>[개인 키 저장대기]</b> 상태에서 한 번 더 눌러 저장해 주시면 됩니다! (최초 1회만 설정해두면 기기가 기억합니다.)
-            </p>
-            <div class="api-row">
-                <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
-                
-                <!-- 드롭다운/저장대기 통합 버튼 영역 -->
-                <div class="dropdown" id="apiDropdownContainer">
-                    <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
-                        <span id="apiSaveBtnText">공용 키 저장완료</span> <span id="dropdownArrow">▼</span>
-                    </button>
-                    <div id="apiDropdownMenu" class="dropdown-content">
-                        <button type="button" onclick="selectKeyChoice('shared')">공용 키 저장하기</button>
-                        <button type="button" onclick="selectKeyChoice('personal')">개인 키 저장하기</button>
-                    </div>
-                </div>
-
-                <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
+            <div class="api-box-header">
+                <span id="apiStatusBadge" class="api-status-badge">🟢 공용 키 사용 중</span>
+                <button type="button" id="apiToggleBoxBtn" class="api-toggle-box-btn" onclick="toggleApiBox()">안내 숨기기 ▲</button>
             </div>
-            <!-- API Key 입력창 아래로 이동한 통일된 스타일의 보안 주의 문구 -->
-            <p class="security-alert">
-                ⚠️ <b>[주의]</b> 공용 PC에서 개인 API Key를 사용하셨다면, 사용 후에는 반드시 키를 삭제하여 주시기 바랍니다.
-            </p>
+            
+            <div id="apiBoxContent" class="api-box-content">
+                <p class="guide-text">
+                    📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
+                    이용을 위해 구글 AI 열쇠(API Key)가 필요합니다. 우선은 촛불회 공용 키로 자동 설정되어 있습니다.<br>
+                    다만, 공용 키를 다수가 사용할 경우 AI 사용량 한도로 인해 서비스가 제한될 수 있으므로 <b>개인 무료 API Key</b> 사용을 권장합니다.<br>
+                    개인 키를 사용하시려면 <b>[키 삭제하기]</b>를 누른 뒤, <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 로그인하시고 <b>[Create API key]</b>에서 키를 복사해 주세요. 그 후 아래 입력창에 키를 붙여넣고, 저장 버튼을 눌러 <b>[개인 키 저장대기]</b> 상태에서 한 번 더 눌러 저장해 주시면 됩니다! (최초 1회만 설정해두면 기기가 기억합니다.)
+                </p>
+                <div class="api-row">
+                    <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
+                    
+                    <!-- 드롭다운/저장대기 통합 버튼 영역 -->
+                    <div class="dropdown" id="apiDropdownContainer">
+                        <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
+                            <span id="apiSaveBtnText">공용 키 저장완료</span> <span id="dropdownArrow">▼</span>
+                        </button>
+                        <div id="apiDropdownMenu" class="dropdown-content">
+                            <button type="button" onclick="selectKeyChoice('shared')">공용 키 저장하기</button>
+                            <button type="button" onclick="selectKeyChoice('personal')">개인 키 저장하기</button>
+                        </div>
+                    </div>
+
+                    <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
+                </div>
+                <!-- API Key 입력창 아래로 이동한 통일된 스타일의 보안 주의 문구 -->
+                <p class="security-alert">
+                    ⚠️ <b>[주의]</b> 공용 PC에서 개인 API Key를 사용하셨다면, 사용 후에는 반드시 키를 삭제하여 주시기 바랍니다.
+                </p>
+            </div>
         </div>
 
         <!-- 1. 상단 검색 기간 설정 영역 -->
@@ -556,6 +595,19 @@
             }
         }
 
+        // 안내창 숨기기/펼치기 토글 함수
+        function toggleApiBox() {
+            const content = document.getElementById("apiBoxContent");
+            const btn = document.getElementById("apiToggleBoxBtn");
+            if (content.style.display === "none") {
+                content.style.display = "block";
+                btn.innerText = "안내 숨기기 ▲";
+            } else {
+                content.style.display = "none";
+                btn.innerText = "안내 펼치기 ▼";
+            }
+        }
+
         function checkApiKeyStatus() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
             let keyType = localStorage.getItem("GEMINI_KEY_TYPE");
@@ -564,6 +616,7 @@
             const saveBtn = document.getElementById("apiSaveBtn");
             const delBtn = document.getElementById("apiDelBtn");
             const inputField = document.getElementById("apiKeyInput");
+            const statusBadge = document.getElementById("apiStatusBadge");
 
             if (savedKey) {
                 isPersonalWaitState = false;
@@ -575,23 +628,30 @@
                     saveBtnText.innerText = "개인 키 저장완료";
                     saveBtn.disabled = true;
                     dropdownArrow.style.display = "none";
+                    statusBadge.innerText = "🔒 개인 키 사용 중";
+                    statusBadge.style.color = "#27ae60";
+                    statusBadge.style.background = "#e8f8f5";
                 } else {
                     saveBtnText.innerText = "공용 키 저장완료";
                     saveBtn.disabled = true;
                     dropdownArrow.style.display = "none";
+                    statusBadge.innerText = "🟢 공용 키 사용 중";
+                    statusBadge.style.color = "#d35400";
+                    statusBadge.style.background = "#ffecb3";
                 }
             } else {
                 inputField.value = "";
                 delBtn.style.display = "none";
                 saveBtn.disabled = false;
+                statusBadge.innerText = "⚠️ 키 미설정 상태";
+                statusBadge.style.color = "#c0392b";
+                statusBadge.style.background = "#fadbd8";
 
                 if (isPersonalWaitState) {
-                    // '개인 키 저장대기' 상태
                     saveBtnText.innerText = "개인 키 저장대기";
                     dropdownArrow.style.display = "none";
                     saveBtn.classList.add("api-wait-btn");
                 } else {
-                    // 기본 키 삭제 후 드롭다운 선택 대기 상태
                     saveBtnText.innerText = "키 저장하기";
                     dropdownArrow.style.display = "inline";
                     saveBtn.classList.remove("api-wait-btn");
@@ -599,13 +659,11 @@
             }
         }
 
-        // 메인 저장 버튼 클릭 시 동작 분기
         function handleSaveButtonClick() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (savedKey) return; // 이미 저장완료 상태면 무시
+            if (savedKey) return;
 
             if (isPersonalWaitState) {
-                // '개인 키 저장대기' 상태에서 버튼을 누르면 입력된 키를 최종 저장
                 const inputField = document.getElementById("apiKeyInput");
                 let keyVal = inputField.value.trim();
                 if (!keyVal) {
@@ -619,12 +677,10 @@
                 checkApiKeyStatus();
                 alert("개인 키가 안전하게 저장되었습니다. 이제 자유롭게 질문하세요!");
             } else {
-                // 평소에는 드롭다운 토글
                 document.getElementById("apiDropdownMenu").classList.toggle("show");
             }
         }
 
-        // 드롭다운 메뉴에서 항목 선택 시
         function selectKeyChoice(type) {
             const dropdownMenu = document.getElementById("apiDropdownMenu");
             dropdownMenu.classList.remove('show');
@@ -640,7 +696,6 @@
                     alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
                 }
             } else if (type === 'personal') {
-                // '개인 키 저장하기'를 누르면 대기 상태로 전환하고 버튼명을 바꿈
                 isPersonalWaitState = true;
                 checkApiKeyStatus();
                 const inputField = document.getElementById("apiKeyInput");
@@ -1056,6 +1111,7 @@ ${contextPrompt}
         function renderCumulativeHistory() {
             const cumulativeResultBox = document.getElementById("cumulativeResultBox");
             let htmlContent = "";
+            conversationHistory.format = ""; // placeholder
             conversationHistory.forEach((item, index) => {
                 if (index > 0) {
                     htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
