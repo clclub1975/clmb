@@ -1,10 +1,10 @@
-<!-- v10.7 적용: API 키 안내문 내 [복사 아이콘]을 실제 유니코드 복사 아이콘(📋 또는 📄)으로 대체 (버전 v10.7 업그레이드) -->
+<!-- v10.8 적용: 개인 키 입력/대기 상태에서 '취소' 버튼 추가 및 초기 상태 복구 기능 구현 (버전 v10.8 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v10.7</title>
+    <title>촛불회 AI 추억 스토리 생성기 v10.8</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -104,7 +104,12 @@
             flex: 1;
         }
         
-        /* 드롭다운 버튼 컨테이너 스타일 */
+        /* 버튼 그룹 컨테이너 스타일 */
+        .api-btn-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
         .dropdown {
             position: relative;
             display: inline-block;
@@ -127,6 +132,26 @@
         .api-save-btn:disabled {
             background: #bdbdbd;
             cursor: not-allowed;
+        }
+        .api-wait-btn {
+            background: #e67e22 !important;
+        }
+        .api-wait-btn:hover {
+            background: #d35400 !important;
+        }
+        /* 취소 버튼 스타일 */
+        .api-cancel-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none; /* 평소에는 숨김 */
+        }
+        .api-cancel-btn:hover {
+            background: #7f8c8d;
         }
 
         /* 드롭다운 메뉴 스타일 */
@@ -428,7 +453,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.7</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.8</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div id="apiBox" class="api-box">
@@ -454,15 +479,18 @@
                 <div class="api-row">
                     <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요" oninput="checkKeyInputState()">
                     
-                    <!-- 동적 전환 저장 버튼 영역 -->
-                    <div class="dropdown" id="apiDropdownContainer">
-                        <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
-                            <span id="apiSaveBtnText">공용 키 저장완료</span> <span id="dropdownArrow">▼</span>
-                        </button>
-                        <div id="apiDropdownMenu" class="dropdown-content">
-                            <button type="button" onclick="selectKeyChoice('shared')">공용 키 저장하기</button>
-                            <button type="button" onclick="selectKeyChoice('personal')">개인 키 저장하기</button>
+                    <!-- 동적 전환 저장 및 취소 버튼 영역 -->
+                    <div class="api-btn-group">
+                        <div class="dropdown" id="apiDropdownContainer">
+                            <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
+                                <span id="apiSaveBtnText">공용 키 저장완료</span> <span id="dropdownArrow">▼</span>
+                            </button>
+                            <div id="apiDropdownMenu" class="dropdown-content">
+                                <button type="button" onclick="selectKeyChoice('shared')">공용 키 저장하기</button>
+                                <button type="button" onclick="selectKeyChoice('personal')">개인 키 저장하기</button>
+                            </div>
                         </div>
+                        <button type="button" id="apiCancelBtn" class="api-cancel-btn" onclick="cancelKeyInput()">취소</button>
                     </div>
 
                     <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
@@ -539,7 +567,7 @@
         let activeTaskType = null;
         let conversationHistory = [];
         let lastSingleResult = null;
-        let isPersonalWaitState = false;
+        let isPersonalWaitState = false; // '개인 키 저장대기' 상태 변수
 
         window.onload = async function() {
             checkAndApplyInitialApiKey();
@@ -630,6 +658,7 @@
             const saveBtnText = document.getElementById("apiSaveBtnText");
             const dropdownArrow = document.getElementById("dropdownArrow");
             const saveBtn = document.getElementById("apiSaveBtn");
+            const cancelBtn = document.getElementById("apiCancelBtn");
             const delBtn = document.getElementById("apiDelBtn");
             const inputField = document.getElementById("apiKeyInput");
             const statusBadge = document.getElementById("apiStatusBadge");
@@ -639,6 +668,7 @@
                 inputField.value = savedKey;
                 delBtn.style.display = "inline-block";
                 saveBtn.classList.remove("api-wait-btn");
+                cancelBtn.style.display = "none"; // 저장 완료 시 취소 버튼 숨김
 
                 if (keyType === "personal") {
                     saveBtnText.innerText = "개인 키 저장완료";
@@ -668,6 +698,7 @@
                     saveBtnText.innerText = "개인 키 저장대기";
                     dropdownArrow.style.display = "none";
                     saveBtn.classList.add("api-wait-btn");
+                    cancelBtn.style.display = "inline-block"; // 대기 상태일 때 취소 버튼 표시
                 } else {
                     checkKeyInputState();
                 }
@@ -681,14 +712,17 @@
             const inputField = document.getElementById("apiKeyInput");
             const saveBtnText = document.getElementById("apiSaveBtnText");
             const dropdownArrow = document.getElementById("dropdownArrow");
+            const cancelBtn = document.getElementById("apiCancelBtn");
             let keyVal = inputField.value.trim();
 
             if (keyVal.length > 0) {
                 saveBtnText.innerText = "개인 키 저장하기";
                 dropdownArrow.style.display = "none";
+                cancelBtn.style.display = "inline-block"; // 입력된 상태일 때 취소 버튼 표시
             } else {
                 saveBtnText.innerText = "키 저장하기";
                 dropdownArrow.style.display = "inline";
+                cancelBtn.style.display = "none"; // 비어있으면 취소 버튼 숨김
             }
         }
 
@@ -747,6 +781,14 @@
                     inputField.focus();
                 }
             }
+        }
+
+        // 취소 버튼 클릭 시 기본 [키 저장하기 ▼] 상태로 복구
+        function cancelKeyInput() {
+            isPersonalWaitState = false;
+            const inputField = document.getElementById("apiKeyInput");
+            inputField.value = "";
+            checkApiKeyStatus();
         }
 
         function deleteApiKey() {
