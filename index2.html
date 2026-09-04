@@ -1,10 +1,10 @@
-<!-- v9.1 적용: 로컬스토리지에 API Key가 없을 시 공용 API Key 자동 세팅 기능 추가 및 버전 v9.1로 업그레이드 -->
+<!-- v9.2 적용: 질문 입력창 및 답변 결과(창2, 창3)를 일괄 초기화하는 '전체 초기화' 버튼 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v9.1</title>
+    <title>촛불회 AI 추억 스토리 생성기 v9.2</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -189,7 +189,7 @@
         .clear-btn:hover {
             color: #333;
         }
-        /* 두 가지 질문 실행 버튼 영역 */
+        /* 두 가지 질문 실행 및 전체 초기화 버튼 영역 */
         .action-btn-group {
             display: flex;
             gap: 8px;
@@ -222,6 +222,19 @@
         }
         .sequential-btn:hover {
             background-color: #8e44ad;
+        }
+        .reset-all-btn {
+            padding: 12px 16px;
+            font-size: 15px;
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .reset-all-btn:hover {
+            background-color: #707b7c;
         }
         .stop-btn {
             background-color: #e74c3c !important;
@@ -338,13 +351,13 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.1</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v9.2</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
             <p class="guide-text">
                 📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
+                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="url?id=0" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
             </p>
             <div class="api-row">
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
@@ -381,7 +394,7 @@
             </div>
         </div>
 
-        <!-- 3. 자연어 질문 입력창(textarea)과 두 가지 실행 버튼 -->
+        <!-- 3. 자연어 질문 입력창(textarea)과 버튼 그룹 -->
         <div class="input-group">
             <div class="input-wrapper">
                 <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘. (이 질문은 '봉사활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
@@ -391,6 +404,7 @@
         <div class="action-btn-group">
             <button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기</button>
             <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)">연속 질문하기</button>
+            <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">전체 초기화</button>
         </div>
 
         <!-- 창 2: 최근 AI 답변 결과 (단발성 확인용) -->
@@ -424,7 +438,6 @@
         let lastSingleResult = null; // 직전에 단발성('새로 질문하기')으로 실행했던 질문과 답변 저장용 객체
 
         window.onload = async function() {
-            // 페이지 로딩 시점에 로컬스토리지에 저장된 키가 없고 공용 키가 존재하면 자동으로 적용
             checkAndApplySharedApiKey();
             checkApiKeyStatus();
 
@@ -453,10 +466,8 @@
             }
         };
 
-        // GitHub Actions 빌드 시 주입되는 공용 API Key 자동 세팅 로직
         function checkAndApplySharedApiKey() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            // 로컬스토리지에 저장된 키가 없고, 플레이스홀더가 실제 키 값으로 치환되어 들어온 경우 자동 세팅
             if (!savedKey && PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
                 localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
             }
@@ -505,7 +516,6 @@
             textarea.style.height = (textarea.scrollHeight - 6) + 'px';
         }
 
-        // Enter 키는 줄바꿈, Shift + Enter 또는 Ctrl + Enter 시 '새로 질문하기' 기본 수행
         function handleKeyDown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -533,6 +543,45 @@
             queryInput.value = "";
             queryInput.style.height = 'auto';
             toggleClearButton();
+            queryInput.focus();
+        }
+
+        // 질문창, 결과창(창2), 누적창(창3)을 모두 초기화하는 함수
+        function resetAllContent() {
+            // 1. 진행 중인 AI 요청이 있다면 중단
+            if (currentController) {
+                currentController.abort();
+                currentController = null;
+            }
+            activeTaskType = null;
+
+            // 2. 질문 입력창 비우기 및 높이/지우기 버튼 초기화
+            const queryInput = document.getElementById("userQuery");
+            queryInput.value = "";
+            queryInput.style.height = 'auto';
+            toggleClearButton();
+
+            // 3. 기록 데이터 초기화
+            conversationHistory = [];
+            lastSingleResult = null;
+
+            // 4. 창 2 (최근 결과창) 초기화 및 복사 버튼 숨김
+            const resultBox = document.getElementById("aiResult");
+            resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
+            document.getElementById("copyBtn").style.display = "none";
+
+            // 5. 창 3 (누적 아카이브 창) 숨김 및 내용 비우기
+            const cumulativeSection = document.getElementById("cumulativeSection");
+            cumulativeSection.style.display = "none";
+            document.getElementById("cumulativeResultBox").innerHTML = "";
+
+            // 6. 버튼 텍스트 원래대로 복구
+            document.getElementById("submitBtn").innerText = "새로 질문하기";
+            document.getElementById("submitBtn").classList.remove("stop-btn");
+            document.getElementById("sequentialBtn").innerText = "연속 질문하기";
+            document.getElementById("sequentialBtn").classList.remove("stop-btn");
+
+            // 7. 포커스를 입력창으로 이동
             queryInput.focus();
         }
 
@@ -751,16 +800,12 @@
                 toggleClearButton();
             }
 
-            // '새로 질문하기'를 누른 경우 전체 기록을 완전히 초기화하고 새로운 단발성 검색 준비
             if (!isSequential) {
                 conversationHistory = [];
                 lastSingleResult = null;
                 cumulativeSection.style.display = "none";
                 cumulativeResultBox.innerHTML = "";
             } else {
-                // '연속 질문하기'를 누른 경우:
-                // 만약 이전에 누적된 기록이 아예 없고, 직전에 '새로 질문하기'로 수행한 단발성 결과가 있다면
-                // 그 단발성 결과를 Q1으로 변환하여 conversationHistory의 맨 처음에 자동으로 소급 편입시킵니다!
                 if (conversationHistory.length === 0 && lastSingleResult) {
                     conversationHistory.push({
                         q: `Q1. ${lastSingleResult.q}`,
@@ -781,7 +826,6 @@
             let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
             let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
 
-            // 번호 부여: 연속 질문인 경우 현재 히스토리 길이에 1을 더한 번호(Q2, Q3...) 부여, 아니면 단일 'Q'
             let qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
 
             activeTaskType = targetType;
@@ -801,10 +845,8 @@
 
             copyBtn.style.display = "none";
 
-            // 창 2 (최근 결과창)에 로딩 표시 (문자열 자체에 불필요한 줄바꿈 태그 원천 차단)
             resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
 
-            // 질문 직후 창 2 상단이 화면에 자연스럽게 보이도록 스크롤 포커스 이동
             resultBox.scrollTop = 0;
             resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
@@ -844,10 +886,9 @@ ${contextPrompt}
                 if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
 
-                    // 창 2 결과 갱신 (창2와 완전히 동일한 단일 문자열 포맷 적용)
                     resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
                     copyBtn.style.display = "inline-block";
-                    resultBox.scrollTop = 0; // 답변 완료 후 상단으로 스크롤 위치 초기화
+                    resultBox.scrollTop = 0;
 
                     if (!isSequential) {
                         lastSingleResult = { q: query, a: answer };
@@ -876,7 +917,6 @@ ${contextPrompt}
             }
         }
 
-        // 창 3(누적 대화 아카이브) 렌더링 함수: 창2와 동일한 구조를 유지하며, '====' 구분선 위아래에만 명확하게 공백(<br>)을 한 줄씩 부여
         function renderCumulativeHistory() {
             const cumulativeResultBox = document.getElementById("cumulativeResultBox");
             let htmlContent = "";
@@ -887,7 +927,6 @@ ${contextPrompt}
                 htmlContent += `<div class="cumulative-item"><div class="result-question">${item.q}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${item.a.replace(/\n/g, "<br>")}</div></div>`;
             });
             cumulativeResultBox.innerHTML = htmlContent;
-            // 연속 질문 완료 시 창 3(누적 아카이브 창)의 맨 아래로 부드럽게 스크롤 이동하여 방금 추가된 답변이 바로 보이도록 처리
             cumulativeResultBox.scrollTop = cumulativeResultBox.scrollHeight;
         }
     </script>
