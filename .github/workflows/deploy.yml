@@ -14,13 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Inject Shared API Key
+      - name: Prepare deploy folder & Inject API Key
         run: |
-          sed -i 's/__SHARED_API_KEY__/${{ secrets.SHARED_GEMINI_API_KEY }}/g' index2.html
+          mkdir dist
+          cp index2.html dist/
+          sed -i 's/__SHARED_API_KEY__/${{ secrets.SHARED_GEMINI_API_KEY }}/g' dist/index2.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: ./dist
           publish_branch: gh-pages
