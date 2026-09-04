@@ -1,10 +1,10 @@
-<!-- v10.5 적용: 저장 시 안내창 접힘 유지, 키 삭제 시 안내창 펼쳐짐 복구, 불필요한 알림 창 제거 및 삭제 확인 창만 유지 (버전 v10.5 업그레이드) -->
+<!-- v10.6 적용: '개인 키 저장하기' 선택 시 입력창이 비어있으면 버튼명이 '개인 키 저장대기'로 전환되는 로직 반영 (버전 v10.6 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v10.5</title>
+    <title>촛불회 AI 추억 스토리 생성기 v10.6</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -127,6 +127,13 @@
         .api-save-btn:disabled {
             background: #bdbdbd;
             cursor: not-allowed;
+        }
+        /* 대기 상태 버튼 스타일 */
+        .api-wait-btn {
+            background: #e67e22 !important;
+        }
+        .api-wait-btn:hover {
+            background: #d35400 !important;
         }
 
         /* 드롭다운 메뉴 스타일 */
@@ -428,7 +435,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.5</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.6</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div id="apiBox" class="api-box">
@@ -539,6 +546,7 @@
         let activeTaskType = null;
         let conversationHistory = [];
         let lastSingleResult = null;
+        let isPersonalWaitState = false; // '개인 키 저장대기' 상태 변수
 
         window.onload = async function() {
             checkAndApplyInitialApiKey();
@@ -614,7 +622,6 @@
             btn.innerText = "안내 펼치기 ▼";
         }
 
-        // 키 삭제 시에는 안내창이 자동으로 펼쳐지도록 복구
         function expandApiBox() {
             const content = document.getElementById("apiBoxContent");
             const box = document.getElementById("apiBox");
@@ -635,8 +642,10 @@
             const statusBadge = document.getElementById("apiStatusBadge");
 
             if (savedKey) {
+                isPersonalWaitState = false;
                 inputField.value = savedKey;
                 delBtn.style.display = "inline-block";
+                saveBtn.classList.remove("api-wait-btn");
 
                 if (keyType === "personal") {
                     saveBtnText.innerText = "개인 키 저장완료";
@@ -660,14 +669,21 @@
                 statusBadge.innerText = "⚠️ 키 미설정 상태";
                 statusBadge.style.color = "#c0392b";
                 statusBadge.style.background = "#fadbd8";
+                saveBtn.classList.remove("api-wait-btn");
 
-                checkKeyInputState();
+                if (isPersonalWaitState) {
+                    saveBtnText.innerText = "개인 키 저장대기";
+                    dropdownArrow.style.display = "none";
+                    saveBtn.classList.add("api-wait-btn");
+                } else {
+                    checkKeyInputState();
+                }
             }
         }
 
         function checkKeyInputState() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (savedKey) return;
+            if (savedKey || isPersonalWaitState) return;
 
             const inputField = document.getElementById("apiKeyInput");
             const saveBtnText = document.getElementById("apiSaveBtnText");
@@ -690,12 +706,26 @@
             const inputField = document.getElementById("apiKeyInput");
             let keyVal = inputField.value.trim();
 
-            if (keyVal.length > 0) {
+            if (isPersonalWaitState) {
+                // 대기 상태에서 버튼을 누를 때
+                if (keyVal.length > 0) {
+                    localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+                    localStorage.setItem("GEMINI_KEY_TYPE", "personal");
+                    isPersonalWaitState = false;
+                    checkApiKeyStatus();
+                    collapseApiBox();
+                } else {
+                    alert("입력창에 본인의 Gemini API Key를 붙여넣은 뒤 [개인 키 저장대기] 버튼을 눌러주세요.");
+                    inputField.focus();
+                }
+            } else if (keyVal.length > 0) {
+                // 입력창에 키가 있는 상태에서 '개인 키 저장하기'를 누를 때
                 localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
                 localStorage.setItem("GEMINI_KEY_TYPE", "personal");
                 checkApiKeyStatus();
-                collapseApiBox(); // 저장 완료 시에만 안내창 자동 숨김
+                collapseApiBox();
             } else {
+                // 평소에는 드롭다운 토글
                 document.getElementById("apiDropdownMenu").classList.toggle("show");
             }
         }
@@ -708,22 +738,36 @@
                 if (PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
                     localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
                     localStorage.setItem("GEMINI_KEY_TYPE", "shared");
+                    isPersonalWaitState = false;
                     checkApiKeyStatus();
-                    collapseApiBox(); // 저장 완료 시에만 안내창 자동 숨김
+                    collapseApiBox();
                 }
             } else if (type === 'personal') {
                 const inputField = document.getElementById("apiKeyInput");
-                inputField.focus();
+                let keyVal = inputField.value.trim();
+                if (keyVal.length > 0) {
+                    // 키가 이미 입력되어 있으면 바로 저장
+                    localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+                    localStorage.setItem("GEMINI_KEY_TYPE", "personal");
+                    isPersonalWaitState = false;
+                    checkApiKeyStatus();
+                    collapseApiBox();
+                } else {
+                    // 키가 없으면 '개인 키 저장대기' 상태로 전환
+                    isPersonalWaitState = true;
+                    checkApiKeyStatus();
+                    inputField.focus();
+                }
             }
         }
 
         function deleteApiKey() {
-            // 키 삭제 시에는 안전을 위해 확인 창 유지
             if (confirm("정말로 저장된 API Key를 삭제하시겠습니까?")) {
                 localStorage.removeItem("GEMINI_USER_API_KEY");
                 localStorage.removeItem("GEMINI_KEY_TYPE");
+                isPersonalWaitState = false;
                 checkApiKeyStatus();
-                expandApiBox(); // 키 삭제 후에는 안내문을 보고 다시 설정할 수 있도록 안내창 펼침
+                expandApiBox();
                 document.getElementById("apiKeyInput").focus();
             }
         }
