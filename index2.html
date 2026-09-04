@@ -1,10 +1,10 @@
-<!-- v8.6 적용: 창2(최근 결과창)와 창3(누적 아카이브 창)에 내부 스크롤 기능(max-height 및 overflow-y: auto) 추가, v8.6 버전 업그레이드 -->
+<!-- v7.3 적용: 페이지 로드 및 지연 타이머를 통해 textarea의 초기 값 변화를 강제 감지하여 X 버튼 표시 수정, v7.3 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v8.6</title>
+    <title>촛불회 AI 추억 스토리 생성기 v7.3</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
         h1 { color: #2c3e50; text-align: center; }
@@ -39,45 +39,26 @@
         .input-wrapper textarea { width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; white-space: pre-wrap; }
         .clear-btn { position: absolute; right: 10px; top: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
         .clear-btn:hover { color: #333; }
-        
-        /* 두 가지 질문 실행 버튼 영역 */
-        .action-btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .submit-btn { flex: 1; padding: 12px; font-size: 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .submit-btn:hover { background-color: #2980b9; }
-        .sequential-btn { flex: 1; padding: 12px; font-size: 15px; background-color: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .sequential-btn:hover { background-color: #8e44ad; }
-        .stop-btn { background-color: #e74c3c !important; }
-        .stop-btn:hover { background-color: #c0392b !important; }
-
-        /* 창 2 (최근 결과창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
-        .result-header-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 0; }
-        .result-header-row h3 { margin: 0; }
-        .copy-btn { background-color: #27ae60; color: white; border: none; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
-        .copy-btn:hover { background-color: #219653; }
-        .result-box { margin-top: 8px; padding: 10px 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; max-height: 450px; overflow-y: auto; white-space: pre-wrap; }
-        
-        /* 창 3 (누적 대화 창) 스타일 - 스크롤링 기능 추가 (max-height 설정 및 overflow-y: auto) */
-        .cumulative-section { margin-top: 30px; border-top: 2px dashed #cbd5e1; padding-top: 15px; display: none; }
-        .cumulative-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
-        .cumulative-header-row h3 { margin: 0; color: #8e44ad; }
-        .cumulative-box { margin-top: 8px; padding: 10px 15px; background: #fffdf9; border: 1px solid #dcdde1; border-radius: 4px; min-height: 100px; max-height: 550px; overflow-y: auto; white-space: pre-wrap; }
-        
+        button.submit-btn { padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 44px; }
+        button.submit-btn:hover { background-color: #2980b9; }
+        button.stop-btn { background-color: #e74c3c; }
+        button.stop-btn:hover { background-color: #c0392b; }
+        /* 결과 창 컴팩트 정렬 스타일 (빈 줄 및 여백 완전 제거) */
+        .result-box { margin-top: 20px; padding: 10px 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
         .loading { color: #666; font-style: italic; margin: 2px 0 0 0; padding: 0; display: block; line-height: 1.2; }
         .result-question { font-weight: bold; color: #2c3e50; margin: 0; padding: 0; line-height: 1.2; }
         .result-divider { color: #888; margin: 2px 0 0 0; padding: 0; font-family: monospace; font-weight: bold; letter-spacing: -1px; line-height: 1; }
         .result-content { margin: 4px 0 0 0; padding: 0; line-height: 1.5; }
-        .cumulative-item { margin-top: 0; margin-bottom: 0; padding: 0; }
-        .cumulative-separator { text-align: center; color: #b2bec3; margin: 10px 0; font-weight: bold; font-family: monospace; line-height: 1; }
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v8.6</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v7.3</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div class="api-box">
             <p class="guide-text">
                 📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
+                이용을 위해 구글 개인 AI 열쇠(API Key)가 필요합니다. <a href="url?id=0" target="_blank">여기(Google AI Studio)</a>를 눌러 본인의 구글 계정으로 로그인하신 후 <b>[Create API key]</b>를 눌러 키를 복사한 뒤, 아래 칸에 붙여넣고 <b>[저장]</b>을 눌러주세요! (최초 1회만 해두면 기기가 기억합니다.)
             </p>
             <div class="api-row">
                 <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요">
@@ -114,34 +95,18 @@
             </div>
         </div>
 
-        <!-- 3. 자연어 질문 입력창(textarea)과 두 가지 실행 버튼 -->
+        <!-- 3. 자연어 질문 입력창(textarea)과 버튼 -->
         <div class="input-group">
             <div class="input-wrapper">
                 <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.
     (이 질문은 '봉사활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
                 <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
             </div>
-        </div>
-        <div class="action-btn-group">
-            <button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기</button>
-            <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)">연속 질문하기</button>
+            <button type="button" id="submitBtn" class="submit-btn" onclick="handleAction()">질문하기</button>
         </div>
 
-        <!-- 창 2: 최근 AI 답변 결과 (단발성 확인용) -->
-        <div class="result-header-row">
-            <h3>최근 AI 답변 결과</h3>
-            <button type="button" id="copyBtn" class="copy-btn" onclick="copyResult()">📋 최근 답변 복사하기</button>
-        </div>
+        <h3>AI 답변 결과</h3>
         <div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
-
-        <!-- 창 3: 누적 대화 아카이브 (연속 질문용 하단 창) -->
-        <div id="cumulativeSection" class="cumulative-section">
-            <div class="cumulative-header-row">
-                <h3>📁 연속 대화 누적 기록 (전체 아카이브)</h3>
-                <button type="button" id="cumulativeCopyBtn" class="copy-btn" style="display: inline-block; background-color: #8e44ad;" onclick="copyCumulativeResult()">📋 전체 누적 기록 복사하기</button>
-            </div>
-            <div id="cumulativeResultBox" class="cumulative-box"></div>
-        </div>
     </div>
 
     <script>
@@ -149,15 +114,13 @@
         let globalSheetData = [];
         let globalHeaders = [];
         let currentController = null; // AI 생성 중단(AbortController)을 위한 전역 변수
-        let activeTaskType = null; // 현재 실행 중인 작업 구분 ("new" 또는 "sequential")
-        let conversationHistory = []; // 연속 질문을 위한 누적 데이터 배열
-        let lastSingleResult = null; // 직전에 단발성('새로 질문하기')으로 실행했던 질문과 답변 저장용 객체
 
         window.onload = async function() {
             checkApiKeyStatus();
             
             const queryInput = document.getElementById("userQuery");
             
+            // 즉시 및 브라우저 자동완성/복원 반영을 위해 지연 타이머를 두어 강제 동기화 수행
             const checkAndResizeInput = () => {
                 if (queryInput.value.length > 0) {
                     autoResize(queryInput);
@@ -227,16 +190,11 @@
             textarea.style.height = (textarea.scrollHeight - 6) + 'px';
         }
 
-        // Enter 키는 줄바꿈, Shift + Enter 또는 Ctrl + Enter 시 '새로 질문하기' 기본 수행
+        // Enter 키는 줄바꿈, Shift + Enter 또는 Ctrl + Enter 시 질문 전송
         function handleKeyDown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
-                if (currentController) {
-                    currentController.abort();
-                    currentController = null;
-                } else {
-                    askAI(false);
-                }
+                handleAction();
             }
         }
 
@@ -258,41 +216,7 @@
             queryInput.focus();
         }
 
-        // 최근 결과 창 내용 복사 함수 (창 2)
-        function copyResult() {
-            const resultBox = document.getElementById("aiResult");
-            let textToCopy = resultBox.innerText;
-            
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const copyBtn = document.getElementById("copyBtn");
-                let originalText = copyBtn.innerText;
-                copyBtn.innerText = "✅ 복사완료!";
-                setTimeout(() => {
-                    copyBtn.innerText = originalText;
-                }, 2000);
-            }).catch(err => {
-                alert("클립보드 복사에 실패했습니다.");
-            });
-        }
-
-        // 전체 누적 기록 복사 함수 (창 3)
-        function copyCumulativeResult() {
-            const cumulativeBox = document.getElementById("cumulativeResultBox");
-            let textToCopy = cumulativeBox.innerText;
-            
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const cumulativeCopyBtn = document.getElementById("cumulativeCopyBtn");
-                let originalText = cumulativeCopyBtn.innerText;
-                cumulativeCopyBtn.innerText = "✅ 전체 복사완료!";
-                setTimeout(() => {
-                    cumulativeCopyBtn.innerText = originalText;
-                }, 2000);
-            }).catch(err => {
-                alert("클립보드 복사에 실패했습니다.");
-            });
-        }
-
-        // 엄격한 CSV 전용 파서
+        // 엄격한 CSV 전용 파서 (따옴표 및 내부 줄바꿈 완벽 대응)
         function parseCSVStrictWithHeaders(text) {
             let rows = [];
             let currentRow = [];
@@ -452,20 +376,19 @@
             }
         }
 
-        // 메인 AI 호출 및 분기 처리 함수 (isSequential: true이면 연속 질문, false이면 새로 질문)
-        async function askAI(isSequential) {
-            const targetType = isSequential ? "sequential" : "new";
-
-            if (currentController && activeTaskType === targetType) {
-                currentController.abort();
-                return;
-            }
-
+        // 버튼 클릭 시 상태에 따라 질문하기 또는 생성 중단 수행
+        function handleAction() {
+            const submitBtn = document.getElementById("submitBtn");
             if (currentController) {
+                // 생성 중단 실행
                 currentController.abort();
-                currentController = null;
+            } else {
+                // 질문 실행
+                askAI();
             }
+        }
 
+        async function askAI() {
             let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
             if (!apiKey) {
                 alert("상단 안내란을 참고하여 Gemini API Key를 입력하고 [키 저장하기] 버튼을 눌러주세요.");
@@ -476,34 +399,12 @@
             let queryInput = document.getElementById("userQuery");
             let query = queryInput.value.trim();
             const resultBox = document.getElementById("aiResult");
-            const copyBtn = document.getElementById("copyBtn");
-            const cumulativeSection = document.getElementById("cumulativeSection");
-            const cumulativeResultBox = document.getElementById("cumulativeResultBox");
 
             if (!query) {
                 query = "촛불회가 주로 봉사한 기관들을 정리해줘.";
                 queryInput.value = query;
                 queryInput.style.height = 'auto';
                 toggleClearButton();
-            }
-
-            // '새로 질문하기'를 누른 경우 전체 기록을 완전히 초기화하고 새로운 단발성 검색 준비
-            if (!isSequential) {
-                conversationHistory = [];
-                lastSingleResult = null;
-                cumulativeSection.style.display = "none";
-                cumulativeResultBox.innerHTML = "";
-            } else {
-                // '연속 질문하기'를 누른 경우:
-                // 만약 이전에 누적된 기록이 아예 없고, 직전에 '새로 질문하기'로 수행한 단발성 결과가 있다면
-                // 그 단발성 결과를 Q1으로 변환하여 conversationHistory의 맨 처음에 자동으로 소급 편입시킵니다!
-                if (conversationHistory.length === 0 && lastSingleResult) {
-                    conversationHistory.push({
-                        q: `Q1. ${lastSingleResult.q}`,
-                        a: lastSingleResult.a
-                    });
-                }
-                cumulativeSection.style.display = "block";
             }
 
             const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
@@ -518,38 +419,18 @@
             let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
             let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
 
-            // 번호 부여: 연속 질문인 경우 현재 히스토리 길이에 1을 더한 번호(Q2, Q3...) 부여, 아니면 단일 'Q'
-            let qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
-
-            activeTaskType = targetType;
+            // 새로운 AbortController 생성
             currentController = new AbortController();
             const signal = currentController.signal;
 
+            // 버튼 상태를 '생성 중단'으로 변경
             const submitBtn = document.getElementById("submitBtn");
-            const sequentialBtn = document.getElementById("sequentialBtn");
+            submitBtn.innerText = "생성 중단";
+            submitBtn.classList.add("stop-btn");
 
-            if (isSequential) {
-                sequentialBtn.innerText = "생성 중단";
-                sequentialBtn.classList.add("stop-btn");
-            } else {
-                submitBtn.innerText = "생성 중단";
-                submitBtn.classList.add("stop-btn");
-            }
-            copyBtn.style.display = "none";
-
-            // 창 2 (최근 결과창)에 로딩 표시 (문자열 자체에 불필요한 줄바꿈 태그 원천 차단)
-            resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
-
-            // 질문 직후 창 2 상단이 화면에 자연스럽게 보이도록 스크롤 포커스 이동
-            resultBox.scrollTop = 0;
-            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
 
             try {
-                let contextPrompt = "";
-                if (isSequential && conversationHistory.length > 0) {
-                    contextPrompt = "\n\n[이전 대화 기록]\n" + conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n");
-                }
-
                 const promptText = `
 당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
 ${JSON.stringify(globalSheetData)}
@@ -557,7 +438,6 @@ ${JSON.stringify(globalSheetData)}
 [검색 조건]
 - 기간 기준: ${criteria} (${periodText})
 - 집중 참고 항목: ${targetColumnsText}
-${contextPrompt}
 
 [사용자 질문]
 "${query}"
@@ -571,67 +451,30 @@ ${contextPrompt}
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: promptText }] }]
                     }),
-                    signal: signal
+                    signal: signal // AbortController 신호 연결
                 });
 
                 const data = await apiResponse.json();
 
                 if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
-                    
-                    // 창 2 결과 갱신 (창2와 완전히 동일한 단일 문자열 포맷 적용)
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
-                    copyBtn.style.display = "inline-block";
-                    resultBox.scrollTop = 0; // 답변 완료 후 상단으로 스크롤 위치 초기화
-
-                    if (!isSequential) {
-                        lastSingleResult = {
-                            q: query,
-                            a: answer
-                        };
-                    } else {
-                        conversationHistory.push({
-                            q: `${qPrefix} ${query}`,
-                            a: answer
-                        });
-                        renderCumulativeHistory();
-                    }
+                    resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
                 } else {
                     let errorMsg = data.error && data.error.message ? data.error.message : JSON.stringify(data);
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span></div>`;
+                    resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span></div>`;
                 }
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
+                    resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
                 } else {
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
+                    resultBox.innerHTML = `<div class="result-question">Q. ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
                 }
             } finally {
+                // 통신 종료 후 컨트롤러 초기화 및 버튼 원복
                 currentController = null;
-                activeTaskType = null;
-                submitBtn.innerText = "새로 질문하기";
+                submitBtn.innerText = "질문하기";
                 submitBtn.classList.remove("stop-btn");
-                sequentialBtn.innerText = "연속 질문하기";
-                sequentialBtn.classList.remove("stop-btn");
             }
-        }
-
-        // 창 3(누적 대화 아카이브) 렌더링 함수: 창2와 동일한 구조를 유지하며, '====' 구분선 위아래에만 명확하게 공백(<br>)을 한 줄씩 부여
-        function renderCumulativeHistory() {
-            const cumulativeResultBox = document.getElementById("cumulativeResultBox");
-            let htmlContent = "";
-
-            conversationHistory.forEach((item, index) => {
-                if (index > 0) {
-                    htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
-                }
-                htmlContent += `<div class="cumulative-item"><div class="result-question">${item.q}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${item.a.replace(/\n/g, "<br>")}</div></div>`;
-            });
-
-            cumulativeResultBox.innerHTML = htmlContent;
-            
-            // 연속 질문 완료 시 창 3(누적 아카이브 창)의 맨 아래로 부드럽게 스크롤 이동하여 방금 추가된 답변이 바로 보이도록 처리
-            cumulativeResultBox.scrollTop = cumulativeResultBox.scrollHeight;
         }
     </script>
 </body>
