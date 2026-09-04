@@ -1,10 +1,10 @@
-<!-- v10.2 적용: 도입부 안내문 유지 및 API 키 발급 가이드 8단계 반영 (버전 v10.2 업그레이드) -->
+<!-- v10.3 적용: 입력창에 텍스트가 있을 때 '개인 키 저장하기' 클릭 시 대기 단계를 건너뛰고 곧바로 저장 완료 (버전 v10.3 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v10.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v10.3</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -434,7 +434,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.2</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.3</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div id="apiBox" class="api-box">
@@ -449,12 +449,12 @@
                     이용을 위해 구글 AI 열쇠(API Key)가 필요합니다. 우선은 촛불회 공용 키로 설정해두었습니다만, 공용 키를 다수가 사용할 경우, AI 사용량 한도 때문에 서비스가 제한될 수 있습니다. 따라서 개인 무료 API Key 사용을 권장합니다.<br><br>
                     💡 <b>개인 키 발급 방법 (초보자 안내):</b><br>
                     1. 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
-                    2. 파란색 글씨의 <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 인지를 확인합니다.<br>
+                    2. 파란색 글씨의 <a href="https://aistudio.google.com/app/api-keys" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 인지를 확인합니다.<br>
                     3. 로그인 계정 확인은 창의 왼쪽 하단(변경 가능 있음)에서 할 수 있습니다.<br>
                     4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
                     5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
                     6. 생성된 키의 복사 버튼(문자열)을 누른 뒤, 이 페이지로 돌아와 아래 빈 입력창에 붙여넣습니다.<br>
-                    7. 저장 버튼(▼)을 눌러 <b>[개인 키 저장하기]</b>를 선택한 뒤, 상태가 <b>[개인 키 저장대기]</b>로 바뀌면 저장 버튼을 한 번 더 눌러 완료해 주세요.<br>
+                    7. 저장 버튼(▼)을 눌러 <b>[개인 키 저장하기]</b>를 선택하면 곧바로 저장이 완료됩니다. (키가 없는 상태에서 선택하면 '개인 키 저장대기'로 전환됩니다.)<br>
                     8. 최초 1회만 해두면 기기가 기억합니다.
                 </p>
                 <div class="api-row">
@@ -537,7 +537,6 @@
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
         
-        // 빌드 시점에 GitHub Actions Secrets에 의해 주입될 공용 API Key 플레이스홀더
         const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
 
         let globalSheetData = [];
@@ -546,7 +545,7 @@
         let activeTaskType = null;
         let conversationHistory = [];
         let lastSingleResult = null;
-        let isPersonalWaitState = false; // '개인 키 저장대기' 상태 여부 관리 변수
+        let isPersonalWaitState = false;
 
         window.onload = async function() {
             checkAndApplyInitialApiKey();
@@ -563,7 +562,6 @@
             setTimeout(checkAndResizeInput, 50);
             setTimeout(checkAndResizeInput, 300);
 
-            // 드롭다운 외부 클릭 시 닫기
             window.onclick = function(event) {
                 if (!event.target.matches('.api-save-btn') && !event.target.matches('#apiSaveBtnText') && !event.target.matches('#dropdownArrow')) {
                     let dropdowns = document.getElementsByClassName("dropdown-content");
@@ -599,7 +597,6 @@
             }
         }
 
-        // 안내창 숨기기/펼치기 토글 함수 (a=b 레이아웃 대칭 맞춤 포함)
         function toggleApiBox() {
             const content = document.getElementById("apiBoxContent");
             const box = document.getElementById("apiBox");
@@ -703,10 +700,21 @@
                     alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
                 }
             } else if (type === 'personal') {
-                isPersonalWaitState = true;
-                checkApiKeyStatus();
                 const inputField = document.getElementById("apiKeyInput");
-                inputField.focus();
+                let keyVal = inputField.value.trim();
+                if (keyVal) {
+                    // 입력창에 이미 키가 입력되어 있으면 대기 단계를 건너뛰고 곧바로 저장 완료
+                    localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+                    localStorage.setItem("GEMINI_KEY_TYPE", "personal");
+                    isPersonalWaitState = false;
+                    checkApiKeyStatus();
+                    alert("개인 키가 안전하게 저장되었습니다. 이제 자유롭게 질문하세요!");
+                } else {
+                    // 비어있으면 기존처럼 '개인 키 저장대기' 상태로 전환
+                    isPersonalWaitState = true;
+                    checkApiKeyStatus();
+                    inputField.focus();
+                }
             }
         }
 
