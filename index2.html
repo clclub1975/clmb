@@ -1,10 +1,10 @@
-<!-- v10.4 적용: 키 입력 감지 시 '개인 키 저장하기' 단일 버튼 전환, 저장 완료 및 삭제 시 안내창 자동 숨김 처리 (버전 v10.4 업그레이드) -->
+<!-- v10.5 적용: 저장 시 안내창 접힘 유지, 키 삭제 시 안내창 펼쳐짐 복구, 불필요한 알림 창 제거 및 삭제 확인 창만 유지 (버전 v10.5 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v10.4</title>
+    <title>촛불회 AI 추억 스토리 생성기 v10.5</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -127,12 +127,6 @@
         .api-save-btn:disabled {
             background: #bdbdbd;
             cursor: not-allowed;
-        }
-        .api-wait-btn {
-            background: #e67e22 !important;
-        }
-        .api-wait-btn:hover {
-            background: #d35400 !important;
         }
 
         /* 드롭다운 메뉴 스타일 */
@@ -434,7 +428,7 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.4</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.5</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div id="apiBox" class="api-box">
@@ -611,7 +605,6 @@
             }
         }
 
-        // 안내창 자동 숨기기 함수
         function collapseApiBox() {
             const content = document.getElementById("apiBoxContent");
             const box = document.getElementById("apiBox");
@@ -619,6 +612,16 @@
             content.style.display = "none";
             box.classList.add("collapsed");
             btn.innerText = "안내 펼치기 ▼";
+        }
+
+        // 키 삭제 시에는 안내창이 자동으로 펼쳐지도록 복구
+        function expandApiBox() {
+            const content = document.getElementById("apiBoxContent");
+            const box = document.getElementById("apiBox");
+            const btn = document.getElementById("apiToggleBoxBtn");
+            content.style.display = "block";
+            box.classList.remove("collapsed");
+            btn.innerText = "안내 숨기기 ▲";
         }
 
         function checkApiKeyStatus() {
@@ -662,10 +665,9 @@
             }
         }
 
-        // 입력창 상태에 따라 버튼 형태 변경 함수 (비어있으면 '키 저장하기 ▼', 입력되면 '개인 키 저장하기')
         function checkKeyInputState() {
             let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (savedKey) return; // 이미 저장 완료된 경우 무시
+            if (savedKey) return;
 
             const inputField = document.getElementById("apiKeyInput");
             const saveBtnText = document.getElementById("apiSaveBtnText");
@@ -689,14 +691,11 @@
             let keyVal = inputField.value.trim();
 
             if (keyVal.length > 0) {
-                // 입력창에 키가 있으면 바로 저장 완료
                 localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
                 localStorage.setItem("GEMINI_KEY_TYPE", "personal");
                 checkApiKeyStatus();
-                collapseApiBox(); // 저장 완료 시 안내창 자동 숨김
-                alert("개인 키가 안전하게 저장되었습니다.");
+                collapseApiBox(); // 저장 완료 시에만 안내창 자동 숨김
             } else {
-                // 비어있으면 드롭다운 토글
                 document.getElementById("apiDropdownMenu").classList.toggle("show");
             }
         }
@@ -710,25 +709,21 @@
                     localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
                     localStorage.setItem("GEMINI_KEY_TYPE", "shared");
                     checkApiKeyStatus();
-                    collapseApiBox(); // 저장 완료 시 안내창 자동 숨김
-                    alert("공용 키가 안전하게 적용되었습니다.");
-                } else {
-                    alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
+                    collapseApiBox(); // 저장 완료 시에만 안내창 자동 숨김
                 }
             } else if (type === 'personal') {
                 const inputField = document.getElementById("apiKeyInput");
                 inputField.focus();
-                alert("입력창에 개인 API Key를 붙여넣은 뒤 [개인 키 저장하기] 버튼을 눌러주세요.");
             }
         }
 
         function deleteApiKey() {
-            if (confirm("저장된 API Key를 삭제하시겠습니까?")) {
+            // 키 삭제 시에는 안전을 위해 확인 창 유지
+            if (confirm("정말로 저장된 API Key를 삭제하시겠습니까?")) {
                 localStorage.removeItem("GEMINI_USER_API_KEY");
                 localStorage.removeItem("GEMINI_KEY_TYPE");
                 checkApiKeyStatus();
-                collapseApiBox(); // 키 삭제 시 안내창 자동 숨김
-                alert("API Key가 삭제되었습니다.");
+                expandApiBox(); // 키 삭제 후에는 안내문을 보고 다시 설정할 수 있도록 안내창 펼침
                 document.getElementById("apiKeyInput").focus();
             }
         }
