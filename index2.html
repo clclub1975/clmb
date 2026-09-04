@@ -1,10 +1,10 @@
-<!-- v10.9 적용: API 안내창 문구 수정 ('초간단 개인 (무료)키 발급 및 설치 방법:' 및 보안 문구 변경) (버전 v10.9 업그레이드) -->
+<!-- v11.0 적용: 안내 문구 수정 및 최초 접속 시 공용 키 자동 저장 해제('키 미설정 상태'로 시작) (버전 v11.0 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v10.9</title>
+    <title>촛불회 AI 추억 스토리 생성기 v11.0</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -453,22 +453,22 @@
     </style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v10.9</span></h1>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v11.0</span></h1>
     <div class="chat-container">
         <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
         <div id="apiBox" class="api-box">
             <div class="api-box-header">
-                <span id="apiStatusBadge" class="api-status-badge">🟢 공용 키 사용 중</span>
+                <span id="apiStatusBadge" class="api-status-badge">⚠️ 키 미설정 상태</span>
                 <button type="button" id="apiToggleBoxBtn" class="api-toggle-box-btn" onclick="toggleApiBox()">안내 숨기기 ▲</button>
             </div>
             
             <div id="apiBoxContent" class="api-box-content">
                 <p class="guide-text">
                     📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                    AI 이용을 위해서는 구글 AI 열쇠(API Key)가 필요합니다. 우선은 촛불회 공용 키로 설정해두었습니다만, 공용 키를 다수가 사용할 경우, AI 사용량 한도 때문에 서비스가 제한될 수 있습니다. 따라서 개인 무료 API Key 사용을 권장합니다.<br><br>
+                    AI 이용을 위해서는 구글 AI 열쇠(API Key)가 필요합니다. 임시로 촛불회 공용 키를 사용할 수 있습니다만(아래의 '키 설치하기' 버튼), 공용 키를 다수가 사용할 경우, AI 사용량 한도 때문에 서비스가 제한될 수 있습니다. 따라서 개인 무료 API Key 사용을 권장합니다.<br><br>
                     💡 <b>초간단 개인 (무료)키 발급 및 설치 방법:</b><br>
                     1. 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
-                    2. 파란색 글씨의 <a href="https://aistudio.google.com/app/apikey" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
+                    2. 파란색 글씨의 <a href="https://aistudio.google.com/app/api-keys" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
                     3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
                     4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
                     5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
@@ -483,11 +483,11 @@
                     <div class="api-btn-group">
                         <div class="dropdown" id="apiDropdownContainer">
                             <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
-                                <span id="apiSaveBtnText">공용 키 저장완료</span> <span id="dropdownArrow">▼</span>
+                                <span id="apiSaveBtnText">키 설치하기</span> <span id="dropdownArrow">▼</span>
                             </button>
                             <div id="apiDropdownMenu" class="dropdown-content">
-                                <button type="button" onclick="selectKeyChoice('shared')">공용 키 저장하기</button>
-                                <button type="button" onclick="selectKeyChoice('personal')">개인 키 저장하기</button>
+                                <button type="button" onclick="selectKeyChoice('shared')">공용 키 설치하기</button>
+                                <button type="button" onclick="selectKeyChoice('personal')">개인 키 설치하기</button>
                             </div>
                         </div>
                         <button type="button" id="apiCancelBtn" class="api-cancel-btn" onclick="cancelKeyInput()">취소</button>
@@ -570,7 +570,7 @@
         let isPersonalWaitState = false; // '개인 키 저장대기' 상태 변수
 
         window.onload = async function() {
-            checkAndApplyInitialApiKey();
+            // 최초 접속 시 자동 공용 키 적용 제거 (키 미설정 상태 유지)
             checkApiKeyStatus();
 
             const queryInput = document.getElementById("userQuery");
@@ -609,15 +609,6 @@
                 document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
             }
         };
-
-        function checkAndApplyInitialApiKey() {
-            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            let keyType = localStorage.getItem("GEMINI_KEY_TYPE");
-            if (!savedKey && PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
-                localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
-                localStorage.setItem("GEMINI_KEY_TYPE", "shared");
-            }
-        }
 
         function toggleApiBox() {
             const content = document.getElementById("apiBoxContent");
@@ -671,14 +662,14 @@
                 cancelBtn.style.display = "none";
 
                 if (keyType === "personal") {
-                    saveBtnText.innerText = "개인 키 저장완료";
+                    saveBtnText.innerText = "개인 키 설치완료";
                     saveBtn.disabled = true;
                     dropdownArrow.style.display = "none";
                     statusBadge.innerText = "🔒 개인 키 사용 중";
                     statusBadge.style.color = "#27ae60";
                     statusBadge.style.background = "#e8f8f5";
                 } else {
-                    saveBtnText.innerText = "공용 키 저장완료";
+                    saveBtnText.innerText = "공용 키 설치완료";
                     saveBtn.disabled = true;
                     dropdownArrow.style.display = "none";
                     statusBadge.innerText = "🟢 공용 키 사용 중";
@@ -695,7 +686,7 @@
                 saveBtn.classList.remove("api-wait-btn");
 
                 if (isPersonalWaitState) {
-                    saveBtnText.innerText = "개인 키 저장대기";
+                    saveBtnText.innerText = "개인 키 설치대기";
                     dropdownArrow.style.display = "none";
                     saveBtn.classList.add("api-wait-btn");
                     cancelBtn.style.display = "inline-block";
@@ -716,11 +707,11 @@
             let keyVal = inputField.value.trim();
 
             if (keyVal.length > 0) {
-                saveBtnText.innerText = "개인 키 저장하기";
+                saveBtnText.innerText = "개인 키 설치하기";
                 dropdownArrow.style.display = "none";
                 cancelBtn.style.display = "inline-block";
             } else {
-                saveBtnText.innerText = "키 저장하기";
+                saveBtnText.innerText = "키 설치하기";
                 dropdownArrow.style.display = "inline";
                 cancelBtn.style.display = "none";
             }
@@ -741,7 +732,7 @@
                     checkApiKeyStatus();
                     collapseApiBox();
                 } else {
-                    alert("입력창에 본인의 Gemini API Key를 붙여넣은 뒤 [개인 키 저장대기] 버튼을 눌러주세요.");
+                    alert("입력창에 본인의 Gemini API Key를 붙여넣은 뒤 [개인 키 설치대기] 버튼을 눌러주세요.");
                     inputField.focus();
                 }
             } else if (keyVal.length > 0) {
@@ -765,6 +756,8 @@
                     isPersonalWaitState = false;
                     checkApiKeyStatus();
                     collapseApiBox();
+                } else {
+                    alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
                 }
             } else if (type === 'personal') {
                 const inputField = document.getElementById("apiKeyInput");
