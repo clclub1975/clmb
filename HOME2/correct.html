@@ -1,4 +1,4 @@
-<!-- v1.16: 단위 셀(Unit Cell) 독립 설계 및 CSS Grid 기반의 5열 자동 배치 레이아웃으로 전면 개편 -->
+<!-- v1.17: 단위 셀 간격(gap) 제거 및 테두리 병합 처리로 모눈종이 격자 형태(v1.13 스타일) 완벽 복원 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -80,22 +80,23 @@
             margin-bottom: 20px;
         }
         
-        /* CSS Grid 기반 5열 배치 레이아웃 */
+        /* CSS Grid 기반 5열 배치 레이아웃 (모눈종이 격자) */
         .archive-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 15px; /* 단위 셀 사이의 간격 */
+            gap: 0; /* 단위 셀 사이의 간격 완전 제거 */
+            border-top: 1.5px solid #b0b7c3; /* 전체 표 상단 테두리 */
+            border-left: 1.5px solid #b0b7c3; /* 전체 표 좌측 테두리 */
             margin-bottom: 30px;
         }
 
-        /* 단위 셀(하나의 호수 덩어리) 설계 */
+        /* 단위 셀(하나의 호수 덩어리) 설계 - 겹치지 않는 테두리 기법 적용 */
         .issue-unit {
-            border: 2px solid #4a5568; /* 단위 셀 외곽 테두리 굵게 강조 */
-            border-radius: 4px;
+            border-right: 1.5px solid #b0b7c3; /* 우측 테두리 */
+            border-bottom: 1.5px solid #b0b7c3; /* 하단 테두리 */
             background-color: #ffffff;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
         /* 단위 셀 - 1행 헤더 */
@@ -105,7 +106,7 @@
             font-weight: 600;
             text-align: center;
             padding: 10px 5px;
-            border-bottom: 1.5px solid #4a5568; /* 헤더와 내용 사이 구분선 */
+            border-bottom: 1.5px solid #b0b7c3; /* 헤더와 내용 사이 가로선 */
             font-size: 14px;
         }
 
@@ -120,6 +121,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             background-color: #ffffff;
+            flex-grow: 1; /* 높이 균형 유지 */
         }
 
         /* 단위 셀 - 내부 서브 셀 낱개 */
@@ -129,7 +131,7 @@
             font-size: 14px;
         }
         .sub-cell:not(:last-child) {
-            border-right: 1px solid #d1d5db; /* 내부 서브 셀 간의 얇은 테두리 */
+            border-right: 1.5px solid #b0b7c3; /* 내부 서브 셀 간의 세로선 */
         }
 
         /* 하이퍼링크 및 텍스트 표준 스타일 */
@@ -154,8 +156,8 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.16</span></h1>
-        <div class="commit-remark">v1.16: 단위 셀 독립 설계 및 CSS Grid 기반 5열 배치 레이아웃 적용</div>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.17</span></h1>
+        <div class="commit-remark">v1.17: 단위 셀 간격 제거 및 테두리 병합으로 모눈종이 격자 형태(v1.13) 완벽 복원</div>
     </div>
 
     <div class="intro-box">
