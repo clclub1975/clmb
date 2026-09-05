@@ -1,15 +1,15 @@
-<!-- v12.4: 최근 작업 모드 기억형 엔터 키(새로/연속) 도입 및 타이틀 하단 안내문 추가 -->
+<!-- v12.5: 버튼 텍스트 동적 변경 버그 수정 및 최근 작업 모드 기억형 엔터 키 안정화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 AI 추억 스토리 생성기 v12.4</title>
+<title>촛불회 AI 추억 스토리 생성기 v12.5</title>
 <style>
 body {font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
 h1 {color: #2c3e50; text-align: center; margin-bottom: 5px; }
 .version {font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
-.update-notice {text-align: center; font-size: 13px; color: #2980b9; background: #eef7fc; border: 1px solid #bbe1f1; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
+.update-notice {text-align: center; font-size: 13px; color: #c0392b; background: #fdf2f2; border: 1px solid #f5c6cb; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
 .chat-container {border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
 .control-row {display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
 label {font-weight: bold; min-width: 80px; }
@@ -88,8 +88,8 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 </style>
 </head>
 <body>
-<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.4</span></h1>
-<div class="update-notice">📢 <b>[v12.4 업데이트]</b> 최근 작업 모드 기억형 엔터 키(새로/연속) 도입 및 시각적 인디케이터 추가</div>
+<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.5</span></h1>
+<div class="update-notice">🚨 <b>[v12.5 긴급 패치]</b> '새로 질문하기' 버튼 내부 구조 개편으로 초기화 및 두 번째 이후 연속 질문 오류 완벽 해결</div>
 <div class="chat-container">
 <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
 <div id="apiBox" class="api-box">
@@ -103,7 +103,7 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 촛불회 공용 키를 사용할 수 있습니다만(아래의 '키 설치하기' 버튼 꾹), 공용 키를 다수가 사용할 경우, AI 사용량 한도 때문에 서비스가 제한될 수 있습니다. 따라서 개인 무료 API Key 사용을 권장합니다.<br><br>
 💡 <b>초간단 개인 (무료)키 발급 및 설치 방법:</b><br>
 1. 만약 공용 키가 설치되어 있는 상태라면, 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
-2. 파란색 글씨의 <a href="https://aistudio.google.com/app/api-keys" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
+2. 파란색 글씨의 [여기(Google AI Studio)](https://aistudio.google.com/app/api-keys)를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
 3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
 4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
 5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
@@ -168,8 +168,8 @@ AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 �
 </div>
 </div>
 <div class="action-btn-group">
-<button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기 <span id="enterModeBadge" class="enter-mode-badge enter-mode-new">엔터: 새로</span></button>
-<button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)">연속 질문하기</button>
+<button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)"><span id="submitBtnText">새로 질문하기</span> <span id="enterModeBadge" class="enter-mode-badge enter-mode-new">엔터: 새로</span></button>
+<button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)"><span id="sequentialBtnText">연속 질문하기</span></button>
 <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
 </div>
 
@@ -200,7 +200,7 @@ let activeTaskType = null;
 let conversationHistory = [];
 let lastSingleResult = null;
 let isPersonalWaitState = false;
-let lastUsedIsSequential = false; // [엔터 키 모드 기억용 변수]: 기본값 false (새로 질문)
+let lastUsedIsSequential = false;
 
 // 사용자 정의 메뉴 및 그룹핑(매핑) 정의
 const CUSTOM_MENU_MAPPING = [
@@ -219,7 +219,7 @@ const CUSTOM_MENU_MAPPING = [
 
 window.onload = async function() {
     checkApiKeyStatus();
-    updateEnterModeBadge(); // 초기 인디케이터 배지 갱신
+    updateEnterModeBadge();
     const queryInput = document.getElementById("userQuery");
     const checkAndResizeInput = () => {
         if (queryInput.value.length > 0) {
@@ -257,7 +257,6 @@ window.onload = async function() {
     }
 };
 
-// [엔터 모드 인디케이터 배지 실시간 업데이트 함수]
 function updateEnterModeBadge() {
     const badge = document.getElementById("enterModeBadge");
     if (lastUsedIsSequential) {
@@ -451,7 +450,6 @@ function autoResize(textarea) {
     textarea.style.height = (textarea.scrollHeight - 6) + 'px';
 }
 
-// [엔터 키 핸들러 개선]: 최근 사용한 모드(lastUsedIsSequential)에 따라 새로 질문 또는 연속 질문 자동 실행
 function handleKeyDown(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
@@ -494,7 +492,7 @@ function resetAllContent() {
     toggleClearButton();
     conversationHistory = [];
     lastSingleResult = null;
-    lastUsedIsSequential = false; // 초기화 시 기본 모드로 복원
+    lastUsedIsSequential = false;
     updateEnterModeBadge();
     const resultBox = document.getElementById("aiResult");
     resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
@@ -502,9 +500,9 @@ function resetAllContent() {
     const cumulativeSection = document.getElementById("cumulativeSection");
     cumulativeSection.style.display = "none";
     document.getElementById("cumulativeResultBox").innerHTML = "";
-    document.getElementById("submitBtn").innerText = "새로 질문하기";
+    document.getElementById("submitBtnText").innerText = "새로 질문하기";
     document.getElementById("submitBtn").classList.remove("stop-btn");
-    document.getElementById("sequentialBtn").innerText = "연속 질문하기";
+    document.getElementById("sequentialBtnText").innerText = "연속 질문하기";
     document.getElementById("sequentialBtn").classList.remove("stop-btn");
     queryInput.focus();
 }
@@ -603,13 +601,11 @@ function renderCheckboxes() {
     const container = document.getElementById("checkboxContainer");
     container.innerHTML = "";
 
-    // 12번째 항목: '전체 선택' 체크박스 추가
     let selectAllLabel = document.createElement("label");
     selectAllLabel.className = "checkbox-item select-all";
     selectAllLabel.innerHTML = `<input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"> [ 전체 선택 ]`;
     container.appendChild(selectAllLabel);
 
-    // 기존 11개 항목 추가
     CUSTOM_MENU_MAPPING.forEach(item => {
         let label = document.createElement("label");
         label.className = "checkbox-item";
@@ -723,7 +719,6 @@ async function askAI(isSequential) {
         currentController = null;
     }
 
-    // [버튼 클릭 시 현재 모드 기억 및 인디케이터 업데이트]
     lastUsedIsSequential = isSequential;
     updateEnterModeBadge();
 
@@ -810,13 +805,15 @@ async function askAI(isSequential) {
     const signal = currentController.signal;
 
     const submitBtn = document.getElementById("submitBtn");
+    const submitBtnText = document.getElementById("submitBtnText");
     const sequentialBtn = document.getElementById("sequentialBtn");
+    const sequentialBtnText = document.getElementById("sequentialBtnText");
 
     if (isSequential) {
-        sequentialBtn.innerText = "생성 중단";
+        sequentialBtnText.innerText = "생성 중단";
         sequentialBtn.classList.add("stop-btn");
     } else {
-        submitBtn.innerText = "생성 중단";
+        submitBtnText.innerText = "생성 중단";
         submitBtn.classList.add("stop-btn");
     }
     copyBtn.style.display = "none";
@@ -888,9 +885,9 @@ ${contextPrompt}
     } finally {
         currentController = null;
         activeTaskType = null;
-        submitBtn.innerText = "새로 질문하기";
+        submitBtnText.innerText = "새로 질문하기";
         submitBtn.classList.remove("stop-btn");
-        sequentialBtn.innerText = "연속 질문하기";
+        sequentialBtnText.innerText = "연속 질문하기";
         sequentialBtn.classList.remove("stop-btn");
     }
 }
@@ -910,4 +907,4 @@ function renderCumulativeHistory() {
 </script>
 </body>
 </html>
-<!-- v12.4: 최근 작업 모드 기억형 엔터 키(새로/연속) 도입 및 타이틀 하단 기능 안내문 추가 완료 -->
+<!-- v12.5: 버튼 내부 span 텍스트 분리 및 초기화/연속 질문 오류 완벽 해결 완료 -->
