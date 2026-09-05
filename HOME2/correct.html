@@ -8,88 +8,123 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 30px 20px;
-            color: #24292e;
-            background-color: #fafbfc;
+            padding: 40px 20px;
+            color: #2b3137;
+            background-color: #f8f9fa;
         }
         .back-btn {
             display: inline-block;
             padding: 8px 16px;
             background-color: #ffffff;
-            color: #24292e;
+            color: #2b3137;
             text-decoration: none;
             border-radius: 6px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             border: 1px solid #d1d5db;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
             margin-bottom: 24px;
-            transition: background-color 0.2s;
+            transition: background-color 0.15s;
         }
         .back-btn:hover {
-            background-color: #f3f4f6;
+            background-color: #f1f3f5;
         }
         h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 26px;
+            margin-bottom: 6px;
+            color: #1a1a1a;
         }
         .commit-remark {
-            font-size: 13px;
+            display: inline-block;
+            background-color: #fff3f3;
+            border: 1px solid #f5c6cb;
             color: #d9534f;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
-        .intro-text {
-            color: #586069;
-            margin-bottom: 30px;
-            font-size: 15px;
-        }
-        h3 {
-            border-bottom: 2px solid #eaecef;
-            padding-bottom: 8px;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        /* 호수 아카이브 그리드 레이아웃 스타일 */
-        .archive-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
-            margin-bottom: 30px;
-        }
-        .issue-card {
+        .intro-box {
             background: #ffffff;
             border: 1px solid #e1e4e8;
             border-radius: 8px;
-            overflow: hidden;
+            padding: 20px 24px;
+            margin-bottom: 35px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            color: #586069;
+            font-size: 14.5px;
+        }
+        .intro-box p {
+            margin: 0 0 10px 0;
+        }
+        .intro-box p:last-child {
+            margin-bottom: 0;
+        }
+        h3 {
+            font-size: 18px;
+            color: #24292e;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* 구간별 카드 그룹 컨테이너 */
+        .section-group {
+            background: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #586069;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+        /* 그리드 레이아웃 */
+        .archive-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+        .issue-card {
+            background: #fdfdfe;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            overflow: hidden;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
         .issue-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+            border-color: #cbd5e1;
         }
         .issue-header {
-            background-color: #f6f8fa;
-            padding: 10px 12px;
-            font-size: 13px;
+            background-color: #f1f3f5;
+            padding: 8px 10px;
+            font-size: 12px;
             font-weight: 600;
             border-bottom: 1px solid #e1e4e8;
             text-align: center;
-            color: #24292e;
+            color: #495057;
         }
         .issue-header.active {
             color: #d9534f;
-            background-color: #fdf8f8;
+            background-color: #fff5f5;
+            border-bottom-color: #f5c6cb;
         }
         .issue-links {
             display: flex;
             justify-content: space-around;
-            padding: 12px 8px;
-            font-size: 14px;
+            padding: 10px 6px;
+            font-size: 13.5px;
         }
         .issue-links a {
             text-decoration: none;
@@ -104,7 +139,7 @@
             text-decoration: underline;
         }
         .issue-links span.empty, .issue-links span.inactive {
-            color: #959da5;
+            color: #adb5bd;
         }
         @media (max-width: 900px) {
             .archive-grid {
@@ -117,147 +152,114 @@
 
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
-    <h1>📢 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.2</span></h1>
-    <div class="commit-remark">[커밋 리마크] v1.2: 엑셀형 테이블을 깔끔하고 세련된 카드형 그리드 디자인으로 전면 개편</div>
+    <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.4</span></h1>
+    <div class="commit-remark">[커밋 리마크] v1.4: 스토리 페이지 스타일을 반영하여 어수선함을 없애고 모던한 박스형 그리드 레이아웃으로 개편</div>
 
-    <div class="intro-text">
-        <p>본 페이지는 제미나이가 요약한 촛불회 회보 내용을 회원 여러분과 함께 검토하고 교정하기 위한 준비 현황판입니다.</p>
-        <p>퍼스트 베타(First Beta) 버전이며, 레이아웃과 디자인은 수시로 변경될 수 있습니다. 각 회보의 원본과 제미나이 요약본을 미리 확인하실 수 있습니다.</p>
+    <div class="intro-box">
+        <p>📌 본 페이지는 제미나이가 요약한 촛불회 회보 내용을 회원 여러분과 함께 검토하고 교정하기 위한 준비 현황판입니다.</p>
+        <p>💡 퍼스트 베타(First Beta) 버전이며, 레이아웃과 디자인은 수시로 변경될 수 있습니다. 각 호수의 원본 회보와 제미나이 요약본 링크를 통해 미리 확인하실 수 있습니다.</p>
     </div>
 
     <h3>📋 회보 요약 및 교정 현황</h3>
 
-    <!-- 001~010호 구간 -->
-    <div class="archive-grid">
-        <!-- 001호 -->
-        <div class="issue-card">
-            <div class="issue-header active">[001호] | 1984년 3월호</div>
-            <div class="issue-links">
-                <a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a>
-                <span class="inactive">교정</span>
+    <!-- 001호 ~ 010호 섹션 -->
+    <div class="section-group">
+        <div class="section-title">001호 ~ 010호 구간</div>
+        <div class="archive-grid">
+            <div class="issue-card">
+                <div class="issue-header active">[001호] | 1984년 3월호</div>
+                <div class="issue-links">
+                    <a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank" class="active-link">회보</a>
+                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a>
+                    <span class="inactive">교정</span>
+                </div>
             </div>
-        </div>
-        <!-- 002호 -->
-        <div class="issue-card">
-            <div class="issue-header active">[002호] | 1984년 4월호</div>
-            <div class="issue-links">
-                <a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a>
-                <span class="inactive">교정</span>
+            <div class="issue-card">
+                <div class="issue-header active">[002호] | 1984년 4월호</div>
+                <div class="issue-links">
+                    <a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank" class="active-link">회보</a>
+                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a>
+                    <span class="inactive">교정</span>
+                </div>
             </div>
-        </div>
-        <!-- 003호 -->
-        <div class="issue-card">
-            <div class="issue-header active">[003호] | 1984년 5월호</div>
-            <div class="issue-links">
-                <a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a>
-                <span class="inactive">교정</span>
+            <div class="issue-card">
+                <div class="issue-header active">[003호] | 1984년 5월호</div>
+                <div class="issue-links">
+                    <a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank" class="active-link">회보</a>
+                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a>
+                    <span class="inactive">교정</span>
+                </div>
             </div>
-        </div>
-        <!-- 004호 -->
-        <div class="issue-card">
-            <div class="issue-header">[004호] | ---------------</div>
-            <div class="issue-links"><span class="empty">-</span></div>
-        </div>
-        <!-- 005호 -->
-        <div class="issue-card">
-            <div class="issue-header">[005호] | ---------------</div>
-            <div class="issue-links"><span class="empty">-</span></div>
-        </div>
-        <!-- 006호 -->
-        <div class="issue-card">
-            <div class="issue-header">[006호] | ---------------</div>
-            <div class="issue-links"><span class="empty">-</span></div>
-        </div>
-        <!-- 007호 -->
-        <div class="issue-card">
-            <div class="issue-header">[007호] | ---------------</div>
-            <div class="issue-links"><span class="empty">-</span></div>
-        </div>
-        <!-- 008호 -->
-        <div class="issue-card">
-            <div class="issue-header">[008호] | ---------------</div>
-            <div class="issue-links"><span class="empty">-</span></div>
-        </div>
-        <!-- 009호 -->
-        <div class="issue-card">
-            <div class="issue-header">[009호] | ---------------</div>
-            <div class="issue-links"><span class="empty">-</span></div>
-        </div>
-        <!-- 010호 -->
-        <div class="issue-card">
-            <div class="issue-header">[010호] | ---------------</div>
-            <div class="issue-links"><span class="empty">-</span></div>
+            <div class="issue-card"><div class="issue-header">[004호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[005호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[006호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[007호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[008호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[009호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[010호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
         </div>
     </div>
 
-    <!-- 101~110호 구간 -->
-    <div class="archive-grid">
-        <!-- 101호 ~ 110호 빈 카드들 -->
-        <div class="issue-card"><div class="issue-header">[101호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[102호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[103호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[104호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[105호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[106호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[107호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[108호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[109호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <div class="issue-card"><div class="issue-header">[110호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+    <!-- 101호 ~ 110호 섹션 -->
+    <div class="section-group">
+        <div class="section-title">101호 ~ 110호 구간</div>
+        <div class="archive-grid">
+            <div class="issue-card"><div class="issue-header">[101호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[102호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[103호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[104호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[105호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[106호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[107호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[108호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[109호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[110호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+        </div>
     </div>
 
-    <!-- 151~160호 구간 -->
-    <div class="archive-grid">
-        <!-- 151호 -->
-        <div class="issue-card">
-            <div class="issue-header active">[151호] | 1996년 9월호</div>
-            <div class="issue-links">
-                <a href="https://drive.google.com/file/d/13bWk3jZ4iP7YqNn8t1tL0XmU5bVzW3kL/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p4" target="_blank">요약</a>
-                <span class="inactive">교정</span>
+    <!-- 151호 ~ 160호 섹션 -->
+    <div class="section-group">
+        <div class="section-title">151호 ~ 160호 구간</div>
+        <div class="archive-grid">
+            <div class="issue-card">
+                <div class="issue-header active">[151호] | 1996년 9월호</div>
+                <div class="issue-links">
+                    <a href="https://drive.google.com/file/d/13bWk3jZ4iP7YqNn8t1tL0XmU5bVzW3kL/view?usp=sharing" target="_blank" class="active-link">회보</a>
+                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p4" target="_blank">요약</a>
+                    <span class="inactive">교정</span>
+                </div>
             </div>
-        </div>
-        <!-- 152호 -->
-        <div class="issue-card">
-            <div class="issue-header active">[152호] | 1996년 10월호</div>
-            <div class="issue-links">
-                <a href="https://drive.google.com/file/d/1mB7V_gR_2mQ7c4E0CgT3V2M6L1nQ0P8r/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p5" target="_blank">요약</a>
-                <span class="inactive">교정</span>
+            <div class="issue-card">
+                <div class="issue-header active">[152호] | 1996년 10월호</div>
+                <div class="issue-links">
+                    <a href="https://drive.google.com/file/d/1mB7V_gR_2mQ7c4E0CgT3V2M6L1nQ0P8r/view?usp=sharing" target="_blank" class="active-link">회보</a>
+                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p5" target="_blank">요약</a>
+                    <span class="inactive">교정</span>
+                </div>
             </div>
-        </div>
-        <!-- 153호 -->
-        <div class="issue-card"><div class="issue-header">[153호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <!-- 154호 -->
-        <div class="issue-card">
-            <div class="issue-header active">[154호] | 1996년 12월호</div>
-            <div class="issue-links">
-                <a href="https://drive.google.com/file/d/1P5Z-8V8kX7Z3l-zW0e4L2M8c5Q1yJ9Rt/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p6" target="_blank">요약</a>
-                <span class="inactive">교정</span>
+            <div class="issue-card"><div class="issue-header">[153호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card">
+                <div class="issue-header active">[154호] | 1996년 12월호</div>
+                <div class="issue-links">
+                    <a href="https://drive.google.com/file/d/1P5Z-8V8kX7Z3l-zW0e4L2M8c5Q1yJ9Rt/view?usp=sharing" target="_blank" class="active-link">회보</a>
+                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p6" target="_blank">요약</a>
+                    <span class="inactive">교정</span>
+                </div>
             </div>
-        </div>
-        <!-- 155호 -->
-        <div class="issue-card"><div class="issue-header">[155호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <!-- 156호 -->
-        <div class="issue-card"><div class="issue-header">[156호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <!-- 157호 -->
-        <div class="issue-card">
-            <div class="issue-header active">[157호] | 1997년 3월호</div>
-            <div class="issue-links">
-                <a href="https://drive.google.com/file/d/1rK4bZ2_X1mN8L3C0V9qT6mP2xW7kL8jQ/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p7" target="_blank">요약</a>
-                <span class="inactive">교정</span>
+            <div class="issue-card"><div class="issue-header">[155호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[156호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card">
+                <div class="issue-header active">[157호] | 1997년 3월호</div>
+                <div class="issue-links">
+                    <a href="https://drive.google.com/file/d/1rK4bZ2_X1mN8L3C0V9qT6mP2xW7kL8jQ/view?usp=sharing" target="_blank" class="active-link">회보</a>
+                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p7" target="_blank">요약</a>
+                    <span class="inactive">교정</span>
+                </div>
             </div>
+            <div class="issue-card"><div class="issue-header">[158호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[159호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
+            <div class="issue-card"><div class="issue-header">[160호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
         </div>
-        <!-- 158호 -->
-        <div class="issue-card"><div class="issue-header">[158호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <!-- 159호 -->
-        <div class="issue-card"><div class="issue-header">[159호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        <!-- 160호 -->
-        <div class="issue-card"><div class="issue-header">[160호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
     </div>
 
 </body>
