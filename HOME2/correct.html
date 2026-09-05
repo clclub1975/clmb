@@ -1,4 +1,4 @@
-<!-- v1.18: 단위 셀 외곽 테두리 굵기 강화 및 내부 선 두께 차등 적용 (모눈종이 형태 유지) -->
+<!-- v2.1: 단위 셀 1행의 '|'를 빈칸 하나로 대체 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -84,16 +84,16 @@
         .archive-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 0; /* 간격 없음 */
-            border-top: 2px solid #4a5568; /* 전체 표 상단 외곽선 굵게 */
-            border-left: 2px solid #4a5568; /* 전체 표 좌측 외곽선 굵게 */
+            gap: 0;
+            border-top: 2px solid #4a5568;
+            border-left: 2px solid #4a5568;
             margin-bottom: 30px;
         }
 
         /* 단위 셀(하나의 호수 덩어리) 외곽선 굵게 처리 */
         .issue-unit {
-            border-right: 2px solid #4a5568; /* 단위 셀 우측 선 굵게 */
-            border-bottom: 2px solid #4a5568; /* 단위 셀 하단 선 굵게 */
+            border-right: 2px solid #4a5568;
+            border-bottom: 2px solid #4a5568;
             background-color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -106,7 +106,7 @@
             font-weight: 600;
             text-align: center;
             padding: 10px 5px;
-            border-bottom: 1px solid #d1d5db; /* 헤더와 내용 사이 가로선은 얇게 */
+            border-bottom: 1px solid #d1d5db;
             font-size: 14px;
         }
 
@@ -121,7 +121,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             background-color: #ffffff;
-            flex-grow: 1; /* 높이 균형 유지 */
+            flex-grow: 1;
         }
 
         /* 단위 셀 - 내부 서브 셀 낱개 */
@@ -131,7 +131,7 @@
             font-size: 14px;
         }
         .sub-cell:not(:last-child) {
-            border-right: 1px solid #d1d5db; /* 내부 서브 셀 간의 세로선은 얇게 */
+            border-right: 1px solid #d1d5db;
         }
 
         /* 하이퍼링크 및 텍스트 표준 스타일 */
@@ -156,8 +156,8 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.18</span></h1>
-        <div class="commit-remark">v1.18: 단위 셀 외곽 테두리 굵기 강화 및 내부 선 두께 차등 적용</div>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v2.1</span></h1>
+        <div class="commit-remark">v2.1: 단위 셀 1행의 '|' 기호를 빈칸 하나로 변경</div>
     </div>
 
     <div class="intro-box">
@@ -176,7 +176,7 @@
         
         <!-- [001호] -->
         <div class="issue-unit">
-            <div class="issue-header">[001호] | 1984년 3월호</div>
+            <div class="issue-header">[001호] 1984년 3월호</div>
             <div class="issue-body">
                 <div class="sub-cell"><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank">회보</a></div>
                 <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></div>
@@ -186,7 +186,7 @@
 
         <!-- [002호] -->
         <div class="issue-unit">
-            <div class="issue-header">[002호] | 1984년 4월호</div>
+            <div class="issue-header">[002호] 1984년 4월호</div>
             <div class="issue-body">
                 <div class="sub-cell"><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank">회보</a></div>
                 <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></div>
@@ -196,7 +196,7 @@
 
         <!-- [003호] -->
         <div class="issue-unit">
-            <div class="issue-header">[003호] | 1984년 5월호</div>
+            <div class="issue-header">[003호] 1984년 5월호</div>
             <div class="issue-body">
                 <div class="sub-cell"><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank">회보</a></div>
                 <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></div>
