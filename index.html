@@ -5,68 +5,168 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>촛불회 50년사 아카이브</title>
     <style>
-        body {
-            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            line-height: 1.6;
-            color: #333;
-            background-color: #fcfcfc;
+        :root {
+            --primary-color: #8b0000; /* 깊은 촛불 레드 */
+            --primary-light: #fdf2f2;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
         }
-        h1 {
-            font-size: 1.5rem;
-            color: #b22222;
+
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* 헤더 영역 */
+        header {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            box-shadow: inset 0 -3px 0 var(--primary-color);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 1.05rem;
+            color: #bdc3c7;
+            margin: 0;
+        }
+
+        /* 메인 컨테이너 */
+        main {
+            max-width: 900px;
+            width: 90%;
+            margin: -30px auto 40px auto; /* 헤더와 살짝 겹치도록 배치 */
+            flex: 1;
+        }
+
+        /* 안내 공지 박스 */
+        .notice-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary-color);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .notice-card strong {
+            color: var(--primary-color);
+        }
+
+        /* 메뉴 카드 그리드 */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .menu-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            border-color: var(--primary-color);
+        }
+
+        .menu-card .icon {
+            font-size: 2.5rem;
             margin-bottom: 15px;
         }
-        .notice {
-            background-color: #fff9f9;
-            border-left: 4px solid #b22222;
-            padding: 15px;
-            margin-bottom: 25px;
-            font-size: 0.95rem;
-            color: #555;
+
+        .menu-card h2 {
+            font-size: 1.2rem;
+            margin: 0 0 8px 0;
+            color: var(--text-main);
         }
-        ul {
-            list-style: none;
-            padding: 0;
+
+        .menu-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.4;
         }
-        li {
-            margin-bottom: 12px;
-        }
-        a {
-            display: inline-block;
-            text-decoration: none;
-            color: #0066cc;
-            font-weight: bold;
-            font-size: 1.05rem;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background-color: #f1f7fc;
-            transition: background-color 0.2s;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        a:hover {
-            background-color: #e1effc;
-            color: #004080;
+
+        /* 푸터 영역 */
+        footer {
+            text-align: center;
+            padding: 30px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
         }
     </style>
 </head>
 <body>
 
-    <h1>🕯️ 촛불회 회보 아카이브 메인</h1>
-    
-    <div class="notice">
-        📢 본 페이지는 촛불회 회보를 통하여 촛불회의 역사를 들여다보고자 하는 페이지입니다.<br>
-        본 페이지는 퍼스트 베타(First Beta) 버전이며, 레이아웃과 디자인은 수시로 변경될 수 있음을 미리 알려드립니다.
-    </div>
+    <header>
+        <h1>🕯️ 촛불회 50년사 아카이브</h1>
+        <p>1975년부터 이어온 반세기의 기록과 기억을 담다</p>
+    </header>
 
-    <ul>
-        <li><a href="HOME2/story.html">촛불회 AI 추억 스토리</a></li>
-        <li><a href="HOME2/correct.md">회보(PDF) 보기 및 AI 요약 내용 교정하기</a></li>
-        <li><a href="HOME2/articles.html">기고문 전문 보기</a></li>
-    </ul>
+    <main>
+        <div class="notice-card">
+            <strong>📢 안내 말씀</strong><br>
+            본 페이지는 촛불회 회보를 통하여 지난 역사를 되짚어보고자 마련된 공간입니다. 현재 퍼스트 베타(First Beta) 버전으로 운영 중이며, 원활한 이용을 위해 지속적으로 보완되고 있습니다.
+        </div>
+
+        <div class="menu-grid">
+            <a href="HOME2/story.html" class="menu-card">
+                <div class="icon">✨</div>
+                <h2>촛불회 AI 추억 스토리</h2>
+                <p>인공지능과 함께 회보 속 숨겨진 이야기와 추억을 생생하게 되짚어봅니다.</p>
+            </a>
+
+            <a href="HOME2/correct.md" class="menu-card">
+                <div class="icon">📝</div>
+                <h2>회보 보기 및 AI 요약 교정</h2>
+                <p>원본 회보(PDF)를 확인하고 AI가 요약한 내용의 정확도를 함께 검토합니다.</p>
+            </a>
+
+            <a href="HOME2/articles.html" class="menu-card">
+                <div class="icon">📖</div>
+                <h2>기고문 전문 보기</h2>
+                <p>회원들의 손으로 직접 써 내려간 진솔한 기고문과 감동의 전문을 열람합니다.</p>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 촛불회 50년사 편찬 위원회 All Rights Reserved.
+    </footer>
 
 </body>
 </html>
