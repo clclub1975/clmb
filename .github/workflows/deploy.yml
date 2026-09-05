@@ -1,3 +1,4 @@
+# v13.3: 서브디렉토리 HOME2/story.html 파일의 공용 API 키 자동 주입 경로 추가
 name: Deploy to GitHub Pages
 
 on:
@@ -22,7 +23,7 @@ jobs:
 
       - name: Inject API Key
         run: |
-          sed -i 's/__SHARED_API_KEY__/${{ secrets.SHARED_GEMINI_API_KEY }}/g' index2.html
+          sed -i 's/__SHARED_API_KEY__/${{ secrets.SHARED_GEMINI_API_KEY }}/g' index2.html HOME2/story.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
