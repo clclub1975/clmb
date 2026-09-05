@@ -82,7 +82,7 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 </style>
 </head>
 <body>
-<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.2</span></h1>
+<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.3</span></h1>
 <div class="chat-container">
 <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
 <div id="apiBox" class="api-box">
@@ -800,7 +800,6 @@ async function askAI(isSequential) {
     try {
         let contextPrompt = "";
         if (isSequential && conversationHistory.length > 0) {
-            // [일반화된 분석 프롬프트 로직]: 이전 대화 기록 속의 데이터나 분석 결과를 후속 질문(통계, 요약, 비교 등)에서 적극적으로 재참조하도록 가이드 강화
             contextPrompt = `
 [이전 대화 기록 및 분석 컨텍스트]
 ${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}
@@ -883,4 +882,3 @@ function renderCumulativeHistory() {
 </script>
 </body>
 </html>
-<!-- v12.2: 연속 질문 시 대화 기록 및 분석 지침 일반화 로직 적용 완료 -->
