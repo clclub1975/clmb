@@ -1,4 +1,4 @@
-<!-- v1.15: 단위 셀 외곽 테두리를 더 굵게 강조하고 내부 서브 셀 테두리는 기존 유지하도록 스타일 조정 -->
+<!-- v1.16: 단위 셀(Unit Cell) 독립 설계 및 CSS Grid 기반의 5열 자동 배치 레이아웃으로 전면 개편 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -79,60 +79,66 @@
             color: #24292e;
             margin-bottom: 20px;
         }
-        .markdown-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
+        
+        /* CSS Grid 기반 5열 배치 레이아웃 */
+        .archive-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px; /* 단위 셀 사이의 간격 */
             margin-bottom: 30px;
-            font-size: 14px;
-        }
-        /* 기본 서브 셀 테두리 (기존 굵기 유지) */
-        .markdown-table th, .markdown-table td {
-            border: 1px solid #d1d5db;
-            padding: 10px 12px;
-            text-align: center;
-        }
-        /* 단위 셀(호수 단위) 외곽 테두리를 더 굵게(2.5px) 강조하는 규칙 */
-        .markdown-table th[colspan="3"] {
-            border-top: 2.5px solid #4a5568;
-            border-left: 2.5px solid #4a5568;
-            border-right: 2.5px solid #4a5568;
-            border-bottom: 1.5px solid #4a5568;
-        }
-        .markdown-table td:nth-child(3n-2), 
-        .markdown-table td:nth-child(3n-1), 
-        .markdown-table td:nth-child(3n) {
-            /* 각 3칸(회보, 요약, 교정)이 하나의 단위 셀을 구성하므로 외곽 하단 및 좌우 테두리 보강 */
-        }
-        /* 행 그룹별(1행 헤더와 2행 내용) 하단/좌우 외곽선 일괄 처리용 클래스 */
-        .unit-top {
-            border-top: 2.5px solid #4a5568 !important;
-        }
-        .unit-bottom {
-            border-bottom: 2.5px solid #4a5568 !important;
-        }
-        .unit-left {
-            border-left: 2.5px solid #4a5568 !important;
-        }
-        .unit-right {
-            border-right: 2.5px solid #4a5568 !important;
         }
 
-        .markdown-table th {
+        /* 단위 셀(하나의 호수 덩어리) 설계 */
+        .issue-unit {
+            border: 2px solid #4a5568; /* 단위 셀 외곽 테두리 굵게 강조 */
+            border-radius: 4px;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 단위 셀 - 1행 헤더 */
+        .issue-header {
             background-color: #f6f8fa;
             color: #1a1a1a;
             font-weight: 600;
+            text-align: center;
+            padding: 10px 5px;
+            border-bottom: 1.5px solid #4a5568; /* 헤더와 내용 사이 구분선 */
+            font-size: 14px;
         }
-        .markdown-table th.inactive-issue {
+
+        /* 비활성 단위 셀(004~030) 헤더 스타일 */
+        .issue-unit.inactive .issue-header {
             color: #959da5;
             background-color: #fafbfc;
         }
-        .markdown-table a {
+
+        /* 단위 셀 - 2행 서브 셀 컨테이너 (3열 구조) */
+        .issue-body {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background-color: #ffffff;
+        }
+
+        /* 단위 셀 - 내부 서브 셀 낱개 */
+        .sub-cell {
+            text-align: center;
+            padding: 10px 5px;
+            font-size: 14px;
+        }
+        .sub-cell:not(:last-child) {
+            border-right: 1px solid #d1d5db; /* 내부 서브 셀 간의 얇은 테두리 */
+        }
+
+        /* 하이퍼링크 및 텍스트 표준 스타일 */
+        .sub-cell a {
             text-decoration: underline;
             color: #0366d6;
             font-weight: 500;
         }
-        .markdown-table a:hover {
+        .sub-cell a:hover {
             opacity: 0.8;
         }
         .plain-text {
@@ -148,8 +154,8 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.15</span></h1>
-        <div class="commit-remark">v1.15: 단위 셀 외곽 테두리를 더 굵게 강조하고 내부 서브 셀 테두리는 기존 유지</div>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.16</span></h1>
+        <div class="commit-remark">v1.16: 단위 셀 독립 설계 및 CSS Grid 기반 5열 배치 레이아웃 적용</div>
     </div>
 
     <div class="intro-box">
@@ -163,127 +169,310 @@
 
     <h3>📋 회보 요약 및 교정 현황</h3>
 
-    <table class="markdown-table">
-        <!-- 001 ~ 005호 -->
-        <tr>
-            <th colspan="3" class="unit-top unit-left"> [001호] | 1984년 3월호 </th>
-            <th colspan="3" class="unit-top"> [002호] | 1984년 4월호 </th>
-            <th colspan="3" class="unit-top"> [003호] | 1984년 5월호 </th>
-            <th colspan="3" class="unit-top inactive-issue">[004호]</th>
-            <th colspan="3" class="unit-top unit-right inactive-issue">[005호]</th>
-        </tr>
-        <tr>
-            <td class="unit-left"><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank">회보</a></td>
-            <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></td>
-            <td class="unit-right"><span class="plain-text">교정</span></td>
-            
-            <td class="unit-left"><a href="url?id=3" target="_blank">회보</a></td>
-            <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></td>
-            <td class="unit-right"><span class="plain-text">교정</span></td>
-            
-            <td class="unit-left"><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank">회보</a></td>
-            <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></td>
-            <td class="unit-right"><span class="plain-text">교정</span></td>
-            
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-        </tr>
-        <tr>
-            <td colspan="15" style="border:none; height: 10px;"></td> <!-- 셀 블록 간 미세 간격 -->
-        </tr>
+    <!-- 001~030호 단위 셀 아카이브 그리드 -->
+    <div class="archive-grid">
+        
+        <!-- [001호] -->
+        <div class="issue-unit">
+            <div class="issue-header">[001호] | 1984년 3월호</div>
+            <div class="issue-body">
+                <div class="sub-cell"><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank">회보</a></div>
+                <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></div>
+                <div class="sub-cell"><span class="plain-text">교정</span></div>
+            </div>
+        </div>
 
-        <!-- 006 ~ 010호 -->
-        <tr>
-            <th colspan="3" class="unit-top unit-left inactive-issue">[006호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[007호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[008호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[009호]</th>
-            <th colspan="3" class="unit-top unit-right inactive-issue">[010호]</th>
-        </tr>
-        <tr>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-        </tr>
-        <tr>
-            <td colspan="15" style="border:none; height: 10px;"></td>
-        </tr>
+        <!-- [002호] -->
+        <div class="issue-unit">
+            <div class="issue-header">[002호] | 1984년 4월호</div>
+            <div class="issue-body">
+                <div class="sub-cell"><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank">회보</a></div>
+                <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></div>
+                <div class="sub-cell"><span class="plain-text">교정</span></div>
+            </div>
+        </div>
 
-        <!-- 011 ~ 015호 -->
-        <tr>
-            <th colspan="3" class="unit-top unit-left inactive-issue">[011호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[012호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[013호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[014호]</th>
-            <th colspan="3" class="unit-top unit-right inactive-issue">[015호]</th>
-        </tr>
-        <tr>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-        </tr>
-        <tr>
-            <td colspan="15" style="border:none; height: 10px;"></td>
-        </tr>
+        <!-- [003호] -->
+        <div class="issue-unit">
+            <div class="issue-header">[003호] | 1984년 5월호</div>
+            <div class="issue-body">
+                <div class="sub-cell"><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank">회보</a></div>
+                <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></div>
+                <div class="sub-cell"><span class="plain-text">교정</span></div>
+            </div>
+        </div>
 
-        <!-- 016 ~ 020호 -->
-        <tr>
-            <th colspan="3" class="unit-top unit-left inactive-issue">[016호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[017호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[018호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[019호]</th>
-            <th colspan="3" class="unit-top unit-right inactive-issue">[020호]</th>
-        </tr>
-        <tr>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-        </tr>
-        <tr>
-            <td colspan="15" style="border:none; height: 10px;"></td>
-        </tr>
+        <!-- [004호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[004호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
 
-        <!-- 021 ~ 025호 -->
-        <tr>
-            <th colspan="3" class="unit-top unit-left inactive-issue">[021호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[022호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[023호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[024호]</th>
-            <th colspan="3" class="unit-top unit-right inactive-issue">[025호]</th>
-        </tr>
-        <tr>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-        </tr>
-        <tr>
-            <td colspan="15" style="border:none; height: 10px;"></td>
-        </tr>
+        <!-- [005호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[005호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
 
-        <!-- 026 ~ 030호 -->
-        <tr>
-            <th colspan="3" class="unit-top unit-left inactive-issue">[026호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[027호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[028호]</th>
-            <th colspan="3" class="unit-top inactive-issue">[029호]</th>
-            <th colspan="3" class="unit-top unit-right inactive-issue">[030호]</th>
-        </tr>
-        <tr>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
-        </tr>
-    </table>
+        <!-- [006호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[006호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [007호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[007호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [008호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[008호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [009호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[009호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [010호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[010호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [011호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[011호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [012호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[012호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [013호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[013호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [014호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[014호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [015호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[015호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [016호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[016호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [017호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[017호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [018호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[018호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [019호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[019호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [020호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[020호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [021호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[021호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [022호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[022호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [023호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[023호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [024호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[024호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [025호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[025호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [026호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[026호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [027호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[027호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [028호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[028호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [029호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[029호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+        <!-- [030호] -->
+        <div class="issue-unit inactive">
+            <div class="issue-header">[030호]</div>
+            <div class="issue-body">
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                <div class="sub-cell"><span class="empty-cell">-</span></div>
+            </div>
+        </div>
+
+    </div>
 
 </body>
 </html>
