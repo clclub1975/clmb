@@ -1,4 +1,4 @@
-<!-- v2.1: HOME2/articles.html에 메인으로 돌아가는 홈 버튼 추가 및 버전 표기 -->
+<!-- v2.3: HOME2/articles.html의 홈 버튼 링크를 index.html로 수정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,6 +7,8 @@
     <style>
         body { font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; background-color: #f9fafb; }
         h1 { text-align: center; color: #1f2937; margin-bottom: 10px; }
+        .version-badge { font-size: 14px; font-weight: normal; color: #6b7280; margin-left: 8px; }
+        .commit-remark { text-align: center; font-size: 13px; color: #d9534f; background-color: #fdf2f2; padding: 6px; border-radius: 4px; margin-bottom: 25px; border: 1px dashed #f5c6cb; }
         p.subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; }
         
         .home-btn-container {
@@ -102,10 +104,16 @@
 
     <!-- 메인으로 돌아가는 홈 버튼 -->
     <div class="home-btn-container">
-        <a href="../index.md" class="home-btn">← 메인으로 돌아가기</a>
+        <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브</h1>
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v2.3</span></h1>
+    
+    <!-- 개발 중 커밋 리마크 표시 영역 (최종 완성 시 제거) -->
+    <div class="commit-remark">
+        [개발 리마크] v2.3: 홈 버튼 링크 경로를 index.md에서 index.html로 수정
+    </div>
+
     <p class="subtitle">기수, 기고자, 기고문을 순서대로 선택하여 전문을 확인하세요.</p>
 
     <!-- 가로 배치형 필터 박스 -->
@@ -152,7 +160,6 @@
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
 
-        // 따옴표와 줄바꿈(셀 내부 줄바꿈)을 완벽하게 처리하는 표준 CSV 파서
         function parseCSV(text) {
             let lines = [];
             let row = [''];
@@ -187,7 +194,6 @@
             }
 
             const result = [];
-            // 첫 번째 줄(헤더)을 제외하고 데이터 매핑
             for (let i = 1; i < lines.length; i++) {
                 const r = lines[i];
                 if (r.length >= 8 && r[0].trim() !== '') {
@@ -199,14 +205,13 @@
                         author: r[4] ? r[4].trim() : '',
                         type: r[5] ? r[5].trim() : '',
                         title: r[6] ? r[6].trim() : '',
-                        content: r[7] ? r[7].trim() : '' // H열 전문 전체 통째로 반영
+                        content: r[7] ? r[7].trim() : ''
                     });
                 }
             }
             return result;
         }
 
-        // 구글 시트 데이터 비동기 로드
         async function loadSheetData() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -223,7 +228,6 @@
         function initDropdowns() {
             cohortSelect.innerHTML = '<option value="">-- 기수를 선택하세요 --</option><option value="전체">전체</option>';
             
-            // 기수 열에 이상한 문장이나 텍스트가 섞이는 것을 방지하기 위해 정규식 검증 (예: '숫자기' 또는 '기록 없음' 만 허용)
             const validCohorts = articlesData.map(item => item.cohort).filter(cohort => {
                 return cohort && (/^\d+기$/.test(cohort) || cohort === '기록 없음');
             });
@@ -245,7 +249,6 @@
             contentBody.textContent = '원하시는 기고문을 선택하시면 이곳에 전문이 표시됩니다.';
         }
 
-        // 1단계: 기수 선택 시
         cohortSelect.addEventListener('change', function() {
             const selectedCohort = this.value;
             authorSelect.innerHTML = '<option value="">-- 기고자를 선택하세요 --</option>';
@@ -273,7 +276,6 @@
             });
         });
 
-        // 2단계: 기고자 선택 시
         authorSelect.addEventListener('change', function() {
             const selectedCohort = cohortSelect.value;
             const selectedAuthor = this.value;
@@ -300,7 +302,6 @@
             });
         });
 
-        // 3단계: 기고문 선택 시 H열 전문 전체 통째로 출력
         articleSelect.addEventListener('change', function() {
             const selectedId = this.value;
             if (!selectedId) {
@@ -315,7 +316,7 @@
                 metaInfo.style.display = 'block';
                 metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type} | 관리번호: ${article.id}`;
                 contentBody.className = '';
-                contentBody.textContent = article.content; // H열의 원본 텍스트 전체 통째로 출력
+                contentBody.textContent = article.content;
             }
         });
 
