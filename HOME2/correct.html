@@ -1,4 +1,4 @@
-<!-- v2.1: 단위 셀 1행의 '|'를 빈칸 하나로 대체 -->
+<!-- v2.2: 단위 셀 1행의 공백을 세 개로 확장하고, 전체 그리드 폭을 3/4 수준으로 축소 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -80,7 +80,7 @@
             margin-bottom: 20px;
         }
         
-        /* CSS Grid 기반 5열 배치 레이아웃 (모눈종이 격자) */
+        /* CSS Grid 기반 5열 배치 레이아웃 (가로폭을 3/4 수준으로 축소 및 중앙 정렬) */
         .archive-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -88,6 +88,9 @@
             border-top: 2px solid #4a5568;
             border-left: 2px solid #4a5568;
             margin-bottom: 30px;
+            max-width: 75%;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* 단위 셀(하나의 호수 덩어리) 외곽선 굵게 처리 */
@@ -156,8 +159,8 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v2.1</span></h1>
-        <div class="commit-remark">v2.1: 단위 셀 1행의 '|' 기호를 빈칸 하나로 변경</div>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v2.2</span></h1>
+        <div class="commit-remark">v2.2: 호수와 발행년월 사이 공백 3칸으로 확장 및 그리드 폭 3/4 축소</div>
     </div>
 
     <div class="intro-box">
@@ -176,7 +179,7 @@
         
         <!-- [001호] -->
         <div class="issue-unit">
-            <div class="issue-header">[001호] 1984년 3월호</div>
+            <div class="issue-header">[001호]&nbsp;&nbsp;&nbsp;1984년 3월호</div>
             <div class="issue-body">
                 <div class="sub-cell"><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank">회보</a></div>
                 <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></div>
@@ -186,7 +189,7 @@
 
         <!-- [002호] -->
         <div class="issue-unit">
-            <div class="issue-header">[002호] 1984년 4월호</div>
+            <div class="issue-header">[002호]&nbsp;&nbsp;&nbsp;1984년 4월호</div>
             <div class="issue-body">
                 <div class="sub-cell"><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank">회보</a></div>
                 <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></div>
@@ -196,7 +199,7 @@
 
         <!-- [003호] -->
         <div class="issue-unit">
-            <div class="issue-header">[003호] 1984년 5월호</div>
+            <div class="issue-header">[003호]&nbsp;&nbsp;&nbsp;1984년 5월호</div>
             <div class="issue-body">
                 <div class="sub-cell"><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank">회보</a></div>
                 <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></div>
