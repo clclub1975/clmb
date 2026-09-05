@@ -1,1204 +1,833 @@
-<!-- v11.3 적용: 안내문 1번 항목 문구 미세 수정 ('먼저 공용 키가' -> '만약 공용 키가') (버전 v11.3 업그레이드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v11.3</title>
-    <style>
-        body {
-            font-family: 'Malgun Gothic', sans-serif;
-            max-width: 850px;
-            margin: 40px auto;
-            padding: 20px;
-            line-height: 1.6;
-            color: #333;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-        }
-        .version {
-            font-size: 0.4em;
-            color: #888;
-            vertical-align: middle;
-            margin-left: 10px;
-        }
-        .chat-container {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            background: #f9f9f9;
-        }
-        .control-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        label {
-            font-weight: bold;
-            min-width: 80px;
-        }
-        select, input[type="text"], input[type="password"] {
-            padding: 10px;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-        }
-        /* API 가이드 박스 스타일 */
-        .api-box {
-            background: #fff8e1;
-            border: 1px solid #ffe0b2;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            transition: padding 0.2s ease;
-        }
-        .api-box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .api-box.collapsed {
-            padding-top: 12px;
-            padding-bottom: 12px;
-        }
-        .api-status-badge {
-            font-size: 13px;
-            font-weight: bold;
-            color: #d35400;
-            background: #ffecb3;
-            padding: 3px 8px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-        .api-toggle-box-btn {
-            background: none;
-            border: 1px solid #d7ccc8;
-            border-radius: 4px;
-            padding: 4px 10px;
-            font-size: 13px;
-            font-weight: bold;
-            color: #5d4037;
-            cursor: pointer;
-            background-color: #fff;
-        }
-        .api-toggle-box-btn:hover {
-            background-color: #f5eef0;
-        }
-        .api-box-content {
-            display: block;
-            margin-top: 12px;
-        }
-        .api-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            position: relative;
-        }
-        .api-row input {
-            flex: 1;
-        }
-        
-        /* 버튼 그룹 컨테이너 스타일 */
-        .api-btn-group {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .api-save-btn {
-            background: #f57c00;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .api-save-btn:hover {
-            background: #e65100;
-        }
-        .api-save-btn:disabled {
-            background: #bdbdbd;
-            cursor: not-allowed;
-        }
-        .api-wait-btn {
-            background: #e67e22 !important;
-        }
-        .api-wait-btn:hover {
-            background: #d35400 !important;
-        }
-        /* 취소 버튼 스타일 */
-        .api-cancel-btn {
-            background: #95a5a6;
-            color: white;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            display: none;
-        }
-        .api-cancel-btn:hover {
-            background: #7f8c8d;
-        }
-
-        /* 드롭다운 메뉴 스타일 */
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            bottom: 100%;
-            margin-bottom: 5px;
-            background-color: #ffffff;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            z-index: 10;
-        }
-        .dropdown-content button {
-            color: #333;
-            padding: 10px 14px;
-            text-align: left;
-            background: none;
-            border: none;
-            width: 100%;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .dropdown-content button:hover {
-            background-color: #f1f1f1;
-            color: #f57c00;
-        }
-        .dropdown-content button:first-child {
-            border-bottom: 1px solid #eee;
-        }
-        .show {
-            display: block;
-        }
-
-        .api-del-btn {
-            background: #d32f2f;
-            color: white;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .api-del-btn:hover {
-            background: #c62828;
-        }
-        .guide-text {
-            font-size: 13px;
-            color: #5d4037;
-            line-height: 1.5;
-            margin: 0;
-        }
-        .guide-text a {
-            color: #0277bd;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-        .security-alert {
-            margin-top: 10px;
-            font-size: 13px;
-            color: #5d4037;
-            line-height: 1.5;
-        }
-        .toggle-btn {
-            background: #eef2f5;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 8px 14px;
-            font-size: 14px;
-            cursor: pointer;
-            color: #334155;
-            font-weight: bold;
-        }
-        .toggle-btn:hover {
-            background: #cbd5e1;
-        }
-        .checkbox-panel {
-            display: none;
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 10px;
-        }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .input-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-            align-items: flex-end;
-        }
-        .input-wrapper {
-            position: relative;
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-        .input-wrapper textarea {
-            width: 100%;
-            padding: 10px;
-            padding-right: 35px;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-            font-family: 'Malgun Gothic', sans-serif;
-            resize: none;
-            overflow-y: hidden;
-            min-height: 44px;
-            line-height: 1.4;
-            white-space: pre-wrap;
-        }
-        .clear-btn {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            color: #999;
-            cursor: pointer;
-            font-weight: bold;
-            display: none;
-        }
-        .clear-btn:hover {
-            color: #333;
-        }
-        .action-btn-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .submit-btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .submit-btn:hover {
-            background-color: #2980b9;
-        }
-        .sequential-btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            background-color: #9b59b6;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .sequential-btn:hover {
-            background-color: #8e44ad;
-        }
-        .reset-all-btn {
-            padding: 12px 16px;
-            font-size: 15px;
-            background-color: #7f8c8d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .reset-all-btn:hover {
-            background-color: #707b7c;
-        }
-        .stop-btn {
-            background-color: #e74c3c !important;
-        }
-        .stop-btn:hover {
-            background-color: #c0392b !important;
-        }
-        .result-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            margin-bottom: 0;
-        }
-        .result-header-row h3 {
-            margin: 0;
-        }
-        .copy-btn {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            display: none;
-        }
-        .copy-btn:hover {
-            background-color: #219653;
-        }
-        .result-box {
-            margin-top: 8px;
-            padding: 10px 15px;
-            background: white;
-            border: 1px solid #e1e1e1;
-            border-radius: 4px;
-            min-height: 100px;
-            max-height: 450px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .cumulative-section {
-            margin-top: 30px;
-            border-top: 2px dashed #cbd5e1;
-            padding-top: 15px;
-            display: none;
-        }
-        .cumulative-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0;
-        }
-        .cumulative-header-row h3 {
-            margin: 0;
-            color: #8e44ad;
-        }
-        .cumulative-box {
-            margin-top: 8px;
-            padding: 10px 15px;
-            background: #fffdf9;
-            border: 1px solid #dcdde1;
-            border-radius: 4px;
-            min-height: 100px;
-            max-height: 550px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .loading {
-            color: #666;
-            font-style: italic;
-            margin: 2px 0 0 0;
-            padding: 0;
-            display: block;
-            line-height: 1.2;
-        }
-        .result-question {
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 0;
-            padding: 0;
-            line-height: 1.2;
-        }
-        .result-divider {
-            color: #888;
-            margin: 2px 0 0 0;
-            padding: 0;
-            font-family: monospace;
-            font-weight: bold;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-        .result-content {
-            margin: 4px 0 0 0;
-            padding: 0;
-            line-height: 1.5;
-        }
-        .cumulative-item {
-            margin-top: 0;
-            margin-bottom: 0;
-            padding: 0;
-        }
-        .cumulative-separator {
-            text-align: center;
-            color: #b2bec3;
-            margin: 10px 0;
-            font-weight: bold;
-            font-family: monospace;
-            line-height: 1;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>촛불회 AI 추억 스토리 생성기 v12.1</title>
+<style>
+body {font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+h1 {color: #2c3e50; text-align: center; }
+.version {font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
+.chat-container {border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
+.control-row {display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+label {font-weight: bold; min-width: 80px; }
+select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; }
+/* API 가이드 박스 스타일 */
+.api-box {background: #fff8e1; border: 1px solid #ffe0b2; padding: 15px; border-radius: 8px; margin-bottom: 20px; transition: padding 0.2s ease; }
+.api-box-header {display: flex; justify-content: space-between; align-items: center; }
+.api-box.collapsed {padding-top: 12px; padding-bottom: 12px; }
+.api-status-badge {font-size: 13px; font-weight: bold; color: #d35400; background: #ffecb3; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+.api-toggle-box-btn {background: none; border: 1px solid #d7ccc8; border-radius: 4px; padding: 4px 10px; font-size: 13px; font-weight: bold; color: #5d4037; cursor: pointer; background-color: #fff; }
+.api-toggle-box-btn:hover {background-color: #f5eef0; }
+.api-box-content {display: block; margin-top: 12px; }
+.api-row {display: flex; align-items: center; gap: 10px; margin-top: 10px; position: relative; }
+.api-row input {flex: 1; }
+/* 버튼 그룹 컨테이너 스타일 */
+.api-btn-group {display: flex; gap: 6px; align-items: center; }
+.dropdown {position: relative; display: inline-block; }
+.api-save-btn {background: #f57c00; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.api-save-btn:hover {background: #e65100; }
+.api-save-btn:disabled {background: #bdbdbd; cursor: not-allowed; }
+.api-wait-btn {background: #e67e22 !important; }
+.api-wait-btn:hover {background: #d35400 !important; }
+/* 취소 버튼 스타일 */
+.api-cancel-btn {background: #95a5a6; color: white; border: none; padding: 10px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: none; }
+.api-cancel-btn:hover {background: #7f8c8d; }
+/* 드롭다운 메뉴 스타일 */
+.dropdown-content {display: none; position: absolute; right: 0; bottom: 100%; margin-bottom: 5px; background-color: #ffffff; min-width: 160px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); border: 1px solid #ddd; border-radius: 4px; z-index: 10; }
+.dropdown-content button {color: #333; padding: 10px 14px; text-align: left; background: none; border: none; width: 100%; cursor: pointer; font-size: 14px; font-weight: bold; }
+.dropdown-content button:hover {background-color: #f1f1f1; color: #f57c00; }
+.dropdown-content button:first-child {border-bottom: 1px solid #eee; }
+.show {display: block; }
+.api-del-btn {background: #d32f2f; color: white; border: none; padding: 10px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+.api-del-btn:hover {background: #c62828; }
+.guide-text {font-size: 13px; color: #5d4037; line-height: 1.5; margin: 0; }
+.guide-text a {color: #0277bd; font-weight: bold; text-decoration: underline; }
+.security-alert {margin-top: 10px; font-size: 13px; color: #5d4037; line-height: 1.5; }
+.toggle-btn {background: #eef2f5; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 14px; font-size: 14px; cursor: pointer; color: #334155; font-weight: bold; }
+.toggle-btn:hover {background: #cbd5e1; }
+.checkbox-panel {display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+.checkbox-grid {display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.checkbox-item {display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+.input-group {display: flex; gap: 8px; margin-top: 15px; align-items: flex-end; }
+.input-wrapper {position: relative; flex: 1; display: flex; align-items: center; }
+.input-wrapper textarea {width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; white-space: pre-wrap; }
+.clear-btn {position: absolute; right: 10px; top: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
+.clear-btn:hover {color: #333; }
+.action-btn-group {display: flex; gap: 8px; margin-top: 10px; }
+.submit-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.submit-btn:hover {background-color: #2980b9; }
+.sequential-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.sequential-btn:hover {background-color: #8e44ad; }
+.reset-all-btn {padding: 12px 16px; font-size: 15px; background-color: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.reset-all-btn:hover {background-color: #707b7c; }
+.stop-btn {background-color: #e74c3c !important; }
+.stop-btn:hover {background-color: #c0392b !important; }
+.result-header-row {display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 0; }
+.result-header-row h3 {margin: 0; }
+.copy-btn {background-color: #27ae60; color: white; border: none; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
+.copy-btn:hover {background-color: #219653; }
+.result-box {margin-top: 8px; padding: 10px 15px; background: white; border: 1px solid #e1e1e1; border-radius: 4px; min-height: 100px; max-height: 450px; overflow-y: auto; white-space: pre-wrap; }
+.cumulative-section {margin-top: 30px; border-top: 2px dashed #cbd5e1; padding-top: 15px; display: none; }
+.cumulative-header-row {display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
+.cumulative-header-row h3 {margin: 0; color: #8e44ad; }
+.cumulative-box {margin-top: 8px; padding: 10px 15px; background: #fffdf9; border: 1px solid #dcdde1; border-radius: 4px; min-height: 100px; max-height: 550px; overflow-y: auto; white-space: pre-wrap; }
+.loading {color: #666; font-style: italic; margin: 2px 0 0 0; padding: 0; display: block; line-height: 1.2; }
+.result-question {font-weight: bold; color: #2c3e50; margin: 0; padding: 0; line-height: 1.2; }
+.result-divider {color: #888; margin: 2px 0 0 0; padding: 0; font-family: monospace; font-weight: bold; letter-spacing: -1px; line-height: 1; }
+.result-content {margin: 4px 0 0 0; padding: 0; line-height: 1.5; }
+.cumulative-item {margin-top: 0; margin-bottom: 0; padding: 0; }
+.cumulative-separator {text-align: center; color: #b2bec3; margin: 10px 0; font-weight: bold; font-family: monospace; line-height: 1; }
+</style>
 </head>
 <body>
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v11.3</span></h1>
-    <div class="chat-container">
-        <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
-        <div id="apiBox" class="api-box">
-            <div class="api-box-header">
-                <span id="apiStatusBadge" class="api-status-badge">⚠️ 키 미설정 상태</span>
-                <button type="button" id="apiToggleBoxBtn" class="api-toggle-box-btn" onclick="toggleApiBox()">안내 숨기기 ▲</button>
-            </div>
-            
-            <div id="apiBoxContent" class="api-box-content">
-                <p class="guide-text">
-                    📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                    AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 촛불회 공용 키를 사용할 수 있습니다만(아래의 '키 설치하기' 버튼 꾹), 공용 키를 다수가 사용할 경우, AI 사용량 한도 때문에 서비스가 제한될 수 있습니다. 따라서 개인 무료 API Key 사용을 권장합니다.<br><br>
-                    💡 <b>초간단 개인 (무료)키 발급 및 설치 방법:</b><br>
-                    1. 만약 공용 키가 설치되어 있는 상태라면, 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
-                    2. 파란색 글씨의 <a href="https://aistudio.google.com/app/api-keys" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
-                    3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
-                    4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
-                    5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
-                    6. 생성된 키의 복사 버튼(📋)을 누른 뒤, 이 페이지로 돌아와 아래 빈 입력창에 붙여넣습니다.<br>
-                    7. 저장 버튼을 누르면 곧바로 저장이 완료됩니다.<br>
-                    8. 최초 1회만 해두면 기기가 기억합니다.
-                </p>
-                <div class="api-row">
-                    <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요" oninput="checkKeyInputState()">
-                    
-                    <!-- 동적 전환 저장 및 취소 버튼 영역 -->
-                    <div class="api-btn-group">
-                        <div class="dropdown" id="apiDropdownContainer">
-                            <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
-                                <span id="apiSaveBtnText">키 설치하기</span> <span id="dropdownArrow">▼</span>
-                            </button>
-                            <div id="apiDropdownMenu" class="dropdown-content">
-                                <button type="button" onclick="selectKeyChoice('shared')">공용 키 설치하기</button>
-                                <button type="button" onclick="selectKeyChoice('personal')">개인 키 설치하기</button>
-                            </div>
-                        </div>
-                        <button type="button" id="apiCancelBtn" class="api-cancel-btn" onclick="cancelKeyInput()">취소</button>
-                    </div>
+<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.1</span></h1>
+<div class="chat-container">
+<!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
+<div id="apiBox" class="api-box">
+<div class="api-box-header">
+<span id="apiStatusBadge" class="api-status-badge">⚠️ 키 미설정 상태</span>
+<button type="button" id="apiToggleBoxBtn" class="api-toggle-box-btn" onclick="toggleApiBox()">안내 숨기기 ▲</button>
+</div>
+<div id="apiBoxContent" class="api-box-content">
+<p class="guide-text">
+📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
+AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 촛불회 공용 키를 사용할 수 있습니다만(아래의 '키 설치하기' 버튼 꾹), 공용 키를 다수가 사용할 경우, AI 사용량 한도 때문에 서비스가 제한될 수 있습니다. 따라서 개인 무료 API Key 사용을 권장합니다.<br><br>
+💡 <b>초간단 개인 (무료)키 발급 및 설치 방법:</b><br>
+1. 만약 공용 키가 설치되어 있는 상태라면, 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
+2. 파란색 글씨의 <a href="https://aistudio.google.com/app/api-keys" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
+3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
+4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
+5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
+6. 생성된 키의 복사 버튼(📋)을 누른 뒤, 이 페이지로 돌아와 아래 빈 입력창에 붙여넣습니다.<br>
+7. 저장 버튼을 누르면 곧바로 저장이 완료됩니다.<br>
+8. 최초 1회만 해두면 기기가 기억합니다.
+</p>
+<div class="api-row">
+<input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요" oninput="checkKeyInputState()">
+<!-- 동적 전환 저장 및 취소 버튼 영역 -->
+<div class="api-btn-group">
+<div class="dropdown" id="apiDropdownContainer">
+<button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
+<span id="apiSaveBtnText">키 설치하기</span>
+<span id="dropdownArrow">▼</span>
+</button>
+<div id="apiDropdownMenu" class="dropdown-content">
+<button type="button" onclick="selectKeyChoice('shared')">공용 키 설치하기</button>
+<button type="button" onclick="selectKeyChoice('personal')">개인 키 설치하기</button>
+</div>
+</div>
+<button type="button" id="apiCancelBtn" class="api-cancel-btn" onclick="cancelKeyInput()">취소</button>
+</div>
+<button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
+</div>
+<!-- API Key 입력창 아래로 이동한 통일된 스타일의 보안 주의 문구 -->
+<p class="security-alert">
+⚠️ <b>[주의]</b> 공용 PC에서 본 화면을 통하여 API 키를 저장해 놓은 상태라면, 사용 후에는 반드시 키를 삭제하여 주시기 바랍니다.
+</p>
+</div>
+</div>
 
-                    <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: none;">키 삭제하기</button>
-                </div>
-                <!-- API Key 입력창 아래로 이동한 통일된 스타일의 보안 주의 문구 -->
-                <p class="security-alert">
-                    ⚠️ <b>[주의]</b> 공용 PC에서 본 화면을 통하여 API 키를 저장해 놓은 상태라면, 사용 후에는 반드시 키를 삭제하여 주시기 바랍니다.
-                </p>
-            </div>
-        </div>
+<!-- 1. 상단 검색 기간 설정 영역 -->
+<div class="control-row">
+<label>검색기간:</label>
+<select id="criteriaType" onchange="initPeriodOptions()">
+<option value="volume">통권기준</option>
+<option value="year">년도기준</option>
+</select>
+<select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
+<span>~</span>
+<select id="endPeriod"></select>
+</div>
 
-        <!-- 1. 상단 검색 기간 설정 영역 -->
-        <div class="control-row">
-            <label>검색기간:</label>
-            <select id="criteriaType" onchange="initPeriodOptions()">
-                <option value="volume">통권기준</option>
-                <option value="year">년도기준</option>
-            </select>
-            <select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
-            <span>~</span>
-            <select id="endPeriod"></select>
-        </div>
+<!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 -->
+<div class="control-row">
+<label>참고항목:</label>
+<button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 참고할 목록 열기 ▼</button>
+</div>
+<div id="checkboxPanel" class="checkbox-panel">
+<div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">▶ 항목을 선택하면 AI가 좀 더 신속하고 정확하게 답변합니다. 선택하지 않으면 전체 항목을 참고합니다.</div>
+<div id="checkboxContainer" class="checkbox-grid">
+<span style="color:#888; font-style:italic;">데이터 로딩 중 원본 시트의 항목을 불러오는 중입니다...</span>
+</div>
+</div>
 
-        <!-- 2. 참고할 항목 선택 토글 버튼 및 체크박스 패널 -->
-        <div class="control-row">
-            <label>참고항목:</label>
-            <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 참고할 목록 열기 ▼</button>
-        </div>
-        <div id="checkboxPanel" class="checkbox-panel">
-            <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">▶ 항목을 선택하면 AI가 좀 더 신속하고 정확하게 답변합니다. 선택하지 않으면 전체 항목을 참고합니다.</div>
-            <div id="checkboxContainer" class="checkbox-grid">
-                <span style="color:#888; font-style:italic;">데이터 로딩 중 원본 시트의 항목을 불러오는 중입니다...</span>
-            </div>
-        </div>
+<!-- 3. 자연어 질문 입력창(textarea)과 버튼 그룹 -->
+<div class="input-group">
+<div class="input-wrapper">
+<textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '봉사 활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
+<button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
+</div>
+</div>
+<div class="action-btn-group">
+<button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기</button>
+<button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)">연속 질문하기</button>
+<button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
+</div>
 
-        <!-- 3. 자연어 질문 입력창(textarea)과 버튼 그룹 -->
-        <div class="input-group">
-            <div class="input-wrapper">
-                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '봉사활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
-                <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
-            </div>
-        </div>
-        <div class="action-btn-group">
-            <button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기</button>
-            <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)">연속 질문하기</button>
-            <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
-        </div>
+<!-- 창 2: 최근 AI 답변 결과 (단발성 확인용) -->
+<div class="result-header-row">
+<h3>최근 AI 답변 결과</h3>
+<button type="button" id="copyBtn" class="copy-btn" onclick="copyResult()">📋 최근 답변 복사하기</button>
+</div>
+<div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
 
-        <!-- 창 2: 최근 AI 답변 결과 (단발성 확인용) -->
-        <div class="result-header-row">
-            <h3>최근 AI 답변 결과</h3>
-            <button type="button" id="copyBtn" class="copy-btn" onclick="copyResult()">📋 최근 답변 복사하기</button>
-        </div>
-        <div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
+<!-- 창 3: 누적 대화 아카이브 (연속 질문용 하단 창) -->
+<div id="cumulativeSection" class="cumulative-section">
+<div class="cumulative-header-row">
+<h3>📁 연속 대화 누적 기록 (전체 아카이브)</h3>
+<button type="button" id="cumulativeCopyBtn" class="copy-btn" style="display: inline-block; background-color: #8e44ad;" onclick="copyCumulativeResult()">📋 전체 누적 기록 복사하기</button>
+</div>
+<div id="cumulativeResultBox" class="cumulative-box"></div>
+</div>
+</div>
 
-        <!-- 창 3: 누적 대화 아카이브 (연속 질문용 하단 창) -->
-        <div id="cumulativeSection" class="cumulative-section">
-            <div class="cumulative-header-row">
-                <h3>📁 연속 대화 누적 기록 (전체 아카이브)</h3>
-                <button type="button" id="cumulativeCopyBtn" class="copy-btn" style="display: inline-block; background-color: #8e44ad;" onclick="copyCumulativeResult()">📋 전체 누적 기록 복사하기</button>
-            </div>
-            <div id="cumulativeResultBox" class="cumulative-box"></div>
-        </div>
-    </div>
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
+const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
+let globalSheetData = [];
+let globalHeaders = [];
+let currentController = null;
+let activeTaskType = null;
+let conversationHistory = [];
+let lastSingleResult = null;
+let isPersonalWaitState = false; // '개인 키 저장대기' 상태 변수
 
-    <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
-        
-        const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
+// 사용자 정의 메뉴 및 그룹핑(매핑) 정의
+const CUSTOM_MENU_MAPPING = [
+    { label: "한 줄 요약", type: "single", cols: ["한 줄 요약"] },
+    { label: "임원진", type: "single", cols: ["임원진"] },
+    { label: "주요 이벤트", type: "single", cols: ["주요 이벤트"] },
+    { label: "기고문", type: "group", cols: ["기고문 개수", "기고자 전체 명단", "주요 기고문"] },
+    { label: "회원 동정", type: "single", cols: ["회원 동정"] },
+    { label: "봉사 활동", type: "single", cols: ["봉사 활동"] },
+    { label: "소집단 활동", type: "single", cols: ["소집단 활동"] },
+    { label: "동아리 애로 사항", type: "single", cols: ["동아리 애로 사항"] },
+    { label: "결혼 소식", type: "single", cols: ["결혼 소식"] },
+    { label: "부고 소식", type: "single", cols: ["부고 소식"] },
+    { label: "행사들", type: "group", cols: ["행사들", "행사1 행사명", "행사1 참석자 수", "행사1 일시", "행사1 장소", "행사1 참석 명단", "행사2 행사명", "행사2 참석자 수", "행사2 일시", "행사2 장소", "행사2 참석 명단"] }
+];
 
-        let globalSheetData = [];
-        let globalHeaders = [];
-        let currentController = null;
-        let activeTaskType = null;
-        let conversationHistory = [];
-        let lastSingleResult = null;
-        let isPersonalWaitState = false; // '개인 키 저장대기' 상태 변수
-
-        window.onload = async function() {
-            checkApiKeyStatus();
-
-            const queryInput = document.getElementById("userQuery");
-            const checkAndResizeInput = () => {
-                if (queryInput.value.length > 0) {
-                    autoResize(queryInput);
-                }
-                toggleClearButton();
-            };
-            checkAndResizeInput();
-            setTimeout(checkAndResizeInput, 50);
-            setTimeout(checkAndResizeInput, 300);
-
-            window.onclick = function(event) {
-                if (!event.target.matches('.api-save-btn') && !event.target.matches('#apiSaveBtnText') && !event.target.matches('#dropdownArrow')) {
-                    let dropdowns = document.getElementsByClassName("dropdown-content");
-                    for (let i = 0; i < dropdowns.length; i++) {
-                        let openDropdown = dropdowns[i];
-                        if (openDropdown.classList.contains('show')) {
-                            openDropdown.classList.remove('show');
-                        }
-                    }
-                }
-            };
-
-            try {
-                const response = await fetch(CSV_URL);
-                const csvText = await response.text();
-                const parsed = parseCSVStrictWithHeaders(csvText);
-                globalSheetData = parsed.data;
-                globalHeaders = parsed.headers;
-                renderCheckboxes(globalHeaders);
-                initPeriodOptions();
-                document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
-            } catch (error) {
-                document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
-            }
-        };
-
-        function toggleApiBox() {
-            const content = document.getElementById("apiBoxContent");
-            const box = document.getElementById("apiBox");
-            const btn = document.getElementById("apiToggleBoxBtn");
-            if (content.style.display === "none") {
-                content.style.display = "block";
-                box.classList.remove("collapsed");
-                btn.innerText = "안내 숨기기 ▲";
-            } else {
-                content.style.display = "none";
-                box.classList.add("collapsed");
-                btn.innerText = "안내 펼치기 ▼";
-            }
+window.onload = async function() {
+    checkApiKeyStatus();
+    const queryInput = document.getElementById("userQuery");
+    const checkAndResizeInput = () => {
+        if (queryInput.value.length > 0) {
+            autoResize(queryInput);
         }
+        toggleClearButton();
+    };
+    checkAndResizeInput();
+    setTimeout(checkAndResizeInput, 50);
+    setTimeout(checkAndResizeInput, 300);
 
-        function collapseApiBox() {
-            const content = document.getElementById("apiBoxContent");
-            const box = document.getElementById("apiBox");
-            const btn = document.getElementById("apiToggleBoxBtn");
-            content.style.display = "none";
-            box.classList.add("collapsed");
-            btn.innerText = "안내 펼치기 ▼";
-        }
-
-        function expandApiBox() {
-            const content = document.getElementById("apiBoxContent");
-            const box = document.getElementById("apiBox");
-            const btn = document.getElementById("apiToggleBoxBtn");
-            content.style.display = "block";
-            box.classList.remove("collapsed");
-            btn.innerText = "안내 숨기기 ▲";
-        }
-
-        function checkApiKeyStatus() {
-            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            let keyType = localStorage.getItem("GEMINI_KEY_TYPE");
-            const saveBtnText = document.getElementById("apiSaveBtnText");
-            const dropdownArrow = document.getElementById("dropdownArrow");
-            const saveBtn = document.getElementById("apiSaveBtn");
-            const cancelBtn = document.getElementById("apiCancelBtn");
-            const delBtn = document.getElementById("apiDelBtn");
-            const inputField = document.getElementById("apiKeyInput");
-            const statusBadge = document.getElementById("apiStatusBadge");
-
-            if (savedKey) {
-                isPersonalWaitState = false;
-                inputField.value = savedKey;
-                delBtn.style.display = "inline-block";
-                saveBtn.classList.remove("api-wait-btn");
-                cancelBtn.style.display = "none";
-
-                if (keyType === "personal") {
-                    saveBtnText.innerText = "개인 키 설치완료";
-                    saveBtn.disabled = true;
-                    dropdownArrow.style.display = "none";
-                    statusBadge.innerText = "🔒 개인 키 사용 중";
-                    statusBadge.style.color = "#27ae60";
-                    statusBadge.style.background = "#e8f8f5";
-                } else {
-                    saveBtnText.innerText = "공용 키 설치완료";
-                    saveBtn.disabled = true;
-                    dropdownArrow.style.display = "none";
-                    statusBadge.innerText = "🟢 공용 키 사용 중";
-                    statusBadge.style.color = "#d35400";
-                    statusBadge.style.background = "#ffecb3";
-                }
-            } else {
-                inputField.value = "";
-                delBtn.style.display = "none";
-                saveBtn.disabled = false;
-                statusBadge.innerText = "⚠️ 키 미설정 상태";
-                statusBadge.style.color = "#c0392b";
-                statusBadge.style.background = "#fadbd8";
-                saveBtn.classList.remove("api-wait-btn");
-
-                if (isPersonalWaitState) {
-                    saveBtnText.innerText = "개인 키 설치대기";
-                    dropdownArrow.style.display = "none";
-                    saveBtn.classList.add("api-wait-btn");
-                    cancelBtn.style.display = "inline-block";
-                } else {
-                    checkKeyInputState();
+    window.onclick = function(event) {
+        if (!event.target.matches('.api-save-btn') && !event.target.matches('#apiSaveBtnText') && !event.target.matches('#dropdownArrow')) {
+            let dropdowns = document.getElementsByClassName("dropdown-content");
+            for (let i = 0; i < dropdowns.length; i++) {
+                let openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
                 }
             }
         }
+    };
 
-        function checkKeyInputState() {
-            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (savedKey || isPersonalWaitState) return;
+    try {
+        const response = await fetch(CSV_URL);
+        const csvText = await response.text();
+        const parsed = parseCSVStrictWithHeaders(csvText);
+        globalSheetData = parsed.data;
+        globalHeaders = parsed.headers;
+        renderCheckboxes();
+        initPeriodOptions();
+        document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
+    } catch (error) {
+        document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
+    }
+};
 
-            const inputField = document.getElementById("apiKeyInput");
-            const saveBtnText = document.getElementById("apiSaveBtnText");
-            const dropdownArrow = document.getElementById("dropdownArrow");
-            const cancelBtn = document.getElementById("apiCancelBtn");
-            let keyVal = inputField.value.trim();
+function toggleApiBox() {
+    const content = document.getElementById("apiBoxContent");
+    const box = document.getElementById("apiBox");
+    const btn = document.getElementById("apiToggleBoxBtn");
+    if (content.style.display === "none") {
+        content.style.display = "block";
+        box.classList.remove("collapsed");
+        btn.innerText = "안내 숨기기 ▲";
+    } else {
+        content.style.display = "none";
+        box.classList.add("collapsed");
+        btn.innerText = "안내 펼치기 ▼";
+    }
+}
 
-            if (keyVal.length > 0) {
-                saveBtnText.innerText = "개인 키 설치하기";
-                dropdownArrow.style.display = "none";
-                cancelBtn.style.display = "inline-block";
-            } else {
-                saveBtnText.innerText = "키 설치하기";
-                dropdownArrow.style.display = "inline";
-                cancelBtn.style.display = "none";
-            }
+function collapseApiBox() {
+    const content = document.getElementById("apiBoxContent");
+    const box = document.getElementById("apiBox");
+    const btn = document.getElementById("apiToggleBoxBtn");
+    content.style.display = "none";
+    box.classList.add("collapsed");
+    btn.innerText = "안내 펼치기 ▼";
+}
+
+function expandApiBox() {
+    const content = document.getElementById("apiBoxContent");
+    const box = document.getElementById("apiBox");
+    const btn = document.getElementById("apiToggleBoxBtn");
+    content.style.display = "block";
+    box.classList.remove("collapsed");
+    btn.innerText = "안내 숨기기 ▲";
+}
+
+function checkApiKeyStatus() {
+    let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+    let keyType = localStorage.getItem("GEMINI_KEY_TYPE");
+    const saveBtnText = document.getElementById("apiSaveBtnText");
+    const dropdownArrow = document.getElementById("dropdownArrow");
+    const saveBtn = document.getElementById("apiSaveBtn");
+    const cancelBtn = document.getElementById("apiCancelBtn");
+    const delBtn = document.getElementById("apiDelBtn");
+    const inputField = document.getElementById("apiKeyInput");
+    const statusBadge = document.getElementById("apiStatusBadge");
+
+    if (savedKey) {
+        isPersonalWaitState = false;
+        inputField.value = savedKey;
+        delBtn.style.display = "inline-block";
+        saveBtn.classList.remove("api-wait-btn");
+        cancelBtn.style.display = "none";
+        if (keyType === "personal") {
+            saveBtnText.innerText = "개인 키 설치완료";
+            saveBtn.disabled = true;
+            dropdownArrow.style.display = "none";
+            statusBadge.innerText = "🔒 개인 키 사용 중";
+            statusBadge.style.color = "#27ae60";
+            statusBadge.style.background = "#e8f8f5";
+        } else {
+            saveBtnText.innerText = "공용 키 설치완료";
+            saveBtn.disabled = true;
+            dropdownArrow.style.display = "none";
+            statusBadge.innerText = "🟢 공용 키 사용 중";
+            statusBadge.style.color = "#d35400";
+            statusBadge.style.background = "#ffecb3";
         }
-
-        function handleSaveButtonClick() {
-            let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (savedKey) return;
-
-            const inputField = document.getElementById("apiKeyInput");
-            let keyVal = inputField.value.trim();
-
-            if (isPersonalWaitState) {
-                if (keyVal.length > 0) {
-                    localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
-                    localStorage.setItem("GEMINI_KEY_TYPE", "personal");
-                    isPersonalWaitState = false;
-                    checkApiKeyStatus();
-                    collapseApiBox();
-                } else {
-                    alert("입력창에 본인의 Gemini API Key를 붙여넣은 뒤 [개인 키 설치대기] 버튼을 눌러주세요.");
-                    inputField.focus();
-                }
-            } else if (keyVal.length > 0) {
-                localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
-                localStorage.setItem("GEMINI_KEY_TYPE", "personal");
-                checkApiKeyStatus();
-                collapseApiBox();
-            } else {
-                document.getElementById("apiDropdownMenu").classList.toggle("show");
-            }
+    } else {
+        inputField.value = "";
+        delBtn.style.display = "none";
+        saveBtn.disabled = false;
+        statusBadge.innerText = "⚠️ 키 미설정 상태";
+        statusBadge.style.color = "#c0392b";
+        statusBadge.style.background = "#fadbd8";
+        saveBtn.classList.remove("api-wait-btn");
+        if (isPersonalWaitState) {
+            saveBtnText.innerText = "개인 키 설치대기";
+            dropdownArrow.style.display = "none";
+            saveBtn.classList.add("api-wait-btn");
+            cancelBtn.style.display = "inline-block";
+        } else {
+            checkKeyInputState();
         }
+    }
+}
 
-        function selectKeyChoice(type) {
-            const dropdownMenu = document.getElementById("apiDropdownMenu");
-            dropdownMenu.classList.remove('show');
+function checkKeyInputState() {
+    let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+    if (savedKey || isPersonalWaitState) return;
+    const inputField = document.getElementById("apiKeyInput");
+    const saveBtnText = document.getElementById("apiSaveBtnText");
+    const dropdownArrow = document.getElementById("dropdownArrow");
+    const cancelBtn = document.getElementById("apiCancelBtn");
+    let keyVal = inputField.value.trim();
+    if (keyVal.length > 0) {
+        saveBtnText.innerText = "개인 키 설치하기";
+        dropdownArrow.style.display = "none";
+        cancelBtn.style.display = "inline-block";
+    } else {
+        saveBtnText.innerText = "키 설치하기";
+        dropdownArrow.style.display = "inline";
+        cancelBtn.style.display = "none";
+    }
+}
 
-            if (type === 'shared') {
-                if (PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
-                    localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
-                    localStorage.setItem("GEMINI_KEY_TYPE", "shared");
-                    isPersonalWaitState = false;
-                    checkApiKeyStatus();
-                    collapseApiBox();
-                } else {
-                    alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
-                }
-            } else if (type === 'personal') {
-                const inputField = document.getElementById("apiKeyInput");
-                let keyVal = inputField.value.trim();
-                if (keyVal.length > 0) {
-                    localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
-                    localStorage.setItem("GEMINI_KEY_TYPE", "personal");
-                    isPersonalWaitState = false;
-                    checkApiKeyStatus();
-                    collapseApiBox();
-                } else {
-                    isPersonalWaitState = true;
-                    checkApiKeyStatus();
-                    inputField.focus();
-                }
-            }
-        }
-
-        function cancelKeyInput() {
+function handleSaveButtonClick() {
+    let savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
+    if (savedKey) return;
+    const inputField = document.getElementById("apiKeyInput");
+    let keyVal = inputField.value.trim();
+    if (isPersonalWaitState) {
+        if (keyVal.length > 0) {
+            localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+            localStorage.setItem("GEMINI_KEY_TYPE", "personal");
             isPersonalWaitState = false;
-            const inputField = document.getElementById("apiKeyInput");
-            inputField.value = "";
             checkApiKeyStatus();
+            collapseApiBox();
+        } else {
+            alert("입력창에 본인의 Gemini API Key를 붙여넣은 뒤 [개인 키 설치대기] 버튼을 눌러주세요.");
+            inputField.focus();
         }
+    } else if (keyVal.length > 0) {
+        localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+        localStorage.setItem("GEMINI_KEY_TYPE", "personal");
+        checkApiKeyStatus();
+        collapseApiBox();
+    } else {
+        document.getElementById("apiDropdownMenu").classList.toggle("show");
+    }
+}
 
-        function deleteApiKey() {
-            if (confirm("정말로 저장된 API Key를 삭제하시겠습니까?")) {
-                localStorage.removeItem("GEMINI_USER_API_KEY");
-                localStorage.removeItem("GEMINI_KEY_TYPE");
-                isPersonalWaitState = false;
-                checkApiKeyStatus();
-                expandApiBox();
-                document.getElementById("apiKeyInput").focus();
-            }
+function selectKeyChoice(type) {
+    const dropdownMenu = document.getElementById("apiDropdownMenu");
+    dropdownMenu.classList.remove('show');
+    if (type === 'shared') {
+        if (PUBLIC_SHARED_KEY && !PUBLIC_SHARED_KEY.startsWith("__")) {
+            localStorage.setItem("GEMINI_USER_API_KEY", PUBLIC_SHARED_KEY);
+            localStorage.setItem("GEMINI_KEY_TYPE", "shared");
+            isPersonalWaitState = false;
+            checkApiKeyStatus();
+            collapseApiBox();
+        } else {
+            alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
         }
-
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight - 6) + 'px';
+    } else if (type === 'personal') {
+        const inputField = document.getElementById("apiKeyInput");
+        let keyVal = inputField.value.trim();
+        if (keyVal.length > 0) {
+            localStorage.setItem("GEMINI_USER_API_KEY", keyVal);
+            localStorage.setItem("GEMINI_KEY_TYPE", "personal");
+            isPersonalWaitState = false;
+            checkApiKeyStatus();
+            collapseApiBox();
+        } else {
+            isPersonalWaitState = true;
+            checkApiKeyStatus();
+            inputField.focus();
         }
+    }
+}
 
-        function handleKeyDown(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                if (currentController) {
-                    currentController.abort();
-                    currentController = null;
+function cancelKeyInput() {
+    isPersonalWaitState = false;
+    const inputField = document.getElementById("apiKeyInput");
+    inputField.value = "";
+    checkApiKeyStatus();
+}
+
+function deleteApiKey() {
+    if (confirm("정말로 저장된 API Key를 삭제하시겠습니까?")) {
+        localStorage.removeItem("GEMINI_USER_API_KEY");
+        localStorage.removeItem("GEMINI_KEY_TYPE");
+        isPersonalWaitState = false;
+        checkApiKeyStatus();
+        expandApiBox();
+        document.getElementById("apiKeyInput").focus();
+    }
+}
+
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight - 6) + 'px';
+}
+
+function handleKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        if (currentController) {
+            currentController.abort();
+            currentController = null;
+        } else {
+            askAI(false);
+        }
+    }
+}
+
+function toggleClearButton() {
+    const queryInput = document.getElementById("userQuery");
+    const clearBtn = document.getElementById("clearBtn");
+    if (queryInput.value.length > 0) {
+        clearBtn.style.display = "block";
+    } else {
+        clearBtn.style.display = "none";
+    }
+}
+
+function clearQuery() {
+    const queryInput = document.getElementById("userQuery");
+    queryInput.value = "";
+    queryInput.style.height = 'auto';
+    toggleClearButton();
+    queryInput.focus();
+}
+
+function resetAllContent() {
+    if (currentController) {
+        currentController.abort();
+        currentController = null;
+    }
+    activeTaskType = null;
+    const queryInput = document.getElementById("userQuery");
+    queryInput.value = "";
+    queryInput.style.height = 'auto';
+    toggleClearButton();
+    conversationHistory = [];
+    lastSingleResult = null;
+    const resultBox = document.getElementById("aiResult");
+    resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
+    document.getElementById("copyBtn").style.display = "none";
+    const cumulativeSection = document.getElementById("cumulativeSection");
+    cumulativeSection.style.display = "none";
+    document.getElementById("cumulativeResultBox").innerHTML = "";
+    document.getElementById("submitBtn").innerText = "새로 질문하기";
+    document.getElementById("submitBtn").classList.remove("stop-btn");
+    document.getElementById("sequentialBtn").innerText = "연속 질문하기";
+    document.getElementById("sequentialBtn").classList.remove("stop-btn");
+    queryInput.focus();
+}
+
+function copyResult() {
+    const resultBox = document.getElementById("aiResult");
+    let textToCopy = resultBox.innerText;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const copyBtn = document.getElementById("copyBtn");
+        let originalText = copyBtn.innerText;
+        copyBtn.innerText = "✅ 복사완료!";
+        setTimeout(() => {
+            copyBtn.innerText = originalText;
+        }, 2000);
+    }).catch(err => {
+        alert("클립보드 복사에 실패했습니다.");
+    });
+}
+
+function copyCumulativeResult() {
+    const cumulativeBox = document.getElementById("cumulativeResultBox");
+    let textToCopy = cumulativeBox.innerText;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const cumulativeCopyBtn = document.getElementById("cumulativeCopyBtn");
+        let originalText = cumulativeCopyBtn.innerText;
+        cumulativeCopyBtn.innerText = "✅ 전체 복사완료!";
+        setTimeout(() => {
+            cumulativeCopyBtn.innerText = originalText;
+        }, 2000);
+    }).catch(err => {
+        alert("클립보드 복사에 실패했습니다.");
+    });
+}
+
+function parseCSVStrictWithHeaders(text) {
+    let rows = [];
+    let currentRow = [];
+    let currentField = "";
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        let c = text[i];
+        let nextC = text[i + 1];
+        if (inQuotes) {
+            if (c === '"') {
+                if (nextC === '"') {
+                    currentField += '"';
+                    i++;
                 } else {
-                    askAI(false);
+                    inQuotes = false;
                 }
-            }
-        }
-
-        function toggleClearButton() {
-            const queryInput = document.getElementById("userQuery");
-            const clearBtn = document.getElementById("clearBtn");
-            if (queryInput.value.length > 0) {
-                clearBtn.style.display = "block";
             } else {
-                clearBtn.style.display = "none";
+                currentField += c;
             }
-        }
-
-        function clearQuery() {
-            const queryInput = document.getElementById("userQuery");
-            queryInput.value = "";
-            queryInput.style.height = 'auto';
-            toggleClearButton();
-            queryInput.focus();
-        }
-
-        function resetAllContent() {
-            if (currentController) {
-                currentController.abort();
-                currentController = null;
-            }
-            activeTaskType = null;
-
-            const queryInput = document.getElementById("userQuery");
-            queryInput.value = "";
-            queryInput.style.height = 'auto';
-            toggleClearButton();
-
-            conversationHistory = [];
-            lastSingleResult = null;
-
-            const resultBox = document.getElementById("aiResult");
-            resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
-            document.getElementById("copyBtn").style.display = "none";
-
-            const cumulativeSection = document.getElementById("cumulativeSection");
-            cumulativeSection.style.display = "none";
-            document.getElementById("cumulativeResultBox").innerHTML = "";
-
-            document.getElementById("submitBtn").innerText = "새로 질문하기";
-            document.getElementById("submitBtn").classList.remove("stop-btn");
-            document.getElementById("sequentialBtn").innerText = "연속 질문하기";
-            document.getElementById("sequentialBtn").classList.remove("stop-btn");
-
-            queryInput.focus();
-        }
-
-        function copyResult() {
-            const resultBox = document.getElementById("aiResult");
-            let textToCopy = resultBox.innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const copyBtn = document.getElementById("copyBtn");
-                let originalText = copyBtn.innerText;
-                copyBtn.innerText = "✅ 복사완료!";
-                setTimeout(() => {
-                    copyBtn.innerText = originalText;
-                }, 2000);
-            }).catch(err => {
-                alert("클립보드 복사에 실패했습니다.");
-            });
-        }
-
-        function copyCumulativeResult() {
-            const cumulativeBox = document.getElementById("cumulativeResultBox");
-            let textToCopy = cumulativeBox.innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const cumulativeCopyBtn = document.getElementById("cumulativeCopyBtn");
-                let originalText = cumulativeCopyBtn.innerText;
-                cumulativeCopyBtn.innerText = "✅ 전체 복사완료!";
-                setTimeout(() => {
-                    cumulativeCopyBtn.innerText = originalText;
-                }, 2000);
-            }).catch(err => {
-                alert("클립보드 복사에 실패했습니다.");
-            });
-        }
-
-        function parseCSVStrictWithHeaders(text) {
-            let rows = [];
-            let currentRow = [];
-            let currentField = "";
-            let inQuotes = false;
-            for (let i = 0; i < text.length; i++) {
-                let c = text[i];
-                let nextC = text[i + 1];
-                if (inQuotes) {
-                    if (c === '"') {
-                        if (nextC === '"') {
-                            currentField += '"';
-                            i++;
-                        } else {
-                            inQuotes = false;
-                        }
-                    } else {
-                        currentField += c;
-                    }
-                } else {
-                    if (c === '"') {
-                        inQuotes = true;
-                    } else if (c === ',') {
-                        currentRow.push(currentField.trim());
-                        currentField = "";
-                    } else if (c === '\r' && nextC === '\n') {
-                        currentRow.push(currentField.trim());
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentField = "";
-                        i++;
-                    } else if (c === '\n') {
-                        currentRow.push(currentField.trim());
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentField = "";
-                    } else {
-                        currentField += c;
-                    }
-                }
-            }
-            if (currentField !== "" || currentRow.length > 0) {
+        } else {
+            if (c === '"') {
+                inQuotes = true;
+            } else if (c === ',') {
+                currentRow.push(currentField.trim());
+                currentField = "";
+            } else if (c === '\r' && nextC === '\n') {
                 currentRow.push(currentField.trim());
                 rows.push(currentRow);
-            }
-            if (rows.length === 0) return { headers: [], data: [] };
-            let headers = rows[0].map(h => h.trim());
-            let result = [];
-            for (let i = 1; i < rows.length; i++) {
-                let cols = rows[i];
-                if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
-                let obj = {};
-                for (let j = 0; j < headers.length; j++) {
-                    obj[headers[j]] = cols[j] ? cols[j].trim() : "";
-                }
-                result.push(obj);
-            }
-            return { headers: headers, data: result };
-        }
-
-        function renderCheckboxes(headers) {
-            const container = document.getElementById("checkboxContainer");
-            container.innerHTML = "";
-            headers.forEach(header => {
-                if (!header) return;
-                let label = document.createElement("label");
-                label.className = "checkbox-item";
-                label.innerHTML = `<input type="checkbox" name="targetCol" value="${header}"> ${header}`;
-                container.appendChild(label);
-            });
-        }
-
-        function toggleCheckboxPanel() {
-            const panel = document.getElementById("checkboxPanel");
-            const btn = document.getElementById("toggleBtn");
-            if (panel.style.display === "block") {
-                panel.style.display = "none";
-                btn.innerHTML = "📁 참고할 목록 열기 ▼";
+                currentRow = [];
+                currentField = "";
+                i++;
+            } else if (c === '\n') {
+                currentRow.push(currentField.trim());
+                rows.push(currentRow);
+                currentRow = [];
+                currentField = "";
             } else {
-                panel.style.display = "block";
-                btn.innerHTML = "📂 참고할 목록 닫기 ▲";
+                currentField += c;
             }
         }
+    }
+    if (currentField !== "" || currentRow.length > 0) {
+        currentRow.push(currentField.trim());
+        rows.push(currentRow);
+    }
+    if (rows.length === 0) return { headers: [], data: [] };
+    let headers = rows[0].map(h => h.trim());
+    let result = [];
+    for (let i = 1; i < rows.length; i++) {
+        let cols = rows[i];
+        if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
+        let obj = {};
+        for (let j = 0; j < headers.length; j++) {
+            obj[headers[j]] = cols[j] ? cols[j].trim() : "";
+        }
+        result.push(obj);
+    }
+    return { headers: headers, data: result };
+}
 
-        function initPeriodOptions() {
-            const type = document.getElementById("criteriaType").value;
-            const startSelect = document.getElementById("startPeriod");
-            startSelect.innerHTML = "";
-            let allOpt = document.createElement("option");
-            allOpt.value = "전체";
-            allOpt.text = "전체";
-            startSelect.appendChild(allOpt);
+function renderCheckboxes() {
+    const container = document.getElementById("checkboxContainer");
+    container.innerHTML = "";
+    CUSTOM_MENU_MAPPING.forEach(item => {
+        let label = document.createElement("label");
+        label.className = "checkbox-item";
+        label.innerHTML = `<input type="checkbox" name="targetMenu" value="${item.label}"> ${item.label}`;
+        container.appendChild(label);
+    });
+}
 
-            if (type === "volume") {
-                let volumes = globalSheetData.map(row => row["통권 호수"] || row["통권호수"] || "").filter(v => v !== "");
-                let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
-                let minNum = nums.length > 0 ? Math.min(...nums) : 1;
-                let maxNum = nums.length > 0 ? Math.max(...nums) : 30;
-                for (let i = minNum; i <= maxNum; i++) {
-                    let opt = document.createElement("option");
-                    let valStr = String(i).padStart(3, '0') + "호";
-                    opt.value = valStr;
-                    opt.text = valStr;
-                    startSelect.appendChild(opt);
-                }
-            } else {
-                let years = globalSheetData.map(row => row["발행월"] || row["발행 일자"] || "").join(" ");
-                let yearMatches = years.match(/19[8-9][0-9]|20[0-9][0-9]/g);
-                let minYear = 1984;
-                let maxYear = new Date().getFullYear();
-                if (yearMatches && yearMatches.length > 0) {
-                    let yNums = yearMatches.map(y => parseInt(y));
-                    minYear = Math.min(...yNums);
-                    maxYear = Math.max(...yNums);
-                }
-                for (let y = minYear; y <= maxYear; y++) {
-                    let opt = document.createElement("option");
-                    let valStr = y + "년";
-                    opt.value = valStr;
-                    opt.text = valStr;
-                    startSelect.appendChild(opt);
-                }
+function toggleCheckboxPanel() {
+    const panel = document.getElementById("checkboxPanel");
+    const btn = document.getElementById("toggleBtn");
+    if (panel.style.display === "block") {
+        panel.style.display = "none";
+        btn.innerHTML = "📁 참고할 목록 열기 ▼";
+    } else {
+        panel.style.display = "block";
+        btn.innerHTML = "📂 참고할 목록 닫기 ▲";
+    }
+}
+
+function initPeriodOptions() {
+    const type = document.getElementById("criteriaType").value;
+    const startSelect = document.getElementById("startPeriod");
+    startSelect.innerHTML = "";
+    let allOpt = document.createElement("option");
+    allOpt.value = "전체";
+    allOpt.text = "전체";
+    startSelect.appendChild(allOpt);
+
+    if (type === "volume") {
+        let volumes = globalSheetData.map(row => row["통권 호수"] || row["통권호수"] || "").filter(v => v !== "");
+        let nums = volumes.map(v => parseInt(v.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
+        let minNum = nums.length > 0 ? Math.min(...nums) : 1;
+        let maxNum = nums.length > 0 ? Math.max(...nums) : 30;
+        for (let i = minNum; i <= maxNum; i++) {
+            let opt = document.createElement("option");
+            let valStr = String(i).padStart(3, '0') + "호";
+            opt.value = valStr;
+            opt.text = valStr;
+            startSelect.appendChild(opt);
+        }
+    } else {
+        let years = globalSheetData.map(row => row["발행월"] || row["발행 일자"] || "").join(" ");
+        let yearMatches = years.match(/19[8-9][0-9]|20[0-9][0-9]/g);
+        let minYear = 1984;
+        let maxYear = new Date().getFullYear();
+        if (yearMatches && yearMatches.length > 0) {
+            let yNums = yearMatches.map(y => parseInt(y));
+            minYear = Math.min(...yNums);
+            maxYear = Math.max(...yNums);
+        }
+        for (let y = minYear; y <= maxYear; y++) {
+            let opt = document.createElement("option");
+            let valStr = y + "년";
+            opt.value = valStr;
+            opt.text = valStr;
+            startSelect.appendChild(opt);
+        }
+    }
+    updateEndPeriodOptions();
+}
+
+function updateEndPeriodOptions() {
+    const startSelect = document.getElementById("startPeriod");
+    const endSelect = document.getElementById("endPeriod");
+    endSelect.innerHTML = "";
+    if (startSelect.value === "전체") {
+        let opt = document.createElement("option");
+        opt.value = "전체";
+        opt.text = "전체";
+        endSelect.appendChild(opt);
+        return;
+    }
+    const selectedStartIndex = startSelect.selectedIndex;
+    for (let i = selectedStartIndex; i < startSelect.options.length; i++) {
+        let opt = document.createElement("option");
+        opt.value = startSelect.options[i].value;
+        opt.text = startSelect.options[i].value;
+        endSelect.appendChild(opt);
+    }
+    if (endSelect.options.length > 0) {
+        endSelect.selectedIndex = endSelect.options.length - 1;
+    }
+}
+
+async function askAI(isSequential) {
+    const targetType = isSequential ? "sequential" : "new";
+    if (currentController && activeTaskType === targetType) {
+        currentController.abort();
+        return;
+    }
+    if (currentController) {
+        currentController.abort();
+        currentController = null;
+    }
+
+    let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
+    if (!apiKey) {
+        alert("상단 안내란을 참고하여 Gemini API Key를 설정하거나 입력해주세요.");
+        document.getElementById("apiKeyInput").focus();
+        return;
+    }
+
+    let queryInput = document.getElementById("userQuery");
+    let query = queryInput.value.trim();
+    const resultBox = document.getElementById("aiResult");
+    const copyBtn = document.getElementById("copyBtn");
+    const cumulativeSection = document.getElementById("cumulativeSection");
+    const cumulativeResultBox = document.getElementById("cumulativeResultBox");
+
+    if (!query) {
+        query = "촛불회가 주로 봉사한 기관들을 정리해줘.";
+        queryInput.value = query;
+        queryInput.style.height = 'auto';
+        toggleClearButton();
+    }
+
+    if (!isSequential) {
+        conversationHistory = [];
+        lastSingleResult = null;
+        cumulativeSection.style.display = "none";
+        cumulativeResultBox.innerHTML = "";
+    } else {
+        if (conversationHistory.length === 0 && lastSingleResult) {
+            conversationHistory.push({ q: `Q1. ${lastSingleResult.q}`, a: lastSingleResult.a });
+        }
+        cumulativeSection.style.display = "block";
+    }
+
+    const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
+    const startVal = document.getElementById("startPeriod").value;
+    const endVal = document.getElementById("endPeriod").value;
+
+    let selectedMenus = [];
+    document.querySelectorAll('input[name="targetMenu"]:checked').forEach((cb) => {
+        selectedMenus.push(cb.value);
+    });
+
+    // 그룹핑(매핑) 로직 적용: 체크된 메뉴들에 속한 실제 원본 열(columns)들을 중복 없이 추출
+    let resolvedCols = [];
+    if (selectedMenus.length > 0) {
+        selectedMenus.forEach(menuLabel => {
+            let found = CUSTOM_MENU_MAPPING.find(m => m.label === menuLabel);
+            if (found && found.cols) {
+                found.cols.forEach(col => {
+                    if (!resolvedCols.includes(col)) {
+                        resolvedCols.push(col);
+                    }
+                });
             }
-            updateEndPeriodOptions();
+        });
+    }
+
+    let targetColumnsText = resolvedCols.length > 0 ? resolvedCols.join(", ") : "전체 항목";
+    let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
+    let qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
+
+    activeTaskType = targetType;
+    currentController = new AbortController();
+    const signal = currentController.signal;
+
+    const submitBtn = document.getElementById("submitBtn");
+    const sequentialBtn = document.getElementById("sequentialBtn");
+
+    if (isSequential) {
+        sequentialBtn.innerText = "생성 중단";
+        sequentialBtn.classList.add("stop-btn");
+    } else {
+        submitBtn.innerText = "생성 중단";
+        submitBtn.classList.add("stop-btn");
+    }
+    copyBtn.style.display = "none";
+
+    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${selectedMenus.join(", ") || "전체"}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
+    resultBox.scrollTop = 0;
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    try {
+        let contextPrompt = "";
+        if (isSequential && conversationHistory.length > 0) {
+            contextPrompt = "\n\n[이전 대화 기록]\n" + conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n");
         }
 
-        function updateEndPeriodOptions() {
-            const startSelect = document.getElementById("startPeriod");
-            const endSelect = document.getElementById("endPeriod");
-            endSelect.innerHTML = "";
-            if (startSelect.value === "전체") {
-                let opt = document.createElement("option");
-                opt.value = "전체";
-                opt.text = "전체";
-                endSelect.appendChild(opt);
-                return;
-            }
-            const selectedStartIndex = startSelect.selectedIndex;
-            for (let i = selectedStartIndex; i < startSelect.options.length; i++) {
-                let opt = document.createElement("option");
-                opt.value = startSelect.options[i].value;
-                opt.text = startSelect.options[i].value;
-                endSelect.appendChild(opt);
-            }
-            if (endSelect.options.length > 0) {
-                endSelect.selectedIndex = endSelect.options.length - 1;
-            }
-        }
-
-        async function askAI(isSequential) {
-            const targetType = isSequential ? "sequential" : "new";
-            if (currentController && activeTaskType === targetType) {
-                currentController.abort();
-                return;
-            }
-            if (currentController) {
-                currentController.abort();
-                currentController = null;
-            }
-
-            let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (!apiKey) {
-                alert("상단 안내란을 참고하여 Gemini API Key를 설정하거나 입력해주세요.");
-                document.getElementById("apiKeyInput").focus();
-                return;
-            }
-
-            let queryInput = document.getElementById("userQuery");
-            let query = queryInput.value.trim();
-            const resultBox = document.getElementById("aiResult");
-            const copyBtn = document.getElementById("copyBtn");
-            const cumulativeSection = document.getElementById("cumulativeSection");
-            const cumulativeResultBox = document.getElementById("cumulativeResultBox");
-
-            if (!query) {
-                query = "촛불회가 주로 봉사한 기관들을 정리해줘.";
-                queryInput.value = query;
-                queryInput.style.height = 'auto';
-                toggleClearButton();
-            }
-
-            if (!isSequential) {
-                conversationHistory = [];
-                lastSingleResult = null;
-                cumulativeSection.style.display = "none";
-                cumulativeResultBox.innerHTML = "";
-            } else {
-                if (conversationHistory.length === 0 && lastSingleResult) {
-                    conversationHistory.push({
-                        q: `Q1. ${lastSingleResult.q}`,
-                        a: lastSingleResult.a
-                    });
-                }
-                cumulativeSection.style.display = "block";
-            }
-
-            const criteria = document.getElementById("criteriaType").value === "volume" ? "통권기준" : "년도기준";
-            const startVal = document.getElementById("startPeriod").value;
-            const endVal = document.getElementById("endPeriod").value;
-
-            let checkedCols = [];
-            document.querySelectorAll('input[name="targetCol"]:checked').forEach((cb) => {
-                checkedCols.push(cb.value);
-            });
-            let targetColumnsText = checkedCols.length > 0 ? checkedCols.join(", ") : "전체 항목";
-            let periodText = startVal === "전체" ? "전체 기간" : `${startVal} ~ ${endVal}`;
-
-            let qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
-
-            activeTaskType = targetType;
-            currentController = new AbortController();
-            const signal = currentController.signal;
-
-            const submitBtn = document.getElementById("submitBtn");
-            const sequentialBtn = document.getElementById("sequentialBtn");
-
-            if (isSequential) {
-                sequentialBtn.innerText = "생성 중단";
-                sequentialBtn.classList.add("stop-btn");
-            } else {
-                submitBtn.innerText = "생성 중단";
-                submitBtn.classList.add("stop-btn");
-            }
-
-            copyBtn.style.display = "none";
-
-            resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${targetColumnsText}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`;
-
-            resultBox.scrollTop = 0;
-            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            try {
-                let contextPrompt = "";
-                if (isSequential && conversationHistory.length > 0) {
-                    contextPrompt = "\n\n[이전 대화 기록]\n" + conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n");
-                }
-
-                const promptText = `
-당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다.
-다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
+        const promptText = `
+당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
 ${JSON.stringify(globalSheetData)}
 
 [검색 조건]
 - 기간 기준: ${criteria} (${periodText})
-- 집중 참고 항목: ${targetColumnsText}
+- 집중 참고 항목 (열 기준): ${targetColumnsText}
 ${contextPrompt}
 
 [사용자 질문]
 "${query}"
 
 위 조건과 지정된 항목들을 면밀히 대조하고 분석하여, 데이터에 기반한 구체적이고 신뢰성 있는 답변을 작성해 주세요.
-`;
+        `;
 
-                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }] }]
-                    }),
-                    signal: signal
-                });
+        const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }),
+            signal: signal
+        });
 
-                const data = await apiResponse.json();
+        const data = await apiResponse.json();
 
-                if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
-                    let answer = data.candidates[0].content.parts[0].text;
+        if (apiResponse.ok && data.candidates && data.candidates.length > 0) {
+            let answer = data.candidates[0].content.parts[0].text;
+            resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
+            copyBtn.style.display = "inline-block";
+            resultBox.scrollTop = 0;
 
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${answer.replace(/\n/g, "<br>")}</div>`;
-                    copyBtn.style.display = "inline-block";
-                    resultBox.scrollTop = 0;
-
-                    if (!isSequential) {
-                        lastSingleResult = { q: query, a: answer };
-                    } else {
-                        conversationHistory.push({ q: `${qPrefix} ${query}`, a: answer });
-                        renderCumulativeHistory();
-                    }
-                } else {
-                    let errorMsg = data.error && data.error.message ? data.error.message : JSON.stringify(data);
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span></div>`;
-                }
-
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
-                } else {
-                    resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
-                }
-            } finally {
-                currentController = null;
-                activeTaskType = null;
-                submitBtn.innerText = "새로 질문하기";
-                submitBtn.classList.remove("stop-btn");
-                sequentialBtn.innerText = "연속 질문하기";
-                sequentialBtn.classList.remove("stop-btn");
+            if (!isSequential) {
+                lastSingleResult = { q: query, a: answer };
+            } else {
+                conversationHistory.push({ q: `${qPrefix} ${query}`, a: answer });
+                renderCumulativeHistory();
             }
+        } else {
+            let errorMsg = data.error && data.error.message ? data.error.message : JSON.stringify(data);
+            resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[API 에러 상세 내용]</strong><br><span style="color:red;">${errorMsg}</span></div>`;
         }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content" style="color:#e74c3c; font-style:italic;">[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.</div>`;
+        } else {
+            resultBox.innerHTML = `<div class="result-question">${qPrefix} ${query}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content"><strong style="color:red;">[시스템 에러]</strong><br>${error.message}</div>`;
+        }
+    } finally {
+        currentController = null;
+        activeTaskType = null;
+        submitBtn.innerText = "새로 질문하기";
+        submitBtn.classList.remove("stop-btn");
+        sequentialBtn.innerText = "연속 질문하기";
+        sequentialBtn.classList.remove("stop-btn");
+    }
+}
 
-        function renderCumulativeHistory() {
-            const cumulativeResultBox = document.getElementById("cumulativeResultBox");
-            let htmlContent = "";
-            conversationHistory.forEach((item, index) => {
-                if (index > 0) {
-                    htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
-                }
-                htmlContent += `<div class="cumulative-item"><div class="result-question">${item.q}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${item.a.replace(/\n/g, "<br>")}</div></div>`;
-            });
-            cumulativeResultBox.innerHTML = htmlContent;
-            cumulativeResultBox.scrollTop = cumulativeResultBox.scrollHeight;
+function renderCumulativeHistory() {
+    const cumulativeResultBox = document.getElementById("cumulativeResultBox");
+    let htmlContent = "";
+    conversationHistory.forEach((item, index) => {
+        if (index > 0) {
+            htmlContent += `<br><div class="cumulative-separator">================================================================================</div><br>`;
         }
-    </script>
+        htmlContent += `<div class="cumulative-item"><div class="result-question">${item.q}</div><div class="result-divider">--------------------------------------------------------------------------------</div><div class="result-content">${item.a.replace(/\n/g, "<br>")}</div></div>`;
+    });
+    cumulativeResultBox.innerHTML = htmlContent;
+    cumulativeResultBox.scrollTop = cumulativeResultBox.scrollHeight;
+}
+</script>
 </body>
 </html>
