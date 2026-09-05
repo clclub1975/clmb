@@ -1,4 +1,4 @@
-<!-- v1.7: 상단 안내 문구를 현재 슬라이드 내용으로 변경 -->
+<!-- v1.8: 기존 마크다운 표 형태를 완벽히 재현한 HTML 테이블 구조 적용 (001~030호) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -13,24 +13,23 @@
             margin: 0 auto;
             padding: 20px 20px 40px 20px;
             color: #2b3137;
-            background-color: #f8f9fa;
+            background-color: #ffffff;
         }
         .back-btn {
             display: inline-block;
             padding: 6px 14px;
-            background-color: #ffffff;
-            color: #2b3137;
+            background-color: #f6f8fa;
+            color: #24292e;
             text-decoration: none;
             border-radius: 6px;
             font-size: 13.5px;
             font-weight: 600;
             border: 1px solid #d1d5db;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
             margin-bottom: 12px;
             transition: background-color 0.15s;
         }
         .back-btn:hover {
-            background-color: #f1f3f5;
+            background-color: #e1e4e8;
         }
         .header-container {
             text-align: center;
@@ -52,12 +51,11 @@
             font-weight: bold;
         }
         .intro-box {
-            background: #ffffff;
+            background: #f6f8fa;
             border: 1px solid #e1e4e8;
             border-radius: 8px;
             padding: 20px 24px;
             margin-bottom: 35px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
             color: #586069;
             font-size: 14.5px;
         }
@@ -65,9 +63,6 @@
             margin: 0 0 12px 0;
             color: #24292e;
             font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
         .intro-box ol {
             margin: 0;
@@ -83,82 +78,41 @@
             font-size: 18px;
             color: #24292e;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-        .section-group {
-            background: #ffffff;
-            border: 1px solid #e1e4e8;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        /* GitHub Markdown 스타일의 전통적인 표 구현 */
+        .markdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 30px;
+            font-size: 14px;
         }
-        .section-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: #586069;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #f1f3f5;
-        }
-        .archive-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
-        }
-        .issue-card {
-            background: #fdfdfe;
-            border: 1px solid #e1e4e8;
-            border-radius: 6px;
-            overflow: hidden;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .issue-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.04);
-            border-color: #cbd5e1;
-        }
-        .issue-header {
-            background-color: #f1f3f5;
-            padding: 8px 10px;
-            font-size: 12px;
-            font-weight: 600;
-            border-bottom: 1px solid #e1e4e8;
+        .markdown-table th, .markdown-table td {
+            border: 1px solid #d1d5db;
+            padding: 10px 12px;
             text-align: center;
-            color: #495057;
         }
-        .issue-header.active {
+        .markdown-table th {
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }
+        .markdown-table th.active-issue {
             color: #d9534f;
-            background-color: #fff5f5;
-            border-bottom-color: #f5c6cb;
         }
-        .issue-links {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 6px;
-            font-size: 13.5px;
-        }
-        .issue-links a {
+        .markdown-table a {
             text-decoration: none;
             color: #0366d6;
             font-weight: 500;
         }
-        .issue-links a.active-link {
+        .markdown-table a.active-link {
             color: #d9534f;
             font-weight: bold;
         }
-        .issue-links a:hover {
+        .markdown-table a:hover {
             text-decoration: underline;
         }
-        .issue-links span.empty, .issue-links span.inactive {
-            color: #adb5bd;
-        }
-        @media (max-width: 900px) {
-            .archive-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .empty-cell {
+            color: #959da5;
         }
     </style>
 </head>
@@ -167,8 +121,8 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.7</span></h1>
-        <div class="commit-remark">v1.7: 상단 안내 문구를 현재 슬라이드 내용으로 동기화</div>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.8</span></h1>
+        <div class="commit-remark">v1.8: 기존 마크다운 표 형태를 완벽히 재현한 HTML 테이블 구조 적용 (001~030호)</div>
     </div>
 
     <div class="intro-box">
@@ -176,111 +130,122 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 요약(슬라이드)을 보는데 활용될 수도 있습니다.</li>
-            <li>현재는 샘플 회보 7개만 게시되어 있으며, 향후 190권 전권을 모두 게시할 예정입니다.</li>
+            <li>현재는 샘플 회보 30권(001~030호)이 게시되어 있으며, 향후 190권 전권을 모두 게시할 예정입니다.</li>
         </ol>
     </div>
 
     <h3>📋 회보 요약 및 교정 현황</h3>
 
-    <!-- 001호 ~ 010호 섹션 -->
-    <div class="section-group">
-        <div class="section-title">001호 ~ 010호 구간</div>
-        <div class="archive-grid">
-            <div class="issue-card">
-                <div class="issue-header active">[001호] | 1984년 3월호</div>
-                <div class="issue-links">
-                    <a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a>
-                    <span class="inactive">교정</span>
-                </div>
-            </div>
-            <div class="issue-card">
-                <div class="issue-header active">[002호] | 1984년 4월호</div>
-                <div class="issue-links">
-                    <a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a>
-                    <span class="inactive">교정</span>
-                </div>
-            </div>
-            <div class="issue-card">
-                <div class="issue-header active">[003호] | 1984년 5월호</div>
-                <div class="issue-links">
-                    <a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a>
-                    <span class="inactive">교정</span>
-                </div>
-            </div>
-            <div class="issue-card"><div class="issue-header">[004호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[005호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[006호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[007호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[008호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[009호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[010호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        </div>
-    </div>
+    <!-- 기존 마크다운 표와 동일한 형태의 HTML 테이블 -->
+    <table class="markdown-table">
+        <!-- 1행 (001 ~ 005 호수 헤더) -->
+        <tr>
+            <th colspan="3" class="active-issue">[001호] | 1984년 3월호</th>
+            <th colspan="3" class="active-issue">[002호] | 1984년 4월호</th>
+            <th colspan="3" class="active-issue">[003호] | 1984년 5월호</th>
+            <th colspan="3">[004호] | ---------------</th>
+            <th colspan="3">[005호] | ---------------</th>
+        </tr>
+        <!-- 2행 (001 ~ 005 링크 및 교정) -->
+        <tr>
+            <td><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank" class="active-link">회보</a></td>
+            <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></td>
+            <td>교정</td>
+            <td><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank" class="active-link">회보</a></td>
+            <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></td>
+            <td>교정</td>
+            <td><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank" class="active-link">회보</a></td>
+            <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></td>
+            <td>교정</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+        </tr>
 
-    <!-- 101호 ~ 110호 섹션 -->
-    <div class="section-group">
-        <div class="section-title">101호 ~ 110호 구간</div>
-        <div class="archive-grid">
-            <div class="issue-card"><div class="issue-header">[101호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[102호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[103호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[104호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[105호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[106호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[107호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[108호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[109호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[110호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        </div>
-    </div>
+        <!-- 3행 (006 ~ 010 호수 헤더) -->
+        <tr>
+            <th colspan="3">[006호] | ---------------</th>
+            <th colspan="3">[007호] | ---------------</th>
+            <th colspan="3">[008호] | ---------------</th>
+            <th colspan="3">[009호] | ---------------</th>
+            <th colspan="3">[010호] | ---------------</th>
+        </tr>
+        <!-- 4행 (006 ~ 010 빈칸) -->
+        <tr>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+        </tr>
 
-    <!-- 151호 ~ 160호 섹션 -->
-    <div class="section-group">
-        <div class="section-title">151호 ~ 160호 구간</div>
-        <div class="archive-grid">
-            <div class="issue-card">
-                <div class="issue-header active">[151호] | 1996년 9월호</div>
-                <div class="issue-links">
-                    <a href="https://drive.google.com/file/d/13bWk3jZ4iP7YqNn8t1tL0XmU5bVzW3kL/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p4" target="_blank">요약</a>
-                    <span class="inactive">교정</span>
-                </div>
-            </div>
-            <div class="issue-card">
-                <div class="issue-header active">[152호] | 1996년 10월호</div>
-                <div class="issue-links">
-                    <a href="https://drive.google.com/file/d/1mB7V_gR_2mQ7c4E0CgT3V2M6L1nQ0P8r/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p5" target="_blank">요약</a>
-                    <span class="inactive">교정</span>
-                </div>
-            </div>
-            <div class="issue-card"><div class="issue-header">[153호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card">
-                <div class="issue-header active">[154호] | 1996년 12월호</div>
-                <div class="issue-links">
-                    <a href="https://drive.google.com/file/d/1P5Z-8V8kX7Z3l-zW0e4L2M8c5Q1yJ9Rt/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p6" target="_blank">요약</a>
-                    <span class="inactive">교정</span>
-                </div>
-            </div>
-            <div class="issue-card"><div class="issue-header">[155호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[156호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card">
-                <div class="issue-header active">[157호] | 1997년 3월호</div>
-                <div class="issue-links">
-                    <a href="https://drive.google.com/file/d/1rK4bZ2_X1mN8L3C0V9qT6mP2xW7kL8jQ/view?usp=sharing" target="_blank" class="active-link">회보</a>
-                    <a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p7" target="_blank">요약</a>
-                    <span class="inactive">교정</span>
-                </div>
-            </div>
-            <div class="issue-card"><div class="issue-header">[158호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[159호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-            <div class="issue-card"><div class="issue-header">[160호] | ---------------</div><div class="issue-links"><span class="empty">-</span></div></div>
-        </div>
-    </div>
+        <!-- 5행 (011 ~ 015 호수 헤더) -->
+        <tr>
+            <th colspan="3">[011호] | ---------------</th>
+            <th colspan="3">[012호] | ---------------</th>
+            <th colspan="3">[013호] | ---------------</th>
+            <th colspan="3">[014호] | ---------------</th>
+            <th colspan="3">[015호] | ---------------</th>
+        </tr>
+        <!-- 6행 -->
+        <tr>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+        </tr>
+
+        <!-- 7행 (016 ~ 020 호수 헤더) -->
+        <tr>
+            <th colspan="3">[016호] | ---------------</th>
+            <th colspan="3">[017호] | ---------------</th>
+            <th colspan="3">[018호] | ---------------</th>
+            <th colspan="3">[019호] | ---------------</th>
+            <th colspan="3">[020호] | ---------------</th>
+        </tr>
+        <!-- 8행 -->
+        <tr>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+        </tr>
+
+        <!-- 9행 (021 ~ 025 호수 헤더) -->
+        <tr>
+            <th colspan="3">[021호] | ---------------</th>
+            <th colspan="3">[022호] | ---------------</th>
+            <th colspan="3">[023호] | ---------------</th>
+            <th colspan="3">[024호] | ---------------</th>
+            <th colspan="3">[025호] | ---------------</th>
+        </tr>
+        <!-- 10행 -->
+        <tr>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+        </tr>
+
+        <!-- 11행 (026 ~ 030 호수 헤더) -->
+        <tr>
+            <th colspan="3">[026호] | ---------------</th>
+            <th colspan="3">[027호] | ---------------</th>
+            <th colspan="3">[028호] | ---------------</th>
+            <th colspan="3">[029호] | ---------------</th>
+            <th colspan="3">[030호] | ---------------</th>
+        </tr>
+        <!-- 12행 -->
+        <tr>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+            <td colspan="3" class="empty-cell">-</td>
+        </tr>
+    </table>
 
 </body>
 </html>
