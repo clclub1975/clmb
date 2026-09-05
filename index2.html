@@ -1,15 +1,15 @@
-<!-- v12.6: 초기화 버튼 클릭 시 lastUsedIsSequential 상태 미 초기화로 인한 연속 질문 오작동 버그 수정 -->
+<!-- v12.7: 엔터 모드 인디케이터 배지 제거, 이어서 질문하기 문구 변경 및 활성 버튼 테두리 포커스 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 AI 추억 스토리 생성기 v12.6</title>
+<title>촛불회 AI 추억 스토리 생성기 v12.7</title>
 <style>
 body {font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
 h1 {color: #2c3e50; text-align: center; margin-bottom: 5px; }
 .version {font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
-.update-notice {text-align: center; font-size: 13px; color: #27ae60; background: #e8f8f5; border: 1px solid #a3e4d7; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
+.update-notice {text-align: center; font-size: 13px; color: #2980b9; background: #eef7fc; border: 1px solid #bbe1f1; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
 .chat-container {border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
 .control-row {display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
 label {font-weight: bold; min-width: 80px; }
@@ -57,15 +57,16 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 .input-wrapper textarea {width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; white-space: pre-wrap; }
 .clear-btn {position: absolute; right: 10px; top: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
 .clear-btn:hover {color: #333; }
-/* 엔터 모드 인디케이터 배지 스타일 */
-.enter-mode-badge {font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; transition: background 0.3s, color 0.3s; }
-.enter-mode-new {background: #e1f5fe; color: #0288d1; border: 1px solid #b3e5fc; }
-.enter-mode-seq {background: #f3e5f5; color: #8e44ad; border: 1px solid #e1bee7; }
 .action-btn-group {display: flex; gap: 8px; margin-top: 10px; }
-.submit-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+/* 버튼 공통 및 엔터 활성 상태 테두리 포커스 스타일 */
+.submit-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #3498db; color: white; border: 2px solid transparent; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .submit-btn:hover {background-color: #2980b9; }
-.sequential-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.submit-btn.active-enter-mode {border: 3px solid #111; box-shadow: 0 0 8px rgba(0,0,0,0.3); }
+
+.sequential-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #9b59b6; color: white; border: 2px solid transparent; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .sequential-btn:hover {background-color: #8e44ad; }
+.sequential-btn.active-enter-mode {border: 3px solid #111; box-shadow: 0 0 8px rgba(0,0,0,0.3); }
+
 .reset-all-btn {padding: 12px 16px; font-size: 15px; background-color: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .reset-all-btn:hover {background: #707b7c; }
 .stop-btn {background-color: #e74c3c !important; }
@@ -88,8 +89,8 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 </style>
 </head>
 <body>
-<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.6</span></h1>
-<div class="update-notice">✅ <b>[v12.6 패치]</b> 초기화 버튼 클릭 시 연속 질문 기억 상태 완벽 초기화 및 두 번째 이후 질문 정상 작동 패치</div>
+<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.7</span></h1>
+<div class="update-notice">📢 <b>[v12.7 업데이트]</b> 배지 제거 및 엔터 키 실행 모드에 따른 버튼 테두리 강조 포커스 적용, '이어서 질문하기' 문구 변경</div>
 <div class="chat-container">
 <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
 <div id="apiBox" class="api-box">
@@ -168,8 +169,8 @@ AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 �
 </div>
 </div>
 <div class="action-btn-group">
-<button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)"><span id="submitBtnText">새로 질문하기</span> <span id="enterModeBadge" class="enter-mode-badge enter-mode-new">엔터: 새로</span></button>
-<button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)"><span id="sequentialBtnText">연속 질문하기</span></button>
+<button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)"><span id="submitBtnText">새로 질문하기</span></button>
+<button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)"><span id="sequentialBtnText">이어서 질문하기</span></button>
 <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
 </div>
 
@@ -219,7 +220,7 @@ const CUSTOM_MENU_MAPPING = [
 
 window.onload = async function() {
     checkApiKeyStatus();
-    updateEnterModeBadge();
+    updateEnterModeFocus(); // 초기 포커스 스타일 적용
     const queryInput = document.getElementById("userQuery");
     const checkAndResizeInput = () => {
         if (queryInput.value.length > 0) {
@@ -257,15 +258,17 @@ window.onload = async function() {
     }
 };
 
-function updateEnterModeBadge() {
-    const badge = document.getElementById("enterModeBadge");
-    if (badge) {
+// [엔터 모드에 따른 버튼 테두리 강조 포커스 업데이트 함수]
+function updateEnterModeFocus() {
+    const submitBtn = document.getElementById("submitBtn");
+    const sequentialBtn = document.getElementById("sequentialBtn");
+    if (submitBtn && sequentialBtn) {
         if (lastUsedIsSequential) {
-            badge.innerText = "엔터: 연속";
-            badge.className = "enter-mode-badge enter-mode-seq";
+            submitBtn.classList.remove("active-enter-mode");
+            sequentialBtn.classList.add("active-enter-mode");
         } else {
-            badge.innerText = "엔터: 새로";
-            badge.className = "enter-mode-badge enter-mode-new";
+            submitBtn.classList.add("active-enter-mode");
+            sequentialBtn.classList.remove("active-enter-mode");
         }
     }
 }
@@ -494,8 +497,8 @@ function resetAllContent() {
     toggleClearButton();
     conversationHistory = [];
     lastSingleResult = null;
-    lastUsedIsSequential = false; // [핵심 수정]: 초기화 시 엔터 모드도 새로 질문(false)으로 명확히 복원
-    updateEnterModeBadge();
+    lastUsedIsSequential = false; // 초기화 시 '새로 질문하기' 모드로 복원
+    updateEnterModeFocus();
     const resultBox = document.getElementById("aiResult");
     resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
     document.getElementById("copyBtn").style.display = "none";
@@ -504,7 +507,7 @@ function resetAllContent() {
     document.getElementById("cumulativeResultBox").innerHTML = "";
     document.getElementById("submitBtnText").innerText = "새로 질문하기";
     document.getElementById("submitBtn").classList.remove("stop-btn");
-    document.getElementById("sequentialBtnText").innerText = "연속 질문하기";
+    document.getElementById("sequentialBtnText").innerText = "이어서 질문하기";
     document.getElementById("sequentialBtn").classList.remove("stop-btn");
     queryInput.focus();
 }
@@ -722,7 +725,7 @@ async function askAI(isSequential) {
     }
 
     lastUsedIsSequential = isSequential;
-    updateEnterModeBadge();
+    updateEnterModeFocus();
 
     let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
     if (!apiKey) {
@@ -889,7 +892,7 @@ ${contextPrompt}
         activeTaskType = null;
         submitBtnText.innerText = "새로 질문하기";
         submitBtn.classList.remove("stop-btn");
-        sequentialBtnText.innerText = "연속 질문하기";
+        sequentialBtnText.innerText = "이어서 질문하기";
         sequentialBtn.classList.remove("stop-btn");
     }
 }
@@ -909,4 +912,4 @@ function renderCumulativeHistory() {
 </script>
 </body>
 </html>
-<!-- v12.6: 초기화 버튼 클릭 시 연속 질문 상태기억 변수(lastUsedIsSequential) 누락 문제 완벽 해결 -->
+<!-- v12.7: 엔터 모드 배지 제거, 이어서 질문하기 문구 변경 및 활성 버튼 테두리 포커스 구현 완료 -->
