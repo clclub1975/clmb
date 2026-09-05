@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 AI 추억 스토리 생성기 v12.2</title>
+<title>촛불회 AI 추억 스토리 생성기 v12.3</title>
 <style>
 body {font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
 h1 {color: #2c3e50; text-align: center; }
@@ -741,7 +741,6 @@ async function askAI(isSequential) {
         selectedMenus.push(cb.value);
     });
 
-    // 참고항목 매핑 및 체크하지 않은 경우 전체 항목 선택으로 간주
     let resolvedCols = [];
     if (selectedMenus.length > 0) {
         selectedMenus.forEach(menuLabel => {
@@ -756,14 +755,12 @@ async function askAI(isSequential) {
         });
     }
 
-    // [핵심 물리적 필터링 구현]: 체크된 항목이 없거나 전체 선택된 경우 전체 열 포함, 일부만 체크된 경우 해당 열만 엄격히 추출
     let filteredSheetData = globalSheetData;
     let isFullData = selectedMenus.length === 0 || selectedMenus.length === CUSTOM_MENU_MAPPING.length;
 
     if (!isFullData && resolvedCols.length > 0) {
         filteredSheetData = globalSheetData.map(row => {
             let filteredRow = {};
-            // 식별용 필수 메타데이터 항상 유지
             filteredRow["통권 호수"] = row["통권 호수"] || row["통권호수"] || "";
             filteredRow["발행월"] = row["발행월"] || row["발행 일자"] || "";
 
@@ -803,7 +800,15 @@ async function askAI(isSequential) {
     try {
         let contextPrompt = "";
         if (isSequential && conversationHistory.length > 0) {
-            contextPrompt = "\n\n[이전 대화 기록]\n" + conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n");
+            // [일반화된 분석 프롬프트 로직]: 이전 대화 기록 속의 데이터나 분석 결과를 후속 질문(통계, 요약, 비교 등)에서 적극적으로 재참조하도록 가이드 강화
+            contextPrompt = `
+[이전 대화 기록 및 분석 컨텍스트]
+${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}
+
+[지침]
+사용자가 이어서 던진 질문은 위 [이전 대화 기록]에서 다룬 데이터나 도출된 결과(명단, 요약 등)를 기반으로 확장하거나 심층 분석(통계 집계, 비교, 순위 산출 등)을 요구하는 성격일 수 있습니다. 
+따라서 이전 답변에 포함된 구체적인 정보(이름, 횟수, 내용 등)를 근거로 삼아, 데이터를 논리적으로 종합·분석하여 답변해 주세요. 단, 원본 데이터베이스 범위 내에서 도출 가능한 사실에 충실해야 합니다.
+            `;
         }
 
         const promptText = `
@@ -878,3 +883,4 @@ function renderCumulativeHistory() {
 </script>
 </body>
 </html>
+<!-- v12.2: 연속 질문 시 대화 기록 및 분석 지침 일반화 로직 적용 완료 -->
