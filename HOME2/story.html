@@ -1,35 +1,14 @@
-<!-- v13.3: story.html 타이틀 하단 중복 리마크 제거 및 정리 -->
+<!-- v13.1: 코드 전면 리팩토링 (가독성 향상, 중복 코드 제거, DOM 헬퍼 함수 도입 및 배열 메서드 최적화) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v13.3</title>
+    <title>촛불회 AI 추억 스토리 생성기 v13.1</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
-        
-        .home-btn-container {
-            margin-bottom: 20px;
-        }
-        .home-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: #f3f4f6;
-            color: #374151;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            border: 1px solid #d1d5db;
-            transition: background-color 0.15s;
-        }
-        .home-btn:hover {
-            background-color: #e5e7eb;
-        }
-
         h1 { color: #2c3e50; text-align: center; margin-bottom: 5px; }
         .version { font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
-        .commit-remark { text-align: center; font-size: 13px; color: #d9534f; background-color: #fdf2f2; padding: 6px; border-radius: 4px; margin-bottom: 20px; border: 1px dashed #f5c6cb; }
         .update-notice { text-align: center; font-size: 13px; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
         .control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -107,18 +86,8 @@
     </style>
 </head>
 <body>
-
-    <!-- 메인으로 돌아가는 홈 버튼 -->
-    <div class="home-btn-container">
-        <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
-    </div>
-
-    <h1>🕯️ 촛불회 AI 추억 스토리 생성기 <span class="version">v13.3</span></h1>
-    
-    <!-- 개발 중 커밋 리마크 표시 영역 (최종 완성 시 제거) -->
-    <div class="commit-remark">
-         v13.3: 중복된 상단 업데이트 안내 문구를 제거하고 예쁜 커밋 리마크만 남김
-    </div>
+    <h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v13.1</span></h1>
+    <div class="update-notice">✅ <b>[v13.1 업데이트]</b> 시스템 내부 코드 최적화 및 리팩토링 적용 (더 빠르고 깔끔한 구동 환경)</div>
 
     <div class="chat-container">
         <!-- API Key 가이드 박스 -->
@@ -223,6 +192,7 @@
         // --- [2] 전역 변수 및 상수 설정 ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
         const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
+        
         let globalSheetData = [];
         let globalHeaders = [];
         let currentController = null;
@@ -249,11 +219,9 @@
         window.onload = async () => {
             checkApiKeyStatus();
             updateEnterModeFocus();
+            
             const queryInput = $("userQuery");
-            const checkAndResize = () => {
-                if (queryInput.value.length > 0) autoResize(queryInput);
-                toggleClearButton();
-            };
+            const checkAndResize = () => { if (queryInput.value.length > 0) autoResize(queryInput); toggleClearButton(); };
             [0, 50, 300].forEach(delay => setTimeout(checkAndResize, delay));
 
             window.onclick = (e) => {
@@ -268,6 +236,7 @@
                 const parsed = parseCSVStrictWithHeaders(csvText);
                 globalSheetData = parsed.data;
                 globalHeaders = parsed.headers;
+                
                 renderCheckboxes();
                 initPeriodOptions();
                 $("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
@@ -293,6 +262,7 @@
         function updateEnterModeFocus() {
             const submitBtn = $("submitBtn"), seqBtn = $("sequentialBtn"), resultText = $("aiResult").innerText.trim();
             const hasValidResult = resultText && !resultText.includes("조건을 설정하고") && !resultText.includes("AI가 답변을 생성하는 중입니다");
+            
             submitBtn.classList.toggle("active-enter-mode", !hasValidResult);
             seqBtn.classList.toggle("active-enter-mode", hasValidResult);
         }
@@ -309,6 +279,7 @@
             const savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
             const keyType = localStorage.getItem("GEMINI_KEY_TYPE");
             const badge = $("apiStatusBadge");
+
             if (savedKey) {
                 isPersonalWaitState = false;
                 $("apiKeyInput").value = savedKey;
@@ -317,6 +288,7 @@
                 $("apiCancelBtn").style.display = "none";
                 $("dropdownArrow").style.display = "none";
                 $("apiSaveBtn").disabled = true;
+
                 if (keyType === "personal") {
                     $("apiSaveBtnText").innerText = "개인 키 설치완료";
                     badge.innerText = "🔒 개인 키 사용 중";
@@ -331,8 +303,10 @@
                 $("apiDelBtn").style.display = "none";
                 $("apiSaveBtn").disabled = false;
                 $("apiSaveBtn").classList.remove("api-wait-btn");
+                
                 badge.innerText = "⚠️ 키 미설정 상태";
                 Object.assign(badge.style, { color: "#c0392b", background: "#fadbd8" });
+
                 if (isPersonalWaitState) {
                     $("apiSaveBtnText").innerText = "개인 키 설치대기";
                     $("dropdownArrow").style.display = "none";
@@ -355,6 +329,7 @@
         function handleSaveButtonClick() {
             if (localStorage.getItem("GEMINI_USER_API_KEY")) return;
             const keyVal = $("apiKeyInput").value.trim();
+
             if (isPersonalWaitState || keyVal.length > 0) {
                 if (keyVal.length === 0) {
                     alert("입력창에 본인의 Gemini API Key를 붙여넣은 뒤 눌러주세요.");
@@ -396,12 +371,7 @@
             }
         }
 
-        function cancelKeyInput() {
-            isPersonalWaitState = false;
-            $("apiKeyInput").value = "";
-            checkApiKeyStatus();
-        }
-
+        function cancelKeyInput() { isPersonalWaitState = false; $("apiKeyInput").value = ""; checkApiKeyStatus(); }
         function deleteApiKey() {
             if (confirm("정말로 저장된 API Key를 삭제하시겠습니까?")) {
                 localStorage.removeItem("GEMINI_USER_API_KEY");
@@ -414,35 +384,21 @@
         }
 
         // --- [5] UI 공통 제어 (초기화, 복사 등) ---
-        const autoResize = textarea => {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight - 6) + 'px';
-        };
+        const autoResize = textarea => { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight - 6) + 'px'; };
         const toggleClearButton = () => $("clearBtn").style.display = $("userQuery").value.length > 0 ? "block" : "none";
-        const clearQuery = () => {
-            $("userQuery").value = "";
-            autoResize($("userQuery"));
-            toggleClearButton();
-            $("userQuery").focus();
-        };
+        const clearQuery = () => { $("userQuery").value = ""; autoResize($("userQuery")); toggleClearButton(); $("userQuery").focus(); };
 
         function resetAllContent() {
-            if (currentController) {
-                currentController.abort();
-                currentController = null;
-            }
+            if (currentController) { currentController.abort(); currentController = null; }
             activeTaskType = null;
             clearQuery();
-            conversationHistory = [];
-            lastSingleResult = null;
+            conversationHistory = []; lastSingleResult = null;
             $("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
             $("copyBtn").style.display = "none";
             $("cumulativeSection").style.display = "none";
             $("cumulativeResultBox").innerHTML = "";
-            $("submitBtnText").innerText = "새로 질문하기";
-            $("submitBtn").classList.remove("stop-btn");
-            $("sequentialBtnText").innerText = "이어서 질문하기";
-            $("sequentialBtn").classList.remove("stop-btn");
+            $("submitBtnText").innerText = "새로 질문하기"; $("submitBtn").classList.remove("stop-btn");
+            $("sequentialBtnText").innerText = "이어서 질문하기"; $("sequentialBtn").classList.remove("stop-btn");
             updateEnterModeFocus();
         }
 
@@ -463,11 +419,13 @@
                 container.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" onchange="checkIndividualCheckbox()"> ${item.label}</label>`;
             });
         }
+
         const toggleSelectAll = (selectAllCb) => document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = selectAllCb.checked);
         const checkIndividualCheckbox = () => {
             const allChecked = Array.from(document.querySelectorAll('input[name="targetMenu"]')).every(cb => cb.checked);
             $("selectAllCheckbox").checked = allChecked;
         };
+
         const toggleCheckboxPanel = () => {
             const panel = $("checkboxPanel"), btn = $("toggleBtn");
             const isBlock = panel.style.display === "block";
@@ -479,6 +437,7 @@
             const type = $("criteriaType").value;
             const startSelect = $("startPeriod");
             startSelect.innerHTML = `<option value="전체">전체</option>`;
+            
             if (type === "volume") {
                 let nums = globalSheetData.map(row => parseInt((row["통권 호수"] || row["통권호수"] || "").replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
                 if (nums.length) {
@@ -513,31 +472,20 @@
         async function askAI(isSequential) {
             const targetType = isSequential ? "sequential" : "new";
             if (currentController) {
-                if (activeTaskType === targetType) {
-                    currentController.abort();
-                    return;
-                }
-                currentController.abort();
-                currentController = null;
-            }
-            const apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
-            if (!apiKey) {
-                alert("상단 안내란을 참고하여 Gemini API Key를 설정하거나 입력해주세요.");
-                return $("apiKeyInput").focus();
-            }
-            let queryInput = $("userQuery");
-            let query = queryInput.value.trim() || "촛불회가 주로 봉사한 기관들을 정리해줘.";
-            if (!queryInput.value.trim()) {
-                queryInput.value = query;
-                autoResize(queryInput);
-                toggleClearButton();
+                if (activeTaskType === targetType) { currentController.abort(); return; }
+                currentController.abort(); currentController = null;
             }
 
+            const apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
+            if (!apiKey) { alert("상단 안내란을 참고하여 Gemini API Key를 설정하거나 입력해주세요."); return $("apiKeyInput").focus(); }
+
+            let queryInput = $("userQuery");
+            let query = queryInput.value.trim() || "촛불회가 주로 봉사한 기관들을 정리해줘.";
+            if (!queryInput.value.trim()) { queryInput.value = query; autoResize(queryInput); toggleClearButton(); }
+
             if (!isSequential) {
-                conversationHistory = [];
-                lastSingleResult = null;
-                $("cumulativeSection").style.display = "none";
-                $("cumulativeResultBox").innerHTML = "";
+                conversationHistory = []; lastSingleResult = null;
+                $("cumulativeSection").style.display = "none"; $("cumulativeResultBox").innerHTML = "";
             } else {
                 if (conversationHistory.length === 0 && lastSingleResult) {
                     conversationHistory.push({ q: `Q1. ${lastSingleResult.q}`, a: lastSingleResult.a });
@@ -545,44 +493,68 @@
                 $("cumulativeSection").style.display = "block";
             }
 
+            // 데이터 필터링 연산
             const selectedMenus = Array.from(document.querySelectorAll('input[name="targetMenu"]:checked')).map(cb => cb.value);
             let resolvedCols = [];
             selectedMenus.forEach(menu => {
                 const found = CUSTOM_MENU_MAPPING.find(m => m.label === menu);
                 if (found) resolvedCols.push(...found.cols.filter(c => !resolvedCols.includes(c)));
             });
+
             const isFullData = selectedMenus.length === 0 || selectedMenus.length === CUSTOM_MENU_MAPPING.length;
             const filteredSheetData = isFullData ? globalSheetData : globalSheetData.map(row => {
                 let fr = { "통권 호수": row["통권 호수"] || row["통권호수"] || "", "발행월": row["발행월"] || row["발행 일자"] || "" };
                 resolvedCols.forEach(col => { if (row[col] !== undefined) fr[col] = row[col]; });
                 return fr;
             });
+
             const targetColumnsText = isFullData ? "전체 항목" : resolvedCols.join(", ");
             const criteria = $("criteriaType").value === "volume" ? "통권기준" : "년도기준";
             const periodText = $("startPeriod").value === "전체" ? "전체 기간" : `${$("startPeriod").value} ~ ${$("endPeriod").value}`;
             const qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
 
+            // UI 로딩 상태 변경
             activeTaskType = targetType;
             currentController = new AbortController();
+            
             const btn = isSequential ? $("sequentialBtn") : $("submitBtn");
             const btnText = isSequential ? $("sequentialBtnText") : $("submitBtnText");
-            btnText.innerText = "생성 중단";
-            btn.classList.add("stop-btn");
+            btnText.innerText = "생성 중단"; btn.classList.add("stop-btn");
+            
             $("copyBtn").style.display = "none";
             $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${isFullData ? "전체" : selectedMenus.join(", ")}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`);
-            $("aiResult").scrollTop = 0;
-            $("aiResult").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            $("aiResult").scrollTop = 0; $("aiResult").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             try {
-                let contextPrompt = isSequential && conversationHistory.length > 0 ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 기반으로 확장하거나 심층 분석해 주세요.` : "";
-                const promptText = ` 당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다: ${JSON.stringify(filteredSheetData)} [검색 조건 및 엄격한 제약 사항] - 기간 기준: ${criteria} (${periodText}) - 집중 참고 항목 (열 기준): ${targetColumnsText} - **핵심 규칙**: 위에서 지정된 [집중 참고 항목]에 포함되지 않은 데이터는 존재하지 않습니다. 질문 내용이 참고 범위 내에 없다면 유추하지 말고 명확히 안내해 주세요. ${contextPrompt} [사용자 질문] "${query}" 위 조건을 대조하여 답변을 작성해 주세요.`;
-                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }), signal: currentController.signal });
+                let contextPrompt = isSequential && conversationHistory.length > 0 
+                    ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 기반으로 확장하거나 심층 분석해 주세요.` 
+                    : "";
+
+                const promptText = `
+당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다:
+${JSON.stringify(filteredSheetData)}
+[검색 조건 및 엄격한 제약 사항]
+- 기간 기준: ${criteria} (${periodText})
+- 집중 참고 항목 (열 기준): ${targetColumnsText}
+- **핵심 규칙**: 위에서 지정된 [집중 참고 항목]에 포함되지 않은 데이터는 존재하지 않습니다. 질문 내용이 참고 범위 내에 없다면 유추하지 말고 명확히 안내해 주세요.
+${contextPrompt}
+[사용자 질문] "${query}"
+위 조건을 대조하여 답변을 작성해 주세요.`;
+
+                const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }),
+                    signal: currentController.signal
+                });
+
                 const data = await apiResponse.json();
+                
                 if (apiResponse.ok && data.candidates?.length > 0) {
                     let answer = data.candidates[0].content.parts[0].text;
                     $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, answer.replace(/\n/g, "<br>"));
                     $("copyBtn").style.display = "inline-block";
                     $("aiResult").scrollTop = 0;
+
                     if (!isSequential) {
                         lastSingleResult = { q: query, a: answer };
                     } else {
@@ -597,19 +569,19 @@
                 const isAbort = error.name === 'AbortError';
                 $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<strong style="${isAbort ? 'color:#e74c3c; font-style:italic;' : 'color:red;'}">${isAbort ? '[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.' : `[시스템 에러]<br>${error.message}`}</strong>`);
             } finally {
-                currentController = null;
-                activeTaskType = null;
-                $("submitBtnText").innerText = "새로 질문하기";
-                $("submitBtn").classList.remove("stop-btn");
-                $("sequentialBtnText").innerText = "이어서 질문하기";
-                $("sequentialBtn").classList.remove("stop-btn");
+                currentController = null; activeTaskType = null;
+                $("submitBtnText").innerText = "새로 질문하기"; $("submitBtn").classList.remove("stop-btn");
+                $("sequentialBtnText").innerText = "이어서 질문하기"; $("sequentialBtn").classList.remove("stop-btn");
                 updateEnterModeFocus();
             }
         }
 
         function renderCumulativeHistory() {
             const box = $("cumulativeResultBox");
-            box.innerHTML = conversationHistory.map((item, idx) => (idx > 0 ? `<br><div class="cumulative-separator">================================================================================</div><br>` : '') + `<div class="cumulative-item">${renderQnA(item.q, item.a.replace(/\n/g, "<br>"))}</div>`).join('');
+            box.innerHTML = conversationHistory.map((item, idx) => 
+                (idx > 0 ? `<br><div class="cumulative-separator">================================================================================</div><br>` : '') +
+                `<div class="cumulative-item">${renderQnA(item.q, item.a.replace(/\n/g, "<br>"))}</div>`
+            ).join('');
             box.scrollTop = box.scrollHeight;
         }
 
@@ -619,9 +591,7 @@
             for (let i = 0; i < text.length; i++) {
                 let c = text[i], nextC = text[i + 1];
                 if (inQuotes) {
-                    if (c === '"') {
-                        if (nextC === '"') { currentField += '"'; i++; } else inQuotes = false;
-                    } else currentField += c;
+                    if (c === '"') { if (nextC === '"') { currentField += '"'; i++; } else inQuotes = false; } else currentField += c;
                 } else {
                     if (c === '"') inQuotes = true;
                     else if (c === ',') { currentRow.push(currentField.trim()); currentField = ""; }
@@ -630,11 +600,9 @@
                     else currentField += c;
                 }
             }
-            if (currentField !== "" || currentRow.length > 0) {
-                currentRow.push(currentField.trim());
-                rows.push(currentRow);
-            }
+            if (currentField !== "" || currentRow.length > 0) { currentRow.push(currentField.trim()); rows.push(currentRow); }
             if (rows.length === 0) return { headers: [], data: [] };
+            
             let headers = rows[0].map(h => h.trim()), result = [];
             for (let i = 1; i < rows.length; i++) {
                 let cols = rows[i];
