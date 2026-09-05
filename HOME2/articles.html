@@ -1,3 +1,4 @@
+<!-- v2.1: HOME2/articles.html에 메인으로 돌아가는 홈 버튼 추가 및 버전 표기 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,6 +9,25 @@
         h1 { text-align: center; color: #1f2937; margin-bottom: 10px; }
         p.subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; }
         
+        .home-btn-container {
+            margin-bottom: 20px;
+        }
+        .home-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #f3f4f6;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid #d1d5db;
+            transition: background-color 0.15s;
+        }
+        .home-btn:hover {
+            background-color: #e5e7eb;
+        }
+
         .filter-container { 
             display: flex; 
             gap: 15px; 
@@ -79,6 +99,11 @@
     </style>
 </head>
 <body>
+
+    <!-- 메인으로 돌아가는 홈 버튼 -->
+    <div class="home-btn-container">
+        <a href="../index.md" class="home-btn">← 메인으로 돌아가기</a>
+    </div>
 
     <h1>촛불회보 기고문 아카이브</h1>
     <p class="subtitle">기수, 기고자, 기고문을 순서대로 선택하여 전문을 확인하세요.</p>
