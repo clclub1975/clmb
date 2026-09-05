@@ -1,15 +1,14 @@
-<!-- v12.8: 답변 결과 창의 내용 유무에 따라 새로 질문하기/이어서 질문하기 버튼 테두리 활성 상태 자동 전환 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 AI 추억 스토리 생성기 v12.8</title>
+<title>촛불회 AI 추억 스토리 생성기 v12.9</title>
 <style>
 body {font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
 h1 {color: #2c3e50; text-align: center; margin-bottom: 5px; }
 .version {font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
-.update-notice {text-align: center; font-size: 13px; color: #2980b9; background: #eef7fc; border: 1px solid #bbe1f1; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
+.update-notice {text-align: center; font-size: 13px; color: #27ae60; background: #e8f8f5; border: 1px solid #a3e4d7; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
 .chat-container {border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
 .control-row {display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
 label {font-weight: bold; min-width: 80px; }
@@ -89,8 +88,8 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 </style>
 </head>
 <body>
-<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.8</span></h1>
-<div class="update-notice">📢 <b>[v12.8 업데이트]</b> 답변 결과 창에 내용 유무에 따라 '새로 질문하기' 및 '이어서 질문하기' 버튼 활성 테두리 자동 전환 구현</div>
+<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.9</span></h1>
+<div class="update-notice">📢 <b>[v12.9 업데이트]</b> 답변 결과 유무에 따른 버튼 테두리 활성화 및 엔터 키 실행 모드 완벽 연동 구현</div>
 <div class="chat-container">
 <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
 <div id="apiBox" class="api-box">
@@ -104,7 +103,7 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 촛불회 공용 키를 사용할 수 있습니다만(아래의 '키 설치하기' 버튼 꾹), 공용 키를 다수가 사용할 경우, AI 사용량 한도 때문에 서비스가 제한될 수 있습니다. 따라서 개인 무료 API Key 사용을 권장합니다.<br><br>
 💡 <b>초간단 개인 (무료)키 발급 및 설치 방법:</b><br>
 1. 만약 공용 키가 설치되어 있는 상태라면, 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
-2. 파란색 글씨의 <a href="https://aistudio.google.com/app/api-keys" target="_blank">여기(Google AI Studio)</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
+2. 파란색 글씨의 [여기(Google AI Studio)](https://aistudio.google.com/app/api-keys)를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
 3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
 4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
 5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
@@ -201,7 +200,6 @@ let activeTaskType = null;
 let conversationHistory = [];
 let lastSingleResult = null;
 let isPersonalWaitState = false;
-let lastUsedIsSequential = false;
 
 // 사용자 정의 메뉴 및 그룹핑(매핑) 정의
 const CUSTOM_MENU_MAPPING = [
@@ -220,7 +218,7 @@ const CUSTOM_MENU_MAPPING = [
 
 window.onload = async function() {
     checkApiKeyStatus();
-    updateEnterModeFocus(); // 초기 포커스 스타일 적용
+    updateEnterModeFocus();
     const queryInput = document.getElementById("userQuery");
     const checkAndResizeInput = () => {
         if (queryInput.value.length > 0) {
@@ -253,32 +251,43 @@ window.onload = async function() {
         renderCheckboxes();
         initPeriodOptions();
         document.getElementById("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
+        updateEnterModeFocus();
     } catch (error) {
         document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
     }
 };
 
-// [핵심 변경]: 답변 결과 창에 실제 결과 내용이 존재하면 '이어서 질문하기'를 활성화하고, 없으면 '새로 질문하기'를 활성화
 function updateEnterModeFocus() {
     const submitBtn = document.getElementById("submitBtn");
     const sequentialBtn = document.getElementById("sequentialBtn");
     const resultBox = document.getElementById("aiResult");
     
     if (submitBtn && sequentialBtn && resultBox) {
-        // 결과 박스 내부에 안내 문구("조건을 설정하고...")나 로딩/에러가 아닌 실제 답변 내용이 있는지 확인
         let contentText = resultBox.innerText.trim();
         let hasValidResult = contentText !== "" && 
                              !textContains(contentText, "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요") && 
                              !textContains(contentText, "조건으로 AI가 답변을 생성하는 중입니다");
 
         if (hasValidResult) {
-            lastUsedIsSequential = true; // 답변이 있으면 엔터 시 디폴트로 이어서 질문
             submitBtn.classList.remove("active-enter-mode");
             sequentialBtn.classList.add("active-enter-mode");
         } else {
-            lastUsedIsSequential = false; // 답변이 없으면 새로 질문
             submitBtn.classList.add("active-enter-mode");
             sequentialBtn.classList.remove("active-enter-mode");
+        }
+    }
+}
+
+function handleKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        if (currentController) {
+            currentController.abort();
+            currentController = null;
+        } else {
+            const sequentialBtn = document.getElementById("sequentialBtn");
+            const isSeqActive = sequentialBtn && sequentialBtn.classList.contains("active-enter-mode");
+            askAI(isSeqActive);
         }
     }
 }
@@ -469,18 +478,6 @@ function autoResize(textarea) {
     textarea.style.height = (textarea.scrollHeight - 6) + 'px';
 }
 
-function handleKeyDown(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        if (currentController) {
-            currentController.abort();
-            currentController = null;
-        } else {
-            askAI(lastUsedIsSequential);
-        }
-    }
-}
-
 function toggleClearButton() {
     const queryInput = document.getElementById("userQuery");
     const clearBtn = document.getElementById("clearBtn");
@@ -515,7 +512,6 @@ function resetAllContent() {
     const resultBox = document.getElementById("aiResult");
     resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
     
-    lastUsedIsSequential = false; // 초기화 시 '새로 질문하기' 모드로 복원
     updateEnterModeFocus();
 
     document.getElementById("copyBtn").style.display = "none";
@@ -909,8 +905,7 @@ ${contextPrompt}
         sequentialBtnText.innerText = "이어서 질문하기";
         sequentialBtn.classList.remove("stop-btn");
 
-        // 답변 생성이 완료된 직후 포커스 상태를 검사하여 '이어서 질문하기' 버튼 강조 테두리 적용
-        lastUsedIsSequential = true;
+        // 답변 생성 완료 후 '이어서 질문하기' 버튼이 시각적으로 활성화되면서 엔터 시 연동되도록 갱신
         updateEnterModeFocus();
     }
 }
@@ -930,4 +925,4 @@ function renderCumulativeHistory() {
 </script>
 </body>
 </html>
-<!-- v12.8: 답변 결과 창 내용 유무에 따른 '새로 질문하기' / '이어서 질문하기' 활성 테두리 자동 전환 구현 완료 -->
+<!-- v12.9: 전체 코드 누락 없이 단일 블록으로 통합 완성 -->
