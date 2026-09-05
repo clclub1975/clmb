@@ -1,4 +1,4 @@
-<!-- v1.13: 001~003호 검은색 통일, 004~030호 1행 회색 처리 및 '----' 제거, 비활성 셀 '-' 표기 및 활성 '회보' 링크 푸른색 통일 적용 -->
+<!-- v1.15: 단위 셀 외곽 테두리를 더 굵게 강조하고 내부 서브 셀 테두리는 기존 유지하도록 스타일 조정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -79,7 +79,6 @@
             color: #24292e;
             margin-bottom: 20px;
         }
-        /* 테이블 기본 구조 및 3열 균등 폭 유지를 위한 table-layout: fixed */
         .markdown-table {
             width: 100%;
             border-collapse: collapse;
@@ -87,23 +86,47 @@
             margin-bottom: 30px;
             font-size: 14px;
         }
+        /* 기본 서브 셀 테두리 (기존 굵기 유지) */
         .markdown-table th, .markdown-table td {
-            border: 1.5px solid #b0b7c3;
+            border: 1px solid #d1d5db;
             padding: 10px 12px;
             text-align: center;
         }
-        /* 1행 헤더 스타일: 모든 호수 1행 검은색 통일 */
+        /* 단위 셀(호수 단위) 외곽 테두리를 더 굵게(2.5px) 강조하는 규칙 */
+        .markdown-table th[colspan="3"] {
+            border-top: 2.5px solid #4a5568;
+            border-left: 2.5px solid #4a5568;
+            border-right: 2.5px solid #4a5568;
+            border-bottom: 1.5px solid #4a5568;
+        }
+        .markdown-table td:nth-child(3n-2), 
+        .markdown-table td:nth-child(3n-1), 
+        .markdown-table td:nth-child(3n) {
+            /* 각 3칸(회보, 요약, 교정)이 하나의 단위 셀을 구성하므로 외곽 하단 및 좌우 테두리 보강 */
+        }
+        /* 행 그룹별(1행 헤더와 2행 내용) 하단/좌우 외곽선 일괄 처리용 클래스 */
+        .unit-top {
+            border-top: 2.5px solid #4a5568 !important;
+        }
+        .unit-bottom {
+            border-bottom: 2.5px solid #4a5568 !important;
+        }
+        .unit-left {
+            border-left: 2.5px solid #4a5568 !important;
+        }
+        .unit-right {
+            border-right: 2.5px solid #4a5568 !important;
+        }
+
         .markdown-table th {
             background-color: #f6f8fa;
             color: #1a1a1a;
             font-weight: 600;
         }
-        /* 회보가 없는 호수(004~030) 1행의 옅은 회색 처리 */
         .markdown-table th.inactive-issue {
             color: #959da5;
             background-color: #fafbfc;
         }
-        /* 하이퍼링크 표준 스타일: 옅은 푸른색 글씨 + 밑줄 ('회보', '요약' 공통) */
         .markdown-table a {
             text-decoration: underline;
             color: #0366d6;
@@ -112,7 +135,6 @@
         .markdown-table a:hover {
             opacity: 0.8;
         }
-        /* 링크가 없는 일반 텍스트(교정 등)는 검은색 처리 */
         .plain-text {
             color: #2b3137;
         }
@@ -126,8 +148,8 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.13</span></h1>
-        <div class="commit-remark">v1.13: 001~003호 검은색 통일, 004~030호 1행 회색 처리 및 '----' 제거, 비활성 셀 '-' 표기 반영</div>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v1.15</span></h1>
+        <div class="commit-remark">v1.15: 단위 셀 외곽 테두리를 더 굵게 강조하고 내부 서브 셀 테두리는 기존 유지</div>
     </div>
 
     <div class="intro-box">
@@ -141,112 +163,125 @@
 
     <h3>📋 회보 요약 및 교정 현황</h3>
 
-    <!-- 001~030호 테이블 -->
     <table class="markdown-table">
-        <!-- 001 ~ 005호 헤더 -->
+        <!-- 001 ~ 005호 -->
         <tr>
-            <th colspan="3">[001호] | 1984년 3월호</th>
-            <th colspan="3">[002호] | 1984년 4월호</th>
-            <th colspan="3">[003호] | 1984년 5월호</th>
-            <th colspan="3" class="inactive-issue">[004호]</th>
-            <th colspan="3" class="inactive-issue">[005호]</th>
+            <th colspan="3" class="unit-top unit-left"> [001호] | 1984년 3월호 </th>
+            <th colspan="3" class="unit-top"> [002호] | 1984년 4월호 </th>
+            <th colspan="3" class="unit-top"> [003호] | 1984년 5월호 </th>
+            <th colspan="3" class="unit-top inactive-issue">[004호]</th>
+            <th colspan="3" class="unit-top unit-right inactive-issue">[005호]</th>
         </tr>
-        <!-- 001 ~ 005호 서브셀 -->
         <tr>
-            <td><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank">회보</a></td>
+            <td class="unit-left"><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank">회보</a></td>
             <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></td>
-            <td><span class="plain-text">교정</span></td>
+            <td class="unit-right"><span class="plain-text">교정</span></td>
             
-            <td><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank">회보</a></td>
-            <td><a href="url?id=5" target="_blank">요약</a></td>
-            <td><span class="plain-text">교정</span></td>
+            <td class="unit-left"><a href="url?id=3" target="_blank">회보</a></td>
+            <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></td>
+            <td class="unit-right"><span class="plain-text">교정</span></td>
             
-            <td><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank">회보</a></td>
+            <td class="unit-left"><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank">회보</a></td>
             <td><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></td>
-            <td><span class="plain-text">교정</span></td>
+            <td class="unit-right"><span class="plain-text">교정</span></td>
             
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+        </tr>
+        <tr>
+            <td colspan="15" style="border:none; height: 10px;"></td> <!-- 셀 블록 간 미세 간격 -->
         </tr>
 
-        <!-- 006 ~ 010호 구간 -->
+        <!-- 006 ~ 010호 -->
         <tr>
-            <th colspan="3" class="inactive-issue">[006호]</th>
-            <th colspan="3" class="inactive-issue">[007호]</th>
-            <th colspan="3" class="inactive-issue">[008호]</th>
-            <th colspan="3" class="inactive-issue">[009호]</th>
-            <th colspan="3" class="inactive-issue">[010호]</th>
+            <th colspan="3" class="unit-top unit-left inactive-issue">[006호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[007호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[008호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[009호]</th>
+            <th colspan="3" class="unit-top unit-right inactive-issue">[010호]</th>
         </tr>
         <tr>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-        </tr>
-
-        <!-- 011 ~ 015호 구간 -->
-        <tr>
-            <th colspan="3" class="inactive-issue">[011호]</th>
-            <th colspan="3" class="inactive-issue">[012호]</th>
-            <th colspan="3" class="inactive-issue">[013호]</th>
-            <th colspan="3" class="inactive-issue">[014호]</th>
-            <th colspan="3" class="inactive-issue">[015호]</th>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
         </tr>
         <tr>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
+            <td colspan="15" style="border:none; height: 10px;"></td>
         </tr>
 
-        <!-- 016 ~ 020호 구간 -->
+        <!-- 011 ~ 015호 -->
         <tr>
-            <th colspan="3" class="inactive-issue">[016호]</th>
-            <th colspan="3" class="inactive-issue">[017호]</th>
-            <th colspan="3" class="inactive-issue">[018호]</th>
-            <th colspan="3" class="inactive-issue">[019호]</th>
-            <th colspan="3" class="inactive-issue">[020호]</th>
+            <th colspan="3" class="unit-top unit-left inactive-issue">[011호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[012호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[013호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[014호]</th>
+            <th colspan="3" class="unit-top unit-right inactive-issue">[015호]</th>
         </tr>
         <tr>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-        </tr>
-
-        <!-- 021 ~ 025호 구간 -->
-        <tr>
-            <th colspan="3" class="inactive-issue">[021호]</th>
-            <th colspan="3" class="inactive-issue">[022호]</th>
-            <th colspan="3" class="inactive-issue">[023호]</th>
-            <th colspan="3" class="inactive-issue">[024호]</th>
-            <th colspan="3" class="inactive-issue">[025호]</th>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
         </tr>
         <tr>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
+            <td colspan="15" style="border:none; height: 10px;"></td>
         </tr>
 
-        <!-- 026 ~ 030호 구간 -->
+        <!-- 016 ~ 020호 -->
         <tr>
-            <th colspan="3" class="inactive-issue">[026호]</th>
-            <th colspan="3" class="inactive-issue">[027호]</th>
-            <th colspan="3" class="inactive-issue">[028호]</th>
-            <th colspan="3" class="inactive-issue">[029호]</th>
-            <th colspan="3" class="inactive-issue">[030호]</th>
+            <th colspan="3" class="unit-top unit-left inactive-issue">[016호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[017호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[018호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[019호]</th>
+            <th colspan="3" class="unit-top unit-right inactive-issue">[020호]</th>
         </tr>
         <tr>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
-            <td class="empty-cell">-</td><td class="empty-cell">-</td><td class="empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+        </tr>
+        <tr>
+            <td colspan="15" style="border:none; height: 10px;"></td>
+        </tr>
+
+        <!-- 021 ~ 025호 -->
+        <tr>
+            <th colspan="3" class="unit-top unit-left inactive-issue">[021호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[022호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[023호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[024호]</th>
+            <th colspan="3" class="unit-top unit-right inactive-issue">[025호]</th>
+        </tr>
+        <tr>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+        </tr>
+        <tr>
+            <td colspan="15" style="border:none; height: 10px;"></td>
+        </tr>
+
+        <!-- 026 ~ 030호 -->
+        <tr>
+            <th colspan="3" class="unit-top unit-left inactive-issue">[026호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[027호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[028호]</th>
+            <th colspan="3" class="unit-top inactive-issue">[029호]</th>
+            <th colspan="3" class="unit-top unit-right inactive-issue">[030호]</th>
+        </tr>
+        <tr>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
+            <td class="unit-left empty-cell">-</td><td class="empty-cell">-</td><td class="unit-right empty-cell">-</td>
         </tr>
     </table>
 
