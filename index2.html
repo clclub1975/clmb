@@ -1,13 +1,15 @@
+<!-- v12.4: 최근 작업 모드 기억형 엔터 키(새로/연속) 도입 및 타이틀 하단 안내문 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 AI 추억 스토리 생성기 v12.3</title>
+<title>촛불회 AI 추억 스토리 생성기 v12.4</title>
 <style>
 body {font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
-h1 {color: #2c3e50; text-align: center; }
+h1 {color: #2c3e50; text-align: center; margin-bottom: 5px; }
 .version {font-size: 0.4em; color: #888; vertical-align: middle; margin-left: 10px; }
+.update-notice {text-align: center; font-size: 13px; color: #2980b9; background: #eef7fc; border: 1px solid #bbe1f1; padding: 6px 12px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
 .chat-container {border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9; }
 .control-row {display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
 label {font-weight: bold; min-width: 80px; }
@@ -55,13 +57,17 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 .input-wrapper textarea {width: 100%; padding: 10px; padding-right: 35px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-family: 'Malgun Gothic', sans-serif; resize: none; overflow-y: hidden; min-height: 44px; line-height: 1.4; white-space: pre-wrap; }
 .clear-btn {position: absolute; right: 10px; top: 10px; background: none; border: none; font-size: 16px; color: #999; cursor: pointer; font-weight: bold; display: none; }
 .clear-btn:hover {color: #333; }
+/* 엔터 모드 인디케이터 배지 스타일 */
+.enter-mode-badge {font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; transition: background 0.3s, color 0.3s; }
+.enter-mode-new {background: #e1f5fe; color: #0288d1; border: 1px solid #b3e5fc; }
+.enter-mode-seq {background: #f3e5f5; color: #8e44ad; border: 1px solid #e1bee7; }
 .action-btn-group {display: flex; gap: 8px; margin-top: 10px; }
 .submit-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .submit-btn:hover {background-color: #2980b9; }
 .sequential-btn {flex: 1; padding: 12px; font-size: 15px; background-color: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .sequential-btn:hover {background-color: #8e44ad; }
 .reset-all-btn {padding: 12px 16px; font-size: 15px; background-color: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-.reset-all-btn:hover {background-color: #707b7c; }
+.reset-all-btn:hover {background: #707b7c; }
 .stop-btn {background-color: #e74c3c !important; }
 .stop-btn:hover {background-color: #c0392b !important; }
 .result-header-row {display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 0; }
@@ -82,7 +88,8 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 </style>
 </head>
 <body>
-<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.3</span></h1>
+<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.4</span></h1>
+<div class="update-notice">📢 <b>[v12.4 업데이트]</b> 최근 작업 모드 기억형 엔터 키(새로/연속) 도입 및 시각적 인디케이터 추가</div>
 <div class="chat-container">
 <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
 <div id="apiBox" class="api-box">
@@ -161,7 +168,7 @@ AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 �
 </div>
 </div>
 <div class="action-btn-group">
-<button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기</button>
+<button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)">새로 질문하기 <span id="enterModeBadge" class="enter-mode-badge enter-mode-new">엔터: 새로</span></button>
 <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)">연속 질문하기</button>
 <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
 </div>
@@ -193,6 +200,7 @@ let activeTaskType = null;
 let conversationHistory = [];
 let lastSingleResult = null;
 let isPersonalWaitState = false;
+let lastUsedIsSequential = false; // [엔터 키 모드 기억용 변수]: 기본값 false (새로 질문)
 
 // 사용자 정의 메뉴 및 그룹핑(매핑) 정의
 const CUSTOM_MENU_MAPPING = [
@@ -211,6 +219,7 @@ const CUSTOM_MENU_MAPPING = [
 
 window.onload = async function() {
     checkApiKeyStatus();
+    updateEnterModeBadge(); // 초기 인디케이터 배지 갱신
     const queryInput = document.getElementById("userQuery");
     const checkAndResizeInput = () => {
         if (queryInput.value.length > 0) {
@@ -247,6 +256,18 @@ window.onload = async function() {
         document.getElementById("aiResult").innerHTML = `<strong style="color:red;">[데이터 로딩 에러]</strong><br>${error.message}`;
     }
 };
+
+// [엔터 모드 인디케이터 배지 실시간 업데이트 함수]
+function updateEnterModeBadge() {
+    const badge = document.getElementById("enterModeBadge");
+    if (lastUsedIsSequential) {
+        badge.innerText = "엔터: 연속";
+        badge.className = "enter-mode-badge enter-mode-seq";
+    } else {
+        badge.innerText = "엔터: 새로";
+        badge.className = "enter-mode-badge enter-mode-new";
+    }
+}
 
 function toggleApiBox() {
     const content = document.getElementById("apiBoxContent");
@@ -430,6 +451,7 @@ function autoResize(textarea) {
     textarea.style.height = (textarea.scrollHeight - 6) + 'px';
 }
 
+// [엔터 키 핸들러 개선]: 최근 사용한 모드(lastUsedIsSequential)에 따라 새로 질문 또는 연속 질문 자동 실행
 function handleKeyDown(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
@@ -437,7 +459,7 @@ function handleKeyDown(event) {
             currentController.abort();
             currentController = null;
         } else {
-            askAI(false);
+            askAI(lastUsedIsSequential);
         }
     }
 }
@@ -472,6 +494,8 @@ function resetAllContent() {
     toggleClearButton();
     conversationHistory = [];
     lastSingleResult = null;
+    lastUsedIsSequential = false; // 초기화 시 기본 모드로 복원
+    updateEnterModeBadge();
     const resultBox = document.getElementById("aiResult");
     resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
     document.getElementById("copyBtn").style.display = "none";
@@ -699,6 +723,10 @@ async function askAI(isSequential) {
         currentController = null;
     }
 
+    // [버튼 클릭 시 현재 모드 기억 및 인디케이터 업데이트]
+    lastUsedIsSequential = isSequential;
+    updateEnterModeBadge();
+
     let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
     if (!apiKey) {
         alert("상단 안내란을 참고하여 Gemini API Key를 설정하거나 입력해주세요.");
@@ -882,3 +910,4 @@ function renderCumulativeHistory() {
 </script>
 </body>
 </html>
+<!-- v12.4: 최근 작업 모드 기억형 엔터 키(새로/연속) 도입 및 타이틀 하단 기능 안내문 추가 완료 -->
