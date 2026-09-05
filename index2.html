@@ -1,10 +1,10 @@
-<!-- v12.7: 엔터 모드 인디케이터 배지 제거, 이어서 질문하기 문구 변경 및 활성 버튼 테두리 포커스 구현 -->
+<!-- v12.8: 답변 결과 창의 내용 유무에 따라 새로 질문하기/이어서 질문하기 버튼 테두리 활성 상태 자동 전환 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 AI 추억 스토리 생성기 v12.7</title>
+<title>촛불회 AI 추억 스토리 생성기 v12.8</title>
 <style>
 body {font-family: 'Malgun Gothic', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
 h1 {color: #2c3e50; text-align: center; margin-bottom: 5px; }
@@ -89,8 +89,8 @@ select, input[type="text"], input[type="password"] {padding: 10px; font-size: 15
 </style>
 </head>
 <body>
-<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.7</span></h1>
-<div class="update-notice">📢 <b>[v12.7 업데이트]</b> 배지 제거 및 엔터 키 실행 모드에 따른 버튼 테두리 강조 포커스 적용, '이어서 질문하기' 문구 변경</div>
+<h1>🕯️ 촛불회 AI 추억 스토리 생성기<span class="version">v12.8</span></h1>
+<div class="update-notice">📢 <b>[v12.8 업데이트]</b> 답변 결과 창에 내용 유무에 따라 '새로 질문하기' 및 '이어서 질문하기' 버튼 활성 테두리 자동 전환 구현</div>
 <div class="chat-container">
 <!-- 초보자를 위한 친절한 API Key 입력 및 안내 박스 -->
 <div id="apiBox" class="api-box">
@@ -258,19 +258,33 @@ window.onload = async function() {
     }
 };
 
-// [엔터 모드에 따른 버튼 테두리 강조 포커스 업데이트 함수]
+// [핵심 변경]: 답변 결과 창에 실제 결과 내용이 존재하면 '이어서 질문하기'를 활성화하고, 없으면 '새로 질문하기'를 활성화
 function updateEnterModeFocus() {
     const submitBtn = document.getElementById("submitBtn");
     const sequentialBtn = document.getElementById("sequentialBtn");
-    if (submitBtn && sequentialBtn) {
-        if (lastUsedIsSequential) {
+    const resultBox = document.getElementById("aiResult");
+    
+    if (submitBtn && sequentialBtn && resultBox) {
+        // 결과 박스 내부에 안내 문구("조건을 설정하고...")나 로딩/에러가 아닌 실제 답변 내용이 있는지 확인
+        let contentText = resultBox.innerText.trim();
+        let hasValidResult = contentText !== "" && 
+                             !textContains(contentText, "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요") && 
+                             !textContains(contentText, "조건으로 AI가 답변을 생성하는 중입니다");
+
+        if (hasValidResult) {
+            lastUsedIsSequential = true; // 답변이 있으면 엔터 시 디폴트로 이어서 질문
             submitBtn.classList.remove("active-enter-mode");
             sequentialBtn.classList.add("active-enter-mode");
         } else {
+            lastUsedIsSequential = false; // 답변이 없으면 새로 질문
             submitBtn.classList.add("active-enter-mode");
             sequentialBtn.classList.remove("active-enter-mode");
         }
     }
+}
+
+function textContains(fullText, searchKey) {
+    return fullText.indexOf(searchKey) !== -1;
 }
 
 function toggleApiBox() {
@@ -497,10 +511,13 @@ function resetAllContent() {
     toggleClearButton();
     conversationHistory = [];
     lastSingleResult = null;
-    lastUsedIsSequential = false; // 초기화 시 '새로 질문하기' 모드로 복원
-    updateEnterModeFocus();
+    
     const resultBox = document.getElementById("aiResult");
     resultBox.innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
+    
+    lastUsedIsSequential = false; // 초기화 시 '새로 질문하기' 모드로 복원
+    updateEnterModeFocus();
+
     document.getElementById("copyBtn").style.display = "none";
     const cumulativeSection = document.getElementById("cumulativeSection");
     cumulativeSection.style.display = "none";
@@ -724,9 +741,6 @@ async function askAI(isSequential) {
         currentController = null;
     }
 
-    lastUsedIsSequential = isSequential;
-    updateEnterModeFocus();
-
     let apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
     if (!apiKey) {
         alert("상단 안내란을 참고하여 Gemini API Key를 설정하거나 입력해주세요.");
@@ -894,6 +908,10 @@ ${contextPrompt}
         submitBtn.classList.remove("stop-btn");
         sequentialBtnText.innerText = "이어서 질문하기";
         sequentialBtn.classList.remove("stop-btn");
+
+        // 답변 생성이 완료된 직후 포커스 상태를 검사하여 '이어서 질문하기' 버튼 강조 테두리 적용
+        lastUsedIsSequential = true;
+        updateEnterModeFocus();
     }
 }
 
@@ -912,4 +930,4 @@ function renderCumulativeHistory() {
 </script>
 </body>
 </html>
-<!-- v12.7: 엔터 모드 배지 제거, 이어서 질문하기 문구 변경 및 활성 버튼 테두리 포커스 구현 완료 -->
+<!-- v12.8: 답변 결과 창 내용 유무에 따른 '새로 질문하기' / '이어서 질문하기' 활성 테두리 자동 전환 구현 완료 -->
