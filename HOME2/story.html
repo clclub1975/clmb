@@ -1,10 +1,10 @@
-<!-- v14.6: 질문 입력창 세로폭(min-height) 확장 및 플레이스홀더 잘림 현상 개선 -->
+<!-- v14.7: PC 기존 높이 유지 및 스마트폰 전용 질문 입력창 세로폭 확장 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v14.6</title>
+    <title>촛불회 AI 추억 스토리 생성기 v14.7</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -320,7 +320,7 @@
             display: flex;
             align-items: center;
         }
-        /* 📌 v14.6: 질문 입력창 기본 min-height를 72px로 확장하여 2줄 예시문이 짤림 없이 완전히 표시되도록 수정 */
+        /* 📌 PC 기본 높이 유지 (v14.5 원래 크기) */
         .input-wrapper textarea {
             width: 100%;
             padding: 12px;
@@ -332,7 +332,7 @@
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             resize: none;
             overflow-y: hidden;
-            min-height: 72px;
+            min-height: 48px;
             line-height: 1.5;
             white-space: pre-wrap;
             color: var(--text-main);
@@ -597,6 +597,10 @@
             .submit-btn, .sequential-btn, .reset-all-btn {
                 width: 100%;
             }
+            /* 📌 스마트폰 화면에서만 질문 입력창 세로폭(min-height)을 확장하여 예시문 잘림 방지 */
+            .input-wrapper textarea {
+                min-height: 72px;
+            }
         }
     </style>
 </head>
@@ -608,7 +612,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 AI 추억 스토리 생성기</h1>
-    <span class="version">v14.6</span>
+    <span class="version">v14.7</span>
 </div>
 
 <div class="chat-container">
@@ -1150,7 +1154,7 @@
             for (let j = 0; j < headers.length; j++) obj[headers[j]] = cols[j] ? cols[j].trim() : "";
             result.push(obj);
         }
-        return { headers, data: `파싱완료` }; // 데이터 파서 유지
+        return { headers, data: result };
     }
 </script>
 
