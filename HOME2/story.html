@@ -1,10 +1,10 @@
-<!-- v14.4: 스마트폰 검색기간 슬라이드형 2줄 레이아웃 및 규약 완벽 반영 -->
+<!-- v14.5: 검색기간 셀렉트박스 3개 폭 조정 및 한 줄 배치 레이아웃 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v14.4</title>
+    <title>촛불회 AI 추억 스토리 생성기 v14.5</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -532,7 +532,7 @@
             display: contents;
         }
 
-        /* 📌 안정적인 v14.1 구조 기반의 모바일 전용 미디어 쿼리 */
+        /* 📌 v14.5: 모바일에서 검색기간 셀렉트박스 3개를 한 줄에 나란히 배치하도록 스타일 최적화 */
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
@@ -552,30 +552,39 @@
                 min-width: auto;
                 margin-bottom: 0;
             }
+            /* 검색기간 컨테이너를 가로 한 줄 정렬로 변경 */
             .period-controls-wrapper {
                 display: flex;
-                flex-direction: column;
-                gap: 8px;
+                align-items: center;
+                gap: 5px;
                 width: 100%;
             }
-            #criteriaType {
-                width: 100%;
+            /* 기준 선택 및 시작/끝 셀렉트박스 3개의 패딩과 폰트 사이즈를 미세하게 줄여 한 줄 수용 유도 */
+            .period-controls-wrapper select {
+                flex: 1;
+                width: auto;
+                padding: 8px 4px;
+                font-size: 13.5px;
+                text-overflow: ellipsis;
             }
             .period-range-group {
                 display: flex;
                 align-items: center;
-                gap: 8px;
-                width: 100%;
+                gap: 5px;
+                flex: 2;
             }
             .period-range-group select {
                 flex: 1;
                 width: auto;
+                padding: 8px 4px;
+                font-size: 13.5px;
             }
             .period-range-group span {
                 text-align: center;
                 font-weight: bold;
                 color: var(--text-muted);
-                padding: 0 2px;
+                padding: 0 1px;
+                flex-shrink: 0;
             }
             .toggle-btn {
                 width: 100%;
@@ -601,7 +610,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 AI 추억 스토리 생성기</h1>
-    <span class="version">v14.4</span>
+    <span class="version">v14.5</span>
 </div>
 
 <div class="chat-container">
@@ -646,7 +655,7 @@
         </div>
     </div>
 
-    <!-- 1. 검색 기간 설정 (PC 1줄 유지 / 스마트폰 타원형태 2줄 슬라이드 구조 적용) -->
+    <!-- 1. 검색 기간 설정 (PC 1줄 / 스마트폰 3개 셀렉트박스 한 줄 수평 배치) -->
     <div class="control-row">
         <label>검색기간:</label>
         <div class="period-controls-wrapper">
