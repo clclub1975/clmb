@@ -1,14 +1,23 @@
-<!-- v2.3: HOME2/articles.html의 홈 버튼 링크를 index.html로 수정 -->
+<!-- v3.1: CSS 스타일 적용 및 타이틀 아래 개발용 리마크 영역 제거 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>촛불회보 기고문 아카이브</title>
     <style>
-        body { font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; background-color: #f9fafb; }
+        body { 
+            font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; 
+            max-width: 900px; 
+            margin: 40px auto; 
+            padding: 20px; 
+            line-height: 1.6; 
+            color: #333; 
+            background-color: #f9fafb; 
+            word-break: keep-all; 
+        }
         h1 { text-align: center; color: #1f2937; margin-bottom: 10px; }
         .version-badge { font-size: 14px; font-weight: normal; color: #6b7280; margin-left: 8px; }
-        .commit-remark { text-align: center; font-size: 13px; color: #d9534f; background-color: #fdf2f2; padding: 6px; border-radius: 4px; margin-bottom: 25px; border: 1px dashed #f5c6cb; }
         p.subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; }
         
         .home-btn-container {
@@ -98,6 +107,14 @@
             text-align: center;
             padding: 40px 0;
         }
+
+        /* 반응형 미디어 쿼리 적용 */
+        @media (max-width: 768px) {
+            body { padding: 10px; margin: 10px auto; }
+            .filter-container { flex-direction: column; gap: 10px; padding: 15px; }
+            .filter-group { min-width: 100%; }
+            #articleViewer { padding: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -107,12 +124,7 @@
         <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v2.3</span></h1>
-    
-    <!-- 개발 중 커밋 리마크 표시 영역 (최종 완성 시 제거) -->
-    <div class="commit-remark">
-        [개발 리마크] v2.3: 홈 버튼 링크 경로를 index.md에서 index.html로 수정
-    </div>
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.1</span></h1>
 
     <p class="subtitle">기수, 기고자, 기고문을 순서대로 선택하여 전문을 확인하세요.</p>
 
