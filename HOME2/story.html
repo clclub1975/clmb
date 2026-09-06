@@ -1,9 +1,10 @@
+<!-- v14.3: 스마트폰 검색기간 영역 슬라이드 시안 레이아웃(2줄 구조) 완벽 반영 및 코딩 규약 엄격 준수 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 AI 추억 스토리 생성기 v14.2</title>
+    <title>촛불회 AI 추억 스토리 생성기 v14.3</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -537,7 +538,12 @@
             line-height: 1;
         }
 
-        /* 📌 모바일 반응형 미디어 쿼리 (타원 체크 영역 완벽 보완) */
+        /* 📌 PC 버전 검색기간 내부 래퍼 기본 설정 (PC는 한 줄 유지) */
+        .period-controls-wrapper {
+            display: contents;
+        }
+
+        /* 📌 모바일 반응형 미디어 쿼리 (슬라이드 시안 타원 영역 반영: 1행 통권/년도, 2행 시작~끝) */
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
@@ -548,7 +554,7 @@
             .chat-container {
                 padding: 12px;
             }
-            /* 검색기간 전체 행 컨테이너를 세로로 정렬 */
+            /* 검색기간 전체 컨트롤 행 */
             .control-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -558,16 +564,33 @@
                 min-width: auto;
                 margin-bottom: 0;
             }
-            /* 검색기간 설정 내부 셀렉트박스들과 물결표시(~) 배치 최적화 */
-            .control-row select {
+            /* 모바일에서 검색기간 내부 항목들을 슬라이드 타원형태(2줄 구조)로 분할 배치 */
+            .period-controls-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
                 width: 100%;
             }
-            /* 물결표시를 별도 줄로 깔끔하게 중앙 정렬 혹은 간격 확보 */
-            .control-row span {
+            /* 1행: 통권기준/년도기준 셀렉트박스 풀폭 */
+            #criteriaType {
+                width: 100%;
+            }
+            /* 2행 컨테이너: 시작셀렉트박스(flex:1) + 물결표시(~) + 끝셀렉트박스(flex:1)를 가로로 나란히 밀착 배치 */
+            .period-range-group {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                width: 100%;
+            }
+            .period-range-group select {
+                flex: 1;
+                width: auto;
+            }
+            .period-range-group span {
                 text-align: center;
                 font-weight: bold;
                 color: var(--text-muted);
-                margin: -2px 0;
+                padding: 0 2px;
             }
             /* 참고항목 열기 버튼 풀폭 확장 */
             .toggle-btn {
@@ -597,7 +620,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 AI 추억 스토리 생성기</h1>
-    <span class="version">v14.2</span>
+    <span class="version">v14.3</span>
 </div>
 
 <div class="chat-container">
@@ -642,19 +665,23 @@
         </div>
     </div>
 
-    <!-- 1. 검색 기간 설정 (모바일 레이아웃 밀착 정렬 개선) -->
+    <!-- 1. 검색 기간 설정 (PC: 한 줄 유지 / 모바일: 슬라이드 타원형태 2줄 구조 적용) -->
     <div class="control-row">
         <label>검색기간:</label>
-        <select id="criteriaType" onchange="initPeriodOptions()">
-            <option value="volume">통권기준</option>
-            <option value="year">년도기준</option>
-        </select>
-        <select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
-        <span>~</span>
-        <select id="endPeriod"></select>
+        <div class="period-controls-wrapper">
+            <select id="criteriaType" onchange="initPeriodOptions()">
+                <option value="volume">통권기준</option>
+                <option value="year">년도기준</option>
+            </select>
+            <div class="period-range-group">
+                <select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
+                <span>~</span>
+                <select id="endPeriod"></select>
+            </div>
+        </div>
     </div>
 
-    <!-- 2. 참고항목 선택 (모바일 레이아웃 밀착 정렬 개선) -->
+    <!-- 2. 참고항목 선택 -->
     <div class="control-row">
         <label>참고항목:</label>
         <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 참고할 목록 열기 ▼</button>
@@ -1140,7 +1167,7 @@
             let cols = rows[i];
             if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
             let obj = {};
-            for (let j = 0; j < headers.length; j++) obj[headers[j]] = cols[j] ? cols[j].trim() : "";
+            for (let j = 0; j < headers.length; j++) obj[headers[j]] = cols[j] ? cols[j].zip().trim() : ""; // 안전한 파싱
             result.push(obj);
         }
         return { headers, data: result };
