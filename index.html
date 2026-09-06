@@ -1,10 +1,10 @@
-<!-- v2.1: 메인 페이지(index.html) 가독성 개선 및 반응형 레이아웃 스타일 적용 완료 -->
+<!-- v2.2: 텍스트 단어 단위 줄바꿈 방지(word-break 및 word-keep-all) 속성 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 50년사 아카이브 v2.1</title>
+    <title>촛불회 50년사 아카이브 v2.2</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -25,6 +25,9 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            /* 단어 중간에서 줄바꿈이 일어나지 않도록 설정 */
+            word-break: keep-all;
+            word-wrap: break-word;
         }
 
         /* 개발 중 버전 및 리마크 표시 바 */
@@ -189,13 +192,13 @@
 
     <!-- 개발 중 커밋 리마크 표시 영역 -->
     <div class="dev-meta-bar">
-        <!-- v2.1: 메인 페이지(index.html) 가독성 개선 및 반응형 레이아웃 스타일 적용 완료 -->
+        <!-- v2.2: 텍스트 단어 단위 줄바꿈 방지(word-break 및 word-keep-all) 속성 추가 -->
     </div>
 
     <header>
         <div class="header-title-area">
             <h1>🕯️ 촛불회 50년사 아카이브</h1>
-            <span class="version-tag">v2.1</span>
+            <span class="version-tag">v2.2</span>
         </div>
         <p>1975년부터 이어온 반세기의 기록과 기억을 담다</p>
     </header>
