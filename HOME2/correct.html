@@ -1,4 +1,4 @@
-<!-- v3.1: CSS 모던 리팩토링 및 반응형 미디어 쿼리 적용 -->
+<!-- v3.2: 커밋용 리마크 표기 삭제 및 모바일 3열 그리드 레이아웃 최적화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -40,16 +40,6 @@
         font-size: 26px;
         margin-bottom: 8px;
         color: #1a1a1a;
-    }
-    .commit-remark {
-        display: inline-block;
-        background-color: #fff3f3;
-        border: 1px solid #f5c6cb;
-        color: #d9534f;
-        padding: 5px 10px;
-        border-radius: 6px;
-        font-size: 12.5px;
-        font-weight: bold;
     }
     .intro-box {
         background: #f6f8fa;
@@ -166,18 +156,21 @@
         body {
             padding: 12px;
         }
+        /* 스마트폰 가독성과 공간 최적화를 위해 3열 구조로 강제 고정 */
         .archive-grid {
             max-width: 100%;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
         }
         h1 {
             font-size: 22px;
         }
-    }
-
-    @media (max-width: 480px) {
-        .archive-grid {
-            grid-template-columns: 1fr;
+        .issue-header {
+            font-size: 12px;
+            padding: 5px 2px;
+        }
+        .sub-cell {
+            font-size: 12px;
+            padding: 5px 2px;
         }
     }
 </style>
@@ -185,8 +178,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v3.1</span></h1>
-        <div class="commit-remark">v3.1: CSS 모던 리팩토링 및 반응형 미디어 쿼리 적용</div>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v3.2</span></h1>
     </div>
 
     <div class="intro-box">
@@ -205,8 +197,8 @@
         <div class="issue-unit">
             <div class="issue-header">[001호]&nbsp;&nbsp;1984년 3월호</div>
             <div class="issue-body">
-                <div class="sub-cell"><a href="[https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing](https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing)" target="_blank">회보</a></div>
-                <div class="sub-cell"><a href="[https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1)" target="_blank">요약</a></div>
+                <div class="sub-cell"><a href="https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing" target="_blank">회보</a></div>
+                <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" target="_blank">요약</a></div>
                 <div class="sub-cell"><span class="plain-text">교정</span></div>
             </div>
         </div>
@@ -214,8 +206,8 @@
         <div class="issue-unit">
             <div class="issue-header">[002호]&nbsp;&nbsp;1984년 4월호</div>
             <div class="issue-body">
-                <div class="sub-cell"><a href="[https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing](https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing)" target="_blank">회보</a></div>
-                <div class="sub-cell"><a href="[https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2)" target="_blank">요약</a></div>
+                <div class="sub-cell"><a href="https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing" target="_blank">회보</a></div>
+                <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" target="_blank">요약</a></div>
                 <div class="sub-cell"><span class="plain-text">교정</span></div>
             </div>
         </div>
@@ -223,8 +215,8 @@
         <div class="issue-unit">
             <div class="issue-header">[003호]&nbsp;&nbsp;1984년 5월호</div>
             <div class="issue-body">
-                <div class="sub-cell"><a href="[https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing](https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing)" target="_blank">회보</a></div>
-                <div class="sub-cell"><a href="[https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3](https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3)" target="_blank">요약</a></div>
+                <div class="sub-cell"><a href="https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing" target="_blank">회보</a></div>
+                <div class="sub-cell"><a href="https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" target="_blank">요약</a></div>
                 <div class="sub-cell"><span class="plain-text">교정</span></div>
             </div>
         </div>
