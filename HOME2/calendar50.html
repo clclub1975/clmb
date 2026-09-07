@@ -1,4 +1,4 @@
-<!-- v2.4: 캘린더 셀 내 특수문자 표식의 가로 및 세로 중앙 정렬(Centering) 완벽 적용 -->
+<!-- v2.5: 캘린더 셀 내 표식이 두 줄 이상일 때 두 번째 줄부터 첫 줄에 맞춰 왼쪽 정렬(그리드 형태)되도록 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -107,8 +107,8 @@
             border: 1px solid #e1e4e8; 
             font-size: 0.6rem; 
             overflow: hidden; 
-            vertical-align: middle; /* 세로 중앙 정렬 적용 */
-            text-align: center; /* 가로 중앙 정렬 적용 */
+            vertical-align: middle; /* 세로 중앙 정렬 */
+            text-align: center; /* 가로 중앙 정렬 */
         }
         th { 
             background-color: #f1f3f5; 
@@ -129,17 +129,19 @@
         .legend-etc { color: #27ae60; font-size: 1.1rem; }
         .legend-error { color: #c0392b; background-color: #fadbd8; padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; }
 
-        /* 캘린더 셀 내부 기호 래퍼 (가로/세로 중앙 정렬) */
+        /* 캘린더 셀 내부 기호 래퍼 (가로/세로 중앙 정렬 및 두 번째 줄부터 첫 줄과 좌측 맞춤) */
+        /* display: inline-grid를 사용하여 아이템 개수에 맞춰 블록 크기가 유동적으로 변하며, 셀 중앙에 배치됩니다. */
         .symbol-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center; /* 가로 중앙 정렬 */
-            align-content: center; /* 세로 중앙 정렬 */
+            display: inline-grid;
+            grid-template-columns: repeat(4, auto); /* PC: 최대 4열 생성 */
+            justify-content: center; /* 전체 블록을 가로 중앙 정렬 */
+            align-content: center; /* 전체 블록을 세로 중앙 정렬 */
+            justify-items: center;
             align-items: center;
-            gap: 1px;
+            gap: 2px 4px; /* 세로 간격 2px, 가로 간격 4px */
             width: 100%;
             height: 100%;
-            min-height: 14px;
+            min-height: 16px;
         }
         
         /* 개별 특수문자 스타일링 */
@@ -147,11 +149,10 @@
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            width: calc(25% - 1px); /* PC: 한 줄에 4개 배치 */
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: bold;
             cursor: help;
-            line-height: 1.2;
+            line-height: 1;
         }
         
         .symbol-event { color: #e74c3c; }
@@ -160,20 +161,24 @@
         .symbol-etc { color: #27ae60; }
         .symbol-error { 
             color: #c0392b; 
-            font-size: 0.8rem !important; 
+            font-size: 0.75rem !important; 
             background-color: #fadbd8; 
             border-radius: 2px; 
+            padding: 1px 3px;
         }
         .symbol-empty { 
             color: #adb5bd; 
-            width: 100% !important; /* 빈 셀 중앙 정렬 */
+            grid-column: 1 / -1; /* 빈 셀의 기호(·)는 전체 너비를 차지하도록 하여 십자 중앙에 오도록 처리 */
             font-size: 0.7rem !important;
         }
 
         /* 모바일 해상도 적용 (한 줄에 2개 배치) */
         @media (max-width: 768px) {
+            .symbol-wrapper {
+                grid-template-columns: repeat(2, auto); /* 모바일: 최대 2열 생성 */
+                gap: 2px 2px;
+            }
             .symbol-wrapper span {
-                width: calc(50% - 1px); /* 모바일: 한 줄에 2개 배치 */
                 font-size: 0.85rem;
             }
             .symbol-error { font-size: 0.7rem !important; }
@@ -188,7 +193,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v2.4</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v2.5</span></span>
             </h1>
         </header>
 
@@ -351,7 +356,6 @@
                     const key = `${year}-${month}`;
 
                     if (eventMap[key] && eventMap[key].length > 0) {
-                        // 텍스트를 배제하고 기호만 적용하는 Flex Wrapper 추가
                         let symbolsHtml = '<div class="symbol-wrapper">';
                         
                         symbolsHtml += eventMap[key].map(item => {
