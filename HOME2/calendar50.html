@@ -1,4 +1,4 @@
-<!-- v1.12: 캘린더 시트 CSV 데이터의 무결성 검증 로직(분류 항목, YYYYMMDD 날짜 형식, 셀 위치 일치 여부)을 추가하여 오류 검사 결과 및 알림 기능을 구현하도록 개선 -->
+<!-- v1.13: 캘린더 시트 데이터의 무결성 검증 오류 메시지를 슬라이드 레이아웃의 지정된 포맷으로 변경하고, 불필요한 원본 데이터 나열 목록 영역을 제거하도록 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -50,28 +50,6 @@
             vertical-align: middle;
             margin-left: 6px;
         }
-        .info-box {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            font-size: 0.8rem;
-            color: #333;
-            background-color: #fdfdfd;
-        }
-        .info-box h3 {
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-            color: #2c3e50;
-        }
-        .raw-data-list {
-            max-height: 150px;
-            overflow-y: auto;
-            padding-left: 20px;
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: #c0392b;
-        }
         .error-box {
             border: 1px solid #f5c6cb;
             border-radius: 8px;
@@ -87,11 +65,12 @@
             color: #721c24;
         }
         .error-list {
-            max-height: 120px;
-            overflow-y: auto;
-            padding-left: 20px;
-            font-family: monospace;
-            font-size: 0.75rem;
+            list-style-type: none;
+            padding-left: 0;
+            font-size: 0.8rem;
+        }
+        .error-list li {
+            margin: 4px 0;
         }
         .table-container {
             width: 100%;
@@ -146,20 +125,13 @@
 <body>
     <div class="container">
         <header>
-            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.12</span></h1>
+            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.13</span></h1>
         </header>
         
-        <!-- 데이터 오류 검증 알림 영역 -->
+        <!-- 슬라이드 포맷에 맞춘 입력 데이터 오류 안내 영역 -->
         <div id="error-container" class="error-box" style="display: none;">
-            <h3>[⚠️ 데이터 무결성 검증 오류 안내]</h3>
+            <h3>입력 데이터 오류 안내</h3>
             <ul id="error-list" class="error-list"></ul>
-        </div>
-
-        <div class="info-box">
-            <h3>[캘린더 시트 원본 데이터 나열 목록]</h3>
-            <ul id="raw-data-container" class="raw-data-list">
-                <li>데이터를 불러오는 중입니다...</li>
-            </ul>
         </div>
 
         <div class="table-container">
@@ -227,7 +199,6 @@
             });
 
             const eventMap = {};
-            const rawDataList = [];
             const errorList = [];
             const validCategories = ['결혼', '부고', '행사', '기타'];
 
@@ -237,8 +208,8 @@
                 
                 const cols = line.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
                 
-                const rowMonthStr = cols[0]; // 행의 월 (예: 1월)
-                const rowDayStr = cols[1];   // 행의 일 (예: 1, 2, ...)
+                const rowMonthStr = cols[0];
+                const rowDayStr = cols[1];
 
                 if (!rowMonthStr || !rowDayStr || isNaN(rowDayStr)) continue;
                 const rowMonthNum = parseInt(rowMonthStr.replace('월', '').trim());
@@ -248,42 +219,43 @@
                     const cellVal = cols[colIdx];
                     if (cellVal && cellVal !== '' && cellVal !== '·') {
                         const cellYearStr = yearMap[colIdx];
-                        rawDataList.push(`[${cellYearStr}년 ${rowMonthStr} ${rowDayStr}일] ${cellVal}`);
+                        let hasError = false;
 
-                        // 1. 분류 항목 검증 ('||' 기준)
+                        // 1. 분류 항목 검증 ('||' 기준 및 허용 카테고리)
                         if (!cellVal.includes('||')) {
-                            errorList.push(`[형식 오류] 데이터에 '||' 구분자가 없습니다: "${cellVal}" (셀 위치: ${cellYearStr}년 ${rowMonthStr} ${rowDayStr}일)`);
-                            continue;
-                        }
-
-                        const parts = cellVal.split('||');
-                        const category = parts[0].trim();
-                        const details = parts[1] ? parts[1].split('/') : [];
-
-                        if (!validCategories.includes(category)) {
-                            errorList.push(`[분류 오류] 지원하지 않는 분류 항목(${category})입니다. (허용: 결혼, 부고, 행사, 기타) / 데이터: "${cellVal}"`);
-                        }
-
-                        // 2 & 3. 상세 내용 검증 (명칭, 년월일, 장소 및 날짜 유효성/위치 일치 여부)
-                        if (details.length < 3) {
-                            errorList.push(`[상세 구조 오류] '/' 구분자로 분리된 세부 정보가 부족합니다 (명칭/년월일/장소 형식 필요): "${cellVal}"`);
+                            hasError = true;
                         } else {
-                            const dateStr = details[1].trim(); // YYYYMMDD 형식 기대
+                            const parts = cellVal.split('||');
+                            const category = parts[0].trim();
+                            const details = parts[1] ? parts[1].split('/') : [];
 
-                            // 년월일 필드가 YYYYMMDD 8자리 숫자인지 검증
-                            const dateRegex = /^\d{8}$/;
-                            if (!dateRegex.test(dateStr)) {
-                                errorList.push(`[날짜 형식 오류] 년월일 필드가 YYYYMMDD 형식이 아닙니다: "${dateStr}" / 데이터: "${cellVal}"`);
+                            if (!validCategories.includes(category)) {
+                                errorList.push(`분류 오류: "${cellVal}"`);
+                                hasError = true;
+                            } else if (details.length < 3) {
+                                errorList.push(`형식 오류: "${cellVal}"`);
+                                hasError = true;
                             } else {
-                                const parsedYear = parseInt(dateStr.substring(0, 4));
-                                const parsedMonth = parseInt(dateStr.substring(4, 6));
-                                const parsedDay = parseInt(dateStr.substring(6, 8));
+                                const dateStr = details[1].trim();
+                                const dateRegex = /^\d{8}$/;
+                                if (!dateRegex.test(dateStr)) {
+                                    errorList.push(`형식 오류: "${cellVal}"`);
+                                    hasError = true;
+                                } else {
+                                    const parsedYear = parseInt(dateStr.substring(0, 4));
+                                    const parsedMonth = parseInt(dateStr.substring(4, 6));
+                                    const parsedDay = parseInt(dateStr.substring(6, 8));
 
-                                // 시트의 셀 위치(열의 연도, 행의 월/일)와 데이터 내부의 년월일 일치 여부 검증
-                                if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
-                                    errorList.push(`[위치 불일치 오류] 입력된 셀 위치(${cellYearStr}년 ${rowMonthNum}월 ${rowDayNum}일)와 데이터 내부의 날짜(${dateStr})가 일치하지 않습니다.`);
+                                    if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
+                                        errorList.push(`위치 오류: "${cellVal}"`);
+                                        hasError = true;
+                                    }
                                 }
                             }
+                        }
+
+                        if (!cellVal.includes('||')) {
+                            errorList.push(`형식 오류: "${cellVal}"`);
                         }
 
                         const key = `${cellYearStr}-${rowMonthNum}`;
@@ -295,22 +267,15 @@
                 }
             }
 
-            // 오류 검증 결과 표시
+            // 중복 오류 메시지 제거 후 슬라이드 포맷 형태로 표시
             const errorContainer = document.getElementById('error-container');
             const errorListElement = document.getElementById('error-list');
             if (errorList.length > 0) {
-                errorListElement.innerHTML = errorList.map(err => `<li>${err}</li>`).join('');
+                const uniqueErrors = [...new Set(errorList)];
+                errorListElement.innerHTML = uniqueErrors.map(err => `<li>${err}</li>`).join('');
                 errorContainer.style.display = 'block';
             } else {
                 errorContainer.style.display = 'none';
-            }
-
-            // 원본 데이터 목록 표시
-            const rawContainer = document.getElementById('raw-data-container');
-            if (rawDataList.length > 0) {
-                rawContainer.innerHTML = rawDataList.map(item => `<li>${item}</li>`).join('');
-            } else {
-                rawContainer.innerHTML = '<li>등록된 원본 데이터가 없습니다.</li>';
             }
 
             // 캘린더 테이블 렌더링
