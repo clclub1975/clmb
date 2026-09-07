@@ -1,10 +1,10 @@
-<!-- v2.2: 캘린더 셀 내 텍스트 제거(● 기호만 표시) 및 툴팁 추가, 테이블 상단 표식 의미 안내(Legend) 바 적용 -->
+<!-- v2.3: 타이틀 '촛불회 50년 캘린더'로 변경, 셀 내 텍스트 완전 제거 및 기호(●, X)만 표시, 디바이스 해상도별(PC 4개/모바일 2개) 셀 내부 표식 정렬(Flex) 반응형 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>50년치 연간 월별 캘린더 (1975 - 2026)</title>
+    <title>촛불회 50년 캘린더 (1975 - 2026)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
@@ -64,6 +64,7 @@
             vertical-align: middle; 
             margin-left: 4px; 
         }
+        
         .error-box { 
             border: 1px solid #f5c6cb; 
             border-radius: 8px; 
@@ -76,7 +77,7 @@
         .error-box h3 { margin-bottom: 4px; font-size: 0.85rem; color: #721c24; }
         .error-list { padding-left: 16px; font-size: 0.75rem; }
         .error-list li { margin: 2px 0; }
-        
+
         /* 표식 의미 안내 바 (Legend) */
         .legend-bar {
             display: flex;
@@ -106,26 +107,19 @@
             border: 1px solid #e1e4e8; 
             font-size: 0.6rem; 
             overflow: hidden; 
-            text-overflow: ellipsis; 
-            white-space: nowrap; 
+            vertical-align: top; /* 기호들이 위쪽부터 차곡차곡 쌓이도록 */
         }
         th { 
             background-color: #f1f3f5; 
             color: #495057; 
             font-weight: 600; 
+            vertical-align: middle;
         }
         tr:nth-child(even) { background-color: #fcfcfc; }
         tr:hover { background-color: #f1f3f5; }
-        th:first-child, td:first-child { width: 9.1%; font-weight: bold; background-color: #f8f9fa; }
+        th:first-child, td:first-child { width: 9.1%; font-weight: bold; background-color: #f8f9fa; vertical-align: middle; }
         th:not(:first-child), td:not(:first-child) { width: 7.55%; }
         .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
-        
-        /* 특수문자 표식별 스타일 */
-        .symbol-event { color: #e74c3c; font-weight: bold; font-size: 1.1rem; vertical-align: middle; cursor: help; }
-        .symbol-marriage { color: #8e44ad; font-weight: bold; font-size: 1.1rem; vertical-align: middle; cursor: help; }
-        .symbol-funeral { color: #2c3e50; font-weight: bold; font-size: 1.1rem; vertical-align: middle; cursor: help; }
-        .symbol-etc { color: #27ae60; font-weight: bold; font-size: 1.1rem; vertical-align: middle; cursor: help; }
-        .symbol-error { color: #c0392b; font-weight: bold; font-size: 0.65rem; background-color: #fadbd8; padding: 2px 4px; border-radius: 4px; cursor: help; }
         
         /* 텍스트용 아이콘 스타일 (Legend 바에서 사용) */
         .legend-event { color: #e74c3c; font-size: 1.1rem; }
@@ -133,6 +127,54 @@
         .legend-funeral { color: #2c3e50; font-size: 1.1rem; }
         .legend-etc { color: #27ae60; font-size: 1.1rem; }
         .legend-error { color: #c0392b; background-color: #fadbd8; padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; }
+
+        /* 캘린더 셀 내부 기호 래퍼 (PC 4개, 모바일 2개 배열) */
+        .symbol-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-content: flex-start;
+            gap: 1px;
+            width: 100%;
+            min-height: 14px;
+        }
+        
+        /* 개별 특수문자 스타일링 */
+        .symbol-wrapper span {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: calc(25% - 1px); /* PC: 한 줄에 4개 배치 */
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: help;
+            line-height: 1.2;
+        }
+        
+        .symbol-event { color: #e74c3c; }
+        .symbol-marriage { color: #8e44ad; }
+        .symbol-funeral { color: #2c3e50; }
+        .symbol-etc { color: #27ae60; }
+        .symbol-error { 
+            color: #c0392b; 
+            font-size: 0.8rem !important; 
+            background-color: #fadbd8; 
+            border-radius: 2px; 
+        }
+        .symbol-empty { 
+            color: #adb5bd; 
+            width: 100% !important; /* 빈 셀 중앙 정렬 */
+            font-size: 0.7rem !important;
+        }
+
+        /* 모바일 해상도 적용 (한 줄에 2개 배치) */
+        @media (max-width: 768px) {
+            .symbol-wrapper span {
+                width: calc(50% - 1px); /* 모바일: 한 줄에 2개 배치 */
+                font-size: 0.85rem;
+            }
+            .symbol-error { font-size: 0.7rem !important; }
+        }
     </style>
 </head>
 <body>
@@ -142,8 +184,8 @@
         </div>
         <header>
             <h1>
-                <span class="title-wrap">50년치 연간 월별 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v2.2</span></span>
+                <span class="title-wrap">촛불회 50년 캘린더</span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v2.3</span></span>
             </h1>
         </header>
 
@@ -291,7 +333,7 @@
                 errorContainer.style.display = 'none';
             }
 
-            // 캘린더 테이블 렌더링 (텍스트 제거, 특수문자 및 툴팁 속성 적용)
+            // 캘린더 테이블 렌더링
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
 
@@ -306,12 +348,14 @@
                     const key = `${year}-${month}`;
 
                     if (eventMap[key] && eventMap[key].length > 0) {
-                        td.innerHTML = eventMap[key].map(item => {
-                            // 툴팁 적용을 위해 원래 데이터를 따옴표 안전하게 처리
+                        // 텍스트를 배제하고 기호만 적용하는 Flex Wrapper 추가
+                        let symbolsHtml = '<div class="symbol-wrapper">';
+                        
+                        symbolsHtml += eventMap[key].map(item => {
                             const tooltipText = item.raw.replace(/"/g, '&quot;');
                             
                             if (!item.isValid) {
-                                return `<span class="symbol-error" title="${tooltipText}">X 오류</span>`;
+                                return `<span class="symbol-error" title="${tooltipText}">X</span>`;
                             }
                             
                             const category = item.raw.split('||')[0].trim();
@@ -320,11 +364,14 @@
                                 case '결혼': return `<span class="symbol-marriage" title="${tooltipText}">●</span>`;
                                 case '부고': return `<span class="symbol-funeral" title="${tooltipText}">●</span>`;
                                 case '기타': return `<span class="symbol-etc" title="${tooltipText}">●</span>`;
-                                default: return `<span class="symbol-error" title="${tooltipText}">X 오류</span>`;
+                                default: return `<span class="symbol-error" title="${tooltipText}">X</span>`;
                             }
-                        }).join(' ');
+                        }).join('');
+                        
+                        symbolsHtml += '</div>';
+                        td.innerHTML = symbolsHtml;
                     } else {
-                        td.textContent = '·';
+                        td.innerHTML = '<div class="symbol-wrapper"><span class="symbol-empty">·</span></div>';
                     }
                     tr.appendChild(td);
                 }
