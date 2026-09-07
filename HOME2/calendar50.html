@@ -1,4 +1,4 @@
-<!-- v2.3: 타이틀 '촛불회 50년 캘린더'로 변경, 셀 내 텍스트 완전 제거 및 기호(●, X)만 표시, 디바이스 해상도별(PC 4개/모바일 2개) 셀 내부 표식 정렬(Flex) 반응형 적용 -->
+<!-- v2.4: 캘린더 셀 내 특수문자 표식의 가로 및 세로 중앙 정렬(Centering) 완벽 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -107,7 +107,8 @@
             border: 1px solid #e1e4e8; 
             font-size: 0.6rem; 
             overflow: hidden; 
-            vertical-align: top; /* 기호들이 위쪽부터 차곡차곡 쌓이도록 */
+            vertical-align: middle; /* 세로 중앙 정렬 적용 */
+            text-align: center; /* 가로 중앙 정렬 적용 */
         }
         th { 
             background-color: #f1f3f5; 
@@ -128,14 +129,16 @@
         .legend-etc { color: #27ae60; font-size: 1.1rem; }
         .legend-error { color: #c0392b; background-color: #fadbd8; padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; }
 
-        /* 캘린더 셀 내부 기호 래퍼 (PC 4개, 모바일 2개 배열) */
+        /* 캘린더 셀 내부 기호 래퍼 (가로/세로 중앙 정렬) */
         .symbol-wrapper {
             display: flex;
             flex-wrap: wrap;
-            justify-content: flex-start;
-            align-content: flex-start;
+            justify-content: center; /* 가로 중앙 정렬 */
+            align-content: center; /* 세로 중앙 정렬 */
+            align-items: center;
             gap: 1px;
             width: 100%;
+            height: 100%;
             min-height: 14px;
         }
         
@@ -185,7 +188,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v2.3</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v2.4</span></span>
             </h1>
         </header>
 
