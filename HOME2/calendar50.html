@@ -1,4 +1,4 @@
-<!-- v1.2: 스마트폰 화면에서 가로 스크롤 없이 전체 월(1~12월)이 한눈에 보이도록 테이블 레이아웃 최적화 적용 -->
+<!-- v1.6: 캘린더 시트 CSV 데이터를 연동하여 각 날짜 셀에 결혼, 부고, 행사 등의 이벤트 정보를 파싱 및 동적 렌더링하도록 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -15,39 +15,40 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f8f9fa;
             color: #333;
-            line-height: 1.4;
-            padding: 10px;
+            line-height: 1.2;
+            padding: 4px;
             word-break: keep-all;
         }
         .container {
-            max-width: 1200px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
             background: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         header {
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             border-bottom: 2px solid #eaeaea;
-            padding-bottom: 10px;
+            padding-bottom: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
         }
         h1 {
-            font-size: 1.4rem;
+            font-size: 1.1rem;
             color: #2c3e50;
         }
         h1 .version {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #e74c3c;
             background: #fadbd8;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
             vertical-align: middle;
-            margin-left: 6px;
+            margin-left: 4px;
         }
         .table-container {
             width: 100%;
@@ -60,9 +61,9 @@
             table-layout: fixed;
         }
         th, td {
-            padding: 6px 2px;
+            padding: 3px 0px;
             border: 1px solid #e1e4e8;
-            font-size: 0.75rem;
+            font-size: 0.55rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -79,34 +80,30 @@
             background-color: #f1f3f5;
         }
         td:first-child, th:first-child {
-            width: 16%;
+            width: 13%;
             font-weight: bold;
             background-color: #f8f9fa;
         }
-        @media (max-width: 768px) {
-            body {
-                padding: 5px;
-            }
-            .container {
-                padding: 8px;
-            }
-            h1 {
-                font-size: 1.1rem;
-            }
-            th, td {
-                padding: 4px 1px;
-                font-size: 0.65rem;
-            }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .event-item {
+            color: #e74c3c;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.2</span></h1>
+            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.6</span></h1>
         </header>
         <div class="table-container">
-            <table>
+            <table id="calendar-table">
                 <thead>
                     <tr>
                         <th>년도</th>
@@ -124,62 +121,103 @@
                         <th>12월</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr><td>1975</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1976</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1977</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1978</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1979</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1980</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1981</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1982</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1983</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1984</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1985</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1986</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1987</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1988</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1989</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1990</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1991</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1992</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1993</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1994</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1995</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1996</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1997</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1998</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>1999</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2000</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2001</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2002</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2003</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2004</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2005</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2006</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2007</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2008</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2009</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2010</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2011</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2012</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2013</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2014</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2015</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2016</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2017</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2018</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2019</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2020</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2021</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2022</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2023</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2024</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2025</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-                    <tr><td>2026</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+                <tbody id="calendar-body">
+                    <tr><td colspan="13" class="loading">데이터를 불러오는 중입니다...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=0&single=true&output=csv';
+
+        async function loadCalendarData() {
+            try {
+                const response = await fetch(csvUrl);
+                const data = await response.text();
+                parseAndRenderCalendar(data);
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                document.getElementById('calendar-body').innerHTML = `<tr><td colspan="13" class="loading" style="color: red;">데이터를 불러오는데 실패했습니다.</td></tr>`;
+            }
+        }
+
+        function parseAndRenderCalendar(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length < 2) return;
+
+            let headerCols = [];
+            for (let i = 0; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
+                if (cols.includes('1975년') || cols.includes('1975')) {
+                    headerCols = cols;
+                    break;
+                }
+            }
+
+            const yearMap = {};
+            headerCols.forEach((col, idx) => {
+                const cleanYear = col.replace('년', '').trim();
+                if (!isNaN(cleanYear) && cleanYear.length === 4) {
+                    yearMap[idx] = cleanYear;
+                }
+            });
+
+            const eventMap = {};
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const cols = line.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
+                
+                const monthStr = cols[0]; // 예: 1월
+                const dayStr = cols[1];   // 예: 1, 2, ...
+
+                if (!monthStr || !dayStr || isNaN(dayStr)) continue;
+                const monthNum = parseInt(monthStr.replace('월', '').trim());
+
+                for (let colIdx in yearMap) {
+                    const cellVal = cols[colIdx];
+                    if (cellVal && cellVal !== '' && cellVal !== '·') {
+                        const year = yearMap[colIdx];
+                        
+                        let eventType = '·';
+                        if (cellVal.includes('결혼')) eventType = '결';
+                        else if (cellVal.includes('부고')) eventType = '부';
+                        else if (cellVal.includes('행사')) eventType = '행';
+                        else eventType = '·';
+
+                        eventMap[`${year}-${monthNum}`] = eventType;
+                    }
+                }
+            }
+
+            const tbody = document.getElementById('calendar-body');
+            tbody.innerHTML = '';
+
+            for (let year = 1975; year <= 2026; year++) {
+                const tr = document.createElement('tr');
+                
+                const thYear = document.createElement('th');
+                thYear.textContent = year;
+                tr.appendChild(thYear);
+
+                for (let month = 1; month <= 12; month++) {
+                    const td = document.createElement('td');
+                    const key = `${year}-${month}`;
+                    
+                    if (eventMap[key]) {
+                        td.innerHTML = `<span class="event-item" title="일정 있음">${eventMap[key]}</span>`;
+                    } else {
+                        td.textContent = '·';
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+        }
+
+        loadCalendarData();
+    </script>
 </body>
 </html>
