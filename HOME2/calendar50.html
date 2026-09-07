@@ -1,4 +1,4 @@
-<!-- v1.8: 슬라이드 기획안 레이아웃에 맞춰 '결혼/부고/행사/기타' 안내 박스를 캘린더 테이블 상단에 추가하고 전체 데이터가 정확히 파싱되도록 개선 -->
+<!-- v1.9: 캘린더 시트 CSV 데이터 파싱 시 각 셀의 원본 텍스트를 누락 없이 렌더링하도록 수정하고 상단 안내 박스 및 테이블 구조 최적화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -53,15 +53,12 @@
         .info-box {
             border: 1px solid #ccc;
             border-radius: 50px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             display: inline-block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-size: 0.65rem;
             color: #555;
             background-color: #fff;
-        }
-        .info-box div {
-            margin: 2px 0;
         }
         .table-container {
             width: 100%;
@@ -116,13 +113,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.8</span></h1>
+            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.9</span></h1>
         </header>
         <div class="info-box">
-            <div>결혼||....</div>
-            <div>부고||....</div>
-            <div>행사||....</div>
-            <div>기타||....</div>
+            결혼||.... 부고||.... 행사||.... 기타||....
         </div>
         <div class="table-container">
             <table id="calendar-table">
