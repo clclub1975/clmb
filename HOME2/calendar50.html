@@ -1,4 +1,4 @@
-<!-- v1.6: 캘린더 시트 CSV 데이터를 연동하여 각 날짜 셀에 결혼, 부고, 행사 등의 이벤트 정보를 파싱 및 동적 렌더링하도록 개선 -->
+<!-- v1.7: 캘린더 시트 CSV 데이터 파싱 시 행 전체의 모든 연도별 열을 누락 없이 탐색하도록 수정하고, 슬라이드 레이아웃 형태에 맞춰 셀에 약어가 아닌 원본 데이터를 그대로 출력하도록 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -52,7 +52,7 @@
         }
         .table-container {
             width: 100%;
-            overflow-x: hidden;
+            overflow-x: auto;
         }
         table {
             width: 100%;
@@ -61,9 +61,9 @@
             table-layout: fixed;
         }
         th, td {
-            padding: 3px 0px;
+            padding: 4px 2px;
             border: 1px solid #e1e4e8;
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -80,7 +80,7 @@
             background-color: #f1f3f5;
         }
         td:first-child, th:first-child {
-            width: 13%;
+            width: 80px;
             font-weight: bold;
             background-color: #f8f9fa;
         }
@@ -93,14 +93,17 @@
         .event-item {
             color: #e74c3c;
             font-weight: bold;
-            cursor: pointer;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.6</span></h1>
+            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.7</span></h1>
         </header>
         <div class="table-container">
             <table id="calendar-table">
@@ -147,10 +150,13 @@
             if (lines.length < 2) return;
 
             let headerCols = [];
+            let headerRowIdx = -1;
+
             for (let i = 0; i < lines.length; i++) {
                 const cols = lines[i].split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
                 if (cols.includes('1975년') || cols.includes('1975')) {
                     headerCols = cols;
+                    headerRowIdx = i;
                     break;
                 }
             }
@@ -163,11 +169,14 @@
                 }
             });
 
+            // 연도/월별 데이터 저장소 (동일 월에 여러 데이터가 있을 경우 누적 가능)
             const eventMap = {};
 
-            for (let i = 0; i < lines.length; i++) {
+            for (let i = headerRowIdx + 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
+                
+                // CSV 행 파싱 (쉼표 기준 분리, 따옴표 내부 쉼표 대응을 위한 단순 분리 보완)
                 const cols = line.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
                 
                 const monthStr = cols[0]; // 예: 1월
@@ -180,14 +189,13 @@
                     const cellVal = cols[colIdx];
                     if (cellVal && cellVal !== '' && cellVal !== '·') {
                         const year = yearMap[colIdx];
+                        const key = `${year}-${monthNum}`;
                         
-                        let eventType = '·';
-                        if (cellVal.includes('결혼')) eventType = '결';
-                        else if (cellVal.includes('부고')) eventType = '부';
-                        else if (cellVal.includes('행사')) eventType = '행';
-                        else eventType = '·';
-
-                        eventMap[`${year}-${monthNum}`] = eventType;
+                        // 원본 데이터 전체를 누적 (여러 개인 경우 줄바꿈 등으로 처리)
+                        if (!eventMap[key]) {
+                            eventMap[key] = [];
+                        }
+                        eventMap[key].push(cellVal);
                     }
                 }
             }
@@ -206,8 +214,9 @@
                     const td = document.createElement('td');
                     const key = `${year}-${month}`;
                     
-                    if (eventMap[key]) {
-                        td.innerHTML = `<span class="event-item" title="일정 있음">${eventMap[key]}</span>`;
+                    if (eventMap[key] && eventMap[key].length > 0) {
+                        // 원본 데이터 그대로 출력 (슬라이드 기획안 형태 반영)
+                        td.innerHTML = eventMap[key].map(item => `<span class="event-item" title="${item}">${item}</span>`).join('');
                     } else {
                         td.textContent = '·';
                     }
