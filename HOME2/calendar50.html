@@ -1,4 +1,4 @@
-<!-- v1.13: 캘린더 시트 데이터의 무결성 검증 오류 메시지를 슬라이드 레이아웃의 지정된 포맷으로 변경하고, 불필요한 원본 데이터 나열 목록 영역을 제거하도록 개선 -->
+<!-- v1.14: 캘린더 시트 오류 안내 포맷을 슬라이드 레이아웃 형태로 개선하고 글머리 적용, 원본 데이터 나열 목록 영역 제거, 헤더 중앙 정렬 및 '메인으로 돌아가기' 버튼 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -28,17 +28,34 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
+        .home-btn-container {
+            margin-bottom: 15px;
+        }
+        .home-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #ffffff;
+            color: #2c3e50;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+        .home-btn:hover {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
         header {
             margin-bottom: 16px;
             border-bottom: 2px solid #eaeaea;
             padding-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+            text-align: center;
         }
         h1 {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             color: #2c3e50;
         }
         h1 .version {
@@ -65,8 +82,7 @@
             color: #721c24;
         }
         .error-list {
-            list-style-type: none;
-            padding-left: 0;
+            padding-left: 20px;
             font-size: 0.8rem;
         }
         .error-list li {
@@ -124,11 +140,14 @@
 </head>
 <body>
     <div class="container">
+        <div class="home-btn-container">
+            <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
+        </div>
         <header>
-            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.13</span></h1>
+            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.14</span></h1>
         </header>
         
-        <!-- 슬라이드 포맷에 맞춘 입력 데이터 오류 안내 영역 -->
+        <!-- 입력 데이터 오류 안내 영역 -->
         <div id="error-container" class="error-box" style="display: none;">
             <h3>입력 데이터 오류 안내</h3>
             <ul id="error-list" class="error-list"></ul>
@@ -219,11 +238,10 @@
                     const cellVal = cols[colIdx];
                     if (cellVal && cellVal !== '' && cellVal !== '·') {
                         const cellYearStr = yearMap[colIdx];
-                        let hasError = false;
 
                         // 1. 분류 항목 검증 ('||' 기준 및 허용 카테고리)
                         if (!cellVal.includes('||')) {
-                            hasError = true;
+                            errorList.push(`형식 오류: "${cellVal}"`);
                         } else {
                             const parts = cellVal.split('||');
                             const category = parts[0].trim();
@@ -231,16 +249,13 @@
 
                             if (!validCategories.includes(category)) {
                                 errorList.push(`분류 오류: "${cellVal}"`);
-                                hasError = true;
                             } else if (details.length < 3) {
                                 errorList.push(`형식 오류: "${cellVal}"`);
-                                hasError = true;
                             } else {
                                 const dateStr = details[1].trim();
                                 const dateRegex = /^\d{8}$/;
                                 if (!dateRegex.test(dateStr)) {
                                     errorList.push(`형식 오류: "${cellVal}"`);
-                                    hasError = true;
                                 } else {
                                     const parsedYear = parseInt(dateStr.substring(0, 4));
                                     const parsedMonth = parseInt(dateStr.substring(4, 6));
@@ -248,14 +263,9 @@
 
                                     if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
                                         errorList.push(`위치 오류: "${cellVal}"`);
-                                        hasError = true;
                                     }
                                 }
                             }
-                        }
-
-                        if (!cellVal.includes('||')) {
-                            errorList.push(`형식 오류: "${cellVal}"`);
                         }
 
                         const key = `${cellYearStr}-${rowMonthNum}`;
@@ -267,7 +277,7 @@
                 }
             }
 
-            // 중복 오류 메시지 제거 후 슬라이드 포맷 형태로 표시
+            // 오류 검증 결과 표시 (글머리 목록 적용)
             const errorContainer = document.getElementById('error-container');
             const errorListElement = document.getElementById('error-list');
             if (errorList.length > 0) {
