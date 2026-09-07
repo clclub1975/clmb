@@ -1,4 +1,4 @@
-<!-- v1.16: 모바일 화면에서도 1월부터 12월까지의 월별 열 너비가 균일하게 유지되도록 테이블 셀 너비 스타일을 균등 분할 방식으로 수정 -->
+<!-- v1.17: 모바일 화면에서 테이블 레이아웃 및 폰트 크기가 깨지지 않고 정상적으로 렌더링되도록 CSS 스타일과 테이블 구조 보완 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -97,17 +97,17 @@
             width: 100%;
             border-collapse: collapse;
             text-align: center;
-            table-layout: fixed; /* 모든 열의 폭을 고정 비율로 균등 분할 */
-            min-width: 900px;
+            table-layout: fixed;
+            min-width: 800px;
         }
         th, td {
             padding: 6px 4px;
             border: 1px solid #e1e4e8;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            width: 7%; /* 12개 월 열이 동일한 폭을 갖도록 설정 */
+            width: 7.3%; /* 12개 월 열 동일 폭 분할 */
         }
         th {
             background-color: #f1f3f5;
@@ -154,7 +154,7 @@
             <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
         </div>
         <header>
-            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.16</span></h1>
+            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.17</span></h1>
         </header>
         
         <!-- 입력 데이터 오류 안내 영역 -->
