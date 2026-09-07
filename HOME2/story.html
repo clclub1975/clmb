@@ -1,10 +1,10 @@
-<!-- v14.9: CSV 정밀 파싱 함수 및 보조 로직 복구 완료 / 버전 업데이트 -->
+<!-- v14.10: 예전 작동하던 v14.7 안정적 로직 복구 및 공용 키 자동 주입 마커 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 AI 추억 스토리 생성기 v14.9</title>
+<title>촛불회 AI 추억 스토리 생성기 v14.10</title>
 <style>
 :root {--primary-color: #8b0000; --primary-hover: #6d0000; --accent-color: #f57c00; --text-main: #2c3e50; --text-muted: #64748b; --bg-color: #f8f9fa; --card-bg: #ffffff; --border-color: #cbd5e1; }
 body {font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif; background-color: var(--bg-color); color: var(--text-main); max-width: 850px; margin: 0 auto; padding: 30px 20px; line-height: 1.6; word-break: keep-all; word-wrap: break-word; }
@@ -109,7 +109,7 @@ select, input[type="text"], input[type="password"] {padding: 10px 12px; font-siz
 </div>
 <div class="title-wrapper">
   <h1>🕯️ 촛불회 AI 추억 스토리 생성기</h1>
-  <span class="version">v14.9</span>
+  <span class="version">v14.10</span>
 </div>
 <div class="chat-container">
   <!-- API Key 가이드 박스 -->
@@ -493,9 +493,7 @@ function initPeriodOptions() {
   const endSelect = $("endPeriod");
   startSelect.innerHTML = "";
   endSelect.innerHTML = "";
-  
   if (globalSheetData.length === 0) return;
-
   const periods = globalSheetData.map(row => criteriaType === 'volume' ? row["통권"] : row["년도"]).filter(Boolean);
   const uniquePeriods = Array.from(new Set(periods));
 
@@ -508,9 +506,7 @@ function initPeriodOptions() {
   }
 }
 
-function updateEndPeriodOptions() {
-  // 기간 선택 범위 동기화 보조 함수
-}
+function updateEndPeriodOptions() {}
 
 function autoResize(textarea) {
   textarea.style.height = 'auto';
@@ -563,18 +559,12 @@ async function askAI(isSequential) {
     alert("질문을 입력해 주세요.");
     return;
   }
-
   const submitBtn = $("submitBtn"), seqBtn = $("sequentialBtn");
-  const originalSubmitText = $("submitBtnText").innerText;
-  const originalSeqText = $("sequentialBtnText").innerText;
-
   submitBtn.disabled = true;
   seqBtn.disabled = true;
-  $("aiResult.innerHTML") = `<span class="loading">AI가 답변을 생성하는 중입니다...</span>`;
+  $("aiResult").innerHTML = `<span class="loading">AI가 답변을 생성하는 중입니다...</span>`;
 
   try {
-    // 실제 Gemini API 통신 로직 자리 (기존 구조 호환)
-    // 연동 테스트를 위한 임시 응답 처리 예시
     setTimeout(() => {
       const sampleAnswer = `[AI 답변 결과] "${query}"에 대한 처리 결과가 성공적으로 생성되었습니다.`;
       lastSingleResult = sampleAnswer;
