@@ -1,4 +1,4 @@
-<!-- v1.14: 캘린더 시트 오류 안내 포맷을 슬라이드 레이아웃 형태로 개선하고 글머리 적용, 원본 데이터 나열 목록 영역 제거, 헤더 중앙 정렬 및 '메인으로 돌아가기' 버튼 추가 -->
+<!-- v1.15: 모바일 환경에서 캘린더 테이블의 월별 열(10월, 11월, 12월 등)이 잘 안 보이거나 밀리는 현상을 해결하기 위해 테이블 셀 최소 너비 설정 및 가로 스크롤 레이아웃을 최적화하도록 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -91,17 +91,19 @@
         .table-container {
             width: 100%;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: center;
-            table-layout: fixed;
+            table-layout: auto;
+            min-width: 750px; /* 모바일에서 표가 찌그러지지 않고 스크롤되도록 최소 너비 보장 */
         }
         th, td {
             padding: 6px 4px;
             border: 1px solid #e1e4e8;
-            font-size: 0.55rem;
+            font-size: 0.65rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -117,10 +119,17 @@
         tr:hover {
             background-color: #f1f3f5;
         }
-        td:first-child, th:first-child {
-            width: 70px;
+        th:first-child, td:first-child {
+            width: 60px;
+            min-width: 60px;
             font-weight: bold;
             background-color: #f8f9fa;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+        }
+        th:first-child {
+            z-index: 3;
         }
         .loading {
             text-align: center;
@@ -144,7 +153,7 @@
             <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
         </div>
         <header>
-            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.14</span></h1>
+            <h1>50년치 연간 월별 캘린더 (1975 - 2026) <span class="version">v1.15</span></h1>
         </header>
         
         <!-- 입력 데이터 오류 안내 영역 -->
