@@ -1,4 +1,4 @@
-<!-- v5.11: 스크롤바와 상하 화살표 버튼의 수평 중심축 및 박스 모델 완벽 정렬, 화살표 침범 현상 해소 -->
+<!-- v5.5: 5열 7행 구조 고정 및 CSS scroll-snap을 활용한 카드 단위 세로 스크롤 스냅핑 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,30 +114,23 @@
         border-color: #0366d6;
     }
     
-    /* PC 전용 세로 스크롤 컨테이너 및 화살표 배치를 위한 외곽 래퍼 */
-    .table-outer-container {
+    /* PC 전용 세로 스크롤 래퍼 및 카드 단위 스냅 정렬 적용 */
+    .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        position: relative;
-        margin-bottom: 40px;
-    }
-
-    /* 스크롤 래퍼 (5열 7행 정확히 노출되도록 높이 설정 및 스냅 적용) */
-    .archive-scroll-wrapper {
-        width: 100%;
-        max-height: 525px; /* 5열 7행 크기에 딱 맞춘 높이 (셀 하나 높이 약 75px * 7행) */
+        max-height: 450px; /* 5열 7행 구조에서 행 단위로 깔끔하게 보이도록 높이 최적화 */
         overflow-y: scroll;
-        scroll-snap-type: y mandatory;
+        scroll-snap-type: y mandatory; /* 스크롤 시 카드 단위로 정확히 걸리도록 강제 */
         border: 2px solid #4a5568;
         border-radius: 0;
         background-color: #ffffff;
-        box-sizing: border-box;
+        margin-bottom: 40px;
     }
     
-    /* 스크롤바 스타일 (너비를 16px로 지정) */
+    /* 스크롤바 스타일 */
     .archive-scroll-wrapper::-webkit-scrollbar {
-        width: 16px;
+        width: 10px;
     }
     .archive-scroll-wrapper::-webkit-scrollbar-track {
         background: #f1f5f9;
@@ -151,39 +144,6 @@
         background-color: #64748b;
     }
 
-    /* 상하 스크롤 제어 화살표 버튼 스타일 (박스 모델 및 패딩/보더 정밀 보정으로 침범 원인 차단) */
-    .scroll-arrow-btn {
-        position: absolute;
-        right: 2px; /* 래퍼 테두리(2px) 안쪽으로 정확히 고정 */
-        width: 16px; /* 스크롤바 트랙 너비와 일치 */
-        height: 16px;
-        background-color: #e2e8f0;
-        border: 1px solid #cbd5e1;
-        color: #475569;
-        font-size: 8.5px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 10;
-        box-sizing: border-box; /* 패딩 및 보더가 너비에 포함되도록 강제 */
-        padding: 0;
-        margin: 0;
-        transition: background-color 0.15s, color 0.15s;
-    }
-    .scroll-arrow-btn:hover {
-        background-color: #0366d6;
-        color: #ffffff;
-        border-color: #0366d6;
-    }
-    .scroll-up-btn {
-        top: 2px; /* 상단 테두리 안쪽에 정확히 안착 */
-    }
-    .scroll-down-btn {
-        bottom: 2px; /* 하단 테두리 안쪽에 정확히 안착 */
-    }
-
     /* CSS Grid 기반 5열 배치 레이아웃 */
     .archive-grid {
         display: grid;
@@ -193,21 +153,14 @@
         border-left: none;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (카드 단위로 정확히 걸림) */
+    /* 단위 셀 외곽선 및 스냅 정렬 (셀 중간에 걸치지 않고 딱 맞아떨어짐) */
     .issue-unit {
         border-right: 2px solid #4a5568;
-        border-bottom: 2px solid #4a5568; /* 기본 셀 하단 선 두께 */
+        border-bottom: 2px solid #4a5568;
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
-        scroll-snap-align: start;
-        height: 75px; /* 셀 높이 고정으로 스냅 정확도 극대화 */
-        box-sizing: border-box;
-    }
-
-    /* 마지막 행의 셀들은 하단 테두리를 일반 선 두께(2px)와 동일하게 정규화 */
-    .issue-unit.last-row {
-        border-bottom: 2px solid #4a5568 !important;
+        scroll-snap-align: start; 
     }
     
     /* 단위 셀 헤더 */
@@ -216,9 +169,9 @@
         color: #1a1a1a;
         font-weight: 600;
         text-align: center;
-        padding: 5px 5px;
+        padding: 7px 5px;
         border-bottom: 1px solid #d1d5db;
-        font-size: 13.5px;
+        font-size: 14px;
     }
     
     /* 비활성 단위 셀 헤더 스타일 */
@@ -238,11 +191,8 @@
     /* 내부 서브 셀 낱개 */
     .sub-cell {
         text-align: center;
-        padding: 5px 5px;
-        font-size: 13.5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 7px 5px;
+        font-size: 14px;
     }
     .sub-cell:not(:last-child) {
         border-right: 1px solid #d1d5db;
@@ -266,14 +216,11 @@
 
     /* 반응형 디자인 (미디어 쿼리 적용) */
     @media (max-width: 1024px) {
-        .table-outer-container, .jump-bar-container {
+        .archive-scroll-wrapper, .jump-bar-container {
             max-width: 90%;
         }
         .archive-grid {
             grid-template-columns: repeat(4, 1fr);
-        }
-        .scroll-arrow-btn {
-            display: none; /* 태블릿/모바일에서는 화살표 숨김 */
         }
     }
 
@@ -281,7 +228,7 @@
         body {
             padding: 12px;
         }
-        .table-outer-container, .jump-bar-container {
+        .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
         /* 모바일 환경: 세로 스크롤 제한 해제 및 기본 스타일 복원 */
@@ -296,9 +243,6 @@
             border-top: 2px solid #4a5568;
             border-left: 2px solid #4a5568;
             grid-template-columns: repeat(3, 1fr);
-        }
-        .issue-unit {
-            height: auto;
         }
         h1 {
             font-size: 22px;
@@ -321,16 +265,13 @@
             flex-grow: 1;
             text-align: center;
         }
-        .scroll-arrow-btn {
-            display: none;
-        }
     }
 </style>
 </head>
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.11</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.5</span></h1>
     </div>
 
     <div class="intro-box">
@@ -356,28 +297,20 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- PC 세로 스크롤 래퍼 및 스크롤바 중심축과 화살표가 완벽 일치하는 컨테이너 -->
-    <div class="table-outer-container">
-        <!-- 상단 화살표 버튼 (박스 모델 보정으로 테이블 침범 원인 차단) -->
-        <button class="scroll-arrow-btn scroll-up-btn" onclick="scrollLine(-1)" title="위로 한 줄 이동">▲</button>
-        
-        <div class="archive-scroll-wrapper" id="scroll-wrapper">
-            <!-- 5열 그리드 테이블 (5열 7행 구조 렌더링) -->
-            <div class="archive-grid" id="archive-grid">
-                <!-- 자바스크립트에 의해 1~190호 전체 카드가 동적 생성됩니다 -->
-            </div>
+    <!-- PC 세로 스크롤 래퍼 (5열 7행 레이아웃 및 단위 셀 스냅 적용) -->
+    <div class="archive-scroll-wrapper" id="scroll-wrapper">
+        <!-- 5열 그리드 테이블 -->
+        <div class="archive-grid" id="archive-grid">
+            <!-- 자바스크립트에 의해 1~190호 전체 카드가 동적 생성됩니다 -->
         </div>
-
-        <!-- 하단 화살표 버튼 (박스 모델 보정으로 테이블 침범 원인 차단) -->
-        <button class="scroll-arrow-btn scroll-down-btn" onclick="scrollLine(1)" title="아래로 한 줄 이동">▼</button>
     </div>
 
     <script>
         // 샘플 데이터 (001~003호 실제 링크 데이터)
         const sampleData = {
-            1: { title: "1984년 3월호", pdf: "https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing", summary: "https://clclub1975.github.io/clmb/HOME2/url?id=2" },
+            1: { title: "1984년 3월호", pdf: "https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" },
             2: { title: "1984년 4월호", pdf: "https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" },
-            3: { title: "1984년 5월호", pdf: "https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing", summary: "https://clclub1975.github.io/clmb/HOME2/url?id=6" }
+            3: { title: "1984년 5월호", pdf: "https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" }
         };
 
         // 1부터 190호까지 전체 카드를 생성하여 렌더링
@@ -388,17 +321,10 @@
             for (let i = 1; i <= 190; i++) {
                 const unitDiv = document.createElement('div');
                 unitDiv.id = `issue-${i}`;
-                
-                // 마지막 행(186~190호)에 해당하는 경우 마지막 줄 테두리 정규화 클래스 추가
-                let className = 'issue-unit';
-                if (i > 185) {
-                    className += ' last-row';
-                }
-
                 const issueInfo = sampleData[i];
 
                 if (issueInfo) {
-                    unitDiv.className = className;
+                    unitDiv.className = 'issue-unit';
                     unitDiv.innerHTML = `
                         <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                         <div class="issue-body">
@@ -408,7 +334,7 @@
                         </div>
                     `;
                 } else {
-                    unitDiv.className = className + ' inactive';
+                    unitDiv.className = 'issue-unit inactive';
                     unitDiv.innerHTML = `
                         <div class="issue-header">[${String(i).padStart(3, '0')}호]</div>
                         <div class="issue-body">
@@ -441,19 +367,6 @@
             // 소제목 업데이트
             const endNum = Math.min(startNum + 29, 190);
             document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${String(startNum).padStart(2, '0')}~${String(endNum).padStart(2, '0')})`;
-        }
-
-        // 상하 화살표 클릭 시 한 행(5개 셀 단위)씩 부드럽게 스크롤 제어
-        function scrollLine(direction) {
-            const wrapper = document.getElementById('scroll-wrapper');
-            if (wrapper) {
-                // 5열 기준 한 행의 높이(약 75px)만큼 위 또는 아래로 이동
-                const rowHeight = 75;
-                wrapper.scrollBy({
-                    top: direction * rowHeight,
-                    behavior: 'smooth'
-                });
-            }
         }
 
         // 페이지 최초 진입 시 전체 190권 렌더링
