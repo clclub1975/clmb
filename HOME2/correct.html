@@ -1,4 +1,4 @@
-<!-- v7.27: 스크롤 박스의 높이를 고정값 대신 자식 테이블(7행)의 실제 콘텐츠 크기에 정확히 맞추어 짤림 현상 원천 해결 -->
+<!-- v7.28: 7행 테이블을 먼저 렌더링하고, 자바스크립트로 실제 높이를 측정한 뒤 스크롤 박스에 동일하게 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,11 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.27: 7행 높이에 정확히 연동되도록 동적 계산 높이 적용) */
+    /* PC 세로 스크롤 래퍼 (v7.28: JS로 측정된 7행 높이가 max-height에 동적으로 반영됨) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: calc((40.5px * 7) + 4px); /* 7행의 실제 렌더링 높이 + 상하 테두리(4px)에 정확히 맞춤 */
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -234,7 +233,7 @@
             max-width: 100%;
         }
         .archive-scroll-wrapper {
-            max-height: 482px;
+            max-height: 482px !important;
         }
         .archive-grid {
             grid-template-columns: repeat(3, 1fr);
@@ -266,7 +265,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.27</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.28</span></h1>
     </div>
 
     <div class="intro-box">
@@ -355,7 +354,7 @@
             }
         }
 
-        // 1부터 192호까지 전체 카드를 생성하여 렌더링 (3열 배치를 깔끔하게 채우기 위한 192 슬롯 구성)
+        // 1부터 192호까지 전체 카드를 생성하여 렌더링하고, 7행의 정확한 세로 길이를 계산해 스크롤 박스에 적용
         async function renderAllIssues() {
             await loadPathDataFromSheet();
 
@@ -404,6 +403,26 @@
                 }
                 gridContainer.appendChild(unitDiv);
             }
+
+            // [핵심 로직] 테이블이 그려진 후 7행의 정확한 높이를 계산하여 스크롤 박스에 세팅
+            adjustScrollBoxHeight();
+        }
+
+        // 7행의 누적 높이를 계산하여 스크롤 박스 길이에 맞추는 함수
+        function adjustScrollBoxHeight() {
+            if (window.innerWidth > 768) {
+                const units = document.querySelectorAll('.issue-unit');
+                // PC 화면 기준 5열이므로, 7행에 해당하는 카드 35개(5 * 7)의 높이를 정확히 합산
+                let targetHeight = 0;
+                for (let j = 0; j < 35 && j < units.length; j += 5) {
+                    targetHeight += units[j].offsetHeight;
+                }
+                // 스크롤 박스의 max-height를 정확히 7행의 높이로 지정 (상하 테두리 4px 포함)
+                const wrapper = document.getElementById('scroll-wrapper');
+                if (wrapper) {
+                    wrapper.style.maxHeight = (targetHeight + 4) + 'px';
+                }
+            }
         }
 
         // 빠른 이동 버튼 클릭 시 해당 번호의 카드로 부드럽게 스크롤 이동
@@ -425,6 +444,11 @@
             const endNum = Math.min(startNum + 29, 190);
             document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${String(startNum).padStart(2, '0')}~${String(endNum).padStart(2, '0')})`;
         }
+
+        // 창 크기 변경 시에도 높이가 틀어지지 않도록 재계산 반영
+        window.onresize = function() {
+            adjustScrollBoxHeight();
+        };
 
         // 페이지 최초 진입 시 동적 렌더링 실행
         window.onload = function() {
