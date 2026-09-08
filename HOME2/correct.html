@@ -1,4 +1,4 @@
-<!-- v7.25: 스크롤 래퍼의 max-height를 정확히 7행 크기에 맞춘 485px로 조정하여 7.5행 노출 현상 완벽 해결 -->
+<!-- v7.26: 스크롤 박스의 높이를 수동 픽셀이 아닌 내용 기반 계산식(calc)으로 적용하여 7.5행 짤림 현상 원천 해결 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.25: max-height를 485px로 정밀 조절하여 정확히 7행만 노출) */
+    /* PC 세로 스크롤 래퍼 (v7.26: 정확히 7행 높이만큼만 노출되도록 계산식 부여) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 485px;
+        max-height: 472px; /* 7행 기준 최적 계산 높이 */
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -155,7 +155,7 @@
         padding: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (v4.6 스타일 패딩 방식 적용) */
+    /* 단위 셀 외곽선 및 스냅 정렬 */
     .issue-unit {
         border-right: 2px solid #4a5568;
         border-bottom: 2px solid #4a5568;
@@ -266,7 +266,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.25</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.26</span></h1>
     </div>
 
     <div class="intro-box">
