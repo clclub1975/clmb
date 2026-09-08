@@ -1,4 +1,4 @@
-<!-- v7.2: 구글 시트(CSV) 연동 및 001호 등 번호 추출 정규식 보완 적용 -->
+<!-- v7.4: 구글 시트 CSV 동적 연동 및 전역 디버깅 구조 완성 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -279,7 +279,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.2</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.4</span></h1>
     </div>
 
     <div class="intro-box">
@@ -314,13 +314,13 @@
     </div>
 
     <script>
-        // 동적으로 채워질 데이터 객체 저장소
-        let sampleData = {};
+        // 전역 객체로 선언하여 콘솔창(window.sampleData)에서 언제든 확인 가능하도록 설정
+        window.sampleData = {};
 
         // 구글 시트 웹에 게시된 CSV 링크
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 비동기로 불러와 파싱하는 함수 (정규식 보완 적용)
+        // 구글 시트 CSV 데이터를 로드하고 호수 번호와 드라이브 링크를 정밀 추출하는 함수
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
@@ -331,21 +331,25 @@
                 rows.forEach(row => {
                     const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
                     
-                    if (cols.length >= 2 && cols[0]) {
-                        // "통권001호", "001호" 등 다양한 형식에서 숫자를 안전하게 추출
-                        const match = cols[0].match(/(?:통권)?(\d+)호/);
+                    let foundNum = null;
+                    let foundUrl = '';
+
+                    cols.forEach(col => {
+                        const match = col.match(/(?:통권)?(\d+)호/);
                         if (match) {
-                            const issueNum = parseInt(match[1], 10);
-                            const pdfUrl = cols[1]; // 구글 드라이브 공유 링크
-                            
-                            if (pdfUrl && pdfUrl.startsWith('http')) {
-                                sampleData[issueNum] = {
-                                    title: `1984년 ?월호`, 
-                                    pdf: pdfUrl,
-                                    summary: "" 
-                                };
-                            }
+                            foundNum = parseInt(match[1], 10);
                         }
+                        if (col.startsWith('http')) {
+                            foundUrl = col;
+                        }
+                    });
+
+                    if (foundNum !== null && foundUrl !== '') {
+                        window.sampleData[foundNum] = {
+                            title: `1984년 ?월호`, 
+                            pdf: foundUrl,
+                            summary: "" 
+                        };
                     }
                 });
             } catch (error) {
@@ -353,7 +357,7 @@
             }
         }
 
-        // 1부터 190호까지 전체 카드를 생성하여 렌더링 (5열 7행 구조 유지)
+        // 1부터 190호까지 전체 카드를 생성하여 렌더링
         async function renderAllIssues() {
             await loadPathDataFromSheet();
 
@@ -367,7 +371,7 @@
                 }
 
                 if (i <= 190) {
-                    const issueInfo = sampleData[i];
+                    const issueInfo = window.sampleData[i];
                     if (issueInfo) {
                         unitDiv.className = 'issue-unit';
                         unitDiv.innerHTML = `
@@ -420,7 +424,6 @@
                 });
             }
 
-            // 소제목 업데이트
             const endNum = Math.min(startNum + 29, 190);
             document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${String(startNum).padStart(2, '0')}~${String(endNum).padStart(2, '0')})`;
         }
