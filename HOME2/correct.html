@@ -1,4 +1,4 @@
-<!-- v7.14: PC 환경 세로 스크롤 영역(max-height) 및 내부 박스 여유 공간 최적화 적용 -->
+<!-- v7.15: PC 환경 세로 스크롤 영역(max-height) 및 내부 박스 여유 공간 최적화 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.14: 테두리와 렌더링 오차를 고려하여 max-height를 532px로 여유 확보) */
+    /* PC 세로 스크롤 래퍼 (v7.15: PC 환경 7행이 잘림 없이 완벽히 보이도록 max-height를 545px로 확보) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 532px;
+        max-height: 545px;
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -285,7 +285,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.14</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.15</span></h1>
     </div>
 
     <div class="intro-box">
@@ -452,4 +452,3 @@
     </script>
 </body>
 </html>
- 
