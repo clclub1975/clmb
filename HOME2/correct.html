@@ -1,4 +1,4 @@
-<!-- v6.3: PC 환경 5열 7행 테이블의 테두리 및 밑변 겹침 현상 원천 해결 (마지막 행 선 중복 제거) -->
+<!-- v6.4: PC 환경 마지막 행 밑변 중첩 현상 완벽 해결 (CSS Grid 컨테이너 및 래퍼 테두리 통합 정돈) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,7 +114,7 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 및 카드 단위 스냅 정렬 적용 */
+    /* PC 세로 스크롤 래퍼 (테두리를 래퍼에만 주고 내부 그리드 외곽선 중첩을 방지하도록 구조 재조정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
@@ -124,7 +124,7 @@
         scroll-snap-type: y mandatory; /* 스크롤 시 카드 단위로 정확히 걸리도록 강제 */
         border: 2px solid #4a5568;
         border-radius: 0;
-        background-color: #ffffff;
+        background-color: #4a5568; /* 갭 사이로 배경색이 비칠 때 선 색상과 일치시키기 위함 */
         margin-bottom: 40px;
     }
     
@@ -144,30 +144,26 @@
         background-color: #64748b;
     }
 
-    /* CSS Grid 기반 5열 배치 레이아웃 */
+    /* CSS Grid 기반 5열 배치 레이아웃 (셀 간격을 2px로 주어 테두리 겹침 현상 원천 차단) */
     .archive-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        gap: 0;
-        border-top: none;
-        border-left: none;
+        gap: 2px; /* 셀 사이에 2px 간격을 주어 테두리가 중첩되어 두꺼워지는 현상 방지 */
+        background-color: #4a5568; /* 간격 사이로 보이는 배경색을 테두리 색상으로 통일 */
+        border: none;
+        padding: 0;
+        margin: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (셀 중간에 걸치지 않고 딱 맞아떨어짐) */
+    /* 단위 셀 외곽선 및 스냅 정렬 */
     .issue-unit {
-        border-right: 2px solid #4a5568;
-        border-bottom: 2px solid #4a5568;
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
         scroll-snap-align: start;
         height: 75px; /* 행 높이 고정으로 7행 구조 완벽 고정 */
         box-sizing: border-box;
-    }
-
-    /* 마지막 행 테두리 중첩 현상 원천 차단 (래퍼 하단 테두리와 겹치지 않도록 조정) */
-    .issue-unit.last-row {
-        border-bottom: none !important;
+        border: none; /* 개별 보더 대신 갭(gap)으로 선 표현 */
     }
     
     /* 단위 셀 헤더 */
@@ -241,25 +237,21 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
-        /* v6.3: 모바일 환경에서도 세로 스크롤 및 스냅 적용 */
+        /* v6.4: 모바일 환경에서도 동일하게 세로 스크롤 및 간격 기반 그리드 적용 */
         .archive-scroll-wrapper {
             max-height: 420px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             border: 2px solid #4a5568;
-            background-color: #ffffff;
+            background-color: #4a5568;
         }
         .archive-grid {
-            border-top: none;
-            border-left: none;
             grid-template-columns: repeat(3, 1fr); /* 모바일은 3열 구조 유지 */
+            gap: 2px;
+            background-color: #4a5568;
         }
         .issue-unit {
             height: auto;
-        }
-        /* 모바일에서는 마지막 행 하단 선 복원 */
-        .issue-unit.last-row {
-            border-bottom: 2px solid #4a5568 !important;
         }
         h1 {
             font-size: 22px;
@@ -288,7 +280,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v6.3</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v6.4</span></h1>
     </div>
 
     <div class="intro-box">
@@ -314,7 +306,7 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 (5열 7행 구조 고정 및 밑변 중첩 해결) -->
+    <!-- 세로 스크롤 래퍼 (5열 7행 구조 고정 및 테두리 겹침 완벽 해결) -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
         <!-- 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
@@ -342,16 +334,10 @@
                     unitDiv.id = `issue-${i}`;
                 }
 
-                // 마지막 행(186~190호 또는 그 이후 빈칸) 테두리 정규화 (밑변 중첩 제거)
-                let className = 'issue-unit';
-                if (i > 185) {
-                    className += ' last-row';
-                }
-
                 if (i <= 190) {
                     const issueInfo = sampleData[i];
                     if (issueInfo) {
-                        unitDiv.className = className;
+                        unitDiv.className = 'issue-unit';
                         unitDiv.innerHTML = `
                             <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                             <div class="issue-body">
@@ -361,7 +347,7 @@
                             </div>
                         `;
                     } else {
-                        unitDiv.className = className + ' inactive';
+                        unitDiv.className = 'issue-unit inactive';
                         unitDiv.innerHTML = `
                             <div class="issue-header">[${String(i).padStart(3, '0')}호]</div>
                             <div class="issue-body">
@@ -373,7 +359,7 @@
                     }
                 } else {
                     // 190호 이후 195호까지는 5열 7행 배치를 완벽하게 채우기 위한 빈 패딩 슬롯
-                    unitDiv.className = className + ' inactive';
+                    unitDiv.className = 'issue-unit inactive';
                     unitDiv.innerHTML = `
                         <div class="issue-header">-</div>
                         <div class="issue-body">
