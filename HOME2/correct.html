@@ -1,4 +1,4 @@
-<!-- v4.1: 1순위(구간별 탭 버튼) 및 2순위(상단 고정 퀵 내비게이션 바) 인덱스 탐색 구조 적용 -->
+<!-- v4.2: 두 번째 임시 테이블 제거, 5행 6열 그리드 구조 고정 및 빠른 구간 이동 버튼 위치 최적화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -66,28 +66,26 @@
         margin-bottom: 0;
     }
 
-    /* 2순위: 빠른 이동 퀵 내비게이션 (상단 고정 Sticky Jump Bar) */
-    .sticky-jump-bar {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background-color: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(5px);
-        border-bottom: 1px solid #e1e4e8;
-        padding: 12px 0;
-        margin-bottom: 25px;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    /* 소제목 및 빠른 구간 이동 버튼 배치를 위한  flex 컨테이너 */
+    .section-header-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+        scroll-margin-top: 80px;
     }
-    .jump-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #586069;
-        margin-bottom: 6px;
+
+    h3 {
+        font-size: 18px;
+        color: #24292e;
+        margin: 0;
     }
+
+    /* 빠른 구간 이동 버튼 그룹 */
     .jump-buttons {
         display: flex;
-        justify-content: center;
         gap: 6px;
         flex-wrap: wrap;
     }
@@ -107,15 +105,8 @@
         color: #ffffff;
         border-color: #0366d6;
     }
-
-    h3 {
-        font-size: 18px;
-        color: #24292e;
-        margin-bottom: 20px;
-        scroll-margin-top: 80px; /* 스티키 바에 제목이 가리지 않도록 여백 확보 */
-    }
     
-    /* CSS Grid 기반 5열 배치 레이아웃 */
+    /* CSS Grid 기반 5열 배치 레이아웃 (5행 6열 = 총 30개 셀 구조) */
     .archive-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -207,6 +198,10 @@
         h1 {
             font-size: 22px;
         }
+        .section-header-wrap {
+            flex-direction: column;
+            align-items: flex-start;
+        }
         .issue-header {
             font-size: 12px;
             padding: 5px 2px;
@@ -225,7 +220,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v4.1</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v4.2</span></h1>
     </div>
 
     <div class="intro-box">
@@ -237,9 +232,9 @@
         </ol>
     </div>
 
-    <!-- 2순위: 화면 상단 고정 퀵 내비게이션 (Sticky Jump Bar) -->
-    <div class="sticky-jump-bar">
-        <div class="jump-title">⚡ 빠른 구간 이동</div>
+    <!-- 소제목 줄 및 텍스트 없는 빠른 구간 이동 버튼 바 -->
+    <div class="section-header-wrap" id="section-1">
+        <h3>📋 회보 요약 및 교정 현황 (001~030호)</h3>
         <div class="jump-buttons">
             <a href="#section-1" class="jump-btn">01~30호</a>
             <a href="#section-31" class="jump-btn">31~60호</a>
@@ -250,8 +245,7 @@
         </div>
     </div>
 
-    <!-- 1순위: 권호별 범위 그룹화 (구간별 섹션 앵커) -->
-    <h3 id="section-1">📋 회보 요약 및 교정 현황 (001~030호)</h3>
+    <!-- 5행 6열 (총 30개 호수) 그리드 테이블 -->
     <div class="archive-grid">
         <!-- [001호] -->
         <div class="issue-unit">
@@ -308,13 +302,6 @@
         <div class="issue-unit inactive"><div class="issue-header">[028호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
         <div class="issue-unit inactive"><div class="issue-header">[029호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
         <div class="issue-unit inactive"><div class="issue-header">[030호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
-    </div>
-
-    <!-- 추후 31~60호 구간 확장용 앵커 섹션 미리 준비 -->
-    <h3 id="section-31">📋 회보 요약 및 교정 현황 (031~060호)</h3>
-    <div class="archive-grid">
-        <div class="issue-unit inactive"><div class="issue-header">[031호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
-        <!-- 추가 32~60호 셀 영역 확장 예정 -->
     </div>
 </body>
 </html>
