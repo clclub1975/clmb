@@ -1,4 +1,4 @@
-<!-- v7.5: 구글 시트(CSV) 연동으로 PDF 및 요약 슬라이드(#slide=id.p시리즈) 동적 매핑 완벽 구현 -->
+<!-- v7.6: 구글 시트 PDF 연동 + v6.4 방식의 공통 슬라이드 기본 URL 및 회차별 슬라이드 페이지(#slide=id.p시리즈) 동적 매핑 복원 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -279,7 +279,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.5</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.6</span></h1>
     </div>
 
     <div class="intro-box">
@@ -320,32 +320,17 @@
         // 구글 시트 웹에 게시된 CSV 링크
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 로드하여 PDF 및 슬라이드 링크를 동적으로 매핑하는 함수
+        // 구글 시트 CSV 데이터를 로드하여 PDF 연동 및 v6.4 슬라이드 페이지 규칙(#slide=id.p시리즈) 적용
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
                 const csvText = await response.text();
                 
                 const rows = csvText.split('\n');
-                let baseSlideUrl = '';
 
-                // 1단계: 시트 내에서 요약 슬라이드 기본 URL(예: R3_CL_슬라이드.pptx 링크) 탐색
-                rows.forEach(row => {
-                    const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
-                    cols.forEach(col => {
-                        if (col.includes('presentation/d/') && col.startsWith('http')) {
-                            // 슬라이드 기본 주소 추출 (기존 slide 파라미터가 있다면 제거)
-                            baseSlideUrl = col.split('#')[0];
-                        }
-                    });
-                });
+                // v6.4에서 검증된 공통 구글 슬라이드 기본 URL 지정
+                const commonSlideBaseUrl = "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true";
 
-                // 만약 시트 내에 별도 슬라이드 링크가 없다면 v6.4에 쓰인 공통 주소 사용
-                if (!baseSlideUrl) {
-                    baseSlideUrl = "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true";
-                }
-
-                // 2단계: 각 행별로 회보 번호와 PDF 링크를 추출하여 sampleData에 등록
                 rows.forEach(row => {
                     const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
                     
@@ -357,19 +342,17 @@
                         if (match) {
                             foundNum = parseInt(match[1], 10);
                         }
-                        // PDF 드라이브 링크 (presentation이 아닌 drive 파일 링크인 경우)
                         if (col.startsWith('http') && !col.includes('presentation/d/')) {
                             foundPdfUrl = col;
                         }
                     });
 
                     if (foundNum !== null && foundPdfUrl !== '') {
-                        // v6.4 방식과 동일하게 각 호수별 슬라이드 페이지(#slide=id.p시리즈) 동적 결합
-                        // (예: 1호 -> p1, 2호 -> p2, ...)
-                        const slideSummaryUrl = `${baseSlideUrl}#slide=id.p${foundNum}`;
+                        // 각 호수별 슬라이드 페이지 신택스 조합 (예: 1호 -> #slide=id.p1)
+                        const slideSummaryUrl = `${commonSlideBaseUrl}#slide=id.p${foundNum}`;
 
                         window.sampleData[foundNum] = {
-                            title: `1984년 ${Math.ceil(foundNum / 12)}월호`, // 필요시 연도/월 포맷 유지
+                            title: `1984년 ${Math.ceil(foundNum / 12)}월호`, 
                             pdf: foundPdfUrl,
                             summary: slideSummaryUrl
                         };
