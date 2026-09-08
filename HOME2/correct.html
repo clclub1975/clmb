@@ -1,4 +1,4 @@
-<!-- v5.4: 190권 전체 데이터 연동 세로 스크롤 테이블 구현 및 래퍼 그림자/라운드 제거 -->
+<!-- v5.5: 5열 7행 구조 고정 및 CSS scroll-snap을 활용한 카드 단위 세로 스크롤 스냅핑 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,16 +114,16 @@
         border-color: #0366d6;
     }
     
-    /* PC 전용 세로 스크롤 래퍼 (라운드, 그림자 제거 및 깔끔한 테두리 적용) */
+    /* PC 전용 세로 스크롤 래퍼 및 카드 단위 스냅 정렬 적용 */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 520px; /* 190권 전체를 스크롤하며 볼 수 있도록 높이 확보 */
+        max-height: 450px; /* 5열 7행 구조에서 행 단위로 깔끔하게 보이도록 높이 최적화 */
         overflow-y: scroll;
-        scroll-snap-type: y mandatory;
+        scroll-snap-type: y mandatory; /* 스크롤 시 카드 단위로 정확히 걸리도록 강제 */
         border: 2px solid #4a5568;
-        border-radius: 0; /* 라운드 제거 */
+        border-radius: 0;
         background-color: #ffffff;
         margin-bottom: 40px;
     }
@@ -153,14 +153,14 @@
         border-left: none;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 */
+    /* 단위 셀 외곽선 및 스냅 정렬 (셀 중간에 걸치지 않고 딱 맞아떨어짐) */
     .issue-unit {
         border-right: 2px solid #4a5568;
         border-bottom: 2px solid #4a5568;
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
-        scroll-snap-align: start;
+        scroll-snap-align: start; 
     }
     
     /* 단위 셀 헤더 */
@@ -271,7 +271,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.4</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.5</span></h1>
     </div>
 
     <div class="intro-box">
@@ -297,7 +297,7 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- PC 세로 스크롤 래퍼 (190권 전체 포함) -->
+    <!-- PC 세로 스크롤 래퍼 (5열 7행 레이아웃 및 단위 셀 스냅 적용) -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
         <!-- 5열 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
@@ -357,7 +357,6 @@
             const wrapper = document.getElementById('scroll-wrapper');
 
             if (targetElement && wrapper) {
-                // 래퍼 내부에서 해당 카드의 상대 위치로 스크롤 이동
                 const topPos = targetElement.offsetTop - wrapper.offsetTop;
                 wrapper.scrollTo({
                     top: topPos,
