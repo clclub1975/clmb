@@ -1,4 +1,4 @@
-<!-- v7.17: 단위 셀 내부 1행과 2행의 픽셀 높이를 고정하여 오차 누적 및 마지막 행 잘림 현상 완벽 해결 -->
+<!-- v7.18: 1행과 2행의 높이를 모두 정수 38px로 통일하여 서브픽셀 렌더링 오차 및 마지막 행 잘림 현상 완벽 해결 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.17: 7행 * 75px = 정확히 525px + 테두리 4px 포함한 529px 고정) */
+    /* PC 세로 스크롤 래퍼 (v7.18: 7행 * 76px = 532px + 테두리 4px 포함한 536px 고정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 529px;
+        max-height: 536px;
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -156,13 +156,13 @@
         margin: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (v7.17: 1행과 2행의 높이를 각각 37.5px로 엄격히 고정하여 오차 방지) */
+    /* 단위 셀 외곽선 및 스냅 정렬 (v7.18: 1행과 2행의 높이를 각각 38px씩 정수로 고정하여 총 76px 구성) */
     .issue-unit {
         background-color: #ffffff;
         display: grid;
-        grid-template-rows: 37.5px 37.5px;
+        grid-template-rows: 38px 38px;
         scroll-snap-align: start;
-        height: 75px;
+        height: 76px;
         box-sizing: border-box;
         border: none;
     }
@@ -176,7 +176,7 @@
         padding: 0 5px;
         border-bottom: 1px solid #d1d5db;
         font-size: 13.5px;
-        height: 37.5px;
+        height: 38px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
@@ -195,7 +195,7 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         background-color: #ffffff;
-        height: 37.5px;
+        height: 38px;
         box-sizing: border-box;
     }
     
@@ -204,7 +204,7 @@
         text-align: center;
         padding: 0 5px;
         font-size: 13.5px;
-        height: 37.5px;
+        height: 38px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
@@ -297,7 +297,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.17</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.18</span></h1>
     </div>
 
     <div class="intro-box">
