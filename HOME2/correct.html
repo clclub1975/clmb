@@ -1,4 +1,4 @@
-<!-- v5.5: 5열 7행 구조 고정 및 CSS scroll-snap을 활용한 카드 단위 세로 스크롤 스냅핑 적용 -->
+<!-- v6.1: 모바일 환경에서 PC와 동일한 세로 스크롤 및 카드 단위 스냅핑(Scroll Snap) 인터랙션 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 전용 세로 스크롤 래퍼 및 카드 단위 스냅 정렬 적용 */
+    /* PC 세로 스크롤 래퍼 및 카드 단위 스냅 정렬 적용 */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 450px; /* 5열 7행 구조에서 행 단위로 깔끔하게 보이도록 높이 최적화 */
+        max-height: 450px; /* PC 환경 세로 높이 제한 */
         overflow-y: scroll;
         scroll-snap-type: y mandatory; /* 스크롤 시 카드 단위로 정확히 걸리도록 강제 */
         border: 2px solid #4a5568;
@@ -160,7 +160,7 @@
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
-        scroll-snap-align: start; 
+        scroll-snap-align: start;
     }
     
     /* 단위 셀 헤더 */
@@ -231,18 +231,18 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
-        /* 모바일 환경: 세로 스크롤 제한 해제 및 기본 스타일 복원 */
+        /* v6.1: 모바일 환경에서도 PC처럼 세로 높이를 제한하고 스크롤바와 카드 단위 스냅(Scroll Snap) 적용 */
         .archive-scroll-wrapper {
-            max-height: none;
-            overflow-y: visible;
-            scroll-snap-type: none;
-            border: none;
-            background-color: transparent;
+            max-height: 420px; /* 스마트폰 화면에서 4~5행 정도가 보이도록 세로 높이 지정 */
+            overflow-y: scroll; /* 스크롤바 활성화 */
+            scroll-snap-type: y mandatory; /* 모바일 터치 스크롤 시 행 단위로 툭툭 끊겨서 정렬 */
+            border: 2px solid #4a5568;
+            background-color: #ffffff;
         }
         .archive-grid {
-            border-top: 2px solid #4a5568;
-            border-left: 2px solid #4a5568;
-            grid-template-columns: repeat(3, 1fr);
+            border-top: none;
+            border-left: none;
+            grid-template-columns: repeat(3, 1fr); /* 모바일은 3열 구조 유지 */
         }
         h1 {
             font-size: 22px;
@@ -271,7 +271,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.5</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v6.1</span></h1>
     </div>
 
     <div class="intro-box">
@@ -297,9 +297,9 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- PC 세로 스크롤 래퍼 (5열 7행 레이아웃 및 단위 셀 스냅 적용) -->
+    <!-- 세로 스크롤 래퍼 (PC 코드 유지 및 모바일 스크롤 바 적용) -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
-        <!-- 5열 그리드 테이블 -->
+        <!-- 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
             <!-- 자바스크립트에 의해 1~190호 전체 카드가 동적 생성됩니다 -->
         </div>
