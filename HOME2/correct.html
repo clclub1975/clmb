@@ -1,4 +1,4 @@
-<!-- v7.9: 모바일 환경에서 3열 10행 그리드 레이아웃 고정 및 스타일 최적화 완료 -->
+<!-- v7.10: 모바일 환경 3열 10행 그리드 뷰(30칸 기준 높이 설정) 및 반응형 레이아웃 최적화 완료 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,7 +114,7 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 */
+    /* PC 세로 스크롤 래퍼 (PC 기준 7행 크기 고정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
@@ -237,14 +237,14 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
+        /* v7.10: 모바일 환경에서 3열 10행(약 30칸, 총 높이 650px 전후)이 한 화면에 잘 보이도록 스크롤 높이 확장 */
         .archive-scroll-wrapper {
-            max-height: 420px;
+            max-height: 650px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             border: 2px solid #4a5568;
             background-color: #4a5568;
         }
-        /* v7.9: 모바일 환경에서 3열 배치로 강제 설정 (3열 10행 스크롤 뷰 구현) */
         .archive-grid {
             grid-template-columns: repeat(3, 1fr);
             gap: 2px;
@@ -280,7 +280,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.9</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.10</span></h1>
     </div>
 
     <div class="intro-box">
