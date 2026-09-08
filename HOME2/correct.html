@@ -1,4 +1,4 @@
-<!-- v7.7: 구글 시트 PDF 동적 연동 및 v6.4의 정확한 슬라이드 페이지 해시(#slide=id.p시리즈) 매핑 복원 -->
+<!-- v7.8: 구글 시트 PDF 연동 + 유효 파일 등장 순번(인덱스) 기반의 슬라이드 페이지 번호 동적 매핑 완벽 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -279,7 +279,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.7</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.8</span></h1>
     </div>
 
     <div class="intro-box">
@@ -320,16 +320,17 @@
         // 구글 시트 웹에 게시된 CSV 링크
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 로드하여 PDF 연동 및 v6.4와 동일한 슬라이드 페이지 해시 규격 적용
+        // 구글 시트 CSV 데이터를 로드하여 유효 파일 등장 순번(인덱스) 기반 슬라이드 페이지 매핑 수행
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
                 const csvText = await response.text();
                 
                 const rows = csvText.split('\n');
-
-                // v6.4에서 직접 검증되어 사용되었던 정확한 공통 구글 슬라이드 기본 URL
                 const exactBaseSlideUrl = "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true";
+
+                // 1단계: 유효한 PDF 항목들만 먼저 추출하여 리스트업 (등장 순서 보존)
+                let validIssues = [];
 
                 rows.forEach(row => {
                     const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
@@ -348,16 +349,22 @@
                     });
 
                     if (foundNum !== null && foundPdfUrl !== '') {
-                        // v6.4 코드와 완전히 일치하는 해시 포맷 조합
-                        const slideSummaryUrl = `${exactBaseSlideUrl}#slide=id.p${foundNum}`;
-
-                        window.sampleData[foundNum] = {
-                            title: `1984년 ${Math.ceil(foundNum / 12)}월호`, 
-                            pdf: foundPdfUrl,
-                            summary: slideSummaryUrl
-                        };
+                        validIssues.push({ num: foundNum, pdf: foundPdfUrl });
                     }
                 });
+
+                // 2단계: 유효 파일들이 리스트에 등장하는 순서(index + 1)를 슬라이드 페이지 번호로 지정
+                validIssues.forEach((item, index) => {
+                    const slidePageIndex = index + 1; // 1번째 유효 파일은 슬라이드 1페이지, 2번째는 2페이지...
+                    const slideSummaryUrl = `${exactBaseSlideUrl}#slide=id.p${slidePageIndex}`;
+
+                    window.sampleData[item.num] = {
+                        title: `1984년 ${Math.ceil(item.num / 12)}월호`, 
+                        pdf: item.pdf,
+                        summary: slideSummaryUrl
+                    };
+                });
+
             } catch (error) {
                 console.error("구글 시트 연동 데이터를 불러오는 중 오류 발생:", error);
             }
