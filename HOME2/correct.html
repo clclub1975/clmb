@@ -1,4 +1,4 @@
-<!-- v7.24: v4.6의 안정적인 패딩 및 레이아웃을 기반으로 고정 높이 스크롤 박스 및 7행 구조를 적용하여 잘림 현상 해결 -->
+<!-- v7.25: 스크롤 래퍼의 max-height를 정확히 7행 크기에 맞춘 485px로 조정하여 7.5행 노출 현상 완벽 해결 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.24: 스크롤 박스 유지 및 7행 기준 여유 높이 565px 부여로 잘림 원천 방지) */
+    /* PC 세로 스크롤 래퍼 (v7.25: max-height를 485px로 정밀 조절하여 정확히 7행만 노출) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 565px;
+        max-height: 485px;
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -143,7 +143,7 @@
         background-color: #64748b;
     }
 
-    /* CSS Grid 기반 5열 배치 레이아웃 (PC) */
+    /* CSS Grid 기반 기본 5열 배치 레이아웃 (PC) */
     .archive-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -266,7 +266,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.24</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.25</span></h1>
     </div>
 
     <div class="intro-box">
@@ -292,7 +292,7 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 (스크롤 박스 필수 유지) -->
+    <!-- 세로 스크롤 래퍼 -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
         <!-- 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
