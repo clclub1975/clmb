@@ -1,4 +1,4 @@
-<!-- v5.7: 5열 7행 고정 레이아웃 및 세로 스크롤바 인근 일체형 상하 스크롤 제어 버튼 배치 -->
+<!-- v5.8: 스크롤바와 상하 화살표 버튼의 중심축 일치 정렬 디자인 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -134,9 +134,9 @@
         background-color: #ffffff;
     }
     
-    /* 스크롤바 스타일 */
+    /* 스크롤바 스타일 (너비 14px로 지정하여 화살표와 중심축 완벽 일치) */
     .archive-scroll-wrapper::-webkit-scrollbar {
-        width: 12px;
+        width: 14px;
     }
     .archive-scroll-wrapper::-webkit-scrollbar-track {
         background: #f1f5f9;
@@ -150,16 +150,16 @@
         background-color: #64748b;
     }
 
-    /* 상하 스크롤 제어 화살표 버튼 스타일 (스크롤바 영역 내부 우측 상단/하단에 밀착 배치) */
+    /* 상하 스크롤 제어 화살표 버튼 스타일 (스크롤바 너비 14px와 정확히 일치시켜 중심축 정렬) */
     .scroll-arrow-btn {
         position: absolute;
-        right: 1px; /* 스크롤바 트랙 위에 걸치도록 위치 조정 */
-        width: 11px;
-        height: 18px;
+        right: 0; /* 스크롤바 트랙 중앙에 완벽히 얹히도록 정렬 */
+        width: 14px;
+        height: 16px;
         background-color: #e2e8f0;
         border: 1px solid #cbd5e1;
         color: #475569;
-        font-size: 9px;
+        font-size: 8.5px;
         font-weight: bold;
         display: flex;
         align-items: center;
@@ -174,10 +174,10 @@
         border-color: #0366d6;
     }
     .scroll-up-btn {
-        top: 3px; /* 래퍼 상단 테두리 바로 안쪽 */
+        top: 2px; /* 래퍼 상단 테두리 안쪽 정렬 */
     }
     .scroll-down-btn {
-        bottom: 3px; /* 래퍼 하단 테두리 바로 안쪽 */
+        bottom: 2px; /* 래퍼 하단 테두리 안쪽 정렬 */
     }
 
     /* CSS Grid 기반 5열 배치 레이아웃 */
@@ -321,7 +321,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.7</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.8</span></h1>
     </div>
 
     <div class="intro-box">
@@ -347,9 +347,9 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- PC 세로 스크롤 래퍼 및 스크롤바 일체형 상하 화살표 컨테이너 -->
+    <!-- PC 세로 스크롤 래퍼 및 스크롤바와 중심축이 일치하는 상하 화살표 컨테이너 -->
     <div class="table-outer-container">
-        <!-- 상단 화살표 버튼 (스크롤바 트랙 상단에 얹음) -->
+        <!-- 상단 화살표 버튼 (스크롤바와 중심축 완벽 일치) -->
         <button class="scroll-arrow-btn scroll-up-btn" onclick="scrollLine(-1)" title="위로 한 줄 이동">▲</button>
         
         <div class="archive-scroll-wrapper" id="scroll-wrapper">
@@ -359,7 +359,7 @@
             </div>
         </div>
 
-        <!-- 하단 화살표 버튼 (스크롤바 트랙 하단에 얹음) -->
+        <!-- 하단 화살표 버튼 (스크롤바와 중심축 완벽 일치) -->
         <button class="scroll-arrow-btn scroll-down-btn" onclick="scrollLine(1)" title="아래로 한 줄 이동">▼</button>
     </div>
 
