@@ -1,4 +1,4 @@
-<!-- v7.6: 구글 시트 PDF 연동 + v6.4 방식의 공통 슬라이드 기본 URL 및 회차별 슬라이드 페이지(#slide=id.p시리즈) 동적 매핑 복원 적용 -->
+<!-- v7.7: 구글 시트 PDF 동적 연동 및 v6.4의 정확한 슬라이드 페이지 해시(#slide=id.p시리즈) 매핑 복원 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -279,7 +279,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.6</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.7</span></h1>
     </div>
 
     <div class="intro-box">
@@ -320,7 +320,7 @@
         // 구글 시트 웹에 게시된 CSV 링크
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 로드하여 PDF 연동 및 v6.4 슬라이드 페이지 규칙(#slide=id.p시리즈) 적용
+        // 구글 시트 CSV 데이터를 로드하여 PDF 연동 및 v6.4와 동일한 슬라이드 페이지 해시 규격 적용
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
@@ -328,8 +328,8 @@
                 
                 const rows = csvText.split('\n');
 
-                // v6.4에서 검증된 공통 구글 슬라이드 기본 URL 지정
-                const commonSlideBaseUrl = "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true";
+                // v6.4에서 직접 검증되어 사용되었던 정확한 공통 구글 슬라이드 기본 URL
+                const exactBaseSlideUrl = "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true";
 
                 rows.forEach(row => {
                     const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
@@ -348,8 +348,8 @@
                     });
 
                     if (foundNum !== null && foundPdfUrl !== '') {
-                        // 각 호수별 슬라이드 페이지 신택스 조합 (예: 1호 -> #slide=id.p1)
-                        const slideSummaryUrl = `${commonSlideBaseUrl}#slide=id.p${foundNum}`;
+                        // v6.4 코드와 완전히 일치하는 해시 포맷 조합
+                        const slideSummaryUrl = `${exactBaseSlideUrl}#slide=id.p${foundNum}`;
 
                         window.sampleData[foundNum] = {
                             title: `1984년 ${Math.ceil(foundNum / 12)}월호`, 
