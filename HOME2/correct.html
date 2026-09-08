@@ -1,4 +1,4 @@
-<!-- v5.10: 스크롤바와 상하 화살표 버튼의 수평 중심축 및 크기 완벽 일치 정렬, 테이블 전체 하단 테두리 굵기 정규화 적용 -->
+<!-- v5.11: 스크롤바와 상하 화살표 버튼의 수평 중심축 및 박스 모델 완벽 정렬, 화살표 침범 현상 해소 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -132,9 +132,10 @@
         border: 2px solid #4a5568;
         border-radius: 0;
         background-color: #ffffff;
+        box-sizing: border-box;
     }
     
-    /* 스크롤바 스타일 (너비를 16px로 통일) */
+    /* 스크롤바 스타일 (너비를 16px로 지정) */
     .archive-scroll-wrapper::-webkit-scrollbar {
         width: 16px;
     }
@@ -150,11 +151,11 @@
         background-color: #64748b;
     }
 
-    /* 상하 스크롤 제어 화살표 버튼 스타일 (스크롤바 너비 16px와 정확히 일치시켜 센터링) */
+    /* 상하 스크롤 제어 화살표 버튼 스타일 (박스 모델 및 패딩/보더 정밀 보정으로 침범 원인 차단) */
     .scroll-arrow-btn {
         position: absolute;
-        right: 2px; /* 래퍼 테두리 두께(2px) 안쪽으로 정렬하여 스크롤바 트랙과 완벽히 일치 */
-        width: 16px; /* 스크롤바 웹킷 너비(16px)와 동일하게 지정 */
+        right: 2px; /* 래퍼 테두리(2px) 안쪽으로 정확히 고정 */
+        width: 16px; /* 스크롤바 트랙 너비와 일치 */
         height: 16px;
         background-color: #e2e8f0;
         border: 1px solid #cbd5e1;
@@ -166,6 +167,9 @@
         justify-content: center;
         cursor: pointer;
         z-index: 10;
+        box-sizing: border-box; /* 패딩 및 보더가 너비에 포함되도록 강제 */
+        padding: 0;
+        margin: 0;
         transition: background-color 0.15s, color 0.15s;
     }
     .scroll-arrow-btn:hover {
@@ -174,10 +178,10 @@
         border-color: #0366d6;
     }
     .scroll-up-btn {
-        top: 2px; /* 상단 테두리 바로 안쪽에 위치 */
+        top: 2px; /* 상단 테두리 안쪽에 정확히 안착 */
     }
     .scroll-down-btn {
-        bottom: 2px; /* 하단 테두리 바로 안쪽에 위치 */
+        bottom: 2px; /* 하단 테두리 안쪽에 정확히 안착 */
     }
 
     /* CSS Grid 기반 5열 배치 레이아웃 */
@@ -326,7 +330,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.10</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.11</span></h1>
     </div>
 
     <div class="intro-box">
@@ -354,7 +358,7 @@
 
     <!-- PC 세로 스크롤 래퍼 및 스크롤바 중심축과 화살표가 완벽 일치하는 컨테이너 -->
     <div class="table-outer-container">
-        <!-- 상단 화살표 버튼 (스크롤바 중심축 완벽 정렬) -->
+        <!-- 상단 화살표 버튼 (박스 모델 보정으로 테이블 침범 원인 차단) -->
         <button class="scroll-arrow-btn scroll-up-btn" onclick="scrollLine(-1)" title="위로 한 줄 이동">▲</button>
         
         <div class="archive-scroll-wrapper" id="scroll-wrapper">
@@ -364,16 +368,16 @@
             </div>
         </div>
 
-        <!-- 하단 화살표 버튼 (스크롤바 중심축 완벽 정렬) -->
+        <!-- 하단 화살표 버튼 (박스 모델 보정으로 테이블 침범 원인 차단) -->
         <button class="scroll-arrow-btn scroll-down-btn" onclick="scrollLine(1)" title="아래로 한 줄 이동">▼</button>
     </div>
 
     <script>
         // 샘플 데이터 (001~003호 실제 링크 데이터)
         const sampleData = {
-            1: { title: "1984년 3월호", pdf: "https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing", summary: "url?id=2" },
+            1: { title: "1984년 3월호", pdf: "https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing", summary: "https://clclub1975.github.io/clmb/HOME2/url?id=2" },
             2: { title: "1984년 4월호", pdf: "https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" },
-            3: { title: "1984년 5월호", pdf: "https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing", summary: "url?id=6" }
+            3: { title: "1984년 5월호", pdf: "https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing", summary: "https://clclub1975.github.io/clmb/HOME2/url?id=6" }
         };
 
         // 1부터 190호까지 전체 카드를 생성하여 렌더링
