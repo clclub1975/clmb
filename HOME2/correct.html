@@ -1,4 +1,4 @@
-<!-- v7.31: 자바스크립트 높이 계산 방식을 완전히 걷어내고, CSS 고정 높이와 투명 패딩 구조로 7행 높이와 스크롤 박스를 완벽히 일치시킴 -->
+<!-- v7.32: 자바스크립트 높이 계산을 전면 폐기하고, CSS에서 셀 높이를 절대값(76px)으로 고정하여 7행(536px)을 완벽히 통제 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.31: 셀 높이를 기준으로 정확히 7행 크기만 노출되도록 고정 설정) */
+    /* PC 세로 스크롤 래퍼 (v7.32: 셀 높이 76px * 7행 + 상하 테두리 4px = 정확히 536px 고정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 486px; /* 69.4px(행 평균 높이) * 7행 + 상하 테두리(4px) = 정확히 7행 규격 */
+        max-height: 536px; /* CSS 수학적 배수로 박스 크기 영구 고정 */
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -155,7 +155,7 @@
         padding: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (v4.6 기반 패딩 유지) */
+    /* 단위 셀 외곽선 및 스냅 정렬 */
     .issue-unit {
         border-right: 2px solid #4a5568;
         border-bottom: 2px solid #4a5568;
@@ -163,6 +163,9 @@
         display: flex;
         flex-direction: column;
         scroll-snap-align: start;
+        height: 76px; /* [핵심] Y축 고무줄 현상 원천 차단: 각 셀의 높이를 절대 픽셀로 못박음 */
+        box-sizing: border-box; /* 76px 안에 패딩과 2px 하단 테두리를 모두 포함시킴 */
+        overflow: hidden; /* 내부 텍스트가 76px을 초과해도 그리드가 깨지지 않도록 방어 */
     }
     
     /* 단위 셀 헤더 */
@@ -174,6 +177,9 @@
         padding: 7px 5px;
         border-bottom: 1px solid #d1d5db;
         font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     /* 비활성 단위 셀 헤더 스타일 */
@@ -188,12 +194,13 @@
         grid-template-columns: repeat(3, 1fr);
         background-color: #ffffff;
         flex-grow: 1;
+        align-items: center; /* 텍스트를 세로 중앙에 고정 */
     }
     
     /* 내부 서브 셀 낱개 */
     .sub-cell {
         text-align: center;
-        padding: 7px 5px;
+        padding: 0 5px;
         font-size: 14px;
     }
     .sub-cell:not(:last-child) {
@@ -233,11 +240,15 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
+        /* 모바일: 셀 높이 64px * 7행 + 상하 테두리 4px = 452px */
         .archive-scroll-wrapper {
-            max-height: 482px !important;
+            max-height: 452px !important;
         }
         .archive-grid {
             grid-template-columns: repeat(3, 1fr);
+        }
+        .issue-unit {
+            height: 64px; /* 모바일용 고정 높이 축소 */
         }
         h1 {
             font-size: 22px;
@@ -248,7 +259,7 @@
         }
         .sub-cell {
             font-size: 12px;
-            padding: 5px 2px;
+            padding: 0 2px;
         }
         .jump-bar-container {
             gap: 2px;
@@ -266,7 +277,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.31</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.32</span></h1>
     </div>
 
     <div class="intro-box">
@@ -292,9 +303,8 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 -->
+    <!-- 세로 스크롤 래퍼 (JavaScript 조작 없이 CSS로 7행 완벽 통제) -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
-        <!-- 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
             <!-- 자바스크립트에 의해 동적으로 렌더링됩니다 -->
         </div>
@@ -307,7 +317,7 @@
         // 구글 시트 웹에 게시된 CSV 링크
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 로드하여 유효 파일 등장 순번(인덱스) 기반 슬라이드 페이지 매핑 수행
+        // 구글 시트 CSV 데이터를 로드
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
@@ -355,7 +365,7 @@
             }
         }
 
-        // 1부터 192호까지 전체 카드를 생성하여 렌더링 (불필요한 동적 높이 계산 로직 제거)
+        // 1부터 192호까지 전체 카드를 생성하여 렌더링 (불안정한 JS 높이 계산 전면 삭제)
         async function renderAllIssues() {
             await loadPathDataFromSheet();
 
@@ -406,7 +416,7 @@
             }
         }
 
-        // 빠른 이동 버튼 클릭 시 해당 번호의 카드로 부드럽게 스크롤 이동
+        // 빠른 이동 버튼 클릭 시 부드럽게 스크롤 이동
         function scrollToSection(startNum, btnElement) {
             document.querySelectorAll('.jump-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
@@ -426,7 +436,7 @@
             document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${String(startNum).padStart(2, '0')}~${String(endNum).padStart(2, '0')})`;
         }
 
-        // 페이지 최초 진입 시 동적 렌더링 실행
+        // 페이지 최초 진입 시 실행
         window.onload = function() {
             renderAllIssues();
         };
