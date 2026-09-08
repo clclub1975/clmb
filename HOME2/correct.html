@@ -1,4 +1,4 @@
-<!-- v4.3: 빠른 이동 버튼을 소제목 아래와 테이블 사이에 배치하고 테이블 왼쪽 정렬, 버튼 클릭 시 해당 구간 호수 데이터로 동적 전환되도록 JavaScript 인터랙션 구현 -->
+<!-- v4.4: 151~190호 구간을 151~180호와 181~190호로 분리하여 총 7개의 빠른 구간 이동 버튼으로 개편 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -215,7 +215,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v4.3</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v4.4</span></h1>
     </div>
 
     <div class="intro-box">
@@ -230,14 +230,15 @@
     <!-- 소제목 -->
     <h3 id="section-title">📋 회보 요약 및 교정 현황 (001~030호)</h3>
 
-    <!-- 빠른 구간 이동 버튼 바 (테이블과 왼쪽 정렬 일치) -->
+    <!-- 빠른 구간 이동 버튼 바 (테이블과 왼쪽 정렬 일치, 151~180 / 181~190 분리) -->
     <div class="jump-bar-container">
         <button class="jump-btn active" onclick="switchSection(1, 30, '001~030호', this)">01~30호</button>
         <button class="jump-btn" onclick="switchSection(31, 60, '031~060호', this)">31~60호</button>
         <button class="jump-btn" onclick="switchSection(61, 90, '061~090호', this)">61~90호</button>
         <button class="jump-btn" onclick="switchSection(91, 120, '091~120호', this)">91~120호</button>
         <button class="jump-btn" onclick="switchSection(121, 150, '121~150호', this)">121~150호</button>
-        <button class="jump-btn" onclick="switchSection(151, 190, '151~190호', this)">151~190호</button>
+        <button class="jump-btn" onclick="switchSection(151, 180, '151~180호', this)">151~180호</button>
+        <button class="jump-btn" onclick="switchSection(181, 190, '181~190호', this)">181~190호</button>
     </div>
 
     <!-- 5행 6열 (총 30개 호수) 동적 그리드 테이블 -->
@@ -264,8 +265,7 @@
             const gridContainer = document.getElementById('archive-grid');
             gridContainer.innerHTML = '';
 
-            // 해당 구간의 30개 슬롯 생성 (마지막 구간 151~190호는 40권이므로 40개 슬롯 처리)
-            const count = (endNum - startNum + 1);
+            // 항상 30개 슬롯(5행 6열)을 생성하여 레이아웃 고정 유지
             for (let i = 0; i < 30; i++) {
                 const issueNum = startNum + i;
                 const unitDiv = document.createElement('div');
@@ -273,7 +273,7 @@
                 if (issueNum <= endNum) {
                     const issueInfo = sampleData[issueNum];
                     if (issueInfo) {
-                        // 데이터가 존재하는 활성 호수 (예: 1~3호)
+                        // 데이터가 존재하는 활성 호수
                         unitDiv.className = 'issue-unit';
                         unitDiv.innerHTML = `
                             <div class="issue-header">[${String(issueNum).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
@@ -296,7 +296,7 @@
                         `;
                     }
                 } else {
-                    // 151~190호처럼 30개 칸을 채우고 남는 빈 자리 처리 (필요시)
+                    // 181~190호처럼 30개 칸을 채우고 남는 빈 자리 처리 (총 10개 채워지고 나머지 20개는 빈 칸)
                     unitDiv.className = 'issue-unit inactive';
                     unitDiv.innerHTML = `
                         <div class="issue-header">-</div>
