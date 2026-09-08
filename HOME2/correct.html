@@ -1,4 +1,4 @@
-<!-- v7.29: 스크롤 박스 높이를 개별 카드 누적 대신 그리드 컨테이너(archive-grid) 실제 높이에 정확히 일치시켜 짤림 방지 -->
+<!-- v7.30: 렌더링 주기를 보장하는 타이머 적용 및 안전장치를 통해 스크롤 박스와 7행 테이블 높이 완벽 일치 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,7 +114,7 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.29: JS로 전체 그리드의 7행 분량 실제 높이를 주입) */
+    /* PC 세로 스크롤 래퍼 (v7.30) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
@@ -265,7 +265,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.29</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.30</span></h1>
     </div>
 
     <div class="intro-box">
@@ -404,8 +404,8 @@
                 gridContainer.appendChild(unitDiv);
             }
 
-            // [핵심 로직 v7.29] 7행 높이에 해당하는 카드들의 누적 높이를 정확히 계산하여 스크롤 박스에 적용
-            adjustScrollBoxHeight();
+            // [핵심 로직 v7.30] 브라우저가 화면에 완전히 그리기를 마친 후 높이를 계산하도록 지연 실행(setTimeout) 보장
+            setTimeout(adjustScrollBoxHeight, 50);
         }
 
         // 7행 분량의 높이만 정확히 계산하여 스크롤 박스의 max-height로 설정하는 함수
@@ -420,7 +420,7 @@
                     }
                     
                     const wrapper = document.getElementById('scroll-wrapper');
-                    if (wrapper) {
+                    if (wrapper && exactHeight > 0) {
                         // 행과 행 사이의 하단 테두리 두께(2px * 6개 = 12px) 및 스크롤 박스 테두리를 고려하여 정확히 7행 높이 설정
                         wrapper.style.maxHeight = (exactHeight + 12) + 'px';
                     }
