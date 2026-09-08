@@ -1,4 +1,4 @@
-<!-- v7.23: 1행과 2행의 폰트 및 단락 형식을 완전히 일치시키고 001~003호 포함 전체 7행 테이블 구조 적용 -->
+<!-- v6.4: PC 환경 마지막 행 밑변 중첩 현상 완벽 해결 (CSS Grid 컨테이너 및 래퍼 테두리 통합 정돈) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,18 +114,17 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.23: 7행 * 76px = 532px + 테두리 4px 포함한 536px 고정) */
+    /* PC 세로 스크롤 래퍼 (테두리를 래퍼에만 주고 내부 그리드 외곽선 중첩을 방지하도록 구조 재조정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 536px;
+        max-height: 525px; /* 5열 7행 구조에 맞춘 높이 설정 (약 75px * 7행) */
         overflow-y: scroll;
-        scroll-snap-type: y mandatory;
-        box-sizing: border-box;
+        scroll-snap-type: y mandatory; /* 스크롤 시 카드 단위로 정확히 걸리도록 강제 */
         border: 2px solid #4a5568;
         border-radius: 0;
-        background-color: #4a5568;
+        background-color: #4a5568; /* 갭 사이로 배경색이 비칠 때 선 색상과 일치시키기 위함 */
         margin-bottom: 40px;
     }
     
@@ -145,43 +144,37 @@
         background-color: #64748b;
     }
 
-    /* CSS Grid 기반 기본 5열 배치 레이아웃 (PC) */
+    /* CSS Grid 기반 5열 배치 레이아웃 (셀 간격을 2px로 주어 테두리 겹침 현상 원천 차단) */
     .archive-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        gap: 2px;
-        background-color: #4a5568;
+        gap: 2px; /* 셀 사이에 2px 간격을 주어 테두리가 중첩되어 두꺼워지는 현상 방지 */
+        background-color: #4a5568; /* 간격 사이로 보이는 배경색을 테두리 색상으로 통일 */
         border: none;
         padding: 0;
         margin: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (v7.23: 1행과 2행 각각 38px, 총 76px 구성) */
+    /* 단위 셀 외곽선 및 스냅 정렬 */
     .issue-unit {
         background-color: #ffffff;
-        display: grid;
-        grid-template-rows: 38px 38px;
+        display: flex;
+        flex-direction: column;
         scroll-snap-align: start;
-        height: 76px;
+        height: 75px; /* 행 높이 고정으로 7행 구조 완벽 고정 */
         box-sizing: border-box;
-        border: none;
+        border: none; /* 개별 보더 대신 갭(gap)으로 선 표현 */
     }
     
-    /* 단위 셀 헤더 (1행: 폰트 및 단락 서식을 2행과 완전히 동기화) */
+    /* 단위 셀 헤더 */
     .issue-header {
         background-color: #f6f8fa;
-        color: #2b3137;
-        font-weight: 500;
+        color: #1a1a1a;
+        font-weight: 600;
         text-align: center;
-        padding: 0 5px;
+        padding: 5px 5px;
         border-bottom: 1px solid #d1d5db;
         font-size: 13.5px;
-        height: 38px;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
     }
     
     /* 비활성 단위 셀 헤더 스타일 */
@@ -195,22 +188,17 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         background-color: #ffffff;
-        height: 38px;
-        box-sizing: border-box;
+        flex-grow: 1;
     }
     
-    /* 내부 서브 셀 낱개 (2행: 1행과 동일한 폰트/단락 형식 적용) */
+    /* 내부 서브 셀 낱개 */
     .sub-cell {
         text-align: center;
-        padding: 0 5px;
+        padding: 5px 5px;
         font-size: 13.5px;
-        font-weight: 500;
-        height: 38px;
-        box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow: hidden;
     }
     .sub-cell:not(:last-child) {
         border-right: 1px solid #d1d5db;
@@ -249,38 +237,32 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
+        /* v6.4: 모바일 환경에서도 동일하게 세로 스크롤 및 간격 기반 그리드 적용 */
         .archive-scroll-wrapper {
-            max-height: 482px;
+            max-height: 420px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
-            box-sizing: border-box;
             border: 2px solid #4a5568;
             background-color: #4a5568;
         }
         .archive-grid {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 1fr); /* 모바일은 3열 구조 유지 */
             gap: 2px;
             background-color: #4a5568;
         }
         .issue-unit {
-            height: 46px;
-            grid-template-rows: 23px 23px;
-        }
-        .issue-header {
-            height: 23px;
-            font-size: 11.5px;
-            padding: 0 2px;
-        }
-        .issue-body {
-            height: 23px;
-        }
-        .sub-cell {
-            height: 23px;
-            font-size: 11.5px;
-            padding: 0 2px;
+            height: auto;
         }
         h1 {
             font-size: 22px;
+        }
+        .issue-header {
+            font-size: 12px;
+            padding: 5px 2px;
+        }
+        .sub-cell {
+            font-size: 12px;
+            padding: 5px 2px;
         }
         .jump-bar-container {
             gap: 2px;
@@ -298,7 +280,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.23</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v6.4</span></h1>
     </div>
 
     <div class="intro-box">
@@ -306,7 +288,7 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 요약(슬라이드)을 보는데 활용될 수도 있습니다.</li>
-            <li>현재는 구글 시트와 동적 연동되어 190권 전권의 현황 및 요약 슬라이드가 반영됩니다.</li>
+            <li>현재는 샘플 회보 30권(001~030호)이 게시되어 있으며, 향후 190권 전권을 모두 게시할 예정입니다.</li>
         </ol>
     </div>
 
@@ -324,100 +306,50 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 -->
+    <!-- 세로 스크롤 래퍼 (5열 7행 구조 고정 및 테두리 겹침 완벽 해결) -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
         <!-- 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
-            <!-- 자바스크립트에 의해 동적으로 렌더링됩니다 -->
+            <!-- 자바스크립트에 의해 1~190호 전체 및 빈칸을 포함한 35칸(5열 7행 단위 그리드)이 렌더링됩니다 -->
         </div>
     </div>
 
     <script>
-        // 전역 객체 저장소
-        window.sampleData = {};
+        // 샘플 데이터 (001~003호 실제 링크 데이터)
+        const sampleData = {
+            1: { title: "1984년 3월호", pdf: "https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" },
+            2: { title: "1984년 4월호", pdf: "https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" },
+            3: { title: "1984년 5월호", pdf: "https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" }
+        };
 
-        // 구글 시트 웹에 게시된 CSV 링크
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
-
-        // 구글 시트 CSV 데이터를 로드하여 유효 파일 등장 순번(인덱스) 기반 슬라이드 페이지 매핑 수행
-        async function loadPathDataFromSheet() {
-            try {
-                const response = await fetch(csvUrl);
-                const csvText = await response.text();
-                
-                const rows = csvText.split('\n');
-                const exactBaseSlideUrl = "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true";
-
-                let validIssues = [];
-
-                rows.forEach(row => {
-                    const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
-                    
-                    let foundNum = null;
-                    let foundPdfUrl = '';
-
-                    cols.forEach(col => {
-                        const match = col.match(/(?:통권)?(\d+)호/);
-                        if (match) {
-                            foundNum = parseInt(match[1], 10);
-                        }
-                        if (col.startsWith('http') && !col.includes('presentation/d/')) {
-                            foundPdfUrl = col;
-                        }
-                    });
-
-                    if (foundNum !== null && foundPdfUrl !== '') {
-                        validIssues.push({ num: foundNum, pdf: foundPdfUrl });
-                    }
-                });
-
-                validIssues.forEach((item, index) => {
-                    const slidePageIndex = index + 1;
-                    const slideSummaryUrl = `${exactBaseSlideUrl}#slide=id.p${slidePageIndex}`;
-
-                    window.sampleData[item.num] = {
-                        title: `1984년 ${Math.ceil(item.num / 12)}월호`, 
-                        pdf: item.pdf,
-                        summary: slideSummaryUrl
-                    };
-                });
-
-            } catch (error) {
-                console.error("구글 시트 연동 데이터를 불러오는 중 오류 발생:", error);
-            }
-        }
-
-        // 1부터 192호까지 전체 카드를 생성하여 렌더링 (3열 배치를 깔끔하게 채우기 위한 192 슬롯 구성)
-        async function renderAllIssues() {
-            await loadPathDataFromSheet();
-
+        // 1부터 190호까지 전체 카드를 생성하여 렌더링 (5열 7행 구조에 맞춰 총 195칸을 채워 레이아웃 균형 유지)
+        function renderAllIssues() {
             const gridContainer = document.getElementById('archive-grid');
             gridContainer.innerHTML = '';
 
-            for (let i = 1; i <= 192; i++) {
+            // 5열 7행 그리드 구조(35칸 단위)를 완벽하게 맞추기 위해 195번(5의 배수이자 190 이상)까지 슬롯 생성
+            for (let i = 1; i <= 195; i++) {
                 const unitDiv = document.createElement('div');
                 if (i <= 190) {
                     unitDiv.id = `issue-${i}`;
                 }
 
                 if (i <= 190) {
-                    const issueInfo = window.sampleData[i];
+                    const issueInfo = sampleData[i];
                     if (issueInfo) {
                         unitDiv.className = 'issue-unit';
-                        
-                        // 요청하신 대로 1행에는 호수 및 월호 텍스트를 제거하고 공백 처리, 2행(sub-cell)은 모두 '-' 처리
                         unitDiv.innerHTML = `
-                            <div class="issue-header">-</div>
+                            <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                             <div class="issue-body">
-                                <div class="sub-cell"><span class="empty-cell">-</span></div>
-                                <div class="sub-cell"><span class="empty-cell">-</span></div>
-                                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                                <div class="sub-cell"><a href="${issueInfo.pdf}" target="_blank">회보</a></div>
+                                <div class="sub-cell"><a href="${issueInfo.summary}" target="_blank">요약</a></div>
+                                <div class="sub-cell"><span class="plain-text">교정</span></div>
                             </div>
                         `;
                     } else {
                         unitDiv.className = 'issue-unit inactive';
                         unitDiv.innerHTML = `
-                            <div class="issue-header">-</div>
+                            <div class="issue-header">[${String(i).padStart(3, '0')}호]</div>
                             <div class="issue-body">
                                 <div class="sub-cell"><span class="empty-cell">-</span></div>
                                 <div class="sub-cell"><span class="empty-cell">-</span></div>
@@ -426,6 +358,7 @@
                         `;
                     }
                 } else {
+                    // 190호 이후 195호까지는 5열 7행 배치를 완벽하게 채우기 위한 빈 패딩 슬롯
                     unitDiv.className = 'issue-unit inactive';
                     unitDiv.innerHTML = `
                         <div class="issue-header">-</div>
@@ -456,14 +389,16 @@
                 });
             }
 
+            // 소제목 업데이트
             const endNum = Math.min(startNum + 29, 190);
             document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${String(startNum).padStart(2, '0')}~${String(endNum).padStart(2, '0')})`;
         }
 
-        // 페이지 최초 진입 시 동적 렌더링 실행
+        // 페이지 최초 진입 시 전체 렌더링
         window.onload = function() {
             renderAllIssues();
         };
     </script>
 </body>
 </html>
+ 
