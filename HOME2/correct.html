@@ -1,4 +1,4 @@
-<!-- v7.13: 단위 셀 내부 1행(헤더)과 2행(바디)의 높이를 일치시켜 균형 잡힌 카드 디자인 완성 -->
+<!-- v7.14: PC 환경 세로 스크롤 영역(max-height) 및 내부 박스 여유 공간 최적화 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,14 +114,15 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 */
+    /* PC 세로 스크롤 래퍼 (v7.14: 테두리와 렌더링 오차를 고려하여 max-height를 532px로 여유 확보) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 525px;
+        max-height: 532px;
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
+        box-sizing: border-box;
         border: 2px solid #4a5568;
         border-radius: 0;
         background-color: #4a5568;
@@ -155,11 +156,11 @@
         margin: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (1:1 비율 균등 분할을 위해 Grid 구조 적용) */
+    /* 단위 셀 외곽선 및 스냅 정렬 (1:1 비율 균등 분할) */
     .issue-unit {
         background-color: #ffffff;
         display: grid;
-        grid-template-rows: 1fr 1fr; /* 1행(헤더)과 2행(바디)의 높이를 정확히 50:50으로 동일하게 설정 */
+        grid-template-rows: 1fr 1fr;
         scroll-snap-align: start;
         height: 75px;
         box-sizing: border-box;
@@ -245,6 +246,7 @@
             max-height: 482px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
+            box-sizing: border-box;
             border: 2px solid #4a5568;
             background-color: #4a5568;
         }
@@ -254,7 +256,7 @@
             background-color: #4a5568;
         }
         .issue-unit {
-            height: 46px; /* 모바일 행 높이 고정 및 내부 1행/2행 50:50 분할 유지 */
+            height: 46px;
         }
         h1 {
             font-size: 22px;
@@ -283,7 +285,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.13</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.14</span></h1>
     </div>
 
     <div class="intro-box">
