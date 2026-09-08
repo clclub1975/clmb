@@ -1,4 +1,4 @@
-<!-- v6.4: PC 환경 마지막 행 밑변 중첩 현상 완벽 해결 (CSS Grid 컨테이너 및 래퍼 테두리 통합 정돈) -->
+<!-- v4.6: 모바일 화면에서 빠른 이동 버튼 그룹의 총 가로폭이 테이블 크기를 초과하지 않도록 버튼 패딩 및 폰트 사이즈 조정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -73,7 +73,7 @@
         margin-bottom: 12px;
     }
 
-    /* 빠른 구간 이동 버튼 그룹 */
+    /* 빠른 구간 이동 버튼 그룹 (테이블과 동일한 max-width 및 간격 최적화) */
     .jump-bar-container {
         max-width: 75%;
         margin-left: auto;
@@ -114,56 +114,26 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (테두리를 래퍼에만 주고 내부 그리드 외곽선 중첩을 방지하도록 구조 재조정) */
-    .archive-scroll-wrapper {
-        max-width: 75%;
-        margin-left: auto;
-        margin-right: auto;
-        max-height: 525px; /* 5열 7행 구조에 맞춘 높이 설정 (약 75px * 7행) */
-        overflow-y: scroll;
-        scroll-snap-type: y mandatory; /* 스크롤 시 카드 단위로 정확히 걸리도록 강제 */
-        border: 2px solid #4a5568;
-        border-radius: 0;
-        background-color: #4a5568; /* 갭 사이로 배경색이 비칠 때 선 색상과 일치시키기 위함 */
-        margin-bottom: 40px;
-    }
-    
-    /* 스크롤바 스타일 */
-    .archive-scroll-wrapper::-webkit-scrollbar {
-        width: 10px;
-    }
-    .archive-scroll-wrapper::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-left: 1px solid #cbd5e1;
-    }
-    .archive-scroll-wrapper::-webkit-scrollbar-thumb {
-        background-color: #94a3b8;
-        border-radius: 0;
-    }
-    .archive-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-        background-color: #64748b;
-    }
-
-    /* CSS Grid 기반 5열 배치 레이아웃 (셀 간격을 2px로 주어 테두리 겹침 현상 원천 차단) */
+    /* CSS Grid 기반 5열 배치 레이아웃 (5행 6열 = 총 30개 셀 구조, 좌측 정렬) */
     .archive-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        gap: 2px; /* 셀 사이에 2px 간격을 주어 테두리가 중첩되어 두꺼워지는 현상 방지 */
-        background-color: #4a5568; /* 간격 사이로 보이는 배경색을 테두리 색상으로 통일 */
-        border: none;
-        padding: 0;
-        margin: 0;
+        gap: 0;
+        border-top: 2px solid #4a5568;
+        border-left: 2px solid #4a5568;
+        margin-bottom: 40px;
+        max-width: 75%;
+        margin-left: auto;
+        margin-right: auto;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 */
+    /* 단위 셀 외곽선 */
     .issue-unit {
+        border-right: 2px solid #4a5568;
+        border-bottom: 2px solid #4a5568;
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
-        scroll-snap-align: start;
-        height: 75px; /* 행 높이 고정으로 7행 구조 완벽 고정 */
-        box-sizing: border-box;
-        border: none; /* 개별 보더 대신 갭(gap)으로 선 표현 */
     }
     
     /* 단위 셀 헤더 */
@@ -172,9 +142,9 @@
         color: #1a1a1a;
         font-weight: 600;
         text-align: center;
-        padding: 5px 5px;
+        padding: 7px 5px;
         border-bottom: 1px solid #d1d5db;
-        font-size: 13.5px;
+        font-size: 14px;
     }
     
     /* 비활성 단위 셀 헤더 스타일 */
@@ -194,11 +164,8 @@
     /* 내부 서브 셀 낱개 */
     .sub-cell {
         text-align: center;
-        padding: 5px 5px;
-        font-size: 13.5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 7px 5px;
+        font-size: 14px;
     }
     .sub-cell:not(:last-child) {
         border-right: 1px solid #d1d5db;
@@ -222,7 +189,7 @@
 
     /* 반응형 디자인 (미디어 쿼리 적용) */
     @media (max-width: 1024px) {
-        .archive-scroll-wrapper, .jump-bar-container {
+        .archive-grid, .jump-bar-container {
             max-width: 90%;
         }
         .archive-grid {
@@ -234,24 +201,11 @@
         body {
             padding: 12px;
         }
-        .archive-scroll-wrapper, .jump-bar-container {
+        .archive-grid, .jump-bar-container {
             max-width: 100%;
         }
-        /* v6.4: 모바일 환경에서도 동일하게 세로 스크롤 및 간격 기반 그리드 적용 */
-        .archive-scroll-wrapper {
-            max-height: 420px;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            border: 2px solid #4a5568;
-            background-color: #4a5568;
-        }
         .archive-grid {
-            grid-template-columns: repeat(3, 1fr); /* 모바일은 3열 구조 유지 */
-            gap: 2px;
-            background-color: #4a5568;
-        }
-        .issue-unit {
-            height: auto;
+            grid-template-columns: repeat(3, 1fr);
         }
         h1 {
             font-size: 22px;
@@ -264,9 +218,10 @@
             font-size: 12px;
             padding: 5px 2px;
         }
+        /* 스마트폰에서 버튼 개별 폭과 여백을 줄여 테이블 영역(100%)을 넘지 않도록 맞춤 */
         .jump-bar-container {
             gap: 2px;
-            justify-content: space-between;
+            justify-content: space-between; /* 테이블 전체 가로폭에 맞춰 균등 분할 정렬 */
         }
         .jump-btn {
             padding: 4px 5px;
@@ -280,7 +235,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v6.4</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v4.6</span></h1>
     </div>
 
     <div class="intro-box">
@@ -293,53 +248,55 @@
     </div>
 
     <!-- 소제목 -->
-    <h3 id="section-title">📋 회보 요약 및 교정 현황 (전체 001~190호)</h3>
+    <h3 id="section-title">📋 회보 요약 및 교정 현황 (01~30)</h3>
 
-    <!-- 빠른 구간 이동 버튼 바 -->
+    <!-- 빠른 구간 이동 버튼 바 (모바일 가로폭 맞춤 최적화) -->
     <div class="jump-bar-container">
-        <button class="jump-btn active" onclick="scrollToSection(1, this)">01~30</button>
-        <button class="jump-btn" onclick="scrollToSection(31, this)">31~60</button>
-        <button class="jump-btn" onclick="scrollToSection(61, this)">61~90</button>
-        <button class="jump-btn" onclick="scrollToSection(91, this)">91~120</button>
-        <button class="jump-btn" onclick="scrollToSection(121, this)">121~150</button>
-        <button class="jump-btn" onclick="scrollToSection(151, this)">151~180</button>
-        <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
+        <button class="jump-btn active" onclick="switchSection(1, 30, '01~30', this)">01~30</button>
+        <button class="jump-btn" onclick="switchSection(31, 60, '31~60', this)">31~60</button>
+        <button class="jump-btn" onclick="switchSection(61, 90, '61~90', this)">61~90</button>
+        <button class="jump-btn" onclick="switchSection(91, 120, '91~120', this)">91~120</button>
+        <button class="jump-btn" onclick="switchSection(121, 150, '121~150', this)">121~150</button>
+        <button class="jump-btn" onclick="switchSection(151, 180, '151~180', this)">151~180</button>
+        <button class="jump-btn" onclick="switchSection(181, 190, '181~190', this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 (5열 7행 구조 고정 및 테두리 겹침 완벽 해결) -->
-    <div class="archive-scroll-wrapper" id="scroll-wrapper">
-        <!-- 그리드 테이블 -->
-        <div class="archive-grid" id="archive-grid">
-            <!-- 자바스크립트에 의해 1~190호 전체 및 빈칸을 포함한 35칸(5열 7행 단위 그리드)이 렌더링됩니다 -->
-        </div>
+    <!-- 5행 6열 (총 30개 호수) 동적 그리드 테이블 -->
+    <div class="archive-grid" id="archive-grid">
+        <!-- 자바스크립트에 의해 동적으로 30개의 카드가 렌더링됩니다 -->
     </div>
 
     <script>
-        // 샘플 데이터 (001~003호 실제 링크 데이터)
+        // 샘플 데이터 (001~003호 실제 링크 데이터, 나머지는 미게시 상태)
         const sampleData = {
             1: { title: "1984년 3월호", pdf: "https://drive.google.com/file/d/1Qub8xr3JITKMdBc2tCZyMdUPBFNYfI3A/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p1" },
             2: { title: "1984년 4월호", pdf: "https://drive.google.com/file/d/1pBsf8c2pIGYLqshh63RtWPSPUEffJj7d/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p2" },
             3: { title: "1984년 5월호", pdf: "https://drive.google.com/file/d/1JWlSGSxXdhbmM-k7E2ruXqCbP_kLBbVk/view?usp=sharing", summary: "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true#slide=id.p3" }
         };
 
-        // 1부터 190호까지 전체 카드를 생성하여 렌더링 (5열 7행 구조에 맞춰 총 195칸을 채워 레이아웃 균형 유지)
-        function renderAllIssues() {
+        function switchSection(startNum, endNum, rangeStr, btnElement) {
+            // 버튼 활성 상태 스타일 변경
+            document.querySelectorAll('.jump-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            // 소제목 업데이트
+            document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${rangeStr})`;
+
             const gridContainer = document.getElementById('archive-grid');
             gridContainer.innerHTML = '';
 
-            // 5열 7행 그리드 구조(35칸 단위)를 완벽하게 맞추기 위해 195번(5의 배수이자 190 이상)까지 슬롯 생성
-            for (let i = 1; i <= 195; i++) {
+            // 항상 30개 슬롯(5행 6열)을 생성하여 레이아웃 고정 유지
+            for (let i = 0; i < 30; i++) {
+                const issueNum = startNum + i;
                 const unitDiv = document.createElement('div');
-                if (i <= 190) {
-                    unitDiv.id = `issue-${i}`;
-                }
 
-                if (i <= 190) {
-                    const issueInfo = sampleData[i];
+                if (issueNum <= endNum) {
+                    const issueInfo = sampleData[issueNum];
                     if (issueInfo) {
+                        // 데이터가 존재하는 활성 호수
                         unitDiv.className = 'issue-unit';
                         unitDiv.innerHTML = `
-                            <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
+                            <div class="issue-header">[${String(issueNum).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                             <div class="issue-body">
                                 <div class="sub-cell"><a href="${issueInfo.pdf}" target="_blank">회보</a></div>
                                 <div class="sub-cell"><a href="${issueInfo.summary}" target="_blank">요약</a></div>
@@ -347,9 +304,10 @@
                             </div>
                         `;
                     } else {
+                        // 번호는 해당되지만 아직 데이터가 없는 호수
                         unitDiv.className = 'issue-unit inactive';
                         unitDiv.innerHTML = `
-                            <div class="issue-header">[${String(i).padStart(3, '0')}호]</div>
+                            <div class="issue-header">[${String(issueNum).padStart(3, '0')}호]</div>
                             <div class="issue-body">
                                 <div class="sub-cell"><span class="empty-cell">-</span></div>
                                 <div class="sub-cell"><span class="empty-cell">-</span></div>
@@ -358,7 +316,7 @@
                         `;
                     }
                 } else {
-                    // 190호 이후 195호까지는 5열 7행 배치를 완벽하게 채우기 위한 빈 패딩 슬롯
+                    // 181~190호처럼 30개 칸을 채우고 남는 빈 자리 처리
                     unitDiv.className = 'issue-unit inactive';
                     unitDiv.innerHTML = `
                         <div class="issue-header">-</div>
@@ -373,30 +331,9 @@
             }
         }
 
-        // 빠른 이동 버튼 클릭 시 해당 번호의 카드로 부드럽게 스크롤 이동
-        function scrollToSection(startNum, btnElement) {
-            document.querySelectorAll('.jump-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            const targetElement = document.getElementById(`issue-${startNum}`);
-            const wrapper = document.getElementById('scroll-wrapper');
-
-            if (targetElement && wrapper) {
-                const topPos = targetElement.offsetTop - wrapper.offsetTop;
-                wrapper.scrollTo({
-                    top: topPos,
-                    behavior: 'smooth'
-                });
-            }
-
-            // 소제목 업데이트
-            const endNum = Math.min(startNum + 29, 190);
-            document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${String(startNum).padStart(2, '0')}~${String(endNum).padStart(2, '0')})`;
-        }
-
-        // 페이지 최초 진입 시 전체 렌더링
+        // 페이지 최초 진입 시 01~30호 기본 로드
         window.onload = function() {
-            renderAllIssues();
+            switchSection(1, 30, '01~30', document.querySelector('.jump-btn'));
         };
     </script>
 </body>
