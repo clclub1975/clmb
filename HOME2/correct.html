@@ -1,4 +1,4 @@
-<!-- v5.1: PC 환경 세로 스크롤 테이블 및 모바일 터치 스크롤 테이블 인터랙션 적용 -->
+<!-- v5.2: v4.6 베이스 복원 및 PC 환경 전용 세로 스크롤 테이블 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,7 +114,7 @@
         border-color: #0366d6;
     }
     
-    /* PC 환경: 테이블 영역에 세로 스크롤 및 카드 단위 스냅핑(Snap) 적용 */
+    /* PC 전용 세로 스크롤 래퍼 (테이블 영역에 세로 스크롤바 및 카드 단위 스냅핑 적용) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
@@ -149,7 +149,7 @@
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
-        scroll-snap-align: start; /* 세로 스크롤 시 카드 단위로 탁탁 끊겨서 정렬됨 */
+        scroll-snap-align: start; /* 세로 스크롤 시 카드 단위 단위 셀로 끊어져 정렬됨 */
     }
     
     /* 단위 셀 헤더 */
@@ -220,7 +220,7 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
-        /* 스마트폰 환경: 세로 제한(max-height)을 풀고 테이블 자체를 자연스럽게 터치 스크롤하도록 허용 */
+        /* v4.6 기반 유지: 모바일에서는 세로 스크롤 제한을 해제하여 기존처럼 편하게 볼 수 있도록 설정 */
         .archive-scroll-wrapper {
             max-height: none;
             overflow-y: visible;
@@ -257,7 +257,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.1</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.2</span></h1>
     </div>
 
     <div class="intro-box">
@@ -283,7 +283,7 @@
         <button class="jump-btn" onclick="switchSection(181, 190, '181~190', this)">181~190</button>
     </div>
 
-    <!-- PC 세로 스크롤 및 모바일 터치 스크롤을 감싸는 래퍼 -->
+    <!-- PC 전용 세로 스크롤 래퍼 -->
     <div class="archive-scroll-wrapper">
         <!-- 5행 6열 (총 30개 호수) 동적 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
