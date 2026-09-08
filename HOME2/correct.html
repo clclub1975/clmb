@@ -1,4 +1,4 @@
-<!-- v3.2: 커밋용 리마크 표기 삭제 및 모바일 3열 그리드 레이아웃 최적화 -->
+<!-- v4.1: 1순위(구간별 탭 버튼) 및 2순위(상단 고정 퀵 내비게이션 바) 인덱스 탐색 구조 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -46,10 +46,10 @@
         border: 1px solid #e1e4e8;
         border-radius: 8px;
         padding: 20px 24px;
-        margin-bottom: 35px;
+        margin-bottom: 25px;
         color: #586069;
         font-size: 14.5px;
-    } 
+    }
     .intro-box h4 {
         margin: 0 0 12px 0;
         color: #24292e;
@@ -65,26 +65,70 @@
     .intro-box li:last-child {
         margin-bottom: 0;
     }
+
+    /* 2순위: 빠른 이동 퀵 내비게이션 (상단 고정 Sticky Jump Bar) */
+    .sticky-jump-bar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        border-bottom: 1px solid #e1e4e8;
+        padding: 12px 0;
+        margin-bottom: 25px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .jump-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #586069;
+        margin-bottom: 6px;
+    }
+    .jump-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .jump-btn {
+        padding: 5px 12px;
+        background-color: #f6f8fa;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        color: #0366d6;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background-color 0.15s, color 0.15s;
+    }
+    .jump-btn:hover {
+        background-color: #0366d6;
+        color: #ffffff;
+        border-color: #0366d6;
+    }
+
     h3 {
         font-size: 18px;
         color: #24292e;
         margin-bottom: 20px;
+        scroll-margin-top: 80px; /* 스티키 바에 제목이 가리지 않도록 여백 확보 */
     }
     
-    /* CSS Grid 기반 5열 배치 레이아웃 (반응형 및 가로폭 최적화) */
+    /* CSS Grid 기반 5열 배치 레이아웃 */
     .archive-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 0;
         border-top: 2px solid #4a5568;
         border-left: 2px solid #4a5568;
-        margin-bottom: 30px;
+        margin-bottom: 40px;
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
     }
     
-    /* 단위 셀(하나의 호수 덩어리) 외곽선 굵게 처리 */
+    /* 단위 셀 외곽선 */
     .issue-unit {
         border-right: 2px solid #4a5568;
         border-bottom: 2px solid #4a5568;
@@ -93,7 +137,7 @@
         flex-direction: column;
     }
     
-    /* 단위 셀 - 1행 헤더 */
+    /* 단위 셀 헤더 */
     .issue-header {
         background-color: #f6f8fa;
         color: #1a1a1a;
@@ -110,7 +154,7 @@
         background-color: #fafbfc;
     }
     
-    /* 단위 셀 - 2행 서브 셀 컨테이너 (3열 구조) */
+    /* 단위 셀 서브 셀 컨테이너 (3열 구조) */
     .issue-body {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -128,7 +172,7 @@
         border-right: 1px solid #d1d5db;
     }
     
-    /* 하이퍼링크 및 텍스트 표준 스타일 */
+    /* 하이퍼링크 및 텍스트 스타일 */
     .sub-cell a {
         text-decoration: underline;
         color: #0366d6;
@@ -156,7 +200,6 @@
         body {
             padding: 12px;
         }
-        /* 스마트폰 가독성과 공간 최적화를 위해 3열 구조로 강제 고정 */
         .archive-grid {
             max-width: 100%;
             grid-template-columns: repeat(3, 1fr);
@@ -172,13 +215,17 @@
             font-size: 12px;
             padding: 5px 2px;
         }
+        .jump-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
     }
 </style>
 </head>
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v3.2</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v4.1</span></h1>
     </div>
 
     <div class="intro-box">
@@ -190,8 +237,21 @@
         </ol>
     </div>
 
-    <h3>📋 회보 요약 및 교정 현황</h3>
-    <!-- 001~030호 단위 셀 아카이브 그리드 -->
+    <!-- 2순위: 화면 상단 고정 퀵 내비게이션 (Sticky Jump Bar) -->
+    <div class="sticky-jump-bar">
+        <div class="jump-title">⚡ 빠른 구간 이동</div>
+        <div class="jump-buttons">
+            <a href="#section-1" class="jump-btn">01~30호</a>
+            <a href="#section-31" class="jump-btn">31~60호</a>
+            <a href="#section-61" class="jump-btn">61~90호</a>
+            <a href="#section-91" class="jump-btn">91~120호</a>
+            <a href="#section-121" class="jump-btn">121~150호</a>
+            <a href="#section-151" class="jump-btn">151~190호</a>
+        </div>
+    </div>
+
+    <!-- 1순위: 권호별 범위 그룹화 (구간별 섹션 앵커) -->
+    <h3 id="section-1">📋 회보 요약 및 교정 현황 (001~030호)</h3>
     <div class="archive-grid">
         <!-- [001호] -->
         <div class="issue-unit">
@@ -248,6 +308,13 @@
         <div class="issue-unit inactive"><div class="issue-header">[028호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
         <div class="issue-unit inactive"><div class="issue-header">[029호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
         <div class="issue-unit inactive"><div class="issue-header">[030호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
+    </div>
+
+    <!-- 추후 31~60호 구간 확장용 앵커 섹션 미리 준비 -->
+    <h3 id="section-31">📋 회보 요약 및 교정 현황 (031~060호)</h3>
+    <div class="archive-grid">
+        <div class="issue-unit inactive"><div class="issue-header">[031호]</div><div class="issue-body"><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div><div class="sub-cell"><span class="empty-cell">-</span></div></div></div>
+        <!-- 추가 32~60호 셀 영역 확장 예정 -->
     </div>
 </body>
 </html>
