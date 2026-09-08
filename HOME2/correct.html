@@ -1,4 +1,4 @@
-<!-- v7.32: 자바스크립트 높이 계산을 전면 폐기하고, CSS에서 셀 높이를 절대값(76px)으로 고정하여 7행(536px)을 완벽히 통제 -->
+<!-- v7.33: 모바일(768px 이하) 환경에서 3열 10행이 정확히 노출되도록 스크롤 박스 높이(644px) 고정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.32: 셀 높이 76px * 7행 + 상하 테두리 4px = 정확히 536px 고정) */
+    /* PC 세로 스크롤 래퍼 (셀 높이 76px * 7행 + 상하 테두리 4px = 정확히 536px 고정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 536px; /* CSS 수학적 배수로 박스 크기 영구 고정 */
+        max-height: 536px;
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -240,9 +240,9 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
-        /* 모바일: 셀 높이 64px * 7행 + 상하 테두리 4px = 452px */
+        /* 모바일: 셀 높이 64px * 10행 + 상하 테두리 4px = 644px */
         .archive-scroll-wrapper {
-            max-height: 452px !important;
+            max-height: 644px !important;
         }
         .archive-grid {
             grid-template-columns: repeat(3, 1fr);
@@ -277,7 +277,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.32</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.33</span></h1>
     </div>
 
     <div class="intro-box">
@@ -303,7 +303,7 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 (JavaScript 조작 없이 CSS로 7행 완벽 통제) -->
+    <!-- 세로 스크롤 래퍼 (JavaScript 조작 없이 CSS로 완벽 통제) -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
         <div class="archive-grid" id="archive-grid">
             <!-- 자바스크립트에 의해 동적으로 렌더링됩니다 -->
