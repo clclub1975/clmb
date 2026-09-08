@@ -1,4 +1,4 @@
-<!-- v7.1: 구글 시트(CSV) 연동을 통한 동적 PDF 링크 로드 적용 -->
+<!-- v7.2: 구글 시트(CSV) 연동 및 001호 등 번호 추출 정규식 보완 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -279,7 +279,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.1</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.2</span></h1>
     </div>
 
     <div class="intro-box">
@@ -320,7 +320,7 @@
         // 구글 시트 웹에 게시된 CSV 링크
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 비동기로 불러와 파싱하는 함수
+        // 구글 시트 CSV 데이터를 비동기로 불러와 파싱하는 함수 (정규식 보완 적용)
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
@@ -329,21 +329,20 @@
                 const rows = csvText.split('\n');
                 
                 rows.forEach(row => {
-                    // 간단한 CSV 파싱 (따옴표 제거 및 콤마 분리)
                     const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
                     
                     if (cols.length >= 2 && cols[0]) {
-                        // "통권003호_OCR.pdf" 또는 파일명에서 호수 숫자 추출
-                        const match = cols[0].match(/(\d+)호/);
+                        // "통권001호", "001호" 등 다양한 형식에서 숫자를 안전하게 추출
+                        const match = cols[0].match(/(?:통권)?(\d+)호/);
                         if (match) {
                             const issueNum = parseInt(match[1], 10);
-                            const pdfUrl = cols[1]; // 구글 드라이브 링크
+                            const pdfUrl = cols[1]; // 구글 드라이브 공유 링크
                             
                             if (pdfUrl && pdfUrl.startsWith('http')) {
                                 sampleData[issueNum] = {
-                                    title: `1984년 ?월호`, // 필요에 따라 시트의 다른 열과 연동 가능
+                                    title: `1984년 ?월호`, 
                                     pdf: pdfUrl,
-                                    summary: "" // 요약 링크가 있을 경우 시트 데이터 구조에 맞춰 추가 가능
+                                    summary: "" 
                                 };
                             }
                         }
@@ -356,7 +355,6 @@
 
         // 1부터 190호까지 전체 카드를 생성하여 렌더링 (5열 7행 구조 유지)
         async function renderAllIssues() {
-            // 렌더링 전 시트 데이터 로드 대기
             await loadPathDataFromSheet();
 
             const gridContainer = document.getElementById('archive-grid');
