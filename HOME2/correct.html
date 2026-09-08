@@ -1,4 +1,4 @@
-<!-- v6.2: PC 환경 테이블 5열 7행(총 35칸) 구조 고정 적용 -->
+<!-- v6.3: PC 환경 5열 7행 테이블의 테두리 및 밑변 겹침 현상 원천 해결 (마지막 행 선 중복 제거) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -165,9 +165,9 @@
         box-sizing: border-box;
     }
 
-    /* 마지막 행 테두리 정규화 */
+    /* 마지막 행 테두리 중첩 현상 원천 차단 (래퍼 하단 테두리와 겹치지 않도록 조정) */
     .issue-unit.last-row {
-        border-bottom: 2px solid #4a5568 !important;
+        border-bottom: none !important;
     }
     
     /* 단위 셀 헤더 */
@@ -241,7 +241,7 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
-        /* v6.2: 모바일 환경에서도 세로 스크롤 및 스냅 적용 */
+        /* v6.3: 모바일 환경에서도 세로 스크롤 및 스냅 적용 */
         .archive-scroll-wrapper {
             max-height: 420px;
             overflow-y: scroll;
@@ -256,6 +256,10 @@
         }
         .issue-unit {
             height: auto;
+        }
+        /* 모바일에서는 마지막 행 하단 선 복원 */
+        .issue-unit.last-row {
+            border-bottom: 2px solid #4a5568 !important;
         }
         h1 {
             font-size: 22px;
@@ -284,7 +288,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v6.2</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v6.3</span></h1>
     </div>
 
     <div class="intro-box">
@@ -310,7 +314,7 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 (5열 7행 구조 고정) -->
+    <!-- 세로 스크롤 래퍼 (5열 7행 구조 고정 및 밑변 중첩 해결) -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
         <!-- 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
@@ -334,12 +338,11 @@
             // 5열 7행 그리드 구조(35칸 단위)를 완벽하게 맞추기 위해 195번(5의 배수이자 190 이상)까지 슬롯 생성
             for (let i = 1; i <= 195; i++) {
                 const unitDiv = document.createElement('div');
-                
                 if (i <= 190) {
                     unitDiv.id = `issue-${i}`;
                 }
 
-                // 마지막 행(186~190호 또는 그 이후 빈칸) 테두리 정규화
+                // 마지막 행(186~190호 또는 그 이후 빈칸) 테두리 정규화 (밑변 중첩 제거)
                 let className = 'issue-unit';
                 if (i > 185) {
                     className += ' last-row';
