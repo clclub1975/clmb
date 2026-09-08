@@ -1,4 +1,4 @@
-<!-- v5.2: v4.6 베이스 복원 및 PC 환경 전용 세로 스크롤 테이블 구현 -->
+<!-- v5.3: PC 환경 전용 세로 스크롤 바 및 스크롤 영역 시각적 명시 스타일 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,23 +114,34 @@
         border-color: #0366d6;
     }
     
-    /* PC 전용 세로 스크롤 래퍼 (테이블 영역에 세로 스크롤바 및 카드 단위 스냅핑 적용) */
+    /* PC 전용 세로 스크롤 래퍼 (스크롤바가 항상 보이도록 명시적 디자인 및 테두리 부여) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 520px; /* PC 화면에서 3~4행 정도만 보이고 세로 스크롤되도록 지정 */
-        overflow-y: auto;
+        max-height: 420px; /* 세로 높이를 약간 줄여서 스크롤바가 확실히 노출되도록 조정 */
+        overflow-y: scroll; /* auto 대신 scroll을 주어 스크롤바 영역을 항상 확보 */
         scroll-snap-type: y mandatory;
-        border-bottom: 2px solid #4a5568;
+        border: 2px solid #4a5568;
+        border-radius: 6px;
+        background-color: #f8fafc;
         margin-bottom: 40px;
     }
+    
+    /* 스크롤바 스타일 강제 가시화 */
     .archive-scroll-wrapper::-webkit-scrollbar {
-        width: 6px;
+        width: 10px;
+    }
+    .archive-scroll-wrapper::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-left: 1px solid #e2e8f0;
     }
     .archive-scroll-wrapper::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1;
-        border-radius: 3px;
+        background-color: #94a3b8;
+        border-radius: 5px;
+    }
+    .archive-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+        background-color: #64748b;
     }
 
     /* CSS Grid 기반 5열 배치 레이아웃 */
@@ -138,8 +149,8 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 0;
-        border-top: 2px solid #4a5568;
-        border-left: 2px solid #4a5568;
+        border-top: none; /* 래퍼 테두리와 중복되므로 제거 */
+        border-left: none;
     }
     
     /* 단위 셀 외곽선 및 스냅 정렬 */
@@ -149,7 +160,7 @@
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
-        scroll-snap-align: start; /* 세로 스크롤 시 카드 단위 단위 셀로 끊어져 정렬됨 */
+        scroll-snap-align: start;
     }
     
     /* 단위 셀 헤더 */
@@ -220,14 +231,17 @@
         .archive-scroll-wrapper, .jump-bar-container {
             max-width: 100%;
         }
-        /* v4.6 기반 유지: 모바일에서는 세로 스크롤 제한을 해제하여 기존처럼 편하게 볼 수 있도록 설정 */
+        /* 모바일 환경: 세로 스크롤 제한 해제 및 기본 스타일 복원 */
         .archive-scroll-wrapper {
             max-height: none;
             overflow-y: visible;
             scroll-snap-type: none;
-            border-bottom: none;
+            border: none;
+            background-color: transparent;
         }
         .archive-grid {
+            border-top: 2px solid #4a5568;
+            border-left: 2px solid #4a5568;
             grid-template-columns: repeat(3, 1fr);
         }
         h1 {
@@ -257,7 +271,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.2</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.3</span></h1>
     </div>
 
     <div class="intro-box">
@@ -283,7 +297,7 @@
         <button class="jump-btn" onclick="switchSection(181, 190, '181~190', this)">181~190</button>
     </div>
 
-    <!-- PC 전용 세로 스크롤 래퍼 -->
+    <!-- PC 전용 세로 스크롤 래퍼 (스크롤 바 확실히 노출) -->
     <div class="archive-scroll-wrapper">
         <!-- 5행 6열 (총 30개 호수) 동적 그리드 테이블 -->
         <div class="archive-grid" id="archive-grid">
