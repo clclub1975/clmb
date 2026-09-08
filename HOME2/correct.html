@@ -1,4 +1,4 @@
-<!-- v7.19: PC 환경 테이블 한 화면에 보여지는 행 수를 7행에서 6행으로 변경 -->
+<!-- v7.20: PC 환경 테이블 한 화면에 1행만 보이도록 수정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,12 +114,12 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.19: 6행 * 76px = 456px + 테두리 4px 포함한 460px 고정) */
+    /* PC 세로 스크롤 래퍼 (v7.20: 1행 * 76px = 76px + 테두리 4px 포함한 80px 고정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
         margin-right: auto;
-        max-height: 460px;
+        max-height: 80px;
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         box-sizing: border-box;
@@ -156,7 +156,7 @@
         margin: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (v7.19: 1행과 2행의 높이를 각각 38px씩 정수로 고정하여 총 76px 구성) */
+    /* 단위 셀 외곽선 및 스냅 정렬 (v7.20: 1행과 2행의 높이를 각각 38px씩 정수로 고정하여 총 76px 구성) */
     .issue-unit {
         background-color: #ffffff;
         display: grid;
@@ -297,7 +297,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.19</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.20</span></h1>
     </div>
 
     <div class="intro-box">
@@ -427,7 +427,7 @@
                     unitDiv.innerHTML = `
                         <div class="issue-header">-</div>
                         <div class="issue-body">
-                            <div class="sub-cell"><span class="empty-cell">-</span>px</div>
+                            <div class="sub-cell"><span class="empty-cell">-</span></div>
                             <div class="sub-cell"><span class="empty-cell">-</span></div>
                             <div class="sub-cell"><span class="empty-cell">-</span></div>
                         </div>
