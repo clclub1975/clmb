@@ -1,4 +1,4 @@
-<!-- v5.8: 스크롤바와 상하 화살표 버튼의 중심축 일치 정렬 디자인 적용 -->
+<!-- v5.9: 스크롤바와 상하 화살표 버튼의 수평 중심축 완벽 일치 정렬 및 테이블 하단 테두리 굵기 정규화 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -134,9 +134,9 @@
         background-color: #ffffff;
     }
     
-    /* 스크롤바 스타일 (너비 14px로 지정하여 화살표와 중심축 완벽 일치) */
+    /* 스크롤바 스타일 (너비 16px로 지정) */
     .archive-scroll-wrapper::-webkit-scrollbar {
-        width: 14px;
+        width: 16px;
     }
     .archive-scroll-wrapper::-webkit-scrollbar-track {
         background: #f1f5f9;
@@ -150,11 +150,11 @@
         background-color: #64748b;
     }
 
-    /* 상하 스크롤 제어 화살표 버튼 스타일 (스크롤바 너비 14px와 정확히 일치시켜 중심축 정렬) */
+    /* 상하 스크롤 제어 화살표 버튼 스타일 (스크롤바 트랙(16px) 내부에 정확히 센터링) */
     .scroll-arrow-btn {
         position: absolute;
-        right: 0; /* 스크롤바 트랙 중앙에 완벽히 얹히도록 정렬 */
-        width: 14px;
+        right: 0; /* 래퍼의 오른쪽 끝 기준 */
+        width: 16px; /* 스크롤바 너비와 동일하게 설정 */
         height: 16px;
         background-color: #e2e8f0;
         border: 1px solid #cbd5e1;
@@ -192,13 +192,18 @@
     /* 단위 셀 외곽선 및 스냅 정렬 (카드 단위로 정확히 걸림) */
     .issue-unit {
         border-right: 2px solid #4a5568;
-        border-bottom: 2px solid #4a5568;
+        border-bottom: 2px solid #4a5568; /* 기본 셀 하단 선 두께 */
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
         scroll-snap-align: start;
         height: 75px; /* 셀 높이 고정으로 스냅 정확도 극대화 */
         box-sizing: border-box;
+    }
+
+    /* 마지막 행의 셀들은 하단 테두리를 일반 선 두께(2px)와 동일하게 정규화 */
+    .issue-unit.last-row {
+        border-bottom: 2px solid #4a5568 !important;
     }
     
     /* 단위 셀 헤더 */
@@ -321,7 +326,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.8</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v5.9</span></h1>
     </div>
 
     <div class="intro-box">
@@ -347,9 +352,9 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- PC 세로 스크롤 래퍼 및 스크롤바와 중심축이 일치하는 상하 화살표 컨테이너 -->
+    <!-- PC 세로 스크롤 래퍼 및 스크롤바와 중심축이 완벽 일치하는 상하 화살표 컨테이너 -->
     <div class="table-outer-container">
-        <!-- 상단 화살표 버튼 (스크롤바와 중심축 완벽 일치) -->
+        <!-- 상단 화살표 버튼 (중심축 완벽 일치) -->
         <button class="scroll-arrow-btn scroll-up-btn" onclick="scrollLine(-1)" title="위로 한 줄 이동">▲</button>
         
         <div class="archive-scroll-wrapper" id="scroll-wrapper">
@@ -359,7 +364,7 @@
             </div>
         </div>
 
-        <!-- 하단 화살표 버튼 (스크롤바와 중심축 완벽 일치) -->
+        <!-- 하단 화살표 버튼 (중심축 완벽 일치) -->
         <button class="scroll-arrow-btn scroll-down-btn" onclick="scrollLine(1)" title="아래로 한 줄 이동">▼</button>
     </div>
 
@@ -379,10 +384,17 @@
             for (let i = 1; i <= 190; i++) {
                 const unitDiv = document.createElement('div');
                 unitDiv.id = `issue-${i}`;
+                
+                // 마지막 행(186~190호)에 해당하는 경우 마지막 줄 테두리 정규화 클래스 추가
+                let className = 'issue-unit';
+                if (i > 185) {
+                    className += ' last-row';
+                }
+
                 const issueInfo = sampleData[i];
 
                 if (issueInfo) {
-                    unitDiv.className = 'issue-unit';
+                    unitDiv.className = className;
                     unitDiv.innerHTML = `
                         <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                         <div class="issue-body">
@@ -392,7 +404,7 @@
                         </div>
                     `;
                 } else {
-                    unitDiv.className = 'issue-unit inactive';
+                    unitDiv.className = className + ' inactive';
                     unitDiv.innerHTML = `
                         <div class="issue-header">[${String(i).padStart(3, '0')}호]</div>
                         <div class="issue-body">
