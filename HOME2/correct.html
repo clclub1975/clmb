@@ -1,4 +1,4 @@
-<!-- v7.22: 001~003호는 텍스트를 '-'로 처리하고 전체 7행 구조로 고정 -->
+<!-- v7.23: 1행과 2행의 폰트 및 단락 형식을 완전히 일치시키고 001~003호 포함 전체 7행 테이블 구조 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,7 +114,7 @@
         border-color: #0366d6;
     }
     
-    /* PC 세로 스크롤 래퍼 (v7.22: 7행 * 76px = 532px + 테두리 4px 포함한 536px 고정) */
+    /* PC 세로 스크롤 래퍼 (v7.23: 7행 * 76px = 532px + 테두리 4px 포함한 536px 고정) */
     .archive-scroll-wrapper {
         max-width: 75%;
         margin-left: auto;
@@ -156,7 +156,7 @@
         margin: 0;
     }
     
-    /* 단위 셀 외곽선 및 스냅 정렬 (v7.22: 1행과 2행의 높이를 각각 38px씩 정수로 고정하여 총 76px 구성) */
+    /* 단위 셀 외곽선 및 스냅 정렬 (v7.23: 1행과 2행 각각 38px, 총 76px 구성) */
     .issue-unit {
         background-color: #ffffff;
         display: grid;
@@ -167,11 +167,11 @@
         border: none;
     }
     
-    /* 단위 셀 헤더 */
+    /* 단위 셀 헤더 (1행: 폰트 및 단락 서식을 2행과 완전히 동기화) */
     .issue-header {
         background-color: #f6f8fa;
-        color: #1a1a1a;
-        font-weight: 600;
+        color: #2b3137;
+        font-weight: 500;
         text-align: center;
         padding: 0 5px;
         border-bottom: 1px solid #d1d5db;
@@ -199,11 +199,12 @@
         box-sizing: border-box;
     }
     
-    /* 내부 서브 셀 낱개 */
+    /* 내부 서브 셀 낱개 (2행: 1행과 동일한 폰트/단락 형식 적용) */
     .sub-cell {
         text-align: center;
         padding: 0 5px;
         font-size: 13.5px;
+        font-weight: 500;
         height: 38px;
         box-sizing: border-box;
         display: flex;
@@ -297,7 +298,7 @@
 <body>
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.22</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.23</span></h1>
     </div>
 
     <div class="intro-box">
@@ -404,30 +405,19 @@
                     if (issueInfo) {
                         unitDiv.className = 'issue-unit';
                         
-                        // 001~003호인 경우 2행(sub-cell)의 텍스트를 모두 '-'로 처리
-                        if (i >= 1 && i <= 3) {
-                            unitDiv.innerHTML = `
-                                <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
-                                <div class="issue-body">
-                                    <div class="sub-cell"><span class="empty-cell">-</span></div>
-                                    <div class="sub-cell"><span class="empty-cell">-</span></div>
-                                    <div class="sub-cell"><span class="empty-cell">-</span></div>
-                                </div>
-                            `;
-                        } else {
-                            unitDiv.innerHTML = `
-                                <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
-                                <div class="issue-body">
-                                    <div class="sub-cell"><a href="${issueInfo.pdf}" target="_blank">회보</a></div>
-                                    <div class="sub-cell"><a href="${issueInfo.summary}" target="_blank">요약</a></div>
-                                    <div class="sub-cell"><span class="plain-text">교정</span></div>
-                                </div>
-                            `;
-                        }
+                        // 요청하신 대로 1행에는 호수 및 월호 텍스트를 제거하고 공백 처리, 2행(sub-cell)은 모두 '-' 처리
+                        unitDiv.innerHTML = `
+                            <div class="issue-header">-</div>
+                            <div class="issue-body">
+                                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                                <div class="sub-cell"><span class="empty-cell">-</span></div>
+                            </div>
+                        `;
                     } else {
                         unitDiv.className = 'issue-unit inactive';
                         unitDiv.innerHTML = `
-                            <div class="issue-header">[${String(i).padStart(3, '0')}호]</div>
+                            <div class="issue-header">-</div>
                             <div class="issue-body">
                                 <div class="sub-cell"><span class="empty-cell">-</span></div>
                                 <div class="sub-cell"><span class="empty-cell">-</span></div>
