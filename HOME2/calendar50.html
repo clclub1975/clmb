@@ -1,4 +1,4 @@
-<!-- v3.4: 일반 항목 표식을 원(●)으로 통일 및 고대비 선명한 색상(#e91e63, #00ff00 등) 적용 -->
+<!-- v3.5: 입력 데이터 규칙을 오류 안내 박스 내 '데이터 규칙' 토글 버튼 형태로 통합 및 축약 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -65,6 +65,7 @@
             margin-left: 4px; 
         }
         
+        /* 오류 안내 박스 및 헤더 스타일 */
         .error-box { 
             border: 1px solid #f5c6cb; 
             border-radius: 8px; 
@@ -74,23 +75,45 @@
             color: #721c24; 
             background-color: #f8d7da; 
         }
-        .error-box h3 { margin-bottom: 4px; font-size: 0.85rem; color: #721c24; }
+        .error-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .error-box h3 { font-size: 0.85rem; color: #721c24; margin: 0; }
+        
+        /* '데이터 규칙' 간결 버튼 스타일 */
+        .rule-toggle-btn {
+            background-color: #ffffff;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .rule-toggle-btn:hover {
+            background-color: #fce8e6;
+        }
+
         .error-list { padding-left: 16px; font-size: 0.75rem; }
         .error-list li { margin: 2px 0; }
 
-        /* 올바른 데이터 입력 규칙 안내 가이드 */
-        .guide-box {
-            background-color: #e9ecef;
-            border: 1px solid #dee2e6;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            font-size: 0.85rem;
+        /* 접히는 올바른 데이터 입력 규칙 안내 영역 */
+        .rule-box-inner {
+            display: none; /* 기본 숨김 상태 */
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed #f5c6cb;
+            color: #491217;
+            font-size: 0.75rem;
         }
-        .guide-box h3 { margin: 0 0 10px 0; font-size: 0.95rem; font-weight: bold; color: #212529; }
-        .guide-box ul { margin: 0; padding-left: 20px; }
-        .guide-box li { margin-bottom: 6px; }
-        .guide-box li:last-child { margin-bottom: 0; }
+        .rule-box-inner ul { margin: 0; padding-left: 16px; }
+        .rule-box-inner li { margin-bottom: 4px; }
+        .rule-box-inner li:last-child { margin-bottom: 0; }
 
         /* 표식 의미 안내 바 (Legend) */
         .legend-bar {
@@ -209,29 +232,31 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v3.4</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v3.5</span></span>
             </h1>
         </header>
 
-        <!-- 입력 데이터 오류 안내 영역 -->
+        <!-- 입력 데이터 오류 안내 영역 (내부에 '데이터 규칙' 버튼 통합) -->
         <div id="error-container" class="error-box" style="display: none;">
-            <h3>입력 데이터 오류 안내</h3>
+            <div class="error-header">
+                <h3>입력 데이터 오류 안내</h3>
+                <button type="button" id="rule-toggle-btn" class="rule-toggle-btn" onclick="toggleRuleBox()">데이터 규칙 ▼</button>
+            </div>
             <ul id="error-list" class="error-list"></ul>
-        </div>
 
-        <!-- 올바른 데이터 입력 규칙 안내 가이드 영역 -->
-        <div class="guide-box">
-            <h3>💡 올바른 데이터 입력 규칙 안내</h3>
-            <ul>
-                <li>유효한 데이터는 <strong>"분류항목 || 데이터 상세 내용"</strong>의 형식을 갖춘다.</li>
-                <li>유효한 분류항목은 <strong>'중요', '행사', '결혼', '부고', '기타'</strong> 이다.</li>
-                <li>데이터 상세 내용은 다시 <strong>'/'</strong>로 구분되는 세 개의 필드를 갖는다. 
-                    <br>• <strong>필드 1:</strong> 해당 이벤트의 제목
-                    <br>• <strong>필드 2:</strong> 날짜 (반드시 <code>YYYYMMDD</code>의 8개 숫자로 표현)
-                    <br>• <strong>필드 3:</strong> 장소
-                </li>
-                <li>유효하지 않은 데이터 형식에 대해서는 <strong>'오류'</strong>로 분류되어 표시된다.</li>
-            </ul>
+            <!-- 접히는 올바른 데이터 입력 규칙 내용 -->
+            <div id="rule-box-inner" class="rule-box-inner">
+                <ul>
+                    <li>유효한 데이터는 <strong>"분류항목 || 데이터 상세 내용"</strong>의 형식을 갖춘다.</li>
+                    <li>유효한 분류항목은 <strong>'중요', '행사', '결혼', '부고', '기타'</strong> 이다.</li>
+                    <li>데이터 상세 내용은 다시 <strong>'/'</strong>로 구분되는 세 개의 필드를 갖는다. 
+                        <br>• <strong>필드 1:</strong> 해당 이벤트의 제목
+                        <br>• <strong>필드 2:</strong> 날짜 (반드시 <code>YYYYMMDD</code>의 8개 숫자로 표현)
+                        <br>• <strong>필드 3:</strong> 장소
+                    </li>
+                    <li>유효하지 않은 데이터 형식에 대해서는 <strong>'오류'</strong>로 분류되어 표시된다.</li>
+                </ul>
+            </div>
         </div>
 
         <!-- 표식 의미 안내 바 (Legend) -->
@@ -262,6 +287,19 @@
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=0&single=true&output=csv';
+
+        // 데이터 규칙 숨김/펼침 토글 함수
+        function toggleRuleBox() {
+            const ruleBox = document.getElementById('rule-box-inner');
+            const toggleBtn = document.getElementById('rule-toggle-btn');
+            if (ruleBox.style.display === 'none' || ruleBox.style.display === '') {
+                ruleBox.style.display = 'block';
+                toggleBtn.textContent = '데이터 규칙 ▲';
+            } else {
+                ruleBox.style.display = 'none';
+                toggleBtn.textContent = '데이터 규칙 ▼';
+            }
+        }
 
         async function loadCalendarData() {
             try {
