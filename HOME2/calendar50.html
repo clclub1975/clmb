@@ -1,4 +1,4 @@
-<!-- v5.2: RFC-4180 표준 CSV 파서 내장 - 셀 내부 줄바꿈(Alt+Enter) 및 다중 이벤트(&&) 분리 왜곡 완전 해결 -->
+<!-- v5.3: 위치 불일치 오류 발생 시 원본 시트의 실제 위치(연/월/일)에 오류('X')를 배치하여 시트 수정 용이성 확보 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -350,7 +350,6 @@
             background-color: #f8fafc;
         }
 
-        /* 선택된 날짜 강조 */
         .day-cell.selected {
             border: 2px solid #2563eb !important;
             background-color: #eff6ff !important;
@@ -553,8 +552,8 @@
             .day-event-item { 
                 font-size: 0.58rem; 
                 padding: 1px 2px; 
-                border-left-width: 2.5px;
-                line-height: 1.15;
+                border-left-width: 2.5px; 
+                line-height: 1.15; 
             }
             .more-badge { font-size: 0.52rem; padding: 1px 2px; }
             .day-detail-panel { padding: 8px 10px; }
@@ -572,7 +571,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.2</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.3</span></span>
             </h1>
         </header>
 
@@ -595,7 +594,7 @@
                         <br>• <strong>필드 3:</strong> 장소
                     </li>
                     <li><strong>다중 이벤트:</strong> 하루에 둘 이상의 이벤트가 있을 경우 <strong>'&&'</strong>로 연결하여 입력한다. (한 줄 또는 줄바꿈 모두 허용)</li>
-                    <li>유효하지 않은 데이터 형식에 대해서는 <strong>'오류'</strong>로 분류되어 표시된다.</li>
+                    <li>유효하지 않은 데이터 형식 및 원본 시트의 위치 불일치는 <strong>'오류'</strong>로 분류되며, <strong>해당 데이터가 실제로 입력된 시트의 위치(연/월/일)에 'X'로 표시</strong>된다.</li>
                 </ul>
             </div>
         </div>
@@ -852,32 +851,13 @@
 
             const lunarHolidays = getLunarHolidaysForYear(year);
 
+            // 해당 연/월에 배속된 이벤트들을 일자(day)별로 매핑 (오류 항목도 시트의 행 일자에 매핑되어 있음)
             const dayEventsMap = {};
             monthEvents.forEach(item => {
-                let day = null;
-                let title = '';
-                let place = '';
-                let category = '기타';
-
-                if (item.raw.includes('||')) {
-                    const parts = item.raw.split('||');
-                    category = parts[0].trim();
-                    const details = parts[1] ? parts[1].split('/') : [];
-                    if (details.length >= 2) {
-                        title = details[0].trim();
-                        const dateStr = details[1].trim();
-                        if (dateStr.length === 8) {
-                            day = parseInt(dateStr.substring(6, 8));
-                        }
-                        if (details.length >= 3) {
-                            place = details[2].trim();
-                        }
-                    }
-                }
-
+                const day = item.day;
                 if (day && day >= 1 && day <= lastDate) {
                     if (!dayEventsMap[day]) dayEventsMap[day] = [];
-                    dayEventsMap[day].push({ category, title, place, isValid: item.isValid, raw: item.raw });
+                    dayEventsMap[day].push(item);
                 }
             });
 
@@ -974,7 +954,7 @@
             }
         }
 
-        // RFC-4180 표준 규격 CSV 파서 (큰따옴표 안의 줄바꿈 및 콤마 안전 처리)
+        // RFC-4180 표준 규격 CSV 파서
         function parseCSV(text) {
             let p = '', row = [''];
             const ret = [row];
@@ -997,7 +977,7 @@
             return ret;
         }
 
-        // 캘린더 파서 함수 (RFC-4180 기반 파싱 + && 다중 이벤트 완전 지원)
+        // 캘린더 파서 함수 (위치 불일치 시 원본 시트 위치에 오류 배치)
         function parseAndRenderCalendar(csvText) {
             const rows = parseCSV(csvText);
             if (rows.length < 2) return;
@@ -1044,18 +1024,20 @@
                         const rawItems = rawCellVal.split('&&');
 
                         rawItems.forEach(itemStr => {
-                            // 줄바꿈 문자(\r, \n)를 공백으로 치환하고 앞뒤 공백 제거
                             const cellVal = itemStr.replace(/[\r\n]+/g, ' ').trim();
                             if (!cellVal) return;
 
                             let isDataValid = true;
+                            let category = '오류';
+                            let title = cellVal;
+                            let place = '';
 
                             if (!cellVal.includes('||')) {
                                 errorList.push(`형식 오류: "${cellVal}"`);
                                 isDataValid = false;
                             } else {
                                 const parts = cellVal.split('||');
-                                const category = parts[0].trim();
+                                category = parts[0].trim();
                                 const details = parts[1] ? parts[1].split('/') : [];
 
                                 if (!validCategories.includes(category)) {
@@ -1065,7 +1047,10 @@
                                     errorList.push(`형식 오류: "${cellVal}"`);
                                     isDataValid = false;
                                 } else {
+                                    title = details[0].trim();
                                     const dateStr = details[1].trim();
+                                    place = details[2].trim();
+
                                     const dateRegex = /^\d{8}$/;
                                     if (!dateRegex.test(dateStr)) {
                                         errorList.push(`형식 오류: "${cellVal}"`);
@@ -1075,19 +1060,28 @@
                                         const parsedMonth = parseInt(dateStr.substring(4, 6));
                                         const parsedDay = parseInt(dateStr.substring(6, 8));
 
+                                        // 원본 시트 위치와 다르면 '위치 오류' 기록
                                         if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
-                                            errorList.push(`위치 오류: "${cellVal}"`);
+                                            errorList.push(`위치 오류: "${cellVal}" (시트 위치: ${cellYearStr}년 ${rowMonthNum}월 ${rowDayNum}일)`);
                                             isDataValid = false;
                                         }
                                     }
                                 }
                             }
 
+                            // 핵심: 유효/오류 여부와 무관하게 '원본 시트의 셀 위치'에 이벤트를 매핑
                             const key = `${cellYearStr}-${rowMonthNum}`;
                             if (!eventMap[key]) {
                                 eventMap[key] = [];
                             }
-                            eventMap[key].push({ raw: cellVal, isValid: isDataValid });
+                            eventMap[key].push({
+                                raw: cellVal,
+                                isValid: isDataValid,
+                                category: category,
+                                title: title,
+                                place: place,
+                                day: rowDayNum // 시트의 실제 행 일자
+                            });
                         });
                     }
                 }
@@ -1129,12 +1123,12 @@
                         symbolsHtml += eventMap[key].map(item => {
                             const tooltipText = item.raw.replace(/"/g, '&quot;');
                             
+                            // 유효하지 않은 데이터(위치 불일치 포함)는 무조건 'X' 표식
                             if (!item.isValid) {
                                 return `<span class="symbol-error" title="${tooltipText}">X</span>`;
                             }
                             
-                            const category = item.raw.split('||')[0].trim();
-                            switch(category) {
+                            switch(item.category) {
                                 case '중요': return `<span class="symbol-important" title="${tooltipText}">★</span>`;
                                 case '행사': return `<span class="symbol-event" title="${tooltipText}">●</span>`;
                                 case '결혼': return `<span class="symbol-marriage" title="${tooltipText}">●</span>`;
