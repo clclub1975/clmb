@@ -1,4 +1,4 @@
-<!-- v5.5: 하단 상세 보기 내 세 번째 줄 오류 상세문 제거 및 카드 우측 끝 '날짜 오류' 간결 뱃지 배치 -->
+<!-- v5.6: 상세 카드 우측 끝 2단 구성 (오류 유형 뱃지 + 하단 실제 입력값 YYYYMMDD / 분류명 표시) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -531,9 +531,17 @@
             word-break: break-all;
         }
 
-        /* 오른쪽 끝 오류 뱃지 스타일 */
-        .detail-error-badge {
+        /* 오른쪽 끝 오류 정보 래퍼 (2단 구성) */
+        .detail-error-container {
             margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .detail-error-badge {
             font-size: 0.62rem;
             font-weight: bold;
             color: #dc2626;
@@ -542,8 +550,15 @@
             border-radius: 4px;
             padding: 1px 5px;
             white-space: nowrap;
-            flex-shrink: 0;
             line-height: 1.2;
+        }
+
+        .detail-error-val {
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #b91c1c;
+            line-height: 1.1;
+            letter-spacing: 0.2px;
         }
 
         .detail-item-place {
@@ -580,6 +595,7 @@
             .detail-item-card { padding: 5px 8px; }
             .detail-item-title { font-size: 0.75rem; }
             .detail-error-badge { font-size: 0.55rem; padding: 1px 4px; }
+            .detail-error-val { font-size: 0.58rem; }
         }
     </style>
 </head>
@@ -591,7 +607,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.5</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.6</span></span>
             </h1>
         </header>
 
@@ -839,12 +855,19 @@
                 const displayTitle = evt.title ? evt.title : evt.raw;
                 const placeHtml = evt.place ? `<div class="detail-item-place">📍 장소: ${evt.place}</div>` : '';
                 
-                // 우측 끝 간결 오류 뱃지 (날짜 오류 여부 판별)
-                let errorBadgeHtml = '';
+                // 우측 끝 오류 영역 (상단: 오류 유형 뱃지, 하단: 실제 입력값)
+                let errorAreaHtml = '';
                 if (!evt.isValid) {
-                    const badgeText = (evt.errorType === 'LOCATION_ERROR') ? '날짜 오류' : '형식 오류';
+                    const badgeText = (evt.errorType === 'LOCATION_ERROR') ? '날짜 오류' : '분류 오류';
+                    const detailVal = evt.errorInputVal ? evt.errorInputVal : '';
                     const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
-                    errorBadgeHtml = `<span class="detail-error-badge" title="${tooltip}">${badgeText}</span>`;
+
+                    errorAreaHtml = `
+                        <div class="detail-error-container" title="${tooltip}">
+                            <span class="detail-error-badge">${badgeText}</span>
+                            <span class="detail-error-val">${detailVal}</span>
+                        </div>
+                    `;
                 }
 
                 cardsHtml += `
@@ -852,7 +875,7 @@
                         <div class="detail-item-top">
                             <span class="category-chip ${chipClass}">${chipText}</span>
                             <span class="detail-item-title">${displayTitle}</span>
-                            ${errorBadgeHtml}
+                            ${errorAreaHtml}
                         </div>
                         ${placeHtml}
                     </div>
@@ -1060,9 +1083,11 @@
                             let place = '';
                             let errorReason = '';
                             let errorType = '';
+                            let errorInputVal = '';
 
                             if (!cellVal.includes('||')) {
-                                errorType = 'FORMAT_ERROR';
+                                errorType = 'CATEGORY_ERROR';
+                                errorInputVal = cellVal.length > 8 ? cellVal.substring(0, 8) + '…' : cellVal;
                                 errorReason = `구분자('||') 누락 형식 오류`;
                                 errorList.push(`형식 오류: "${cellVal}"`);
                                 isDataValid = false;
@@ -1072,12 +1097,14 @@
                                 const details = parts[1] ? parts[1].split('/') : [];
 
                                 if (!validCategories.includes(category)) {
-                                    errorType = 'FORMAT_ERROR';
+                                    errorType = 'CATEGORY_ERROR';
+                                    errorInputVal = category;
                                     errorReason = `유효하지 않은 분류명 ('${category}')`;
                                     errorList.push(`분류 오류: "${cellVal}"`);
                                     isDataValid = false;
                                 } else if (details.length < 3) {
-                                    errorType = 'FORMAT_ERROR';
+                                    errorType = 'CATEGORY_ERROR';
+                                    errorInputVal = '필드누락';
                                     errorReason = `필드 누락 형식 오류 (제목/날짜/장소)`;
                                     errorList.push(`형식 오류: "${cellVal}"`);
                                     isDataValid = false;
@@ -1088,7 +1115,8 @@
 
                                     const dateRegex = /^\d{8}$/;
                                     if (!dateRegex.test(dateStr)) {
-                                        errorType = 'FORMAT_ERROR';
+                                        errorType = 'LOCATION_ERROR';
+                                        errorInputVal = dateStr;
                                         errorReason = `날짜 형식 오류 (8자리 숫자 아님: '${dateStr}')`;
                                         errorList.push(`형식 오류: "${cellVal}"`);
                                         isDataValid = false;
@@ -1099,6 +1127,7 @@
 
                                         if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
                                             errorType = 'LOCATION_ERROR';
+                                            errorInputVal = dateStr; // 실제로 입력된 YYYYMMDD
                                             errorReason = `입력 날짜: ${dateStr} (시트 위치 ${cellYearStr}년 ${rowMonthNum}월 ${rowDayNum}일과 불일치)`;
                                             errorList.push(`위치 오류: "${cellVal}" (시트 위치: ${cellYearStr}년 ${rowMonthNum}월 ${rowDayNum}일)`);
                                             isDataValid = false;
@@ -1119,7 +1148,8 @@
                                 place: place,
                                 day: rowDayNum,
                                 errorReason: errorReason,
-                                errorType: errorType
+                                errorType: errorType,
+                                errorInputVal: errorInputVal
                             });
                         });
                     }
