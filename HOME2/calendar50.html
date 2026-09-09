@@ -1,4 +1,4 @@
-<!-- v4.3: 법정 공휴일 빨간 날 표시, 일력 내 장소 제외(명칭 단독 표시) 및 다중 이벤트 '+N개 더보기' 뱃지 적용 -->
+<!-- v4.4: 천문 음력 명절(설/추석/부처님오신날) 자동 계산, 결혼 색상 변경(#f738f7) 및 모바일 일력 텍스트 가독성 최적화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -168,7 +168,7 @@
         /* 텍스트용 아이콘 스타일 (Legend 바) */
         .legend-important { color: #ff0033; font-size: 1.1rem; } 
         .legend-event { color: #0066ff; font-size: 1.1rem; }     
-        .legend-marriage { color: #f7a6f7; font-size: 1.1rem; }  
+        .legend-marriage { color: #f738f7; font-size: 1.1rem; }  /* #f738f7 반영 */
         .legend-funeral { color: #111111; font-size: 1.1rem; }   
         .legend-etc { color: #00ff00; font-size: 1.1rem; }       
         .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; } 
@@ -208,7 +208,7 @@
         
         .symbol-important { color: #ff0033; } 
         .symbol-event     { color: #0066ff; } 
-        .symbol-marriage  { color: #f7a6f7; } 
+        .symbol-marriage  { color: #f738f7; } /* #f738f7 반영 */
         .symbol-funeral   { color: #111111; } 
         .symbol-etc       { color: #00ff00; } 
         .symbol-error { 
@@ -251,13 +251,13 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            padding: 12px;
+            padding: 8px;
         }
 
         .modal-content {
             background: #ffffff;
             width: 100%;
-            max-width: 700px;
+            max-width: 720px;
             border-radius: 10px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             overflow: hidden;
@@ -275,13 +275,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 18px;
+            padding: 10px 16px;
             background-color: #2c3e50;
             color: #ffffff;
         }
 
         .modal-header h2 {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             margin: 0;
             font-weight: 600;
         }
@@ -302,8 +302,8 @@
         }
 
         .modal-body {
-            padding: 14px;
-            max-height: 80vh;
+            padding: 10px;
+            max-height: 85vh;
             overflow-y: auto;
         }
 
@@ -311,7 +311,7 @@
         .day-calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, minmax(0, 1fr));
-            gap: 5px;
+            gap: 4px;
             width: 100%;
         }
 
@@ -319,7 +319,7 @@
             text-align: center;
             font-weight: bold;
             font-size: 0.75rem;
-            padding: 6px 2px;
+            padding: 5px 1px;
             background-color: #f1f3f5;
             border-radius: 4px;
             color: #495057;
@@ -328,10 +328,10 @@
         .day-header.sat { color: #1971c2; }
 
         .day-cell {
-            min-height: 75px;
+            min-height: 72px;
             border: 1px solid #e9ecef;
             border-radius: 4px;
-            padding: 4px;
+            padding: 3px;
             display: flex;
             flex-direction: column;
             background-color: #ffffff;
@@ -347,24 +347,27 @@
 
         .day-num-wrap {
             display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-bottom: 4px;
+            align-items: baseline;
+            gap: 3px;
+            margin-bottom: 3px;
+            flex-wrap: wrap;
         }
 
         .day-num {
             font-weight: bold;
             font-size: 0.75rem;
             color: #333;
+            line-height: 1;
         }
         .day-cell.sun .day-num { color: #e03131; }
         .day-cell.sat .day-num { color: #1971c2; }
-        .day-cell.holiday .day-num { color: #e03131 !important; } /* 공휴일 빨간색 */
+        .day-cell.holiday .day-num { color: #e03131 !important; }
 
         .holiday-tag {
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             color: #e03131;
-            font-weight: normal;
+            font-weight: 500;
+            line-height: 1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -373,19 +376,23 @@
         .day-events {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
+            flex-grow: 1;
         }
 
-        /* 개별 이벤트 카드 (장소 제외, 명칭만 표시) */
+        /* 개별 이벤트 카드 (모바일에서도 텍스트 충실하게 표시) */
         .day-event-item {
             font-size: 0.65rem;
-            line-height: 1.25;
-            padding: 3px 5px;
+            line-height: 1.2;
+            padding: 2px 4px;
             border-radius: 3px;
             background-color: #f8f9fa;
             border-left: 3.5px solid #cbd5e1;
-            word-break: break-all;
-            white-space: nowrap;
+            word-break: keep-all;
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* 최대 2줄까지 표시하여 내용 파악 가능 */
+            -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
             cursor: default;
@@ -393,27 +400,45 @@
 
         .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
         .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
-        .day-event-item.marriage  { border-left-color: #f7a6f7; background-color: #fdf5fd; }
+        .day-event-item.marriage  { border-left-color: #f738f7; background-color: #fdf5fd; } /* #f738f7 */
         .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
         .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
         .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
 
         /* 다중 이벤트 더보기 뱃지 */
         .more-badge {
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             color: #495057;
             background-color: #e9ecef;
             border-radius: 10px;
-            padding: 1px 6px;
+            padding: 1px 4px;
             text-align: center;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 1px;
+            margin-top: auto;
             transition: all 0.15s ease;
+            line-height: 1.1;
         }
         .more-badge:hover {
             background-color: #ced4da;
             color: #212529;
+        }
+
+        /* 모바일 환경 최적화 */
+        @media (max-width: 768px) {
+            .modal-content { max-width: 100%; border-radius: 6px; }
+            .modal-body { padding: 6px; }
+            .day-calendar-grid { gap: 2px; }
+            .day-cell { min-height: 60px; padding: 2px; }
+            .day-num { font-size: 0.7rem; }
+            .holiday-tag { font-size: 0.52rem; }
+            .day-event-item { 
+                font-size: 0.58rem; 
+                padding: 1px 2px; 
+                border-left-width: 2.5px;
+                line-height: 1.15;
+            }
+            .more-badge { font-size: 0.52rem; padding: 1px 2px; }
         }
     </style>
 </head>
@@ -425,7 +450,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.3</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.4</span></span>
             </h1>
         </header>
 
@@ -496,8 +521,8 @@
                     <div class="day-header">금</div>
                     <div class="day-header sat">토</div>
                 </div>
-                <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 5px;">
-                    <!-- 자바스크립트로 일자별 셀 동적 생성 -->
+                <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 4px;">
+                    <!-- 일자별 셀 동적 생성 -->
                 </div>
             </div>
         </div>
@@ -508,7 +533,7 @@
 
         let globalEventMap = {};
 
-        // 양력 법정 공휴일 정의 (월-일)
+        // 1. 양력 법정 공휴일 정의 (월-일)
         const solarHolidays = {
             '1-1': '신정',
             '3-1': '삼일절',
@@ -519,6 +544,93 @@
             '10-9': '한글날',
             '12-25': '성탄절'
         };
+
+        // 2. 천문 음력-양력 변환 데이터 (1975 ~ 2050년)
+        const lunarInfo = [
+            0x095b0, 0x04ba0, 0x0a5b4, 0x052b0, 0x0a930, 0x05495, 0x052d0, 0x02ac0, 0x0cd15, 0x06aa0, // 1975 - 1984
+            0x0ad50, 0x02d52, 0x04b60, 0x0a577, 0x0a4e0, 0x0d260, 0x0e935, 0x0d520, 0x0daa0, 0x06b53, // 1985 - 1994
+            0x056d0, 0x04ae0, 0x0a4e4, 0x0a4d0, 0x0d150, 0x0f252, 0x0d520, 0x0dd45, 0x0b5a0, 0x056d0, // 1995 - 2004
+            0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, 0x14b63, 0x09370, // 2005 - 2014
+            0x049f8, 0x04970, 0x064b0, 0x068a6, 0x0ea50, 0x06aa0, 0x0a6c4, 0x0aae0, 0x092e0, 0x0d2e3, // 2015 - 2024
+            0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4, 0x052d0, 0x0a9b8, // 2025 - 2034
+            0x0a950, 0x0b4a0, 0x0b6a6, 0x0ad50, 0x055a0, 0x0aba4, 0x0a5b0, 0x052b0, 0x0b273, 0x06930, // 2035 - 2044
+            0x07337, 0x06aa0, 0x0ad50, 0x14b55, 0x04b60, 0x0a570  // 2045 - 2050
+        ];
+
+        // 음력 일수 계산 함수
+        function getLunarMonthDays(year, month) {
+            const index = year - 1975;
+            if (index < 0 || index >= lunarInfo.length) return 29;
+            return (lunarInfo[index] & (0x10000 >> month)) ? 30 : 29;
+        }
+
+        // 음력 윤달 확인 함수
+        function getLunarLeapMonth(year) {
+            const index = year - 1975;
+            if (index < 0 || index >= lunarInfo.length) return 0;
+            return lunarInfo[index] & 0xf;
+        }
+
+        // 음력 날짜를 양력 Date 객체로 변환 (기준일: 1975년 음력 1월 1일 = 양력 1975년 2월 11일)
+        function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
+            if (lunarYear < 1975 || lunarYear > 2050) return null;
+            let totalDays = 0;
+            for (let y = 1975; y < lunarYear; y++) {
+                const idx = y - 1975;
+                const leap = lunarInfo[idx] & 0xf;
+                for (let m = 1; m <= 12; m++) {
+                    totalDays += (lunarInfo[idx] & (0x10000 >> m)) ? 30 : 29;
+                }
+                if (leap > 0) {
+                    totalDays += (lunarInfo[idx] & 0x10000) ? 30 : 29;
+                }
+            }
+            const curIdx = lunarYear - 1975;
+            const curLeap = lunarInfo[curIdx] & 0xf;
+            for (let m = 1; m < lunarMonth; m++) {
+                totalDays += (lunarInfo[curIdx] & (0x10000 >> m)) ? 30 : 29;
+                if (curLeap > 0 && curLeap === m) {
+                    totalDays += (lunarInfo[curIdx] & 0x10000) ? 30 : 29;
+                }
+            }
+            totalDays += (lunarDay - 1);
+            const baseDate = new Date(1975, 1, 11); // 1975-02-11
+            return new Date(baseDate.getTime() + totalDays * 86400000);
+        }
+
+        // 특정 연도의 음력 3대 명절(설날/부처님오신날/추석) 계산
+        function getLunarHolidaysForYear(year) {
+            const holidayMap = {};
+            if (year < 1975 || year > 2050) return holidayMap;
+
+            // 1. 설날 연휴 (음력 1월 1일 및 전후일)
+            const seollal = lunarToSolar(year, 1, 1);
+            if (seollal) {
+                const prev = new Date(seollal.getTime() - 86400000);
+                const next = new Date(seollal.getTime() + 86400000);
+                holidayMap[`${prev.getFullYear()}-${prev.getMonth() + 1}-${prev.getDate()}`] = '설 전날';
+                holidayMap[`${seollal.getFullYear()}-${seollal.getMonth() + 1}-${seollal.getDate()}`] = '설날';
+                holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '설 다음날';
+            }
+
+            // 2. 부처님오신날 (음력 4월 8일)
+            const buddha = lunarToSolar(year, 4, 8);
+            if (buddha) {
+                holidayMap[`${buddha.getFullYear()}-${buddha.getMonth() + 1}-${buddha.getDate()}`] = '부처님오신날';
+            }
+
+            // 3. 추석 연휴 (음력 8월 15일 및 전후일)
+            const chuseok = lunarToSolar(year, 8, 15);
+            if (chuseok) {
+                const prev = new Date(chuseok.getTime() - 86400000);
+                const next = new Date(chuseok.getTime() + 86400000);
+                holidayMap[`${prev.getFullYear()}-${prev.getMonth() + 1}-${prev.getDate()}`] = '추석 전날';
+                holidayMap[`${chuseok.getFullYear()}-${chuseok.getMonth() + 1}-${chuseok.getDate()}`] = '추석';
+                holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '추석 다음날';
+            }
+
+            return holidayMap;
+        }
 
         // 데이터 규칙 토글
         function toggleRuleBox() {
@@ -567,6 +679,9 @@
             const key = `${year}-${month}`;
             const monthEvents = globalEventMap[key] || [];
 
+            // 해당 연도 음력 명절 계산
+            const lunarHolidays = getLunarHolidaysForYear(year);
+
             const dayEventsMap = {};
             monthEvents.forEach(item => {
                 let day = null;
@@ -611,9 +726,11 @@
                 if (colIndex === 0) dayClass += ' sun';
                 if (colIndex === 6) dayClass += ' sat';
 
-                // 공휴일 확인
-                const holidayKey = `${month}-${d}`;
-                const holidayName = solarHolidays[holidayKey];
+                // 공휴일 확인 (양력 + 음력 명절)
+                const solarKey = `${month}-${d}`;
+                const lunarKey = `${year}-${month}-${d}`;
+                const holidayName = solarHolidays[solarKey] || lunarHolidays[lunarKey];
+
                 if (holidayName) {
                     dayClass += ' holiday';
                 }
