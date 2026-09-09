@@ -1,4 +1,4 @@
-<!-- v6.2: 장소 대괄호 표기 [장소] 및 비고 텍스트 박스 테두리/배경색 제거로 가독성 개선 -->
+<!-- v6.3: 상세보기 카드 2행(비고)의 시작 위치를 1행 이벤트명 시작 위치와 수직 일치 정렬 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -559,7 +559,7 @@
       padding: 7px 10px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       font-size: 0.75rem;
       border-left: 4px solid #cbd5e1;
     }
@@ -580,10 +580,13 @@
       flex-wrap: wrap;
     }
 
+    /* 분류 칩: 너비를 36px로 고정하여 비고 시작 위치 계산 기준 마련 */
     .category-chip {
       font-size: 0.65rem;
       font-weight: bold;
-      padding: 1px 6px;
+      padding: 1px 0;
+      width: 36px;
+      text-align: center;
       border-radius: 4px;
       color: #ffffff;
       display: inline-block;
@@ -632,21 +635,21 @@
       text-align: center;
     }
 
-    /* 2행: 비고 영역 (테두리와 배경색 없이 자연스럽고 쾌적한 텍스트로 처리) */
+    /* 2행: 비고 영역 (분류 칩 너비 36px + 간격 6px = 42px 만큼 좌측 여백을 주어 이벤트명 시작위치와 일치) */
     .detail-bottom-row {
       display: flex;
       align-items: center;
       width: 100%;
       min-height: 18px;
+      padding-left: 42px;
     }
 
     .detail-item-note {
       font-size: 0.72rem;
       color: #64748b;
-      line-height: 1.4;
+      line-height: 1.35;
       display: inline-block;
       width: 100%;
-      padding-left: 2px;
     }
 
     .detail-item-note.empty-note {
@@ -689,9 +692,10 @@
       .detail-list { max-height: 180px; }
       .detail-date-title { font-size: 0.78rem; }
       .detail-item-card { padding: 5px 8px; }
+      .category-chip { width: 32px; font-size: 0.6rem; }
+      .detail-bottom-row { min-height: 16px; padding-left: 38px; }
       .detail-item-title { font-size: 0.75rem; }
       .detail-item-place-inline { font-size: 0.72rem; }
-      .detail-bottom-row { min-height: 16px; }
       .detail-item-note { font-size: 0.68rem; }
       .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; min-width: 54px; }
       .detail-error-val-common { font-size: 0.58rem; min-width: 54px; }
@@ -707,7 +711,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v6.2</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v6.3</span></span>
       </h1>
     </header>
 
@@ -833,7 +837,7 @@
       for (let m = 1; m < lunarMonth; m++) {
         totalDays += (lunarInfo[curIdx] & (0x10000 >> m)) ? 30 : 29;
         if (curLeap > 0 && curLeap === m) {
-          totalDays += (lunarInfo[curIdx] & 0x10000) ? 30 : 29;
+          totalDays += (lunarInfo[curIdx] & (0x10000) ? 30 : 29);
         }
       }
       totalDays += (lunarDay - 1);
@@ -941,11 +945,9 @@
         }
 
         const displayTitle = evt.title ? evt.title : '(제목 없음)';
-        
-        // 1행 장소: [장소명] 형태로 표기
         const placeHtml = evt.place ? `<span class="detail-item-place-inline">[${evt.place}]</span>` : '';
         
-        // 2행 비고: 별도 박스나 테두리 없이 자연스러운 보조 텍스트로 표기
+        // 2행 비고: 내용이 있으면 표시, 없으면 균형을 맞추기 위한 빈 영역 유지
         const noteHtml = evt.note 
           ? `<div class="detail-item-note">비고: ${evt.note}</div>` 
           : `<div class="detail-item-note empty-note">&nbsp;</div>`;
