@@ -1,4 +1,4 @@
-<!-- v5.8: 모든 오류 표시 레이아웃 통일 (1열 우측: 오류 뱃지 / 2열 우측: 실제 입력값 동일 행간 및 정렬 배치) -->
+<!-- v5.8: 모든 오류 표시 레이아웃 통일 및 문법 오류 수정 (정상 로드 복구) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -562,7 +562,7 @@
             padding-left: 2px;
         }
 
-        /* 장소 줄 우측 끝에 배치되는 오류 입력값(날짜 or 분류 텍스트) */
+        /* 장소 줄 우측 끝에 배치되는 오류 입력값 */
         .detail-error-val-common {
             font-size: 0.68rem;
             font-weight: bold;
@@ -752,7 +752,7 @@
             for (let m = 1; m < lunarMonth; m++) {
                 totalDays += (lunarInfo[curIdx] & (0x10000 >> m)) ? 30 : 29;
                 if (curLeap > 0 && curLeap === m) {
-                    totalDays += (lunarInfo[curIdx] & (0x10000) ? 30 : 29;
+                    totalDays += (lunarInfo[curIdx] & 0x10000) ? 30 : 29;
                 }
             }
             totalDays += (lunarDay - 1);
@@ -862,7 +862,6 @@
                 const displayTitle = evt.title ? evt.title : evt.raw;
                 const placeHtml = evt.place ? `<div class="detail-item-place">📍 장소: ${evt.place}</div>` : `<div class="detail-item-place"></div>`;
                 
-                // 모든 오류 유형에 대해 1열 우측 끝(뱃지), 2열 우측 끝(실제 입력값)으로 완벽 통일
                 let topErrorHtml = '';
                 let bottomErrorHtml = '';
 
@@ -870,10 +869,10 @@
                     const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
                     const badgeText = (evt.errorType === 'LOCATION_ERROR') ? '날짜 오류' : '분류 오류';
                     
-                    // 1) 첫 번째 줄: 오류 뱃지만 깔끔하게 단독 배치
+                    // 1열 우측: 오류 뱃지 단독 배치
                     topErrorHtml = `<span class="detail-error-badge-common" title="${tooltip}">${badgeText}</span>`;
                     
-                    // 2) 두 번째 줄: 실제 입력값(날짜 or 잘못된 분류명)을 장소와 같은 높이 우측 끝에 배치
+                    // 2열 우측: 실제 입력값 배치 (날짜 or 잘못된 분류명)
                     if (evt.errorInputVal) {
                         bottomErrorHtml = `<span class="detail-error-val-common" title="${tooltip}">${evt.errorInputVal}</span>`;
                     }
