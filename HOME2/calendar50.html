@@ -1,4 +1,4 @@
-<!-- v4.5: 일력 모달 하단 상세 영역 확장(방식 B) - 날짜 클릭 시 해당 일자의 분류/제목/장소 전체 목록 표시 -->
+<!-- v5.1: 공식 다중 이벤트 구분자 '&&' 지원 (줄바꿈/한줄 모두 지원) 및 개별 이벤트 파싱·검증 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -435,7 +435,7 @@
         }
 
         /* ===================================================
-           방식 B: 일력 하단 상세 영역 확장 스타일
+           일력 하단 상세 영역 패널 스타일
         =================================================== */
         .day-detail-panel {
             background-color: #f8fafc;
@@ -572,7 +572,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.5</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.1</span></span>
             </h1>
         </header>
 
@@ -594,6 +594,7 @@
                         <br>• <strong>필드 2:</strong> 날짜 (반드시 <code>YYYYMMDD</code>의 8개 숫자로 표현)
                         <br>• <strong>필드 3:</strong> 장소
                     </li>
+                    <li><strong>다중 이벤트:</strong> 하루에 둘 이상의 이벤트가 있을 경우 <strong>'&&'</strong>로 연결하여 입력한다. (한 줄 또는 줄바꿈 모두 허용)</li>
                     <li>유효하지 않은 데이터 형식에 대해서는 <strong>'오류'</strong>로 분류되어 표시된다.</li>
                 </ul>
             </div>
@@ -648,7 +649,7 @@
                     <!-- 일자별 셀 동적 생성 -->
                 </div>
 
-                <!-- 방식 B: 하단 상세 보기 영역 확장 패널 -->
+                <!-- 하단 상세 보기 영역 확장 패널 -->
                 <div id="dayDetailPanel" class="day-detail-panel">
                     <div class="detail-header">
                         <div id="detailDateTitle" class="detail-date-title">📅 날짜를 클릭하면 상세 일정이 표시됩니다.</div>
@@ -681,14 +682,14 @@
 
         // 2. 천문 음력-양력 변환 데이터 (1975 ~ 2050년)
         const lunarInfo = [
-            0x095b0, 0x04ba0, 0x0a5b4, 0x052b0, 0x0a930, 0x05495, 0x052d0, 0x02ac0, 0x0cd15, 0x06aa0, // 1975 - 1984
-            0x0ad50, 0x02d52, 0x04b60, 0x0a577, 0x0a4e0, 0x0d260, 0x0e935, 0x0d520, 0x0daa0, 0x06b53, // 1985 - 1994
-            0x056d0, 0x04ae0, 0x0a4e4, 0x0a4d0, 0x0d150, 0x0f252, 0x0d520, 0x0dd45, 0x0b5a0, 0x056d0, // 1995 - 2004
-            0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, 0x14b63, 0x09370, // 2005 - 2014
-            0x049f8, 0x04970, 0x064b0, 0x068a6, 0x0ea50, 0x06aa0, 0x0a6c4, 0x0aae0, 0x092e0, 0x0d2e3, // 2015 - 2024
-            0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4, 0x052d0, 0x0a9b8, // 2025 - 2034
-            0x0a950, 0x0b4a0, 0x0b6a6, 0x0ad50, 0x055a0, 0x0aba4, 0x0a5b0, 0x052b0, 0x0b273, 0x06930, // 2035 - 2044
-            0x07337, 0x06aa0, 0x0ad50, 0x14b55, 0x04b60, 0x0a570  // 2045 - 2050
+            0x095b0, 0x04ba0, 0x0a5b4, 0x052b0, 0x0a930, 0x05495, 0x052d0, 0x02ac0, 0x0cd15, 0x06aa0,
+            0x0ad50, 0x02d52, 0x04b60, 0x0a577, 0x0a4e0, 0x0d260, 0x0e935, 0x0d520, 0x0daa0, 0x06b53,
+            0x056d0, 0x04ae0, 0x0a4e4, 0x0a4d0, 0x0d150, 0x0f252, 0x0d520, 0x0dd45, 0x0b5a0, 0x056d0,
+            0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, 0x14b63, 0x09370,
+            0x049f8, 0x04970, 0x064b0, 0x068a6, 0x0ea50, 0x06aa0, 0x0a6c4, 0x0aae0, 0x092e0, 0x0d2e3,
+            0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4, 0x052d0, 0x0a9b8,
+            0x0a950, 0x0b4a0, 0x0b6a6, 0x0ad50, 0x055a0, 0x0aba4, 0x0a5b0, 0x052b0, 0x0b273, 0x06930,
+            0x07337, 0x06aa0, 0x0ad50, 0x14b55, 0x04b60, 0x0a570
         ];
 
         function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
@@ -747,7 +748,6 @@
             return holidayMap;
         }
 
-        // 데이터 규칙 토글
         function toggleRuleBox() {
             const ruleBox = document.getElementById('rule-box-inner');
             const toggleBtn = document.getElementById('rule-toggle-btn');
@@ -760,7 +760,6 @@
             }
         }
 
-        // 모달 닫기
         function closeDayModal() {
             document.getElementById('dayModal').style.display = 'none';
         }
@@ -777,12 +776,9 @@
             }
         });
 
-        // 요일 문자열 매핑
         const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
-        // 특정 날짜 클릭 시 하단 상세 패널 렌더링 함수
         function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
-            // 모든 셀의 선택 스타일 제거 후 현재 셀 강조
             document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
             const selectedCell = document.getElementById(`day-cell-${day}`);
             if (selectedCell) selectedCell.classList.add('selected');
@@ -836,7 +832,6 @@
             listElem.innerHTML = cardsHtml;
         }
 
-        // 월력 셀 클릭 시 일력(월간 캘린더) 모달 오픈
         function openDayModal(year, month) {
             const modal = document.getElementById('dayModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -845,7 +840,6 @@
             modalTitle.textContent = `${year}년 ${month}월 일력`;
             dayGridBody.innerHTML = '';
 
-            // 하단 상세 패널 초기화
             document.getElementById('detailDateTitle').innerHTML = '📅 날짜를 클릭하면 상세 일정이 표시됩니다.';
             document.getElementById('detailCountBadge').style.display = 'none';
             document.getElementById('detailList').innerHTML = '<div class="detail-empty-msg">원하는 날짜 셀을 선택하여 상세 내용을 확인하세요.</div>';
@@ -887,14 +881,12 @@
                 }
             });
 
-            // 1. 시작 요일 전 빈 셀 추가
             for (let i = 0; i < firstDayIndex; i++) {
                 const emptyCell = document.createElement('div');
                 emptyCell.className = 'day-cell other-month';
                 dayGridBody.appendChild(emptyCell);
             }
 
-            // 2. 1일부터 말일까지 셀 생성
             for (let d = 1; d <= lastDate; d++) {
                 const cell = document.createElement('div');
                 cell.id = `day-cell-${d}`;
@@ -912,7 +904,6 @@
                 }
                 cell.className = dayClass;
 
-                // 클릭 시 하단 상세 패널 갱신
                 const currentEvents = dayEventsMap[d] || [];
                 cell.onclick = () => selectDayDetail(year, month, d, colIndex, holidayName, currentEvents);
 
@@ -961,7 +952,6 @@
                 dayGridBody.appendChild(cell);
             }
 
-            // 3. 마지막 요일 채움용 빈 셀 추가
             const totalCells = firstDayIndex + lastDate;
             const remainingCells = (7 - (totalCells % 7)) % 7;
             for (let i = 0; i < remainingCells; i++) {
@@ -984,6 +974,7 @@
             }
         }
 
+        // CSV 파서 함수 (&& 다중 이벤트 및 줄바꿈 지원)
         function parseAndRenderCalendar(csvText) {
             const lines = csvText.split('\n');
             if (lines.length < 2) return;
@@ -1025,49 +1016,58 @@
                 const rowDayNum = parseInt(rowDayStr);
 
                 for (let colIdx in yearMap) {
-                    const cellVal = cols[colIdx];
-                    if (cellVal && cellVal !== '' && cellVal !== '·') {
+                    const rawCellVal = cols[colIdx];
+                    if (rawCellVal && rawCellVal !== '' && rawCellVal !== '·') {
                         const cellYearStr = yearMap[colIdx];
-                        let isDataValid = true;
 
-                        if (!cellVal.includes('||')) {
-                            errorList.push(`형식 오류: "${cellVal}"`);
-                            isDataValid = false;
-                        } else {
-                            const parts = cellVal.split('||');
-                            const category = parts[0].trim();
-                            const details = parts[1] ? parts[1].split('/') : [];
+                        // '&&' 구분자로 다중 이벤트 분리 (줄바꿈이 섞여도 개별 trim 처리)
+                        const rawItems = rawCellVal.split('&&');
 
-                            if (!validCategories.includes(category)) {
-                                errorList.push(`분류 오류: "${cellVal}"`);
-                                isDataValid = false;
-                            } else if (details.length < 3) {
+                        rawItems.forEach(itemStr => {
+                            const cellVal = itemStr.trim();
+                            if (!cellVal) return;
+
+                            let isDataValid = true;
+
+                            if (!cellVal.includes('||')) {
                                 errorList.push(`형식 오류: "${cellVal}"`);
                                 isDataValid = false;
                             } else {
-                                const dateStr = details[1].trim();
-                                const dateRegex = /^\d{8}$/;
-                                if (!dateRegex.test(dateStr)) {
+                                const parts = cellVal.split('||');
+                                const category = parts[0].trim();
+                                const details = parts[1] ? parts[1].split('/') : [];
+
+                                if (!validCategories.includes(category)) {
+                                    errorList.push(`분류 오류: "${cellVal}"`);
+                                    isDataValid = false;
+                                } else if (details.length < 3) {
                                     errorList.push(`형식 오류: "${cellVal}"`);
                                     isDataValid = false;
                                 } else {
-                                    const parsedYear = parseInt(dateStr.substring(0, 4));
-                                    const parsedMonth = parseInt(dateStr.substring(4, 6));
-                                    const parsedDay = parseInt(dateStr.substring(6, 8));
-
-                                    if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
-                                        errorList.push(`위치 오류: "${cellVal}"`);
+                                    const dateStr = details[1].trim();
+                                    const dateRegex = /^\d{8}$/;
+                                    if (!dateRegex.test(dateStr)) {
+                                        errorList.push(`형식 오류: "${cellVal}"`);
                                         isDataValid = false;
+                                    } else {
+                                        const parsedYear = parseInt(dateStr.substring(0, 4));
+                                        const parsedMonth = parseInt(dateStr.substring(4, 6));
+                                        const parsedDay = parseInt(dateStr.substring(6, 8));
+
+                                        if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
+                                            errorList.push(`위치 오류: "${cellVal}"`);
+                                            isDataValid = false;
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        const key = `${cellYearStr}-${rowMonthNum}`;
-                        if (!eventMap[key]) {
-                            eventMap[key] = [];
-                        }
-                        eventMap[key].push({ raw: cellVal, isValid: isDataValid });
+                            const key = `${cellYearStr}-${rowMonthNum}`;
+                            if (!eventMap[key]) {
+                                eventMap[key] = [];
+                            }
+                            eventMap[key].push({ raw: cellVal, isValid: isDataValid });
+                        });
                     }
                 }
             }
@@ -1138,4 +1138,3 @@
     </script>
 </body>
 </html>
- 
