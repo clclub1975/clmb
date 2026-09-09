@@ -1,0 +1,136 @@
+<!-- v1.1: 촛불회 홈페이지 작업 프로세스 문서 최초 작성 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>촛불회 홈페이지 작업 프로세스</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            word-break: keep-all;
+        }
+        .nav-bar {
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #24292f;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            background-color: #32383f;
+        }
+        header {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #1f2328;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .version-badge {
+            font-size: 14px;
+            font-weight: normal;
+            color: #57606a;
+            background-color: #f0f3f6;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .section {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 18px;
+            color: #0969da;
+            border-bottom: 2px solid #f0f3f6;
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+        ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        strong {
+            color: #24292f;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            header, .section {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="index.html" class="back-btn">← 메인으로 돌아가기</a>
+    </div>
+
+    <header>
+        <h1>촛불회 회보 요약 및 홈페이지 제작 작업 프로세스 <span class="version-badge">v1.1</span></h1>
+        <p style="margin: 8px 0 0 0; color: #57606a; font-size: 14px;">본 문서는 촛불회 회보 원천 데이터 추출부터 홈페이지 및 서브 페이지 구축까지의 전체 개발 공정을 체계적으로 기록한 현황판입니다.</p>
+    </header>
+
+    <div class="section">
+        <h2>1. 원천 데이터 추출 및 아카이브 구축 단계</h2>
+        <ul>
+            <li><strong>1차 메타데이터 및 전문 추출 (`1_1차추출 프롬프트`)</strong>: 월간 회보 PDF 파일을 분석하여 핵심 요약 메타데이터와 기고문 전문 아카이브를 분리·수집합니다.</li>
+            <li><strong>2차 요약 고도화 (`2_2차추출 프롬프트`)</strong>: 1차로 추출된 내용을 웹사이트 및 AI 활용에 적합하도록 정제하고 체계화합니다.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>2. 데이터 시트화 및 경로 자동화 단계</h2>
+        <ul>
+            <li><strong>구글 시트 통합 데이터베이스 구축 (`99_data_for_HPtable`)</strong>: 추출된 모든 회보 데이터를 구글 시트에 집계하여 호수별 유무, 발행년월, 링크 등을 매핑합니다.</li>
+            <li><strong>파일 경로 및 ID 자동 추출 스크립트 (`4-1_pdfID.js`, `4-2_모든파일PATH.js`)</strong>: PDF 파일들의 고유 ID와 웹 경로를 스크립트를 통해 자동으로 추출하여 시트 데이터와 연동합니다.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>3. 홈페이지 UI 레이아웃 및 프롬프트 고도화 단계</h2>
+        <ul>
+            <li><strong>데이터 기반 콘텐츠 생성기 (`5_홈페이지용 데이터 만들기 프롬프터`)</strong>: 시트 데이터를 활용해 홈페이지 콘텐츠를 일괄 가공합니다.</li>
+            <li><strong>격자형 테이블 레이아웃 구현 (`6_홈페이지 테이블 채우기1`, `6_홈페이지 테이블 채우기2`)</strong>: 중첩 테이블 오류를 방지하고, 단일 `<table>`과 `colspan`을 활용한 5열 격자 구조의 홈페이지 메인 화면 코딩 룰을 정립합니다.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>4. 서브 페이지 확장 및 AI 기능 구현 단계</h2>
+        <ul>
+            <li><strong>회원별 기고문 전문 보기 및 메뉴 확장 (`7_회원별 기고문 전문보기`, `07_기고문전문보기 메뉴`)</strong>: 회보 전체 목록 외에 개별 기고문 전문과 스토리, 캘린더 등의 서브 페이지 구현 (`articles.html`, `story.html`, `calendar50.html` 등).</li>
+            <li><strong>AI 추억 스토리 생성기 탑재 (`story.html`)</strong>: 구글 Gemini API를 연동하여 사용자가 검색 기간과 참고 항목을 선택하고 촛불회보 역사에 대해 질문·답변을 주고받을 수 있는 인터랙티브 페이지를 구축합니다.</li>
+        </ul>
+    </div>
+
+</body>
+</html>
