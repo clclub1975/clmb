@@ -1,4 +1,4 @@
-<!-- v3.6: 데이터 규칙 펼침 영역 상단에 구분선 및 '💡 올바른 데이터 입력 규칙 안내' 타이틀 추가 -->
+<!-- v4.1: 월력 셀 클릭 시 일자별 상세 이벤트를 확인할 수 있는 월간 일력(7열 달력) 모달 팝업 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -102,12 +102,12 @@
         .error-list { padding-left: 16px; font-size: 0.75rem; }
         .error-list li { margin: 2px 0; }
 
-        /* 접히는 올바른 데이터 입력 규칙 안내 영역 (구분선 및 타이틀 반영) */
+        /* 접히는 올바른 데이터 입력 규칙 안내 영역 */
         .rule-box-inner {
-            display: none; /* 기본 숨김 상태 */
+            display: none; 
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px solid #e8a7ad; /* 오류 목록과 안내문 사이의 명확한 구분선 */
+            border-top: 1px solid #e8a7ad; 
             color: #491217;
             font-size: 0.75rem;
         }
@@ -166,12 +166,21 @@
         .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
         
         /* 텍스트용 아이콘 스타일 (Legend 바) */
-        .legend-important { color: #ff0033; font-size: 1.1rem; } /* 중요: 별표 (선명한 빨강) */
-        .legend-event { color: #0066ff; font-size: 1.1rem; }     /* 행사: 원 (코발트 블루) */
-        .legend-marriage { color: #e91e63; font-size: 1.1rem; }  /* 결혼: 원 (마젠타 핑크) */
-        .legend-funeral { color: #111111; font-size: 1.1rem; }   /* 부고: 원 (딥 블랙) */
-        .legend-etc { color: #00ff00; font-size: 1.1rem; }       /* 기타: 원 (네온 그린) */
-        .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; } /* 오류: X (선명한 빨강, 배경 없음) */
+        .legend-important { color: #ff0033; font-size: 1.1rem; } 
+        .legend-event { color: #0066ff; font-size: 1.1rem; }     
+        .legend-marriage { color: #e91e63; font-size: 1.1rem; }  
+        .legend-funeral { color: #111111; font-size: 1.1rem; }   
+        .legend-etc { color: #00ff00; font-size: 1.1rem; }       
+        .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; } 
+
+        /* 월력 셀 인터랙션: 클릭 가능 안내 */
+        .month-cell {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        .month-cell:hover {
+            background-color: #e2e8f0 !important;
+        }
 
         /* 캘린더 셀 내부 기호 래퍼 */
         .symbol-wrapper {
@@ -194,15 +203,14 @@
             align-items: center;
             font-size: 1.05rem;
             font-weight: bold;
-            cursor: help;
             line-height: 1;
         }
         
-        .symbol-important { color: #ff0033; } /* 중요: 별표 (선명한 빨강) */
-        .symbol-event     { color: #0066ff; } /* 행사: 원 (코발트 블루) */
-        .symbol-marriage  { color: #e91e63; } /* 결혼: 원 (마젠타 핑크) */
-        .symbol-funeral   { color: #111111; } /* 부고: 원 (딥 블랙) */
-        .symbol-etc       { color: #00ff00; } /* 기타: 원 (네온 그린) */
+        .symbol-important { color: #ff0033; } 
+        .symbol-event     { color: #0066ff; } 
+        .symbol-marriage  { color: #e91e63; } 
+        .symbol-funeral   { color: #111111; } 
+        .symbol-etc       { color: #00ff00; } 
         .symbol-error { 
             color: #ff1744; 
             font-size: 0.85rem !important; 
@@ -228,6 +236,153 @@
             }
             .symbol-error { font-size: 0.8rem !important; }
         }
+
+        /* ===================================================
+           일력(월간 캘린더) 모달 팝업 스타일 (신규 추가)
+        =================================================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background-color: #2c3e50;
+            color: #ffffff;
+        }
+
+        .modal-header h2 {
+            font-size: 1.15rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .modal-close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 14px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* 7열 일력 달력 그리드 */
+        .day-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            width: 100%;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            padding: 6px 2px;
+            background-color: #f1f3f5;
+            border-radius: 4px;
+            color: #495057;
+        }
+        .day-header.sun { color: #e03131; }
+        .day-header.sat { color: #1971c2; }
+
+        .day-cell {
+            min-height: 68px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            font-size: 0.7rem;
+        }
+
+        .day-cell.other-month {
+            background-color: #f8f9fa;
+            opacity: 0.35;
+        }
+
+        .day-num {
+            font-weight: bold;
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+            color: #333;
+        }
+        .day-cell.sun .day-num { color: #e03131; }
+        .day-cell.sat .day-num { color: #1971c2; }
+
+        .day-events {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow-y: auto;
+        }
+
+        .day-event-item {
+            font-size: 0.65rem;
+            line-height: 1.25;
+            padding: 2px 4px;
+            border-radius: 3px;
+            background-color: #f1f5f9;
+            border-left: 3px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            white-space: normal;
+        }
+
+        .day-event-item .evt-icon {
+            font-weight: bold;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
+        .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
+        .day-event-item.marriage  { border-left-color: #e91e63; background-color: #fdf2f8; }
+        .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
+        .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
+        .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
     </style>
 </head>
 <body>
@@ -238,11 +393,11 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v3.6</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.1</span></span>
             </h1>
         </header>
 
-        <!-- 입력 데이터 오류 안내 영역 (내부에 '데이터 규칙' 버튼 및 구분된 안내문 통합) -->
+        <!-- 입력 데이터 오류 안내 영역 -->
         <div id="error-container" class="error-box" style="display: none;">
             <div class="error-header">
                 <h3>입력 데이터 오류 안내</h3>
@@ -250,7 +405,6 @@
             </div>
             <ul id="error-list" class="error-list"></ul>
 
-            <!-- 접히는 올바른 데이터 입력 규칙 내용 -->
             <div id="rule-box-inner" class="rule-box-inner">
                 <h4>💡 올바른 데이터 입력 규칙 안내</h4>
                 <ul>
@@ -276,6 +430,7 @@
             <div class="legend-item"><span class="legend-error">X 오류</span></div>
         </div>
 
+        <!-- 월력 본문 테이블 영역 -->
         <div class="table-container">
             <table id="calendar-table">
                 <thead>
@@ -292,10 +447,37 @@
         </div>
     </div>
 
+    <!-- 일력(월간 캘린더) 모달 팝업 구조 -->
+    <div id="dayModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">0000년 0월 일력</h2>
+                <button type="button" class="modal-close-btn" onclick="closeDayModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="day-calendar-grid">
+                    <div class="day-header sun">일</div>
+                    <div class="day-header">월</div>
+                    <div class="day-header">화</div>
+                    <div class="day-header">수</div>
+                    <div class="day-header">목</div>
+                    <div class="day-header">금</div>
+                    <div class="day-header sat">토</div>
+                </div>
+                <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 4px;">
+                    <!-- 자바스크립트로 일자별 셀 동적 생성 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=0&single=true&output=csv';
 
-        // 데이터 규칙 숨김/펼침 토글 함수
+        // 일력 렌더링에 사용할 전역 이벤트 맵
+        let globalEventMap = {};
+
+        // 데이터 규칙 토글
         function toggleRuleBox() {
             const ruleBox = document.getElementById('rule-box-inner');
             const toggleBtn = document.getElementById('rule-toggle-btn');
@@ -306,6 +488,139 @@
                 ruleBox.style.display = 'none';
                 toggleBtn.textContent = '데이터 규칙 ▼';
             }
+        }
+
+        // 모달 닫기
+        function closeDayModal() {
+            document.getElementById('dayModal').style.display = 'none';
+        }
+
+        // 모달 바깥 배경 클릭 시 닫기
+        function handleModalOverlayClick(event) {
+            if (event.target.id === 'dayModal') {
+                closeDayModal();
+            }
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDayModal();
+            }
+        });
+
+        // 월력 특정 월 클릭 시 일력(월간 캘린더) 모달 오픈
+        function openDayModal(year, month) {
+            const modal = document.getElementById('dayModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const dayGridBody = document.getElementById('dayGridBody');
+
+            modalTitle.textContent = `${year}년 ${month}월 일력`;
+            dayGridBody.innerHTML = '';
+
+            // 해당 연/월의 첫날 요일 및 말일 계산
+            const firstDayIndex = new Date(year, month - 1, 1).getDay(); // 0: 일요일 ~ 6: 토요일
+            const lastDate = new Date(year, month, 0).getDate();
+
+            // 해당 월의 등록 이벤트 데이터 가져오기
+            const key = `${year}-${month}`;
+            const monthEvents = globalEventMap[key] || [];
+
+            // 일자별 이벤트 맵 재구성 (key: 일자 숫자)
+            const dayEventsMap = {};
+            monthEvents.forEach(item => {
+                let day = null;
+                let title = '';
+                let place = '';
+                let category = '기타';
+
+                if (item.raw.includes('||')) {
+                    const parts = item.raw.split('||');
+                    category = parts[0].trim();
+                    const details = parts[1] ? parts[1].split('/') : [];
+                    if (details.length >= 2) {
+                        title = details[0].trim();
+                        const dateStr = details[1].trim();
+                        if (dateStr.length === 8) {
+                            day = parseInt(dateStr.substring(6, 8));
+                        }
+                        if (details.length >= 3) {
+                            place = details[2].trim();
+                        }
+                    }
+                }
+
+                if (day && day >= 1 && day <= lastDate) {
+                    if (!dayEventsMap[day]) dayEventsMap[day] = [];
+                    dayEventsMap[day].push({ category, title, place, isValid: item.isValid, raw: item.raw });
+                }
+            });
+
+            // 1. 시작 요일 전 빈 셀 추가
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell other-month';
+                dayGridBody.appendChild(emptyCell);
+            }
+
+            // 2. 1일부터 말일까지 셀 생성
+            for (let d = 1; d <= lastDate; d++) {
+                const cell = document.createElement('div');
+                const colIndex = (firstDayIndex + d - 1) % 7;
+                let dayClass = 'day-cell';
+                if (colIndex === 0) dayClass += ' sun';
+                if (colIndex === 6) dayClass += ' sat';
+                cell.className = dayClass;
+
+                let cellHtml = `<div class="day-num">${d}</div>`;
+                cellHtml += `<div class="day-events">`;
+
+                if (dayEventsMap[d]) {
+                    dayEventsMap[d].forEach(evt => {
+                        let icon = '●';
+                        let cssClass = 'day-event-item etc';
+                        let iconColor = '#00ff00';
+
+                        if (!evt.isValid) {
+                            icon = 'X';
+                            cssClass = 'day-event-item error';
+                            iconColor = '#ff1744';
+                        } else {
+                            switch (evt.category) {
+                                case '중요': icon = '★'; cssClass = 'day-event-item important'; iconColor = '#ff0033'; break;
+                                case '행사': icon = '●'; cssClass = 'day-event-item event'; iconColor = '#0066ff'; break;
+                                case '결혼': icon = '●'; cssClass = 'day-event-item marriage'; iconColor = '#e91e63'; break;
+                                case '부고': icon = '●'; cssClass = 'day-event-item funeral'; iconColor = '#111111'; break;
+                                case '기타': icon = '●'; cssClass = 'day-event-item etc'; iconColor = '#00ff00'; break;
+                            }
+                        }
+
+                        const placeText = evt.place ? ` (${evt.place})` : '';
+                        const displayText = evt.title ? `${evt.title}${placeText}` : evt.raw;
+                        cellHtml += `
+                            <div class="${cssClass}" title="${evt.raw.replace(/"/g, '&quot;')}">
+                                <span class="evt-icon" style="color: ${iconColor};">${icon}</span>
+                                <span>${displayText}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                cellHtml += `</div>`;
+                cell.innerHTML = cellHtml;
+                dayGridBody.appendChild(cell);
+            }
+
+            // 3. 마지막 요일 채움용 빈 셀 추가 (총 7의 배수 맞춤)
+            const totalCells = firstDayIndex + lastDate;
+            const remainingCells = (7 - (totalCells % 7)) % 7;
+            for (let i = 0; i < remainingCells; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell other-month';
+                dayGridBody.appendChild(emptyCell);
+            }
+
+            modal.style.display = 'flex';
         }
 
         async function loadCalendarData() {
@@ -407,6 +722,9 @@
                 }
             }
 
+            // 전역 이벤트 맵 갱신
+            globalEventMap = eventMap;
+
             // 오류 검증 결과 표시
             const errorContainer = document.getElementById('error-container');
             const errorListElement = document.getElementById('error-list');
@@ -430,6 +748,10 @@
 
                 for (let month = 1; month <= 12; month++) {
                     const td = document.createElement('td');
+                    td.className = 'month-cell';
+                    // 셀 클릭 시 일력(모달) 띄우기 이벤트 연결
+                    td.onclick = () => openDayModal(year, month);
+
                     const key = `${year}-${month}`;
 
                     if (eventMap[key] && eventMap[key].length > 0) {
@@ -468,4 +790,3 @@
     </script>
 </body>
 </html>
- 
