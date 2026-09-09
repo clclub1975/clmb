@@ -1,0 +1,44 @@
+# 촛불회 50년사 캘린더 - 구글 드라이브 사진 아카이브 및 다중 태그 연동 프로세스
+
+---
+
+### [1단계] 구글 드라이브 사진 준비 및 공개 설정
+1. 구글 드라이브에 **`[사진]`** 전용 폴더를 생성하고 1,000여 장의 사진을 업로드합니다.
+2. 폴더 우클릭 -> **공유** -> 일반 액세스를 **"링크가 있는 모든 사용자(뷰어)"**로 설정합니다.
+   * 이렇게 설정해야 외부 웹페이지(GitHub Pages)에서 사진을 차단 없이 불러올 수 있습니다.
+
+---
+
+### [2단계] Google Apps Script를 이용한 사진 DB(파일명 & 파일ID) 자동 추출
+*웹 콘솔 스크립트 대신 구글 스프레드시트 자체 자동화 도구를 사용하면 무한 스크롤 제한 없이 1초 만에 1,000장의 목록을 시트에 기록합니다.*
+
+1. 구글 스프레드시트에서 새 시트 탭(예: `사진DB`)을 생성합니다.
+2. 상단 메뉴: **[확장 프로그램] -> [Apps Script]** 클릭.
+3. 기본 코드를 지우고 아래 스크립트를 붙여넣은 뒤, `FOLDER_ID`에 구글 드라이브 사진 폴더 ID(URL 끝부분 영문/숫자)를 입력합니다.
+
+```javascript
+function extractDrivePhotos() {
+  const FOLDER_ID = '여기에_구글드라이브_사진폴더_ID_입력';
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('사진DB');
+  
+  // 헤더 작성
+  sheet.clear();
+  sheet.appendRow(['파일명', '파일ID', '일자태그(YYYYMMDD)', '다중자유태그(쉼표구분)']);
+  
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  const files = folder.getFiles();
+  const rows = [];
+  
+  while (files.hasNext()) {
+    const file = files.next();
+    const name = file.getName();
+    const id = file.getId();
+    
+    // 파일명, 파일ID 기본 입력 (일자/태그는 이후 수동 또는 파일명 기반 파싱)
+    rows.push([name, id, '', '']);
+  }
+  
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 4).setValues(rows);
+  }
+}
