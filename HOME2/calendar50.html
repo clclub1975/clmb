@@ -1,4 +1,4 @@
-<!-- v5.3: 위치 불일치 오류 발생 시 원본 시트의 실제 위치(연/월/일)에 오류('X')를 배치하여 시트 수정 용이성 확보 -->
+<!-- v5.4: 하단 상세 보기 내 오류 데이터(위치/형식) 명확한 경고 표시 및 스크롤 없이 3개 이상 볼 수 있도록 상세 영역 높이 확장 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -434,7 +434,7 @@
         }
 
         /* ===================================================
-           일력 하단 상세 영역 패널 스타일
+           일력 하단 상세 영역 패널 스타일 (높이 210px 확장)
         =================================================== */
         .day-detail-panel {
             background-color: #f8fafc;
@@ -472,11 +472,12 @@
             font-weight: 600;
         }
 
+        /* 이벤트 3개를 스크롤 없이 볼 수 있도록 max-height를 210px로 확장 */
         .detail-list {
             display: flex;
             flex-direction: column;
             gap: 6px;
-            max-height: 140px;
+            max-height: 210px;
             overflow-y: auto;
             padding-right: 2px;
         }
@@ -498,7 +499,7 @@
         .detail-item-card.marriage  { border-left-color: #f738f7; }
         .detail-item-card.funeral   { border-left-color: #111111; }
         .detail-item-card.etc       { border-left-color: #00ff00; }
-        .detail-item-card.error     { border-left-color: #ff1744; }
+        .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
 
         .detail-item-top {
             display: flex;
@@ -534,6 +535,14 @@
             padding-left: 2px;
         }
 
+        /* 오류 경고 상세 텍스트 */
+        .detail-item-error-msg {
+            font-size: 0.68rem;
+            color: #dc2626;
+            font-weight: 600;
+            padding-left: 2px;
+        }
+
         .detail-empty-msg {
             font-size: 0.75rem;
             color: #94a3b8;
@@ -557,6 +566,7 @@
             }
             .more-badge { font-size: 0.52rem; padding: 1px 2px; }
             .day-detail-panel { padding: 8px 10px; }
+            .detail-list { max-height: 180px; }
             .detail-date-title { font-size: 0.78rem; }
             .detail-item-card { padding: 5px 8px; }
             .detail-item-title { font-size: 0.75rem; }
@@ -571,7 +581,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.3</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.4</span></span>
             </h1>
         </header>
 
@@ -800,10 +810,12 @@
             events.forEach(evt => {
                 let chipClass = 'etc';
                 let cardClass = 'etc';
+                let chipText = evt.category;
 
                 if (!evt.isValid) {
                     chipClass = 'error';
                     cardClass = 'error';
+                    chipText = '오류 X';
                 } else {
                     switch (evt.category) {
                         case '중요': chipClass = 'important'; cardClass = 'important'; break;
@@ -815,15 +827,26 @@
                 }
 
                 const displayTitle = evt.title ? evt.title : evt.raw;
-                const placeHtml = evt.place ? `<div class="detail-item-place">📍 ${evt.place}</div>` : '';
+                const placeHtml = evt.place ? `<div class="detail-item-place">📍 장소: ${evt.place}</div>` : '';
+                
+                // 오류인 경우 상세 안내 문구 출력
+                let errorHtml = '';
+                if (!evt.isValid) {
+                    if (evt.errorReason) {
+                        errorHtml = `<div class="detail-item-error-msg">⚠️ ${evt.errorReason}</div>`;
+                    } else {
+                        errorHtml = `<div class="detail-item-error-msg">⚠️ 데이터 형식 오류: 원본을 확인하세요.</div>`;
+                    }
+                }
 
                 cardsHtml += `
                     <div class="detail-item-card ${cardClass}">
                         <div class="detail-item-top">
-                            <span class="category-chip ${chipClass}">${evt.category}</span>
+                            <span class="category-chip ${chipClass}">${chipText}</span>
                             <span class="detail-item-title">${displayTitle}</span>
                         </div>
                         ${placeHtml}
+                        ${errorHtml}
                     </div>
                 `;
             });
@@ -851,7 +874,6 @@
 
             const lunarHolidays = getLunarHolidaysForYear(year);
 
-            // 해당 연/월에 배속된 이벤트들을 일자(day)별로 매핑 (오류 항목도 시트의 행 일자에 매핑되어 있음)
             const dayEventsMap = {};
             monthEvents.forEach(item => {
                 const day = item.day;
@@ -954,7 +976,6 @@
             }
         }
 
-        // RFC-4180 표준 규격 CSV 파서
         function parseCSV(text) {
             let p = '', row = [''];
             const ret = [row];
@@ -977,7 +998,6 @@
             return ret;
         }
 
-        // 캘린더 파서 함수 (위치 불일치 시 원본 시트 위치에 오류 배치)
         function parseAndRenderCalendar(csvText) {
             const rows = parseCSV(csvText);
             if (rows.length < 2) return;
@@ -1020,7 +1040,6 @@
                     if (rawCellVal && rawCellVal !== '' && rawCellVal !== '·') {
                         const cellYearStr = yearMap[colIdx];
 
-                        // '&&' 구분자로 다중 이벤트 분리
                         const rawItems = rawCellVal.split('&&');
 
                         rawItems.forEach(itemStr => {
@@ -1031,8 +1050,10 @@
                             let category = '오류';
                             let title = cellVal;
                             let place = '';
+                            let errorReason = '';
 
                             if (!cellVal.includes('||')) {
+                                errorReason = `구분자('||') 누락 형식 오류`;
                                 errorList.push(`형식 오류: "${cellVal}"`);
                                 isDataValid = false;
                             } else {
@@ -1041,9 +1062,11 @@
                                 const details = parts[1] ? parts[1].split('/') : [];
 
                                 if (!validCategories.includes(category)) {
+                                    errorReason = `유효하지 않은 분류명 ('${category}')`;
                                     errorList.push(`분류 오류: "${cellVal}"`);
                                     isDataValid = false;
                                 } else if (details.length < 3) {
+                                    errorReason = `필드 누락 형식 오류 (제목/날짜/장소)`;
                                     errorList.push(`형식 오류: "${cellVal}"`);
                                     isDataValid = false;
                                 } else {
@@ -1053,6 +1076,7 @@
 
                                     const dateRegex = /^\d{8}$/;
                                     if (!dateRegex.test(dateStr)) {
+                                        errorReason = `날짜 형식 오류 (8자리 숫자 아님: '${dateStr}')`;
                                         errorList.push(`형식 오류: "${cellVal}"`);
                                         isDataValid = false;
                                     } else {
@@ -1060,8 +1084,8 @@
                                         const parsedMonth = parseInt(dateStr.substring(4, 6));
                                         const parsedDay = parseInt(dateStr.substring(6, 8));
 
-                                        // 원본 시트 위치와 다르면 '위치 오류' 기록
                                         if (parsedYear !== parseInt(cellYearStr) || parsedMonth !== rowMonthNum || parsedDay !== rowDayNum) {
+                                            errorReason = `입력 날짜 오류: ${dateStr} (시트 위치 ${cellYearStr}년 ${rowMonthNum}월 ${rowDayNum}일과 불일치)`;
                                             errorList.push(`위치 오류: "${cellVal}" (시트 위치: ${cellYearStr}년 ${rowMonthNum}월 ${rowDayNum}일)`);
                                             isDataValid = false;
                                         }
@@ -1069,7 +1093,6 @@
                                 }
                             }
 
-                            // 핵심: 유효/오류 여부와 무관하게 '원본 시트의 셀 위치'에 이벤트를 매핑
                             const key = `${cellYearStr}-${rowMonthNum}`;
                             if (!eventMap[key]) {
                                 eventMap[key] = [];
@@ -1080,7 +1103,8 @@
                                 category: category,
                                 title: title,
                                 place: place,
-                                day: rowDayNum // 시트의 실제 행 일자
+                                day: rowDayNum,
+                                errorReason: errorReason
                             });
                         });
                     }
@@ -1089,7 +1113,6 @@
 
             globalEventMap = eventMap;
 
-            // 오류 검증 결과 표시
             const errorContainer = document.getElementById('error-container');
             const errorListElement = document.getElementById('error-list');
             if (errorList.length > 0) {
@@ -1100,7 +1123,6 @@
                 errorContainer.style.display = 'none';
             }
 
-            // 캘린더 테이블 렌더링
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
 
@@ -1123,7 +1145,6 @@
                         symbolsHtml += eventMap[key].map(item => {
                             const tooltipText = item.raw.replace(/"/g, '&quot;');
                             
-                            // 유효하지 않은 데이터(위치 불일치 포함)는 무조건 'X' 표식
                             if (!item.isValid) {
                                 return `<span class="symbol-error" title="${tooltipText}">X</span>`;
                             }
