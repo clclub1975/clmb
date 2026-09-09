@@ -1,4 +1,4 @@
-<!-- v4.1: 월력 셀 클릭 시 일자별 상세 이벤트를 확인할 수 있는 월간 일력(7열 달력) 모달 팝업 구현 -->
+<!-- v4.2: 일력 내 분류 기호 제거, 결혼 색상 변경(#f7a6f7) 및 일력 7열 셀 가로폭 고정 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -168,12 +168,12 @@
         /* 텍스트용 아이콘 스타일 (Legend 바) */
         .legend-important { color: #ff0033; font-size: 1.1rem; } 
         .legend-event { color: #0066ff; font-size: 1.1rem; }     
-        .legend-marriage { color: #e91e63; font-size: 1.1rem; }  
+        .legend-marriage { color: #f7a6f7; font-size: 1.1rem; }  /* 결혼: #f7a6f7 적용 */
         .legend-funeral { color: #111111; font-size: 1.1rem; }   
         .legend-etc { color: #00ff00; font-size: 1.1rem; }       
         .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; } 
 
-        /* 월력 셀 인터랙션: 클릭 가능 안내 */
+        /* 월력 셀 인터랙션 */
         .month-cell {
             cursor: pointer;
             transition: background-color 0.15s ease;
@@ -208,7 +208,7 @@
         
         .symbol-important { color: #ff0033; } 
         .symbol-event     { color: #0066ff; } 
-        .symbol-marriage  { color: #e91e63; } 
+        .symbol-marriage  { color: #f7a6f7; } /* 결혼: #f7a6f7 적용 */
         .symbol-funeral   { color: #111111; } 
         .symbol-etc       { color: #00ff00; } 
         .symbol-error { 
@@ -238,7 +238,7 @@
         }
 
         /* ===================================================
-           일력(월간 캘린더) 모달 팝업 스타일 (신규 추가)
+           일력(월간 캘린더) 모달 팝업 스타일 (셀 크기 고정)
         =================================================== */
         .modal-overlay {
             display: none;
@@ -257,7 +257,7 @@
         .modal-content {
             background: #ffffff;
             width: 100%;
-            max-width: 650px;
+            max-width: 700px;
             border-radius: 10px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             overflow: hidden;
@@ -307,11 +307,11 @@
             overflow-y: auto;
         }
 
-        /* 7열 일력 달력 그리드 */
+        /* 7열 일력 달력 그리드: 가로폭 완전 고정 */
         .day-calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(7, minmax(0, 1fr)); /* 열 너비 균등 강제 */
+            gap: 5px;
             width: 100%;
         }
 
@@ -328,7 +328,7 @@
         .day-header.sat { color: #1971c2; }
 
         .day-cell {
-            min-height: 68px;
+            min-height: 75px;
             border: 1px solid #e9ecef;
             border-radius: 4px;
             padding: 4px;
@@ -336,6 +336,7 @@
             flex-direction: column;
             background-color: #ffffff;
             font-size: 0.7rem;
+            overflow: hidden; /* 내용물이 셀 크기를 왜곡하지 않도록 제한 */
         }
 
         .day-cell.other-month {
@@ -346,7 +347,7 @@
         .day-num {
             font-weight: bold;
             font-size: 0.75rem;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             color: #333;
         }
         .day-cell.sun .day-num { color: #e03131; }
@@ -359,27 +360,20 @@
             overflow-y: auto;
         }
 
+        /* 개별 이벤트 카드: 표식 제거 및 텍스트 줄바꿈 보장 */
         .day-event-item {
             font-size: 0.65rem;
             line-height: 1.25;
-            padding: 2px 4px;
+            padding: 3px 5px;
             border-radius: 3px;
-            background-color: #f1f5f9;
-            border-left: 3px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            white-space: normal;
+            background-color: #f8f9fa;
+            border-left: 3.5px solid #cbd5e1;
+            word-break: break-all; /* 셀 너비를 밀어내지 않고 자연스럽게 줄바꿈 */
         }
 
-        .day-event-item .evt-icon {
-            font-weight: bold;
-            font-size: 0.75rem;
-            flex-shrink: 0;
-        }
         .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
         .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
-        .day-event-item.marriage  { border-left-color: #e91e63; background-color: #fdf2f8; }
+        .day-event-item.marriage  { border-left-color: #f7a6f7; background-color: #fdf5fd; } /* 결혼 카드 */
         .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
         .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
         .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
@@ -393,7 +387,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.1</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.2</span></span>
             </h1>
         </header>
 
@@ -464,7 +458,7 @@
                     <div class="day-header">금</div>
                     <div class="day-header sat">토</div>
                 </div>
-                <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 4px;">
+                <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 5px;">
                     <!-- 자바스크립트로 일자별 셀 동적 생성 -->
                 </div>
             </div>
@@ -474,7 +468,6 @@
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=0&single=true&output=csv';
 
-        // 일력 렌더링에 사용할 전역 이벤트 맵
         let globalEventMap = {};
 
         // 데이터 규칙 토글
@@ -518,15 +511,12 @@
             modalTitle.textContent = `${year}년 ${month}월 일력`;
             dayGridBody.innerHTML = '';
 
-            // 해당 연/월의 첫날 요일 및 말일 계산
-            const firstDayIndex = new Date(year, month - 1, 1).getDay(); // 0: 일요일 ~ 6: 토요일
+            const firstDayIndex = new Date(year, month - 1, 1).getDay(); 
             const lastDate = new Date(year, month, 0).getDate();
 
-            // 해당 월의 등록 이벤트 데이터 가져오기
             const key = `${year}-${month}`;
             const monthEvents = globalEventMap[key] || [];
 
-            // 일자별 이벤트 맵 재구성 (key: 일자 숫자)
             const dayEventsMap = {};
             monthEvents.forEach(item => {
                 let day = null;
@@ -577,30 +567,27 @@
 
                 if (dayEventsMap[d]) {
                     dayEventsMap[d].forEach(evt => {
-                        let icon = '●';
                         let cssClass = 'day-event-item etc';
-                        let iconColor = '#00ff00';
 
                         if (!evt.isValid) {
-                            icon = 'X';
                             cssClass = 'day-event-item error';
-                            iconColor = '#ff1744';
                         } else {
                             switch (evt.category) {
-                                case '중요': icon = '★'; cssClass = 'day-event-item important'; iconColor = '#ff0033'; break;
-                                case '행사': icon = '●'; cssClass = 'day-event-item event'; iconColor = '#0066ff'; break;
-                                case '결혼': icon = '●'; cssClass = 'day-event-item marriage'; iconColor = '#e91e63'; break;
-                                case '부고': icon = '●'; cssClass = 'day-event-item funeral'; iconColor = '#111111'; break;
-                                case '기타': icon = '●'; cssClass = 'day-event-item etc'; iconColor = '#00ff00'; break;
+                                case '중요': cssClass = 'day-event-item important'; break;
+                                case '행사': cssClass = 'day-event-item event'; break;
+                                case '결혼': cssClass = 'day-event-item marriage'; break;
+                                case '부고': cssClass = 'day-event-item funeral'; break;
+                                case '기타': cssClass = 'day-event-item etc'; break;
                             }
                         }
 
                         const placeText = evt.place ? ` (${evt.place})` : '';
                         const displayText = evt.title ? `${evt.title}${placeText}` : evt.raw;
+                        
+                        // 기호 표식은 제거하고 텍스트와 좌측 바 색상만으로 표시
                         cellHtml += `
                             <div class="${cssClass}" title="${evt.raw.replace(/"/g, '&quot;')}">
-                                <span class="evt-icon" style="color: ${iconColor};">${icon}</span>
-                                <span>${displayText}</span>
+                                ${displayText}
                             </div>
                         `;
                     });
@@ -611,7 +598,7 @@
                 dayGridBody.appendChild(cell);
             }
 
-            // 3. 마지막 요일 채움용 빈 셀 추가 (총 7의 배수 맞춤)
+            // 3. 마지막 요일 채움용 빈 셀 추가
             const totalCells = firstDayIndex + lastDate;
             const remainingCells = (7 - (totalCells % 7)) % 7;
             for (let i = 0; i < remainingCells; i++) {
@@ -749,7 +736,6 @@
                 for (let month = 1; month <= 12; month++) {
                     const td = document.createElement('td');
                     td.className = 'month-cell';
-                    // 셀 클릭 시 일력(모달) 띄우기 이벤트 연결
                     td.onclick = () => openDayModal(year, month);
 
                     const key = `${year}-${month}`;
