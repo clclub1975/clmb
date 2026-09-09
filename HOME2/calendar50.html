@@ -1,4 +1,4 @@
-<!-- v3.5: 입력 데이터 규칙을 오류 안내 박스 내 '데이터 규칙' 토글 버튼 형태로 통합 및 축약 -->
+<!-- v3.6: 데이터 규칙 펼침 영역 상단에 구분선 및 '💡 올바른 데이터 입력 규칙 안내' 타이틀 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -102,14 +102,20 @@
         .error-list { padding-left: 16px; font-size: 0.75rem; }
         .error-list li { margin: 2px 0; }
 
-        /* 접히는 올바른 데이터 입력 규칙 안내 영역 */
+        /* 접히는 올바른 데이터 입력 규칙 안내 영역 (구분선 및 타이틀 반영) */
         .rule-box-inner {
             display: none; /* 기본 숨김 상태 */
             margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px dashed #f5c6cb;
+            padding-top: 10px;
+            border-top: 1px solid #e8a7ad; /* 오류 목록과 안내문 사이의 명확한 구분선 */
             color: #491217;
             font-size: 0.75rem;
+        }
+        .rule-box-inner h4 {
+            margin: 0 0 6px 0;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #721c24;
         }
         .rule-box-inner ul { margin: 0; padding-left: 16px; }
         .rule-box-inner li { margin-bottom: 4px; }
@@ -232,11 +238,11 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v3.5</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v3.6</span></span>
             </h1>
         </header>
 
-        <!-- 입력 데이터 오류 안내 영역 (내부에 '데이터 규칙' 버튼 통합) -->
+        <!-- 입력 데이터 오류 안내 영역 (내부에 '데이터 규칙' 버튼 및 구분된 안내문 통합) -->
         <div id="error-container" class="error-box" style="display: none;">
             <div class="error-header">
                 <h3>입력 데이터 오류 안내</h3>
@@ -246,6 +252,7 @@
 
             <!-- 접히는 올바른 데이터 입력 규칙 내용 -->
             <div id="rule-box-inner" class="rule-box-inner">
+                <h4>💡 올바른 데이터 입력 규칙 안내</h4>
                 <ul>
                     <li>유효한 데이터는 <strong>"분류항목 || 데이터 상세 내용"</strong>의 형식을 갖춘다.</li>
                     <li>유효한 분류항목은 <strong>'중요', '행사', '결혼', '부고', '기타'</strong> 이다.</li>
