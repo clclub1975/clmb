@@ -1,4 +1,4 @@
-<!-- v5.1: 공식 다중 이벤트 구분자 '&&' 지원 (줄바꿈/한줄 모두 지원) 및 개별 이벤트 파싱·검증 반영 -->
+<!-- v5.2: RFC-4180 표준 CSV 파서 내장 - 셀 내부 줄바꿈(Alt+Enter) 및 다중 이벤트(&&) 분리 왜곡 완전 해결 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -572,7 +572,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.1</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.2</span></span>
             </h1>
         </header>
 
@@ -974,15 +974,38 @@
             }
         }
 
-        // CSV 파서 함수 (&& 다중 이벤트 및 줄바꿈 지원)
+        // RFC-4180 표준 규격 CSV 파서 (큰따옴표 안의 줄바꿈 및 콤마 안전 처리)
+        function parseCSV(text) {
+            let p = '', row = [''];
+            const ret = [row];
+            let i = 0, r = 0, s = !0;
+            for (let l of text) {
+                if ('"' === l) {
+                    if (s && l === p) row[r] += l;
+                    s = !s;
+                } else if (',' === l && s) {
+                    l = row[++r] = '';
+                } else if ('\n' === l && s) {
+                    if ('\r' === p) row[r] = row[r].slice(0, -1);
+                    row = ret[++i] = [l = ''];
+                    r = 0;
+                } else {
+                    row[r] += l;
+                }
+                p = l;
+            }
+            return ret;
+        }
+
+        // 캘린더 파서 함수 (RFC-4180 기반 파싱 + && 다중 이벤트 완전 지원)
         function parseAndRenderCalendar(csvText) {
-            const lines = csvText.split('\n');
-            if (lines.length < 2) return;
+            const rows = parseCSV(csvText);
+            if (rows.length < 2) return;
 
             let headerCols = [];
             let headerRowIdx = -1;
-            for (let i = 0; i < lines.length; i++) {
-                const cols = lines[i].split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
+            for (let i = 0; i < rows.length; i++) {
+                const cols = rows[i].map(c => c.trim());
                 if (cols.includes('1975년') || cols.includes('1975')) {
                     headerCols = cols;
                     headerRowIdx = i;
@@ -1002,11 +1025,8 @@
             const errorList = [];
             const validCategories = ['중요', '결혼', '부고', '행사', '기타'];
 
-            for (let i = headerRowIdx + 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-
-                const cols = line.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
+            for (let i = headerRowIdx + 1; i < rows.length; i++) {
+                const cols = rows[i].map(c => c.trim());
                 const rowMonthStr = cols[0];
                 const rowDayStr = cols[1];
 
@@ -1020,11 +1040,12 @@
                     if (rawCellVal && rawCellVal !== '' && rawCellVal !== '·') {
                         const cellYearStr = yearMap[colIdx];
 
-                        // '&&' 구분자로 다중 이벤트 분리 (줄바꿈이 섞여도 개별 trim 처리)
+                        // '&&' 구분자로 다중 이벤트 분리
                         const rawItems = rawCellVal.split('&&');
 
                         rawItems.forEach(itemStr => {
-                            const cellVal = itemStr.trim();
+                            // 줄바꿈 문자(\r, \n)를 공백으로 치환하고 앞뒤 공백 제거
+                            const cellVal = itemStr.replace(/[\r\n]+/g, ' ').trim();
                             if (!cellVal) return;
 
                             let isDataValid = true;
