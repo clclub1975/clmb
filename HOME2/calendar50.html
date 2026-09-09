@@ -1,4 +1,4 @@
-<!-- v4.2: 일력 내 분류 기호 제거, 결혼 색상 변경(#f7a6f7) 및 일력 7열 셀 가로폭 고정 반영 -->
+<!-- v4.3: 법정 공휴일 빨간 날 표시, 일력 내 장소 제외(명칭 단독 표시) 및 다중 이벤트 '+N개 더보기' 뱃지 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -168,7 +168,7 @@
         /* 텍스트용 아이콘 스타일 (Legend 바) */
         .legend-important { color: #ff0033; font-size: 1.1rem; } 
         .legend-event { color: #0066ff; font-size: 1.1rem; }     
-        .legend-marriage { color: #f7a6f7; font-size: 1.1rem; }  /* 결혼: #f7a6f7 적용 */
+        .legend-marriage { color: #f7a6f7; font-size: 1.1rem; }  
         .legend-funeral { color: #111111; font-size: 1.1rem; }   
         .legend-etc { color: #00ff00; font-size: 1.1rem; }       
         .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; } 
@@ -208,7 +208,7 @@
         
         .symbol-important { color: #ff0033; } 
         .symbol-event     { color: #0066ff; } 
-        .symbol-marriage  { color: #f7a6f7; } /* 결혼: #f7a6f7 적용 */
+        .symbol-marriage  { color: #f7a6f7; } 
         .symbol-funeral   { color: #111111; } 
         .symbol-etc       { color: #00ff00; } 
         .symbol-error { 
@@ -238,7 +238,7 @@
         }
 
         /* ===================================================
-           일력(월간 캘린더) 모달 팝업 스타일 (셀 크기 고정)
+           일력(월간 캘린더) 모달 팝업 스타일
         =================================================== */
         .modal-overlay {
             display: none;
@@ -307,10 +307,10 @@
             overflow-y: auto;
         }
 
-        /* 7열 일력 달력 그리드: 가로폭 완전 고정 */
+        /* 7열 일력 달력 그리드 */
         .day-calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, minmax(0, 1fr)); /* 열 너비 균등 강제 */
+            grid-template-columns: repeat(7, minmax(0, 1fr));
             gap: 5px;
             width: 100%;
         }
@@ -336,7 +336,8 @@
             flex-direction: column;
             background-color: #ffffff;
             font-size: 0.7rem;
-            overflow: hidden; /* 내용물이 셀 크기를 왜곡하지 않도록 제한 */
+            overflow: hidden;
+            position: relative;
         }
 
         .day-cell.other-month {
@@ -344,23 +345,38 @@
             opacity: 0.35;
         }
 
+        .day-num-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
         .day-num {
             font-weight: bold;
             font-size: 0.75rem;
-            margin-bottom: 4px;
             color: #333;
         }
         .day-cell.sun .day-num { color: #e03131; }
         .day-cell.sat .day-num { color: #1971c2; }
+        .day-cell.holiday .day-num { color: #e03131 !important; } /* 공휴일 빨간색 */
+
+        .holiday-tag {
+            font-size: 0.6rem;
+            color: #e03131;
+            font-weight: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .day-events {
             display: flex;
             flex-direction: column;
             gap: 3px;
-            overflow-y: auto;
         }
 
-        /* 개별 이벤트 카드: 표식 제거 및 텍스트 줄바꿈 보장 */
+        /* 개별 이벤트 카드 (장소 제외, 명칭만 표시) */
         .day-event-item {
             font-size: 0.65rem;
             line-height: 1.25;
@@ -368,15 +384,37 @@
             border-radius: 3px;
             background-color: #f8f9fa;
             border-left: 3.5px solid #cbd5e1;
-            word-break: break-all; /* 셀 너비를 밀어내지 않고 자연스럽게 줄바꿈 */
+            word-break: break-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: default;
         }
 
         .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
         .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
-        .day-event-item.marriage  { border-left-color: #f7a6f7; background-color: #fdf5fd; } /* 결혼 카드 */
+        .day-event-item.marriage  { border-left-color: #f7a6f7; background-color: #fdf5fd; }
         .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
         .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
         .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
+
+        /* 다중 이벤트 더보기 뱃지 */
+        .more-badge {
+            font-size: 0.6rem;
+            color: #495057;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            padding: 1px 6px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1px;
+            transition: all 0.15s ease;
+        }
+        .more-badge:hover {
+            background-color: #ced4da;
+            color: #212529;
+        }
     </style>
 </head>
 <body>
@@ -387,7 +425,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.2</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v4.3</span></span>
             </h1>
         </header>
 
@@ -469,6 +507,18 @@
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=0&single=true&output=csv';
 
         let globalEventMap = {};
+
+        // 양력 법정 공휴일 정의 (월-일)
+        const solarHolidays = {
+            '1-1': '신정',
+            '3-1': '삼일절',
+            '5-5': '어린이날',
+            '6-6': '현충일',
+            '8-15': '광복절',
+            '10-3': '개천절',
+            '10-9': '한글날',
+            '12-25': '성탄절'
+        };
 
         // 데이터 규칙 토글
         function toggleRuleBox() {
@@ -560,37 +610,64 @@
                 let dayClass = 'day-cell';
                 if (colIndex === 0) dayClass += ' sun';
                 if (colIndex === 6) dayClass += ' sat';
+
+                // 공휴일 확인
+                const holidayKey = `${month}-${d}`;
+                const holidayName = solarHolidays[holidayKey];
+                if (holidayName) {
+                    dayClass += ' holiday';
+                }
                 cell.className = dayClass;
 
-                let cellHtml = `<div class="day-num">${d}</div>`;
+                // 날짜 숫자 및 공휴일 명칭 표시
+                let cellHtml = `
+                    <div class="day-num-wrap">
+                        <span class="day-num">${d}</span>
+                        ${holidayName ? `<span class="holiday-tag">${holidayName}</span>` : ''}
+                    </div>
+                `;
                 cellHtml += `<div class="day-events">`;
 
-                if (dayEventsMap[d]) {
-                    dayEventsMap[d].forEach(evt => {
-                        let cssClass = 'day-event-item etc';
+                if (dayEventsMap[d] && dayEventsMap[d].length > 0) {
+                    const events = dayEventsMap[d];
+                    const firstEvt = events[0];
 
-                        if (!evt.isValid) {
-                            cssClass = 'day-event-item error';
-                        } else {
-                            switch (evt.category) {
-                                case '중요': cssClass = 'day-event-item important'; break;
-                                case '행사': cssClass = 'day-event-item event'; break;
-                                case '결혼': cssClass = 'day-event-item marriage'; break;
-                                case '부고': cssClass = 'day-event-item funeral'; break;
-                                case '기타': cssClass = 'day-event-item etc'; break;
-                            }
+                    let cssClass = 'day-event-item etc';
+                    if (!firstEvt.isValid) {
+                        cssClass = 'day-event-item error';
+                    } else {
+                        switch (firstEvt.category) {
+                            case '중요': cssClass = 'day-event-item important'; break;
+                            case '행사': cssClass = 'day-event-item event'; break;
+                            case '결혼': cssClass = 'day-event-item marriage'; break;
+                            case '부고': cssClass = 'day-event-item funeral'; break;
+                            case '기타': cssClass = 'day-event-item etc'; break;
                         }
+                    }
 
-                        const placeText = evt.place ? ` (${evt.place})` : '';
-                        const displayText = evt.title ? `${evt.title}${placeText}` : evt.raw;
-                        
-                        // 기호 표식은 제거하고 텍스트와 좌측 바 색상만으로 표시
+                    // 상세 전체 툴팁 텍스트 구성 (장소 정보 보존)
+                    const fullTooltip = events.map((e, idx) => {
+                        const pText = e.place ? ` (${e.place})` : '';
+                        return `[${idx + 1}] ${e.category}: ${e.title}${pText}`;
+                    }).join('\n');
+
+                    // 셀 내부는 장소를 제외하고 '이벤트 명칭'만 표시
+                    const displayText = firstEvt.title ? firstEvt.title : firstEvt.raw;
+                    cellHtml += `
+                        <div class="${cssClass}" title="${fullTooltip.replace(/"/g, '&quot;')}">
+                            ${displayText}
+                        </div>
+                    `;
+
+                    // 하루 2개 이상일 경우 +N개 더보기 뱃지 노출
+                    if (events.length > 1) {
+                        const moreCount = events.length - 1;
                         cellHtml += `
-                            <div class="${cssClass}" title="${evt.raw.replace(/"/g, '&quot;')}">
-                                ${displayText}
+                            <div class="more-badge" title="${fullTooltip.replace(/"/g, '&quot;')}">
+                                +${moreCount}개 더보기
                             </div>
                         `;
-                    });
+                    }
                 }
 
                 cellHtml += `</div>`;
