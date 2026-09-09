@@ -1,4 +1,4 @@
-<!-- v3.2: v2.5 구조 유지, 데이터 입력 규칙 가이드 추가 및 표식(색상/기호/크기) 업데이트 반영 -->
+<!-- v3.3: 중요(별표) 외 행사/결혼/부고/기타 표식을 네모(■)로 통일, 색상 재지정 및 오류(X) 배경색 제거 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -128,7 +128,7 @@
             background-color: #f1f3f5; 
             color: #495057; 
             font-weight: 600; 
-            vertical-align: middle;
+            vertical-align: middle; 
         }
         tr:nth-child(even) { background-color: #fcfcfc; }
         tr:hover { background-color: #f1f3f5; }
@@ -136,13 +136,13 @@
         th:not(:first-child), td:not(:first-child) { width: 7.55%; }
         .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
         
-        /* 텍스트용 아이콘 스타일 (Legend 바에서 사용) */
-        .legend-important { color: #dc3545; font-size: 1.1rem; } /* 중요: 빨간색 */
-        .legend-event { color: #dc3545; font-size: 1.1rem; }     /* 행사: 빨간색 */
-        .legend-marriage { color: #ff69b4; font-size: 1.35rem; }  /* 결혼: 분홍색, 크기 확대 */
-        .legend-funeral { color: #212529; font-size: 1.1rem; }   /* 부고: 검은색 */
-        .legend-etc { color: #27ae60; font-size: 1.1rem; }       /* 기타: 녹색 */
-        .legend-error { color: #c0392b; background-color: #fadbd8; padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; }
+        /* 텍스트용 아이콘 스타일 (Legend 바) */
+        .legend-important { color: #b71c1c; font-size: 1.1rem; } /* 중요: 별표 (진한 빨강) */
+        .legend-event { color: #0d47a1; font-size: 1.1rem; }     /* 행사: 네모 (진한 파랑) */
+        .legend-marriage { color: #ff69b4; font-size: 1.1rem; }  /* 결혼: 네모 (분홍) */
+        .legend-funeral { color: #212529; font-size: 1.1rem; }   /* 부고: 네모 (검은색) */
+        .legend-etc { color: #2e7d32; font-size: 1.1rem; }       /* 기타: 네모 (녹색) */
+        .legend-error { color: #d32f2f; font-weight: bold; font-size: 0.85rem; } /* 오류: X (빨강, 배경 없음) */
 
         /* 캘린더 셀 내부 기호 래퍼 */
         .symbol-wrapper {
@@ -169,20 +169,18 @@
             line-height: 1;
         }
         
-        .symbol-important { color: #dc3545; }
-        .symbol-event { color: #dc3545; }
-        .symbol-marriage { 
-            color: #ff69b4; 
-            font-size: 1.35rem !important; /* 기호 보정용 크기 확대 */
-        }
-        .symbol-funeral { color: #212529; }
-        .symbol-etc { color: #27ae60; }
+        .symbol-important { color: #b71c1c; } /* 중요: 진한 빨강 */
+        .symbol-event     { color: #0d47a1; } /* 행사: 진한 파랑 */
+        .symbol-marriage  { color: #ff69b4; } /* 결혼: 분홍 */
+        .symbol-funeral   { color: #212529; } /* 부고: 검은색 */
+        .symbol-etc       { color: #2e7d32; } /* 기타: 녹색 */
         .symbol-error { 
-            color: #c0392b; 
-            font-size: 0.75rem !important; 
-            background-color: #fadbd8; 
-            border-radius: 2px; 
-            padding: 1px 3px;
+            color: #d32f2f; 
+            font-size: 0.85rem !important; 
+            font-weight: bold;
+            background-color: transparent; /* 배경색 없음 */
+            border-radius: 0; 
+            padding: 0;
         }
         .symbol-empty { 
             color: #adb5bd; 
@@ -199,8 +197,7 @@
             .symbol-wrapper span {
                 font-size: 0.85rem;
             }
-            .symbol-marriage { font-size: 1.15rem !important; }
-            .symbol-error { font-size: 0.7rem !important; }
+            .symbol-error { font-size: 0.8rem !important; }
         }
     </style>
 </head>
@@ -212,7 +209,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v3.2</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v3.3</span></span>
             </h1>
         </header>
 
@@ -241,9 +238,9 @@
         <div class="legend-bar">
             <div class="legend-item"><span class="legend-important">★</span> 중요</div>
             <div class="legend-item"><span class="legend-event">■</span> 행사</div>
-            <div class="legend-item"><span class="legend-marriage">●</span> 결혼</div>
-            <div class="legend-item"><span class="legend-funeral">▼</span> 부고</div>
-            <div class="legend-item"><span class="legend-etc">◆</span> 기타</div>
+            <div class="legend-item"><span class="legend-marriage">■</span> 결혼</div>
+            <div class="legend-item"><span class="legend-funeral">■</span> 부고</div>
+            <div class="legend-item"><span class="legend-etc">■</span> 기타</div>
             <div class="legend-item"><span class="legend-error">X 오류</span></div>
         </div>
 
@@ -302,7 +299,6 @@
 
             const eventMap = {};
             const errorList = [];
-            // '중요' 분류 항목 추가
             const validCategories = ['중요', '결혼', '부고', '행사', '기타'];
 
             for (let i = headerRowIdx + 1; i < lines.length; i++) {
@@ -405,9 +401,9 @@
                             switch(category) {
                                 case '중요': return `<span class="symbol-important" title="${tooltipText}">★</span>`;
                                 case '행사': return `<span class="symbol-event" title="${tooltipText}">■</span>`;
-                                case '결혼': return `<span class="symbol-marriage" title="${tooltipText}">●</span>`;
-                                case '부고': return `<span class="symbol-funeral" title="${tooltipText}">▼</span>`;
-                                case '기타': return `<span class="symbol-etc" title="${tooltipText}">◆</span>`;
+                                case '결혼': return `<span class="symbol-marriage" title="${tooltipText}">■</span>`;
+                                case '부고': return `<span class="symbol-funeral" title="${tooltipText}">■</span>`;
+                                case '기타': return `<span class="symbol-etc" title="${tooltipText}">■</span>`;
                                 default: return `<span class="symbol-error" title="${tooltipText}">X</span>`;
                             }
                         }).join('');
