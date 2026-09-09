@@ -1,4 +1,4 @@
-<!-- v5.8: 모든 오류 표시 레이아웃 통일 및 문법 오류 수정 (정상 로드 복구) -->
+<!-- v5.9: 오류 뱃지(1행)와 오류 텍스트(2행) 동일 폭 기준 상하 수직 중앙 정렬(Center) 완벽 보정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -532,7 +532,7 @@
             word-break: break-all;
         }
 
-        /* 오류 뱃지 (첫 번째 줄 우측 끝에 공통 적용) */
+        /* 1행 우측 끝 오류 뱃지: 고정 최소 너비 및 완전 중앙 정렬 */
         .detail-error-badge-common {
             margin-left: auto;
             font-size: 0.62rem;
@@ -545,6 +545,10 @@
             white-space: nowrap;
             line-height: 1.2;
             flex-shrink: 0;
+            min-width: 64px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
         }
 
@@ -562,7 +566,7 @@
             padding-left: 2px;
         }
 
-        /* 장소 줄 우측 끝에 배치되는 오류 입력값 */
+        /* 2행 우측 끝 오류 입력값: 1행 뱃지와 동일한 폭과 정렬로 수직 정렬 일치 */
         .detail-error-val-common {
             font-size: 0.68rem;
             font-weight: bold;
@@ -571,7 +575,11 @@
             margin-left: auto;
             padding-left: 8px;
             white-space: nowrap;
-            text-align: right;
+            min-width: 64px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
 
         .detail-empty-msg {
@@ -601,8 +609,8 @@
             .detail-date-title { font-size: 0.78rem; }
             .detail-item-card { padding: 5px 8px; }
             .detail-item-title { font-size: 0.75rem; }
-            .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; }
-            .detail-error-val-common { font-size: 0.58rem; }
+            .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; min-width: 54px; }
+            .detail-error-val-common { font-size: 0.58rem; min-width: 54px; }
         }
     </style>
 </head>
@@ -614,7 +622,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.8</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.9</span></span>
             </h1>
         </header>
 
@@ -869,10 +877,10 @@
                     const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
                     const badgeText = (evt.errorType === 'LOCATION_ERROR') ? '날짜 오류' : '분류 오류';
                     
-                    // 1열 우측: 오류 뱃지 단독 배치
+                    // 1열 우측: 오류 뱃지 (가운데 정렬)
                     topErrorHtml = `<span class="detail-error-badge-common" title="${tooltip}">${badgeText}</span>`;
                     
-                    // 2열 우측: 실제 입력값 배치 (날짜 or 잘못된 분류명)
+                    // 2열 우측: 실제 입력값 (1열 뱃지와 너비 및 정렬 축 완전 일치)
                     if (evt.errorInputVal) {
                         bottomErrorHtml = `<span class="detail-error-val-common" title="${tooltip}">${evt.errorInputVal}</span>`;
                     }
