@@ -1,4 +1,4 @@
-<!-- v5.7: 날짜 오류 시 YYYYMMDD를 장소 행(두 번째 줄) 우측으로 이동하여 카드 높이 절약 및 분류 오류 텍스트 가운데 정렬 적용 -->
+<!-- v5.8: 모든 오류 표시 레이아웃 통일 (1열 우측: 오류 뱃지 / 2열 우측: 실제 입력값 동일 행간 및 정렬 배치) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -500,7 +500,7 @@
         .detail-item-card.etc       { border-left-color: #00ff00; }
         .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
 
-        /* 타이틀 첫 번째 줄: 칩 + 제목 + (우측 끝 오류 뱃지) */
+        /* 타이틀 첫 번째 줄: 칩 + 제목 + 우측 끝 오류 뱃지 단독 배치 */
         .detail-item-top {
             display: flex;
             align-items: center;
@@ -532,8 +532,8 @@
             word-break: break-all;
         }
 
-        /* 1) 단독 오류 뱃지 (날짜 오류 시 우측 상단 단독 배치) */
-        .detail-error-badge-standalone {
+        /* 오류 뱃지 (첫 번째 줄 우측 끝에 공통 적용) */
+        .detail-error-badge-common {
             margin-left: auto;
             font-size: 0.62rem;
             font-weight: bold;
@@ -545,40 +545,10 @@
             white-space: nowrap;
             line-height: 1.2;
             flex-shrink: 0;
-        }
-
-        /* 2) 분류 오류 래퍼 (상하 가운데 정렬: center) */
-        .detail-error-container {
-            margin-left: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* 가운데 정렬 */
-            gap: 2px;
-            flex-shrink: 0;
-        }
-
-        .detail-error-badge {
-            font-size: 0.62rem;
-            font-weight: bold;
-            color: #dc2626;
-            background-color: #fee2e2;
-            border: 1px solid #fecaca;
-            border-radius: 4px;
-            padding: 1px 6px;
-            white-space: nowrap;
-            line-height: 1.2;
             text-align: center;
         }
 
-        .detail-error-val {
-            font-size: 0.65rem;
-            font-weight: bold;
-            color: #b91c1c;
-            line-height: 1.1;
-            text-align: center; /* 가운데 정렬 */
-        }
-
-        /* 두 번째 줄: 장소(좌측) + 날짜오류 시 실제 YYYYMMDD(우측 끝) */
+        /* 두 번째 줄: 장소(좌측) + 오류 실제 입력값(우측 끝) */
         .detail-bottom-row {
             display: flex;
             align-items: center;
@@ -592,8 +562,8 @@
             padding-left: 2px;
         }
 
-        /* 장소 줄 우측 끝에 배치되는 YYYYMMDD 텍스트 */
-        .detail-error-date-val {
+        /* 장소 줄 우측 끝에 배치되는 오류 입력값(날짜 or 분류 텍스트) */
+        .detail-error-val-common {
             font-size: 0.68rem;
             font-weight: bold;
             color: #b91c1c;
@@ -601,6 +571,7 @@
             margin-left: auto;
             padding-left: 8px;
             white-space: nowrap;
+            text-align: right;
         }
 
         .detail-empty-msg {
@@ -630,8 +601,8 @@
             .detail-date-title { font-size: 0.78rem; }
             .detail-item-card { padding: 5px 8px; }
             .detail-item-title { font-size: 0.75rem; }
-            .detail-error-badge, .detail-error-badge-standalone { font-size: 0.55rem; padding: 1px 4px; }
-            .detail-error-val, .detail-error-date-val { font-size: 0.58rem; }
+            .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; }
+            .detail-error-val-common { font-size: 0.58rem; }
         }
     </style>
 </head>
@@ -643,7 +614,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
-                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.7</span></span>
+                <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v5.8</span></span>
             </h1>
         </header>
 
@@ -781,7 +752,7 @@
             for (let m = 1; m < lunarMonth; m++) {
                 totalDays += (lunarInfo[curIdx] & (0x10000 >> m)) ? 30 : 29;
                 if (curLeap > 0 && curLeap === m) {
-                    totalDays += (lunarInfo[curIdx] & 0x10000) ? 30 : 29;
+                    totalDays += (lunarInfo[curIdx] & (0x10000) ? 30 : 29;
                 }
             }
             totalDays += (lunarDay - 1);
@@ -891,29 +862,20 @@
                 const displayTitle = evt.title ? evt.title : evt.raw;
                 const placeHtml = evt.place ? `<div class="detail-item-place">📍 장소: ${evt.place}</div>` : `<div class="detail-item-place"></div>`;
                 
-                // 오류 처리 영역 분기
+                // 모든 오류 유형에 대해 1열 우측 끝(뱃지), 2열 우측 끝(실제 입력값)으로 완벽 통일
                 let topErrorHtml = '';
                 let bottomErrorHtml = '';
 
                 if (!evt.isValid) {
                     const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
-
-                    if (evt.errorType === 'LOCATION_ERROR') {
-                        // 1) 날짜 오류: 상단 우측 끝에는 '날짜 오류' 뱃지만 단독 배치
-                        topErrorHtml = `<span class="detail-error-badge-standalone" title="${tooltip}">날짜 오류</span>`;
-                        // 2) 실제 입력된 YYYYMMDD는 장소 행(두 번째 줄) 우측 끝에 배치하여 줄바꿈 방지
-                        if (evt.errorInputVal) {
-                            bottomErrorHtml = `<span class="detail-error-date-val" title="${tooltip}">${evt.errorInputVal}</span>`;
-                        }
-                    } else {
-                        // 3) 분류 오류: 상단 우측 끝에 '분류 오류' 뱃지와 그 아래 잘못된 텍스트를 상하 가운데 정렬(Center)로 배치
-                        const detailVal = evt.errorInputVal ? evt.errorInputVal : '';
-                        topErrorHtml = `
-                            <div class="detail-error-container" title="${tooltip}">
-                                <span class="detail-error-badge">분류 오류</span>
-                                <span class="detail-error-val">${detailVal}</span>
-                            </div>
-                        `;
+                    const badgeText = (evt.errorType === 'LOCATION_ERROR') ? '날짜 오류' : '분류 오류';
+                    
+                    // 1) 첫 번째 줄: 오류 뱃지만 깔끔하게 단독 배치
+                    topErrorHtml = `<span class="detail-error-badge-common" title="${tooltip}">${badgeText}</span>`;
+                    
+                    // 2) 두 번째 줄: 실제 입력값(날짜 or 잘못된 분류명)을 장소와 같은 높이 우측 끝에 배치
+                    if (evt.errorInputVal) {
+                        bottomErrorHtml = `<span class="detail-error-val-common" title="${tooltip}">${evt.errorInputVal}</span>`;
                     }
                 }
 
