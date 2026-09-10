@@ -1,10 +1,10 @@
-<!-- v3.1: 촛불 아이콘에 process.html 링크 연동 및 v3.1 버전 업그레이드 -->
+<!-- v4.0: index.html 메인 페이지에 '촛불회 50년사 캘린더' 메뉴 카드 추가 및 v4.0 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 50년사 아카이브 v3.1</title>
+    <title>촛불회 50년사 아카이브 v4.0</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -15,6 +15,7 @@
             --card-bg: #ffffff;
             --border-color: #e9ecef;
         }
+
         body {
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif;
             background-color: var(--bg-color);
@@ -27,6 +28,7 @@
             word-break: keep-all;
             word-wrap: break-word;
         }
+
         .dev-meta-bar {
             background-color: #1a252f;
             color: #f1c40f;
@@ -36,6 +38,7 @@
             font-family: monospace;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
+
         header {
             background: linear-gradient(135deg, #2c3e50, #1a252f);
             color: white;
@@ -43,6 +46,7 @@
             padding: 50px 20px;
             box-shadow: inset 0 -3px 0 var(--primary-color);
         }
+
         .header-title-area {
             display: flex;
             align-items: center;
@@ -51,20 +55,24 @@
             flex-wrap: wrap;
             margin-bottom: 10px;
         }
+
         header h1 {
             font-size: 2.2rem;
             margin: 0;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
+
         .header-title-area a {
             color: inherit;
             text-decoration: none;
             transition: opacity 0.2s ease;
         }
+
         .header-title-area a:hover {
             opacity: 0.8;
         }
+
         .version-tag {
             background-color: var(--primary-color);
             color: white;
@@ -73,17 +81,20 @@
             font-size: 0.85rem;
             font-weight: 600;
         }
+
         header p {
             font-size: 1.05rem;
             color: #bdc3c7;
             margin: 0;
         }
+
         main {
             max-width: 900px;
             width: 90%;
             margin: -30px auto 40px auto;
             flex: 1;
         }
+
         .notice-card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -94,14 +105,17 @@
             font-size: 0.95rem;
             line-height: 1.6;
         }
+
         .notice-card strong {
             color: var(--primary-color);
         }
+
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 20px;
         }
+
         .menu-card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -117,26 +131,31 @@
             justify-content: center;
             align-items: center;
         }
+
         .menu-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
             border-color: var(--primary-color);
         }
+
         .menu-card .icon {
             font-size: 2.5rem;
             margin-bottom: 15px;
         }
+
         .menu-card h2 {
             font-size: 1.2rem;
             margin: 0 0 8px 0;
             color: var(--text-main);
         }
+
         .menu-card p {
             font-size: 0.85rem;
             color: var(--text-muted);
             margin: 0;
             line-height: 1.4;
         }
+
         footer {
             text-align: center;
             padding: 30px;
@@ -145,21 +164,26 @@
             background-color: #ffffff;
             border-top: 1px solid var(--border-color);
         }
+
         @media (max-width: 768px) {
             header {
                 padding: 40px 15px;
             }
+
             header h1 {
                 font-size: 1.8rem;
             }
+
             .header-title-area {
                 flex-direction: column;
                 gap: 5px;
             }
+
             main {
                 width: 92%;
                 margin-top: -20px;
             }
+
             .menu-grid {
                 grid-template-columns: 1fr;
             }
@@ -169,13 +193,13 @@
 <body>
 
     <div class="dev-meta-bar">
-        <!-- v3.1: 촛불 아이콘에 process.html 링크 연동 및 v3.1 버전 업그레이드 -->
+        <!-- v4.0: index.html 메인 페이지에 '촛불회 50년사 캘린더' 메뉴 카드 추가 및 v4.0 버전 업그레이드 -->
     </div>
 
     <header>
         <div class="header-title-area">
             <h1><a href="HOME2/process.html" title="작업 프로세스로 이동">🕯️</a> 촛불회 50년사 아카이브</h1>
-            <span class="version-tag">v3.1</span>
+            <span class="version-tag">v4.0</span>
         </div>
         <p>1975년부터 이어온 반세기의 기록과 기억을 담다</p>
     </header>
@@ -203,6 +227,12 @@
                 <div class="icon">📖</div>
                 <h2>기고문 전문 보기</h2>
                 <p>회원들의 손으로 직접 써 내려간 진솔한 기고문과 감동의 전문을 열람합니다.</p>
+            </a>
+
+            <a href="HOME2/calendar50.html" class="menu-card">
+                <div class="icon">📅</div>
+                <h2>촛불회 50년사 캘린더</h2>
+                <p>반세기의 발자취와 주요 역사적 일정들을 달력 형태로 한눈에 살펴봅니다.</p>
             </a>
         </div>
     </main>
