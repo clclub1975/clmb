@@ -1,4 +1,4 @@
-<!-- v7.1: 월력 표식 마우스 호버(tooltip) 시 일자, 행사명, 장소, 비고까지 모두 표시되도록 개선 -->
+<!-- v7.2: 텍스트 통합 검색(행사명, 장소, 비고) 및 캘린더/일력 실시간 하이라이트 기능 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -165,6 +165,68 @@
       margin-bottom: 4px;
     }
 
+    /* 검색 바 영역 스타일 */
+    .search-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 8px 36px 8px 12px;
+      font-size: 0.88rem;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .search-clear-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      color: #94a3b8;
+      cursor: pointer;
+      display: none;
+      line-height: 1;
+      padding: 2px;
+    }
+
+    .search-clear-btn:hover {
+      color: #475569;
+    }
+
+    .search-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e293b;
+      background-color: #fef08a;
+      border: 1px solid #facc15;
+      padding: 5px 10px;
+      border-radius: 6px;
+      display: none;
+      white-space: nowrap;
+    }
+
     /* 표식 의미 안내 바 (Legend) */
     .legend-bar {
       display: flex;
@@ -251,11 +313,24 @@
 
     .month-cell {
       cursor: pointer;
-      transition: background-color 0.15s ease;
+      transition: all 0.15s ease;
     }
 
     .month-cell:hover {
       background-color: #e2e8f0 !important;
+    }
+
+    /* 검색 하이라이트 셀 스타일 */
+    .month-cell.search-match {
+      background-color: #fef08a !important;
+      outline: 2px solid #f59e0b !important;
+      outline-offset: -2px;
+      box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+      opacity: 1 !important;
+    }
+
+    .month-cell.search-dimmed {
+      opacity: 0.25;
     }
 
     .symbol-wrapper {
@@ -428,6 +503,11 @@
       background-color: #eff6ff !important;
     }
 
+    .day-cell.day-search-match {
+      background-color: #fef9c3 !important;
+      border: 2px solid #f59e0b !important;
+    }
+
     .day-cell.other-month {
       background-color: #f8f9fa;
       opacity: 0.35;
@@ -562,6 +642,7 @@
       gap: 3px;
       font-size: 0.75rem;
       border-left: 4px solid #cbd5e1;
+      transition: all 0.15s ease;
     }
 
     .detail-item-card.important { border-left-color: #ff0033; }
@@ -570,6 +651,22 @@
     .detail-item-card.funeral   { border-left-color: #111111; }
     .detail-item-card.etc       { border-left-color: #00ff00; }
     .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
+
+    /* 상세 카드 검색 매칭 강조 */
+    .detail-item-card.card-search-match {
+      background-color: #fef9c3 !important;
+      border-right: 2px solid #f59e0b;
+      border-top: 1.5px solid #f59e0b;
+      border-bottom: 1.5px solid #f59e0b;
+    }
+
+    mark.search-highlight {
+      background-color: #fde047;
+      color: #0f172a;
+      font-weight: bold;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
 
     /* 1행: 분류 뱃지 + 제목 + [장소] + 오류뱃지 */
     .detail-item-top {
@@ -710,9 +807,18 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v7.1</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v7.2</span></span>
       </h1>
     </header>
+
+    <!-- 통합 검색 바 영역 -->
+    <div class="search-container">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" class="search-input" placeholder="이벤트명, 인물, 장소, 비고 검색..." oninput="handleSearchInput()">
+        <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">&times;</button>
+      </div>
+      <span id="searchBadge" class="search-badge"></span>
+    </div>
 
     <!-- 입력 데이터 오류 안내 영역 -->
     <div id="error-container" class="error-box" style="display: none;">
@@ -799,6 +905,7 @@
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=1230555011&single=true&output=csv';
 
     let globalEventMap = {};
+    let currentSearchTerm = '';
 
     // 1. 양력 법정 공휴일 정의 (월-일)
     const solarHolidays = {
@@ -904,6 +1011,14 @@
 
     const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
+    // 텍스트 검색 하이라이트 유틸 함수
+    function highlightSearchText(text, keyword) {
+      if (!text) return '';
+      if (!keyword) return text;
+      const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+    }
+
     function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
       document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
       const selectedCell = document.getElementById(`day-cell-${day}`);
@@ -943,10 +1058,21 @@
           }
         }
 
-        const displayTitle = evt.title ? evt.title : '(제목 없음)';
-        const placeHtml = evt.place ? `<span class="detail-item-place-inline">[${evt.place}]</span>` : '';
+        // 검색어 매칭 여부 확인
+        let isCardMatch = false;
+        if (currentSearchTerm) {
+          const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+          if (checkText.includes(currentSearchTerm.toLowerCase())) {
+            isCardMatch = true;
+            cardClass += ' card-search-match';
+          }
+        }
+
+        const rawTitle = evt.title ? evt.title : '(제목 없음)';
+        const displayTitle = highlightSearchText(rawTitle, currentSearchTerm);
+        const placeHtml = evt.place ? `<span class="detail-item-place-inline">[${highlightSearchText(evt.place, currentSearchTerm)}]</span>` : '';
         const noteHtml = evt.note 
-          ? `<div class="detail-item-note">비고: ${evt.note}</div>` 
+          ? `<div class="detail-item-note">비고: ${highlightSearchText(evt.note, currentSearchTerm)}</div>` 
           : `<div class="detail-item-note empty-note">&nbsp;</div>`;
 
         let topErrorHtml = '';
@@ -1013,6 +1139,8 @@
         dayGridBody.appendChild(emptyCell);
       }
 
+      let firstMatchDay = null;
+
       for (let d = 1; d <= lastDate; d++) {
         const cell = document.createElement('div');
         cell.id = `day-cell-${d}`;
@@ -1028,8 +1156,21 @@
           dayClass += ' holiday';
         }
 
-        cell.className = dayClass;
         const currentEvents = dayEventsMap[d] || [];
+        
+        // 검색어 매칭 여부 체크
+        if (currentSearchTerm && currentEvents.length > 0) {
+          const hasMatch = currentEvents.some(evt => {
+            const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+            return check.includes(currentSearchTerm.toLowerCase());
+          });
+          if (hasMatch) {
+            dayClass += ' day-search-match';
+            if (!firstMatchDay) firstMatchDay = { day: d, colIndex, holidayName, currentEvents };
+          }
+        }
+
+        cell.className = dayClass;
         cell.onclick = () => selectDayDetail(year, month, d, colIndex, holidayName, currentEvents);
 
         let cellHtml = `
@@ -1085,6 +1226,69 @@
       }
 
       modal.style.display = 'flex';
+
+      // 검색어가 있을 때 첫 매칭 날짜가 있다면 자동 상세 선택
+      if (firstMatchDay) {
+        selectDayDetail(year, month, firstMatchDay.day, firstMatchDay.colIndex, firstMatchDay.holidayName, firstMatchDay.currentEvents);
+      }
+    }
+
+    // 검색 입력 처리 함수
+    function handleSearchInput() {
+      const input = document.getElementById('searchInput');
+      const clearBtn = document.getElementById('searchClearBtn');
+      const badge = document.getElementById('searchBadge');
+      const query = input.value.trim();
+      currentSearchTerm = query;
+
+      clearBtn.style.display = query ? 'block' : 'none';
+
+      let matchCount = 0;
+      const monthCellMatchMap = {};
+
+      if (query) {
+        const qLower = query.toLowerCase();
+        for (const key in globalEventMap) {
+          const list = globalEventMap[key];
+          let monthHasMatch = false;
+          list.forEach(evt => {
+            const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+            if (combined.includes(qLower)) {
+              matchCount++;
+              monthHasMatch = true;
+            }
+          });
+          if (monthHasMatch) {
+            monthCellMatchMap[key] = true;
+          }
+        }
+        badge.style.display = 'inline-block';
+        badge.textContent = `총 ${matchCount}건 발견`;
+      } else {
+        badge.style.display = 'none';
+      }
+
+      // 월력 테이블 셀 하이라이트 반영
+      const allCells = document.querySelectorAll('.month-cell');
+      allCells.forEach(td => {
+        const cellKey = td.dataset.key;
+        td.classList.remove('search-match', 'search-dimmed');
+
+        if (query) {
+          if (monthCellMatchMap[cellKey]) {
+            td.classList.add('search-match');
+          } else {
+            td.classList.add('search-dimmed');
+          }
+        }
+      });
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      handleSearchInput();
+      input.focus();
     }
 
     async function loadCalendarData() {
@@ -1220,13 +1424,13 @@
         for (let month = 1; month <= 12; month++) {
           const td = document.createElement('td');
           td.className = 'month-cell';
+          const key = `${year}-${month}`;
+          td.dataset.key = key; // 검색 매칭용 key 부여
           td.onclick = () => openDayModal(year, month);
 
-          const key = `${year}-${month}`;
           if (eventMap[key] && eventMap[key].length > 0) {
             let symbolsHtml = '<div class="symbol-wrapper">';
             symbolsHtml += eventMap[key].map(item => {
-              // 마우스 호버 시 보여줄 풍부한 툴팁 텍스트 구성 (줄바꿈 포함)
               let tooltipLines = [];
               if (item.isValid) {
                 tooltipLines.push(`[${month}월 ${item.day}일] [${item.category}] ${item.title || '(제목 없음)'}`);
@@ -1264,6 +1468,11 @@
           tr.appendChild(td);
         }
         tbody.appendChild(tr);
+      }
+
+      // 데이터 갱신 후 기존 검색어 유지 적용
+      if (currentSearchTerm) {
+        handleSearchInput();
       }
     }
 
