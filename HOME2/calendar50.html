@@ -1,4 +1,4 @@
-<!-- v8.3.1: 장소 소괄호(), 비고 대괄호[] 교체 및 참석자 가나다순 자동 정렬 반영 -->
+<!-- v8.3.1: 장소(), 비고[], 참석자 가나다순 정렬 및 툴팁 변수 참조 오류 해결 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -959,7 +959,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.3</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.3.1</span></span>
       </h1>
     </header>
 
@@ -1326,15 +1326,15 @@
         const rawTitle = evt.title ? evt.title : '(제목 없음)';
         const displayTitle = highlightSearchText(rawTitle, currentSearchTerm);
         
-        // 💡 1. 장소는 소괄호 () 로 표기
+        // 💡 1. 장소는 소괄호 ()
         const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, currentSearchTerm)})</span>` : '';
         
-        // 💡 1. 비고는 대괄호 [] 로 표기
+        // 💡 1. 비고는 대괄호 []
         const noteInlineHtml = evt.note 
           ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, currentSearchTerm)}]</span>` 
           : '';
 
-        // 💡 2. 참석자 목록을 가나다순으로 자동 정렬
+        // 💡 2. 참석자 목록 가나다순 정렬
         let sortedAttendeesStr = '';
         if (evt.attendees) {
           const names = evt.attendees.split(',')
