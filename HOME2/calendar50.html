@@ -1,4 +1,4 @@
-<!-- v8.3: 상세 카드 첫줄 비고 배치, 둘째줄 참석자 명단 표시 및 인물 검색 반영 -->
+<!-- v8.3.1: 장소 소괄호(), 비고 대괄호[] 교체 및 참석자 가나다순 자동 정렬 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -662,7 +662,7 @@
       border-radius: 2px;
     }
 
-    /* 첫째 줄: 분류칩 + 행사명 + 장소 + 비고(메모) + 사진버튼/오류 */
+    /* 첫째 줄: 분류칩 + 행사명 + (장소) + [비고] + 사진버튼/오류 */
     .detail-item-top {
       display: flex;
       align-items: center;
@@ -1325,16 +1325,27 @@
 
         const rawTitle = evt.title ? evt.title : '(제목 없음)';
         const displayTitle = highlightSearchText(rawTitle, currentSearchTerm);
-        const placeHtml = evt.place ? `<span class="detail-item-place-inline">[${highlightSearchText(evt.place, currentSearchTerm)}]</span>` : '';
         
-        // 💡 1행: 비고를 첫줄 제목/장소 옆으로 배치 ('비고:' 단어는 생략)
+        // 💡 1. 장소는 소괄호 () 로 표기
+        const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, currentSearchTerm)})</span>` : '';
+        
+        // 💡 1. 비고는 대괄호 [] 로 표기
         const noteInlineHtml = evt.note 
-          ? `<span class="detail-item-note-inline">(${highlightSearchText(evt.note, currentSearchTerm)})</span>` 
+          ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, currentSearchTerm)}]</span>` 
           : '';
 
-        // 💡 2행: 비고 자리 대신 참석자 명단 출력
-        const attendeesHtml = evt.attendees 
-          ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(evt.attendees, currentSearchTerm)}</div>`
+        // 💡 2. 참석자 목록을 가나다순으로 자동 정렬
+        let sortedAttendeesStr = '';
+        if (evt.attendees) {
+          const names = evt.attendees.split(',')
+            .map(n => n.trim())
+            .filter(n => n.length > 0);
+          names.sort((a, b) => a.localeCompare(b, 'ko'));
+          sortedAttendeesStr = names.join(', ');
+        }
+
+        const attendeesHtml = sortedAttendeesStr 
+          ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, currentSearchTerm)}</div>`
           : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
 
         // [날짜 + 순번] 매칭된 사진 계산
