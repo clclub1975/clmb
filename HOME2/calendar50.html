@@ -1,4 +1,4 @@
-<!-- v8.0: 사진DB(Photo Path ID) CSV 연동 및 이벤트별 사진 뷰어 갤러리 모달 추가 -->
+<!-- v8.1: 이벤트DB F열 '사진 연동 태그' 기반 1차 날짜 필수 + 2차 태그 정밀 분기 매칭 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -949,7 +949,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.0</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.1</span></span>
       </h1>
     </header>
 
@@ -977,6 +977,7 @@
           <li><strong>C열 (행사명):</strong> 이벤트 제목을 입력합니다.</li>
           <li><strong>D열 (장소):</strong> 행사 장소를 입력합니다 (생략 가능).</li>
           <li><strong>E열 (비고):</strong> 추가적인 설명이나 메모를 입력합니다.</li>
+          <li><strong>F열 (사진 연동 태그):</strong> 사진DB의 특정 사진과 연결할 태그를 쉼표(,)로 입력합니다 (생략 가능).</li>
         </ul>
       </div>
     </div>
@@ -1171,7 +1172,6 @@
       }
     }
 
-    /* 📸 사진 뷰어 모달 열기/닫기/이동 함수 */
     function openPhotoViewer(photoList, eventTitle) {
       if (!photoList || photoList.length === 0) return;
       currentPhotoList = photoList;
@@ -1207,7 +1207,6 @@
       const prevBtn = document.getElementById('photoPrevBtn');
       const nextBtn = document.getElementById('photoNextBtn');
 
-      // 구글 드라이브 고화질 웹 뷰 URL 생성 (sz=w1600)
       imgElem.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w1600`;
 
       let infoParts = [];
@@ -1247,30 +1246,28 @@
       return text.replace(regex, '<mark class="search-highlight">$1</mark>');
     }
 
-    // 특정 이벤트와 매칭되는 사진 목록 추출 (1차 일자 -> 2차 태그 매칭)
+    // 💡 이벤트별 사진 매칭 (1차 일자 필수 -> 2차 F열 photoTag 선택 매칭)
     function getPhotosForEvent(evt, totalEventsOnDay) {
+      // 1단계: 날짜(YYYYMMDD)가 정확히 일치하는 사진만 1차 추출
       const dayPhotos = globalPhotoDateMap[evt.dateStr] || [];
       if (dayPhotos.length === 0) return [];
 
-      // 같은 날 이벤트가 1개뿐이면 해당 날짜 사진 전부 연결
-      if (totalEventsOnDay <= 1) {
-        return dayPhotos;
+      // 2단계: 이벤트 행의 F열(photoTag)에 태그가 지정되어 있는 경우
+      if (evt.photoTag && evt.photoTag.trim() !== '') {
+        const requiredTags = evt.photoTag.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+        if (requiredTags.length > 0) {
+          const matched = dayPhotos.filter(p => {
+            const photoTags = (p.tags || '').toLowerCase();
+            const photoDesc = (p.desc || '').toLowerCase();
+            const photoName = (p.name || '').toLowerCase();
+            return requiredTags.some(rt => photoTags.includes(rt) || photoDesc.includes(rt) || photoName.includes(rt));
+          });
+          return matched;
+        }
       }
 
-      // 같은 날 이벤트가 2개 이상일 때: 제목/비고에 포함된 단어가 사진 태그에 있는지 세분화 검사
-      const titleClean = (evt.title || '').trim().toLowerCase();
-      const noteClean = (evt.note || '').trim().toLowerCase();
-
-      const filtered = dayPhotos.filter(p => {
-        const pTags = (p.tags || '').toLowerCase();
-        const pDesc = (p.desc || '').toLowerCase();
-        if (titleClean && (pTags.includes(titleClean) || pDesc.includes(titleClean))) return true;
-        if (noteClean && (pTags.includes(noteClean) || pDesc.includes(noteClean))) return true;
-        return false;
-      });
-
-      // 세분화 매칭 결과가 있으면 그것을 반환, 없으면 날짜 사진 전체 기본 제공
-      return filtered.length > 0 ? filtered : dayPhotos;
+      // F열이 비어있으면 당일 사진 전체 반환
+      return dayPhotos;
     }
 
     function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
@@ -1314,7 +1311,7 @@
 
         let isCardMatch = false;
         if (currentSearchTerm) {
-          const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+          const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.photoTag || ''}`.toLowerCase();
           if (checkText.includes(currentSearchTerm.toLowerCase())) {
             isCardMatch = true;
             cardClass += ' card-search-match';
@@ -1328,7 +1325,7 @@
           ? `<div class="detail-item-note">비고: ${highlightSearchText(evt.note, currentSearchTerm)}</div>` 
           : `<div class="detail-item-note empty-note">&nbsp;</div>`;
 
-        // 📷 매칭된 사진 확인 및 사진 버튼 생성
+        // 매칭된 사진 계산
         const matchedPhotos = getPhotosForEvent(evt, events.length);
         let photoBtnHtml = '';
         if (matchedPhotos.length > 0) {
@@ -1427,7 +1424,7 @@
         
         if (currentSearchTerm && currentEvents.length > 0) {
           const hasMatch = currentEvents.some(evt => {
-            const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+            const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.photoTag || ''}`.toLowerCase();
             return check.includes(currentSearchTerm.toLowerCase());
           });
           if (hasMatch) {
@@ -1516,7 +1513,7 @@
           const list = globalEventMap[key];
           let monthHasMatch = false;
           list.forEach(evt => {
-            const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+            const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.photoTag || ''}`.toLowerCase();
             if (combined.includes(qLower)) {
               matchCount++;
               monthHasMatch = true;
@@ -1576,17 +1573,15 @@
       return ret;
     }
 
-    // 사진DB CSV 파싱 및 날짜별 매핑
     function parsePhotoDB(csvText) {
       const rows = parseCSV(csvText);
       const photoMap = {};
-      // 헤더: [파일명(0), File ID(1), 썸네일(2), 날짜(3), 태그목록(4)]
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i].map(c => c.trim());
         const fileName = cols[0];
         const fileId = cols[1];
-        const dateStr = cols[3]; // D열: 날짜
-        const tags = cols[4] || ''; // E열: 태그목록
+        const dateStr = cols[3];
+        const tags = cols[4] || '';
 
         if (!fileId || !dateStr) continue;
 
@@ -1604,7 +1599,6 @@
       globalPhotoDateMap = photoMap;
     }
 
-    // 메인 이벤트DB 파싱 및 월력 렌더링
     function parseAndRenderCalendar(csvText) {
       const rows = parseCSV(csvText);
       if (rows.length < 2) return;
@@ -1620,6 +1614,7 @@
         const title = cols[2];
         const place = cols[3] || '';
         const note = cols[4] || '';
+        const photoTag = cols[5] || ''; // F열: 사진 연동 태그
 
         if (!dateStr && !category && !title) continue;
 
@@ -1673,6 +1668,7 @@
             title: title,
             place: place,
             note: note,
+            photoTag: photoTag,
             day: parsedDay,
             errorReason: errorReason,
             errorType: errorType,
@@ -1756,7 +1752,6 @@
       }
     }
 
-    // 두 시트(이벤트DB, 사진DB)를 동시에 불러와 초기화
     async function loadCalendarAndPhotoData() {
       try {
         const [eventRes, photoRes] = await Promise.all([
