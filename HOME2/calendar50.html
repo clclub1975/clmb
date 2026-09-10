@@ -1,4 +1,4 @@
-<!-- v6.3: 상세보기 카드 2행(비고)의 시작 위치를 1행 이벤트명 시작 위치와 수직 일치 정렬 -->
+<!-- v7.1: 월력 표식 마우스 호버(tooltip) 시 일자, 행사명, 장소, 비고까지 모두 표시되도록 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -580,7 +580,6 @@
       flex-wrap: wrap;
     }
 
-    /* 분류 칩: 너비를 36px로 고정하여 비고 시작 위치 계산 기준 마련 */
     .category-chip {
       font-size: 0.65rem;
       font-weight: bold;
@@ -607,7 +606,7 @@
       font-size: 0.8rem;
     }
 
-    /* 장소를 [장소명] 형태로 심플하게 표기 */
+    /* 장소를 [장소명] 형태로 표기 */
     .detail-item-place-inline {
       font-size: 0.75rem;
       color: #475569;
@@ -635,7 +634,7 @@
       text-align: center;
     }
 
-    /* 2행: 비고 영역 (분류 칩 너비 36px + 간격 6px = 42px 만큼 좌측 여백을 주어 이벤트명 시작위치와 일치) */
+    /* 2행: 비고 영역 */
     .detail-bottom-row {
       display: flex;
       align-items: center;
@@ -711,7 +710,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v6.3</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v7.1</span></span>
       </h1>
     </header>
 
@@ -946,8 +945,6 @@
 
         const displayTitle = evt.title ? evt.title : '(제목 없음)';
         const placeHtml = evt.place ? `<span class="detail-item-place-inline">[${evt.place}]</span>` : '';
-        
-        // 2행 비고: 내용이 있으면 표시, 없으면 균형을 맞추기 위한 빈 영역 유지
         const noteHtml = evt.note 
           ? `<div class="detail-item-note">비고: ${evt.note}</div>` 
           : `<div class="detail-item-note empty-note">&nbsp;</div>`;
@@ -1229,7 +1226,24 @@
           if (eventMap[key] && eventMap[key].length > 0) {
             let symbolsHtml = '<div class="symbol-wrapper">';
             symbolsHtml += eventMap[key].map(item => {
-              const tooltipText = (item.title || item.errorReason).replace(/"/g, '&quot;');
+              // 마우스 호버 시 보여줄 풍부한 툴팁 텍스트 구성 (줄바꿈 포함)
+              let tooltipLines = [];
+              if (item.isValid) {
+                tooltipLines.push(`[${month}월 ${item.day}일] [${item.category}] ${item.title || '(제목 없음)'}`);
+                if (item.place) {
+                  tooltipLines.push(`📍 장소: ${item.place}`);
+                }
+                if (item.note) {
+                  tooltipLines.push(`📝 비고: ${item.note}`);
+                }
+              } else {
+                tooltipLines.push(`[${month}월 ${item.day}일] 오류: ${item.title || '(제목 없음)'}`);
+                if (item.errorReason) {
+                  tooltipLines.push(`⚠️ 원인: ${item.errorReason}`);
+                }
+              }
+              const tooltipText = tooltipLines.join('\n').replace(/"/g, '&quot;');
+
               if (!item.isValid) {
                 return `<span class="symbol-error" title="${tooltipText}">X</span>`;
               }
@@ -1257,4 +1271,3 @@
   </script>
 </body>
 </html>
- 
