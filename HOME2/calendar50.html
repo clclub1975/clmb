@@ -1,4 +1,4 @@
-<!-- v8.5: 모바일 화면 검색창 레이아웃 수정 (알림 배지 우측 고정) -->
+<!-- v8.6: 스마트폰 뒤로가기(<) 버튼 누를 시 팝업 닫기(히스토리 연동) 및 메인 캘린더 복귀 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -56,7 +56,7 @@
     .rule-box-inner ul { margin: 0; padding-left: 16px; }
     .rule-box-inner li { margin-bottom: 4px; }
 
-    /* 검색 바 (v8.5 모바일 한줄 표시 수정) */
+    /* 검색 바 */
     .search-container {
       display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: nowrap;
     }
@@ -270,7 +270,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.5</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.6</span></span>
       </h1>
     </header>
 
@@ -336,7 +336,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="modalTitle">0000년 0월 일력</h2>
-        <button type="button" class="modal-close-btn" onclick="closeDayModal()">&times;</button>
+        <button type="button" class="modal-close-btn" onclick="requestCloseDayModal()">&times;</button>
       </div>
       <div class="modal-body">
         <div class="day-calendar-grid">
@@ -369,7 +369,7 @@
     <div class="photo-modal-content">
       <div class="photo-modal-header">
         <span id="photoModalTitle" class="photo-modal-title">이벤트 사진 보기</span>
-        <button type="button" class="photo-modal-close-btn" onclick="closePhotoModal()">&times;</button>
+        <button type="button" class="photo-modal-close-btn" onclick="requestClosePhotoModal()">&times;</button>
       </div>
       <div class="photo-viewer-body">
         <button type="button" id="photoPrevBtn" class="photo-nav-btn photo-nav-prev" onclick="navigatePhoto(-1)">&lsaquo;</button>
@@ -384,13 +384,9 @@
   </div>
 
   <script>
-    // 1. 이벤트DB 탭 CSV URL
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=1230555011&single=true&output=csv';
-    
-    // 2. 사진DB 탭 CSV URL (Photo Path ID)
     const photoDbCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDT3n0XaTAnxMjvbFKg8GRdMytfgsNWltOD67BiBPg02PYGh5ndC1vmb2jP6nvMHzy5cGWI0wiy_e4/pub?gid=0&single=true&output=csv';
 
-    // 💡 [리팩토링] 카테고리 스타일 설정 중앙화
     const CATEGORY_CONFIG = {
       '중요': { css: 'important', symbol: '★', label: '중요' },
       '행사': { css: 'event',     symbol: '●', label: '행사' },
@@ -410,11 +406,63 @@
     let globalPhotoDateFallbackMap = {}; 
     let currentSearchTerm = '';
 
-    // 사진 뷰어 상태
     let currentPhotoList = [];
     let currentPhotoIndex = 0;
 
-    // 공휴일 및 음력-양력 변환 로직
+    // 💡 [v8.6 핵심] 브라우저 뒤로가기(<) 버튼 연동 로직
+    window.addEventListener('popstate', function(e) {
+      const photoModal = document.getElementById('photoModal');
+      const dayModal = document.getElementById('dayModal');
+
+      // 1. 사진 모달이 열려 있는 상태에서 뒤로가기 누른 경우 -> 사진만 닫기
+      if (photoModal && photoModal.style.display === 'flex') {
+        photoModal.style.display = 'none';
+        document.getElementById('photoViewerImg').src = '';
+        return;
+      }
+
+      // 2. 일력 모달이 열려 있는 상태에서 뒤로가기 누른 경우 -> 일력 닫기 (메인 캘린더 유지)
+      if (dayModal && dayModal.style.display === 'flex') {
+        dayModal.style.display = 'none';
+        return;
+      }
+    });
+
+    // 화면의 '×' 버튼을 직접 눌렀을 때 브라우저 히스토리도 함께 뒤로가기 처리
+    function requestClosePhotoModal() {
+      if (window.location.hash.includes('photoView')) {
+        history.back();
+      } else {
+        closePhotoModal();
+      }
+    }
+
+    function requestCloseDayModal() {
+      if (window.location.hash.includes('dayView')) {
+        history.back();
+      } else {
+        closeDayModal();
+      }
+    }
+
+    function closePhotoModal() {
+      document.getElementById('photoModal').style.display = 'none';
+      document.getElementById('photoViewerImg').src = '';
+    }
+
+    function closeDayModal() {
+      document.getElementById('dayModal').style.display = 'none';
+    }
+
+    function handleModalOverlayClick(event) {
+      if (event.target.id === 'dayModal') requestCloseDayModal();
+    }
+
+    function handlePhotoModalOverlayClick(event) {
+      if (event.target.id === 'photoModal') requestClosePhotoModal();
+    }
+
+    // 공휴일 및 음력-양력 변환
     const solarHolidays = {
       '1-1': '신정', '3-1': '삼일절', '5-5': '어린이날', '6-6': '현충일',
       '8-15': '광복절', '10-3': '개천절', '10-9': '한글날', '12-25': '성탄절'
@@ -484,22 +532,16 @@
       }
     }
 
-    function closeDayModal() { document.getElementById('dayModal').style.display = 'none'; }
-    function handleModalOverlayClick(event) { if (event.target.id === 'dayModal') closeDayModal(); }
-
     function openPhotoViewer(photoList, eventTitle) {
       if (!photoList || photoList.length === 0) return;
       currentPhotoList = photoList; currentPhotoIndex = 0;
       document.getElementById('photoModalTitle').textContent = `📷 ${eventTitle || '사진 보기'}`;
       updatePhotoViewerDisplay();
+      
+      // 💡 히스토리에 사진 뷰어 상태 푸시
+      history.pushState({ modal: 'photo' }, '', '#photoView');
       document.getElementById('photoModal').style.display = 'flex';
     }
-
-    function closePhotoModal() {
-      document.getElementById('photoModal').style.display = 'none';
-      document.getElementById('photoViewerImg').src = '';
-    }
-    function handlePhotoModalOverlayClick(event) { if (event.target.id === 'photoModal') closePhotoModal(); }
 
     function navigatePhoto(direction) {
       if (currentPhotoList.length <= 1) return;
@@ -533,10 +575,12 @@
     document.addEventListener('keydown', (e) => {
       const photoModal = document.getElementById('photoModal');
       if (photoModal && photoModal.style.display === 'flex') {
-        if (e.key === 'Escape') closePhotoModal();
+        if (e.key === 'Escape') requestClosePhotoModal();
         if (e.key === 'ArrowLeft') navigatePhoto(-1);
         if (e.key === 'ArrowRight') navigatePhoto(1);
-      } else if (e.key === 'Escape') { closeDayModal(); }
+      } else if (e.key === 'Escape') {
+        requestCloseDayModal();
+      }
     });
 
     const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
@@ -594,7 +638,6 @@
         const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, currentSearchTerm)})</span>` : '';
         const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, currentSearchTerm)}]</span>` : '';
 
-        // 참석자 가나다순 정렬 처리
         let sortedAttendeesStr = '';
         if (evt.attendees) {
           const names = evt.attendees.split(',').map(n => n.trim()).filter(n => n.length > 0);
@@ -605,7 +648,6 @@
           ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, currentSearchTerm)}</div>`
           : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
 
-        // 사진 처리
         const matchedPhotos = getPhotosForEvent(evt, events.length);
         let photoBtnHtml = '';
         if (matchedPhotos.length > 0) {
@@ -614,7 +656,6 @@
           photoBtnHtml = `<button type="button" class="photo-view-btn" onclick="openPhotoViewer(window['tempPhotos_${evt.dateStr}_${evt.seq}_${idx}'], '${safeTitle}')">📷 사진 ${matchedPhotos.length}장</button>`;
         }
 
-        // 에러 처리
         let topErrorHtml = ''; let bottomErrorHtml = '';
         if (!evt.isValid) {
           const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
@@ -730,7 +771,10 @@
         dayGridBody.appendChild(emptyCell);
       }
 
+      // 💡 히스토리에 일력 모달 상태 푸시
+      history.pushState({ modal: 'day' }, '', '#dayView');
       modal.style.display = 'flex';
+
       if (firstMatchDay) {
         selectDayDetail(year, month, firstMatchDay.day, firstMatchDay.colIndex, firstMatchDay.holidayName, firstMatchDay.currentEvents);
       }
