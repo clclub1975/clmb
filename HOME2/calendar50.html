@@ -1,4 +1,4 @@
-<!-- v8.2: [날짜 + 순번] 복합 키 기반 1:1 정밀 사진 연동 반영 -->
+<!-- v8.3: 상세 카드 첫줄 비고 배치, 둘째줄 참석자 명단 표시 및 인물 검색 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -621,7 +621,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-height: 220px;
+      max-height: 230px;
       overflow-y: auto;
       padding-right: 2px;
     }
@@ -634,7 +634,7 @@
       padding: 7px 10px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
       font-size: 0.75rem;
       border-left: 4px solid #cbd5e1;
       transition: all 0.15s ease;
@@ -662,6 +662,7 @@
       border-radius: 2px;
     }
 
+    /* 첫째 줄: 분류칩 + 행사명 + 장소 + 비고(메모) + 사진버튼/오류 */
     .detail-item-top {
       display: flex;
       align-items: center;
@@ -704,7 +705,15 @@
       align-items: center;
     }
 
-    /* 📷 사진 열기 버튼 스타일 */
+    .detail-item-note-inline {
+      font-size: 0.73rem;
+      color: #475569;
+      font-weight: normal;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* 📷 사진 열기 버튼 */
     .photo-view-btn {
       margin-left: auto;
       background: #eff6ff;
@@ -746,23 +755,29 @@
       text-align: center;
     }
 
+    /* 둘째 줄: 참석자 목록 */
     .detail-bottom-row {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       width: 100%;
-      min-height: 18px;
+      min-height: 16px;
       padding-left: 42px;
+      gap: 4px;
     }
 
-    .detail-item-note {
+    .detail-item-attendees {
       font-size: 0.72rem;
-      color: #64748b;
+      color: #334155;
       line-height: 1.35;
-      display: inline-block;
-      width: 100%;
+      word-break: keep-all;
     }
 
-    .detail-item-note.empty-note {
+    .detail-item-attendees strong {
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .detail-item-attendees.empty-attendees {
       color: transparent;
       user-select: none;
     }
@@ -772,14 +787,8 @@
       font-weight: bold;
       color: #b91c1c;
       letter-spacing: 0.3px;
-      margin-left: auto;
-      padding-left: 8px;
       white-space: nowrap;
-      min-width: 64px;
       display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
     }
 
     .detail-empty-msg {
@@ -789,7 +798,7 @@
       padding: 12px 0;
     }
 
-    /* 📸 사진 뷰어 모달 (다크 모드 갤러리) */
+    /* 📸 사진 뷰어 모달 */
     .photo-modal-overlay {
       display: none;
       position: fixed;
@@ -923,16 +932,17 @@
       .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
       .more-badge { font-size: 0.52rem; padding: 1px 2px; }
       .day-detail-panel { padding: 8px 10px; }
-      .detail-list { max-height: 180px; }
+      .detail-list { max-height: 190px; }
       .detail-date-title { font-size: 0.78rem; }
       .detail-item-card { padding: 5px 8px; }
       .category-chip { width: 32px; font-size: 0.6rem; }
-      .detail-bottom-row { min-height: 16px; padding-left: 38px; }
+      .detail-bottom-row { padding-left: 38px; }
       .detail-item-title { font-size: 0.75rem; }
       .detail-item-place-inline { font-size: 0.72rem; }
-      .detail-item-note { font-size: 0.68rem; }
+      .detail-item-note-inline { font-size: 0.7rem; }
+      .detail-item-attendees { font-size: 0.68rem; }
       .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; min-width: 54px; }
-      .detail-error-val-common { font-size: 0.58rem; min-width: 54px; }
+      .detail-error-val-common { font-size: 0.58rem; }
       .photo-view-btn { font-size: 0.62rem; padding: 1px 5px; }
       .photo-viewer-body { min-height: 260px; max-height: 55vh; }
       .photo-viewer-img { max-height: 55vh; }
@@ -949,14 +959,14 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.2</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.3</span></span>
       </h1>
     </header>
 
     <!-- 통합 검색 바 영역 -->
     <div class="search-container">
       <div class="search-input-wrap">
-        <input type="text" id="searchInput" class="search-input" placeholder="이벤트명, 인물, 장소, 비고 검색..." oninput="handleSearchInput()">
+        <input type="text" id="searchInput" class="search-input" placeholder="이벤트명, 인물/참석자, 장소, 비고 검색..." oninput="handleSearchInput()">
         <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">&times;</button>
       </div>
       <span id="searchBadge" class="search-badge"></span>
@@ -977,7 +987,8 @@
           <li><strong>C열 (분류):</strong> <strong>'중요', '행사', '결혼', '부고', '기타'</strong> 중 하나여야 합니다.</li>
           <li><strong>D열 (행사명):</strong> 이벤트 제목을 입력합니다.</li>
           <li><strong>E열 (장소):</strong> 행사 장소를 입력합니다 (생략 가능).</li>
-          <li><strong>F열 (비고):</strong> 추가적인 설명이나 메모를 입력합니다.</li>
+          <li><strong>F열 (비고):</strong> 추가 설명이나 메모를 입력합니다.</li>
+          <li><strong>G열 (참석자):</strong> 참석한 인물 이름을 쉼표로 구분하여 입력합니다 (인물 검색 지원).</li>
         </ul>
       </div>
     </div>
@@ -1042,7 +1053,7 @@
     </div>
   </div>
 
-  <!-- 📸 사진 뷰어 모달 (슬라이드 갤러리) -->
+  <!-- 📸 사진 뷰어 모달 -->
   <div id="photoModal" class="photo-modal-overlay" onclick="handlePhotoModalOverlayClick(event)">
     <div class="photo-modal-content">
       <div class="photo-modal-header">
@@ -1070,7 +1081,7 @@
 
     let globalEventMap = {};
     let globalPhotoMap = {}; // { 'YYYYMMDD_seq': [ { id, name, desc, tags } ] }
-    let globalPhotoDateFallbackMap = {}; // { 'YYYYMMDD': [ ... ] } 순번 미지정 대비용
+    let globalPhotoDateFallbackMap = {}; // { 'YYYYMMDD': [ ... ] }
     let currentSearchTerm = '';
 
     // 사진 뷰어 상태
@@ -1247,17 +1258,15 @@
       return text.replace(regex, '<mark class="search-highlight">$1</mark>');
     }
 
-    // 💡 [날짜 + 순번] 복합 키 매칭 함수
+    // [날짜 + 순번] 복합 키 매칭 함수
     function getPhotosForEvent(evt, totalEventsOnDay) {
       const targetSeq = evt.seq || '1';
       const exactKey = `${evt.dateStr}_${targetSeq}`;
 
-      // 1. [날짜_순번] 키가 정확히 일치하는 사진이 있는 경우
       if (globalPhotoMap[exactKey] && globalPhotoMap[exactKey].length > 0) {
         return globalPhotoMap[exactKey];
       }
 
-      // 2. 당일 이벤트가 1개뿐이고 순번 미지정 사진들이 있는 경우 fallback
       if (totalEventsOnDay <= 1) {
         const fallback = globalPhotoDateFallbackMap[evt.dateStr] || [];
         if (fallback.length > 0) return fallback;
@@ -1307,7 +1316,7 @@
 
         let isCardMatch = false;
         if (currentSearchTerm) {
-          const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+          const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
           if (checkText.includes(currentSearchTerm.toLowerCase())) {
             isCardMatch = true;
             cardClass += ' card-search-match';
@@ -1317,9 +1326,16 @@
         const rawTitle = evt.title ? evt.title : '(제목 없음)';
         const displayTitle = highlightSearchText(rawTitle, currentSearchTerm);
         const placeHtml = evt.place ? `<span class="detail-item-place-inline">[${highlightSearchText(evt.place, currentSearchTerm)}]</span>` : '';
-        const noteHtml = evt.note 
-          ? `<div class="detail-item-note">비고: ${highlightSearchText(evt.note, currentSearchTerm)}</div>` 
-          : `<div class="detail-item-note empty-note">&nbsp;</div>`;
+        
+        // 💡 1행: 비고를 첫줄 제목/장소 옆으로 배치 ('비고:' 단어는 생략)
+        const noteInlineHtml = evt.note 
+          ? `<span class="detail-item-note-inline">(${highlightSearchText(evt.note, currentSearchTerm)})</span>` 
+          : '';
+
+        // 💡 2행: 비고 자리 대신 참석자 명단 출력
+        const attendeesHtml = evt.attendees 
+          ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(evt.attendees, currentSearchTerm)}</div>`
+          : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
 
         // [날짜 + 순번] 매칭된 사진 계산
         const matchedPhotos = getPhotosForEvent(evt, events.length);
@@ -1352,11 +1368,12 @@
               <span class="category-chip ${chipClass}">${chipText}</span>
               <span class="detail-item-title">${displayTitle}</span>
               ${placeHtml}
+              ${noteInlineHtml}
               ${photoBtnHtml}
               ${topErrorHtml}
             </div>
             <div class="detail-bottom-row">
-              ${noteHtml}
+              ${attendeesHtml}
               ${bottomErrorHtml}
             </div>
           </div>
@@ -1420,7 +1437,7 @@
         
         if (currentSearchTerm && currentEvents.length > 0) {
           const hasMatch = currentEvents.some(evt => {
-            const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+            const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
             return check.includes(currentSearchTerm.toLowerCase());
           });
           if (hasMatch) {
@@ -1509,7 +1526,7 @@
           const list = globalEventMap[key];
           let monthHasMatch = false;
           list.forEach(evt => {
-            const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
+            const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
             if (combined.includes(qLower)) {
               matchCount++;
               monthHasMatch = true;
@@ -1580,7 +1597,7 @@
         const fileName = cols[0];
         const fileId = cols[1];
         const dateStr = cols[3];
-        const seq = cols[4] || '1'; // 순번 기본값 1
+        const seq = cols[4] || '1';
         const tags = cols[5] || '';
 
         if (!fileId || !dateStr) continue;
@@ -1604,7 +1621,7 @@
       globalPhotoDateFallbackMap = fallbackMap;
     }
 
-    // 이벤트DB 파싱: [일자(0), 순번(1), 분류(2), 행사명(3), 장소(4), 비고(5)]
+    // 이벤트DB 파싱: [일자(0), 순번(1), 분류(2), 행사명(3), 장소(4), 비고(5), 참석자(6)]
     function parseAndRenderCalendar(csvText) {
       const rows = parseCSV(csvText);
       if (rows.length < 2) return;
@@ -1616,11 +1633,12 @@
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i].map(c => c.trim());
         const dateStr = cols[0];
-        const seq = cols[1] || '1'; // 순번 기본값 1
+        const seq = cols[1] || '1';
         const category = cols[2];
         const title = cols[3];
         const place = cols[4] || '';
         const note = cols[5] || '';
+        const attendees = cols[6] || ''; // G열: 참석자
 
         if (!dateStr && !category && !title) continue;
 
@@ -1675,6 +1693,7 @@
             title: title,
             place: place,
             note: note,
+            attendees: attendees,
             day: parsedDay,
             errorReason: errorReason,
             errorType: errorType,
@@ -1721,7 +1740,10 @@
                   tooltipLines.push(`📍 장소: ${item.place}`);
                 }
                 if (item.note) {
-                  tooltipLines.push(`📝 비고: ${item.note}`);
+                  tooltipLines.push(`📝 메모: ${item.note}`);
+                }
+                if (item.attendees) {
+                  tooltipLines.push(`👥 참석: ${item.attendees}`);
                 }
               } else {
                 tooltipLines.push(`[${month}월 ${item.day}일] 오류: ${item.title || '(제목 없음)'}`);
