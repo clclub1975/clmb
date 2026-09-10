@@ -1,4 +1,4 @@
-<!-- v8.4: 기능 유지 + 내부 코드 리팩토링 (카테고리 스타일 중앙 관리, 중복 로직 제거) -->
+<!-- v8.5: 모바일 화면 검색창 레이아웃 수정 (알림 배지 우측 고정) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -56,11 +56,11 @@
     .rule-box-inner ul { margin: 0; padding-left: 16px; }
     .rule-box-inner li { margin-bottom: 4px; }
 
-    /* 검색 바 */
+    /* 검색 바 (v8.5 모바일 한줄 표시 수정) */
     .search-container {
-      display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: nowrap;
     }
-    .search-input-wrap { position: relative; display: flex; align-items: center; width: 100%; max-width: 420px; }
+    .search-input-wrap { position: relative; display: flex; align-items: center; flex: 1; max-width: 420px; }
     .search-input {
       width: 100%; padding: 8px 36px 8px 12px; font-size: 0.88rem; border: 1.5px solid #cbd5e1;
       border-radius: 6px; outline: none; transition: all 0.2s ease;
@@ -73,7 +73,7 @@
     .search-clear-btn:hover { color: #475569; }
     .search-badge {
       font-size: 0.8rem; font-weight: 600; color: #1e293b; background-color: #fef08a;
-      border: 1px solid #facc15; padding: 5px 10px; border-radius: 6px; display: none; white-space: nowrap;
+      border: 1px solid #facc15; padding: 5px 10px; border-radius: 6px; display: none; white-space: nowrap; flex-shrink: 0;
     }
 
     /* 표식 의미 안내 바 (Legend) */
@@ -270,7 +270,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.4</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.5</span></span>
       </h1>
     </header>
 
@@ -414,7 +414,7 @@
     let currentPhotoList = [];
     let currentPhotoIndex = 0;
 
-    // 공휴일 및 음력-양력 변환 로직 (유지)
+    // 공휴일 및 음력-양력 변환 로직
     const solarHolidays = {
       '1-1': '신정', '3-1': '삼일절', '5-5': '어린이날', '6-6': '현충일',
       '8-15': '광복절', '10-3': '개천절', '10-9': '한글날', '12-25': '성탄절'
@@ -559,7 +559,6 @@
       return [];
     }
 
-    // 💡 [리팩토링] 하단 상세 카드 렌더링을 깔끔하게 정리
     function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
       document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
       const selectedCell = document.getElementById(`day-cell-${day}`);
@@ -642,7 +641,6 @@
       listElem.innerHTML = cardsHtml;
     }
 
-    // 💡 [리팩토링] 일력(달력) 모달 렌더링 간소화
     function openDayModal(year, month) {
       const modal = document.getElementById('dayModal');
       const dayGridBody = document.getElementById('dayGridBody');
@@ -812,7 +810,6 @@
       globalPhotoMap = photoMap; globalPhotoDateFallbackMap = fallbackMap;
     }
 
-    // 💡 [리팩토링] 메인 월력 렌더링 간소화
     function parseAndRenderCalendar(csvText) {
       const rows = parseCSV(csvText);
       if (rows.length < 2) return;
@@ -924,4 +921,3 @@
   </script>
 </body>
 </html>
- 
