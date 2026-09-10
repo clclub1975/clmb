@@ -1,4 +1,4 @@
-<!-- v8.3.1: 장소(), 비고[], 참석자 가나다순 정렬 및 툴팁 변수 참조 오류 해결 -->
+<!-- v8.4: 기능 유지 + 내부 코드 리팩토링 (카테고리 스타일 중앙 관리, 중복 로직 제거) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,304 +6,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>촛불회 50년사 캘린더 (1975 - 2026)</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f8f9fa;
-      color: #333;
-      line-height: 1.4;
-      padding: 8px;
-      word-break: keep-all;
+      background-color: #f8f9fa; color: #333; line-height: 1.4; padding: 8px; word-break: keep-all;
     }
-
     .container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      background: #ffffff;
-      padding: 12px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      width: 100%; max-width: 1200px; margin: 0 auto; background: #ffffff; padding: 12px;
+      border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
-
-    .home-btn-container {
-      margin-bottom: 12px;
-    }
-
+    .home-btn-container { margin-bottom: 12px; }
     .home-btn {
-      display: inline-block;
-      padding: 6px 12px;
-      background-color: #ffffff;
-      color: #2c3e50;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      border: 1px solid #cbd5e1;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s ease;
+      display: inline-block; padding: 6px 12px; background-color: #ffffff; color: #2c3e50;
+      text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;
+      border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); transition: all 0.2s ease;
     }
-
-    .home-btn:hover {
-      background-color: #f1f5f9;
-      border-color: #94a3b8;
-    }
-
-    header {
-      margin-bottom: 12px;
-      border-bottom: 2px solid #eaeaea;
-      padding-bottom: 8px;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      color: #2c3e50;
-      line-height: 1.35;
-    }
-
-    .title-wrap {
-      display: inline-block;
-    }
-
+    .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
+    header { margin-bottom: 12px; border-bottom: 2px solid #eaeaea; padding-bottom: 8px; text-align: center; }
+    h1 { font-size: 1.5rem; color: #2c3e50; line-height: 1.35; }
+    .title-wrap { display: inline-block; }
     @media (max-width: 768px) {
-      h1 {
-        font-size: 1.35rem;
-      }
-      .title-break {
-        display: block;
-        margin-top: 3px;
-      }
+      h1 { font-size: 1.35rem; }
+      .title-break { display: block; margin-top: 3px; }
     }
-
     h1 .version {
-      font-size: 0.75rem;
-      color: #e74c3c;
-      background: #fadbd8;
-      padding: 2px 5px;
-      border-radius: 4px;
-      vertical-align: middle;
-      margin-left: 4px;
+      font-size: 0.75rem; color: #e74c3c; background: #fadbd8; padding: 2px 5px;
+      border-radius: 4px; vertical-align: middle; margin-left: 4px;
     }
-
+    
     /* 오류 안내 박스 */
     .error-box {
-      border: 1px solid #f5c6cb;
-      border-radius: 8px;
-      padding: 10px 14px;
-      margin-bottom: 12px;
-      font-size: 0.75rem;
-      color: #721c24;
-      background-color: #f8d7da;
+      border: 1px solid #f5c6cb; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;
+      font-size: 0.75rem; color: #721c24; background-color: #f8d7da;
     }
-
-    .error-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .error-box h3 {
-      font-size: 0.85rem;
-      color: #721c24;
-      margin: 0;
-    }
-
+    .error-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .error-box h3 { font-size: 0.85rem; color: #721c24; margin: 0; }
     .rule-toggle-btn {
-      background-color: #ffffff;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-      border-radius: 4px;
-      padding: 2px 8px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      background-color: #ffffff; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;
+      padding: 2px 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease;
     }
-
-    .rule-toggle-btn:hover {
-      background-color: #fce8e6;
-    }
-
-    .error-list {
-      padding-left: 16px;
-      font-size: 0.75rem;
-    }
-
-    .error-list li {
-      margin: 2px 0;
-    }
-
+    .rule-toggle-btn:hover { background-color: #fce8e6; }
+    .error-list { padding-left: 16px; font-size: 0.75rem; }
+    .error-list li { margin: 2px 0; }
     .rule-box-inner {
-      display: none;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #e8a7ad;
-      color: #491217;
-      font-size: 0.75rem;
+      display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e8a7ad;
+      color: #491217; font-size: 0.75rem;
     }
-
-    .rule-box-inner h4 {
-      margin: 0 0 6px 0;
-      font-size: 0.8rem;
-      font-weight: bold;
-      color: #721c24;
-    }
-
-    .rule-box-inner ul {
-      margin: 0;
-      padding-left: 16px;
-    }
-
-    .rule-box-inner li {
-      margin-bottom: 4px;
-    }
+    .rule-box-inner h4 { margin: 0 0 6px 0; font-size: 0.8rem; font-weight: bold; color: #721c24; }
+    .rule-box-inner ul { margin: 0; padding-left: 16px; }
+    .rule-box-inner li { margin-bottom: 4px; }
 
     /* 검색 바 */
     .search-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
     }
-
-    .search-input-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-      width: 100%;
-      max-width: 420px;
-    }
-
+    .search-input-wrap { position: relative; display: flex; align-items: center; width: 100%; max-width: 420px; }
     .search-input {
-      width: 100%;
-      padding: 8px 36px 8px 12px;
-      font-size: 0.88rem;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 6px;
-      outline: none;
-      transition: all 0.2s ease;
+      width: 100%; padding: 8px 36px 8px 12px; font-size: 0.88rem; border: 1.5px solid #cbd5e1;
+      border-radius: 6px; outline: none; transition: all 0.2s ease;
     }
-
-    .search-input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-
+    .search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
     .search-clear-btn {
-      position: absolute;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 1.1rem;
-      color: #94a3b8;
-      cursor: pointer;
-      display: none;
-      line-height: 1;
-      padding: 2px;
+      position: absolute; right: 10px; background: none; border: none; font-size: 1.1rem;
+      color: #94a3b8; cursor: pointer; display: none; line-height: 1; padding: 2px;
     }
-
-    .search-clear-btn:hover {
-      color: #475569;
-    }
-
+    .search-clear-btn:hover { color: #475569; }
     .search-badge {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #1e293b;
-      background-color: #fef08a;
-      border: 1px solid #facc15;
-      padding: 5px 10px;
-      border-radius: 6px;
-      display: none;
-      white-space: nowrap;
+      font-size: 0.8rem; font-weight: 600; color: #1e293b; background-color: #fef08a;
+      border: 1px solid #facc15; padding: 5px 10px; border-radius: 6px; display: none; white-space: nowrap;
     }
 
     /* 표식 의미 안내 바 (Legend) */
     .legend-bar {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      background: #f1f3f5;
-      border: 1px solid #e1e4e8;
-      border-radius: 6px;
-      padding: 10px 12px;
-      margin-bottom: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 16px;
+      background: #f1f3f5; border: 1px solid #e1e4e8; border-radius: 6px; padding: 10px 12px;
+      margin-bottom: 12px; font-size: 0.85rem; font-weight: 600;
     }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .table-container { width: 100%; overflow-x: visible; }
+    table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
+    th, td { padding: 4px 1px; border: 1px solid #e1e4e8; font-size: 0.6rem; overflow: hidden; vertical-align: middle; text-align: center; }
+    th { background-color: #f1f3f5; color: #495057; font-weight: 600; vertical-align: middle; }
+    tr:nth-child(even) { background-color: #fcfcfc; }
+    tr:hover { background-color: #f1f3f5; }
+    th:first-child, td:first-child { width: 9.1%; font-weight: bold; background-color: #f8f9fa; vertical-align: middle; }
+    th:not(:first-child), td:not(:first-child) { width: 7.55%; }
+    .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
 
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .table-container {
-      width: 100%;
-      overflow-x: visible;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      table-layout: fixed;
-    }
-
-    th, td {
-      padding: 4px 1px;
-      border: 1px solid #e1e4e8;
-      font-size: 0.6rem;
-      overflow: hidden;
-      vertical-align: middle;
-      text-align: center;
-    }
-
-    th {
-      background-color: #f1f3f5;
-      color: #495057;
-      font-weight: 600;
-      vertical-align: middle;
-    }
-
-    tr:nth-child(even) {
-      background-color: #fcfcfc;
-    }
-
-    tr:hover {
-      background-color: #f1f3f5;
-    }
-
-    th:first-child, td:first-child {
-      width: 9.1%;
-      font-weight: bold;
-      background-color: #f8f9fa;
-      vertical-align: middle;
-    }
-
-    th:not(:first-child), td:not(:first-child) {
-      width: 7.55%;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    /* 표식 색상 */
+    /* 표식 색상 클래스 */
     .legend-important { color: #ff0033; font-size: 1.1rem; }
     .legend-event { color: #0066ff; font-size: 1.1rem; }
     .legend-marriage { color: #f738f7; font-size: 1.1rem; }
@@ -311,642 +101,163 @@
     .legend-etc { color: #00ff00; font-size: 1.1rem; }
     .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; }
 
-    .month-cell {
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .month-cell:hover {
-      background-color: #e2e8f0 !important;
-    }
-
-    /* 검색 하이라이트 셀 */
+    .month-cell { cursor: pointer; transition: all 0.15s ease; }
+    .month-cell:hover { background-color: #e2e8f0 !important; }
     .month-cell.search-match {
-      background-color: #fef08a !important;
-      outline: 2px solid #f59e0b !important;
-      outline-offset: -2px;
-      box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
-      opacity: 1 !important;
+      background-color: #fef08a !important; outline: 2px solid #f59e0b !important;
+      outline-offset: -2px; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); opacity: 1 !important;
     }
+    .month-cell.search-dimmed { opacity: 0.25; }
 
-    .month-cell.search-dimmed {
-      opacity: 0.25;
-    }
-
-    .symbol-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 2px 4px;
-      width: 100%;
-      min-height: 16px;
-    }
-
-    .symbol-wrapper span {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.05rem;
-      font-weight: bold;
-      line-height: 1;
-    }
-
+    .symbol-wrapper { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2px 4px; width: 100%; min-height: 16px; }
+    .symbol-wrapper span { display: inline-flex; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: bold; line-height: 1; }
     .symbol-important { color: #ff0033; }
     .symbol-event     { color: #0066ff; }
     .symbol-marriage  { color: #f738f7; }
     .symbol-funeral   { color: #111111; }
     .symbol-etc       { color: #00ff00; }
-    .symbol-error {
-      color: #ff1744;
-      font-size: 0.85rem !important;
-      font-weight: bold;
-      background-color: transparent;
-      padding: 0;
-    }
-
-    .symbol-empty {
-      color: #adb5bd;
-      font-size: 0.7rem !important;
-    }
+    .symbol-error { color: #ff1744; font-size: 0.85rem !important; font-weight: bold; background-color: transparent; padding: 0; }
+    .symbol-empty { color: #adb5bd; font-size: 0.7rem !important; }
 
     @media (max-width: 768px) {
-      .symbol-wrapper {
-        gap: 2px 2px;
-      }
-      .symbol-wrapper span {
-        font-size: 0.85rem;
-      }
-      .symbol-error {
-        font-size: 0.8rem !important;
-      }
+      .symbol-wrapper { gap: 2px 2px; }
+      .symbol-wrapper span { font-size: 0.85rem; }
+      .symbol-error { font-size: 0.8rem !important; }
     }
 
     /* 일력 모달 */
     .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      padding: 8px;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 8px;
     }
-
     .modal-content {
-      background: #ffffff;
-      width: 100%;
-      max-width: 740px;
-      border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      animation: modalFadeIn 0.2s ease-out;
+      background: #ffffff; width: 100%; max-width: 740px; border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out;
     }
-
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 16px;
-      background-color: #2c3e50;
-      color: #ffffff;
-    }
-
-    .modal-header h2 {
-      font-size: 1.1rem;
-      margin: 0;
-      font-weight: 600;
-    }
-
-    .modal-close-btn {
-      background: none;
-      border: none;
-      color: #ffffff;
-      font-size: 1.3rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .modal-close-btn:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .modal-body {
-      padding: 10px;
-      max-height: 85vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .day-calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 4px;
-      width: 100%;
-    }
-
-    .day-header {
-      text-align: center;
-      font-weight: bold;
-      font-size: 0.75rem;
-      padding: 5px 1px;
-      background-color: #f1f3f5;
-      border-radius: 4px;
-      color: #495057;
-    }
-
-    .day-header.sun { color: #e03131; }
-    .day-header.sat { color: #1971c2; }
-
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #2c3e50; color: #ffffff; }
+    .modal-header h2 { font-size: 1.1rem; margin: 0; font-weight: 600; }
+    .modal-close-btn { background: none; border: none; color: #ffffff; font-size: 1.3rem; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+    .modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+    .modal-body { padding: 10px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .day-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; width: 100%; }
+    .day-header { text-align: center; font-weight: bold; font-size: 0.75rem; padding: 5px 1px; background-color: #f1f3f5; border-radius: 4px; color: #495057; }
+    .day-header.sun { color: #e03131; } .day-header.sat { color: #1971c2; }
     .day-cell {
-      min-height: 68px;
-      border: 1px solid #e9ecef;
-      border-radius: 4px;
-      padding: 3px;
-      display: flex;
-      flex-direction: column;
-      background-color: #ffffff;
-      font-size: 0.7rem;
-      overflow: hidden;
-      position: relative;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      min-height: 68px; border: 1px solid #e9ecef; border-radius: 4px; padding: 3px; display: flex; flex-direction: column;
+      background-color: #ffffff; font-size: 0.7rem; overflow: hidden; position: relative; cursor: pointer; transition: all 0.15s ease;
     }
-
-    .day-cell:hover:not(.other-month) {
-      border-color: #3b82f6;
-      background-color: #f8fafc;
-    }
-
-    .day-cell.selected {
-      border: 2px solid #2563eb !important;
-      background-color: #eff6ff !important;
-    }
-
-    .day-cell.day-search-match {
-      background-color: #fef9c3 !important;
-      border: 2px solid #f59e0b !important;
-    }
-
-    .day-cell.other-month {
-      background-color: #f8f9fa;
-      opacity: 0.35;
-      cursor: default;
-    }
-
-    .day-num-wrap {
-      display: flex;
-      align-items: baseline;
-      gap: 3px;
-      margin-bottom: 3px;
-      flex-wrap: wrap;
-    }
-
-    .day-num {
-      font-weight: bold;
-      font-size: 0.75rem;
-      color: #333;
-      line-height: 1;
-    }
-
-    .day-cell.sun .day-num { color: #e03131; }
-    .day-cell.sat .day-num { color: #1971c2; }
-    .day-cell.holiday .day-num { color: #e03131 !important; }
-
-    .holiday-tag {
-      font-size: 0.58rem;
-      color: #e03131;
-      font-weight: 500;
-      line-height: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .day-events {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      flex-grow: 1;
-    }
-
+    .day-cell:hover:not(.other-month) { border-color: #3b82f6; background-color: #f8fafc; }
+    .day-cell.selected { border: 2px solid #2563eb !important; background-color: #eff6ff !important; }
+    .day-cell.day-search-match { background-color: #fef9c3 !important; border: 2px solid #f59e0b !important; }
+    .day-cell.other-month { background-color: #f8f9fa; opacity: 0.35; cursor: default; }
+    .day-num-wrap { display: flex; align-items: baseline; gap: 3px; margin-bottom: 3px; flex-wrap: wrap; }
+    .day-num { font-weight: bold; font-size: 0.75rem; color: #333; line-height: 1; }
+    .day-cell.sun .day-num { color: #e03131; } .day-cell.sat .day-num { color: #1971c2; } .day-cell.holiday .day-num { color: #e03131 !important; }
+    .holiday-tag { font-size: 0.58rem; color: #e03131; font-weight: 500; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .day-events { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; }
     .day-event-item {
-      font-size: 0.65rem;
-      line-height: 1.2;
-      padding: 2px 4px;
-      border-radius: 3px;
-      background-color: #f8f9fa;
-      border-left: 3.5px solid #cbd5e1;
-      word-break: keep-all;
-      white-space: normal;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.65rem; line-height: 1.2; padding: 2px 4px; border-radius: 3px; background-color: #f8f9fa; border-left: 3.5px solid #cbd5e1;
+      word-break: keep-all; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
     }
-
     .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
     .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
     .day-event-item.marriage  { border-left-color: #f738f7; background-color: #fdf5fd; }
     .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
     .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
     .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
-
-    .more-badge {
-      font-size: 0.58rem;
-      color: #495057;
-      background-color: #e9ecef;
-      border-radius: 10px;
-      padding: 1px 4px;
-      text-align: center;
-      font-weight: 600;
-      margin-top: auto;
-      line-height: 1.1;
-    }
+    .more-badge { font-size: 0.58rem; color: #495057; background-color: #e9ecef; border-radius: 10px; padding: 1px 4px; text-align: center; font-weight: 600; margin-top: auto; line-height: 1.1; }
 
     /* 하단 상세 영역 패널 */
-    .day-detail-panel {
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .detail-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #cbd5e1;
-      padding-bottom: 5px;
-    }
-
-    .detail-date-title {
-      font-size: 0.85rem;
-      font-weight: bold;
-      color: #1e293b;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .detail-count-badge {
-      font-size: 0.7rem;
-      background-color: #e2e8f0;
-      color: #475569;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-
-    .detail-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 230px;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
+    .day-detail-panel { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .detail-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+    .detail-date-title { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 6px; }
+    .detail-count-badge { font-size: 0.7rem; background-color: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+    .detail-list { display: flex; flex-direction: column; gap: 6px; max-height: 230px; overflow-y: auto; padding-right: 2px; }
+    
     /* 카드 틀 */
     .detail-item-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 7px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 0.75rem;
-      border-left: 4px solid #cbd5e1;
-      transition: all 0.15s ease;
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px;
+      display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; border-left: 4px solid #cbd5e1; transition: all 0.15s ease;
     }
-
     .detail-item-card.important { border-left-color: #ff0033; }
     .detail-item-card.event     { border-left-color: #0066ff; }
     .detail-item-card.marriage  { border-left-color: #f738f7; }
     .detail-item-card.funeral   { border-left-color: #111111; }
     .detail-item-card.etc       { border-left-color: #00ff00; }
     .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
+    .detail-item-card.card-search-match { background-color: #fef9c3 !important; border-right: 2px solid #f59e0b; border-top: 1.5px solid #f59e0b; border-bottom: 1.5px solid #f59e0b; }
+    mark.search-highlight { background-color: #fde047; color: #0f172a; font-weight: bold; padding: 0 2px; border-radius: 2px; }
 
-    .detail-item-card.card-search-match {
-      background-color: #fef9c3 !important;
-      border-right: 2px solid #f59e0b;
-      border-top: 1.5px solid #f59e0b;
-      border-bottom: 1.5px solid #f59e0b;
-    }
-
-    mark.search-highlight {
-      background-color: #fde047;
-      color: #0f172a;
-      font-weight: bold;
-      padding: 0 2px;
-      border-radius: 2px;
-    }
-
-    /* 첫째 줄: 분류칩 + 행사명 + (장소) + [비고] + 사진버튼/오류 */
-    .detail-item-top {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      width: 100%;
-      flex-wrap: wrap;
-    }
-
+    /* 상세 카드 내용 */
+    .detail-item-top { display: flex; align-items: center; gap: 6px; width: 100%; flex-wrap: wrap; }
     .category-chip {
-      font-size: 0.65rem;
-      font-weight: bold;
-      padding: 1px 0;
-      width: 36px;
-      text-align: center;
-      border-radius: 4px;
-      color: #ffffff;
-      display: inline-block;
-      line-height: 1.3;
-      flex-shrink: 0;
+      font-size: 0.65rem; font-weight: bold; padding: 1px 0; width: 36px; text-align: center;
+      border-radius: 4px; color: #ffffff; display: inline-block; line-height: 1.3; flex-shrink: 0;
     }
-
     .category-chip.important { background-color: #ff0033; }
     .category-chip.event     { background-color: #0066ff; }
     .category-chip.marriage  { background-color: #f738f7; }
     .category-chip.funeral   { background-color: #111111; }
     .category-chip.etc       { background-color: #00b050; }
     .category-chip.error     { background-color: #ff1744; }
-
-    .detail-item-title {
-      font-weight: 700;
-      color: #0f172a;
-      font-size: 0.8rem;
-    }
-
-    .detail-item-place-inline {
-      font-size: 0.75rem;
-      color: #475569;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .detail-item-note-inline {
-      font-size: 0.73rem;
-      color: #475569;
-      font-weight: normal;
-      display: inline-flex;
-      align-items: center;
-    }
-
+    .detail-item-title { font-weight: 700; color: #0f172a; font-size: 0.8rem; }
+    .detail-item-place-inline { font-size: 0.75rem; color: #475569; font-weight: 500; display: inline-flex; align-items: center; }
+    .detail-item-note-inline { font-size: 0.73rem; color: #475569; font-weight: normal; display: inline-flex; align-items: center; }
+    
     /* 📷 사진 열기 버튼 */
     .photo-view-btn {
-      margin-left: auto;
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-      border-radius: 4px;
-      padding: 2px 7px;
-      font-size: 0.68rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      transition: all 0.2s ease;
-      line-height: 1.2;
+      margin-left: auto; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px; padding: 2px 7px;
+      font-size: 0.68rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: all 0.2s ease; line-height: 1.2;
     }
-
-    .photo-view-btn:hover {
-      background: #dbeafe;
-      border-color: #93c5fd;
-    }
-
+    .photo-view-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+    
+    /* 오류 배지 */
     .detail-error-badge-common {
-      margin-left: auto;
-      font-size: 0.62rem;
-      font-weight: bold;
-      color: #dc2626;
-      background-color: #fee2e2;
-      border: 1px solid #fecaca;
-      border-radius: 4px;
-      padding: 1px 6px;
-      white-space: nowrap;
-      line-height: 1.2;
-      flex-shrink: 0;
-      min-width: 64px;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
+      margin-left: auto; font-size: 0.62rem; font-weight: bold; color: #dc2626; background-color: #fee2e2; border: 1px solid #fecaca;
+      border-radius: 4px; padding: 1px 6px; white-space: nowrap; line-height: 1.2; flex-shrink: 0; min-width: 64px; display: inline-flex; justify-content: center; align-items: center; text-align: center;
     }
-
-    /* 둘째 줄: 참석자 목록 */
-    .detail-bottom-row {
-      display: flex;
-      align-items: baseline;
-      width: 100%;
-      min-height: 16px;
-      padding-left: 42px;
-      gap: 4px;
-    }
-
-    .detail-item-attendees {
-      font-size: 0.72rem;
-      color: #334155;
-      line-height: 1.35;
-      word-break: keep-all;
-    }
-
-    .detail-item-attendees strong {
-      color: #1e293b;
-      font-weight: 600;
-    }
-
-    .detail-item-attendees.empty-attendees {
-      color: transparent;
-      user-select: none;
-    }
-
-    .detail-error-val-common {
-      font-size: 0.68rem;
-      font-weight: bold;
-      color: #b91c1c;
-      letter-spacing: 0.3px;
-      white-space: nowrap;
-      display: inline-flex;
-    }
-
-    .detail-empty-msg {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      text-align: center;
-      padding: 12px 0;
-    }
+    .detail-bottom-row { display: flex; align-items: baseline; width: 100%; min-height: 16px; padding-left: 42px; gap: 4px; }
+    .detail-item-attendees { font-size: 0.72rem; color: #334155; line-height: 1.35; word-break: keep-all; }
+    .detail-item-attendees strong { color: #1e293b; font-weight: 600; }
+    .detail-item-attendees.empty-attendees { color: transparent; user-select: none; }
+    .detail-error-val-common { font-size: 0.68rem; font-weight: bold; color: #b91c1c; letter-spacing: 0.3px; white-space: nowrap; display: inline-flex; }
+    .detail-empty-msg { font-size: 0.75rem; color: #94a3b8; text-align: center; padding: 12px 0; }
 
     /* 📸 사진 뷰어 모달 */
     .photo-modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.88);
-      z-index: 2000;
-      justify-content: center;
-      align-items: center;
-      padding: 12px;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.88); z-index: 2000; justify-content: center; align-items: center; padding: 12px;
     }
-
     .photo-modal-content {
-      background: #1e293b;
-      color: #ffffff;
-      width: 100%;
-      max-width: 820px;
-      border-radius: 10px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      position: relative;
+      background: #1e293b; color: #ffffff; width: 100%; max-width: 820px; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); position: relative;
     }
-
-    .photo-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 16px;
-      background-color: #0f172a;
-    }
-
-    .photo-modal-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #f8fafc;
-    }
-
-    .photo-modal-close-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.5rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 2px 6px;
-    }
-
-    .photo-modal-close-btn:hover {
-      color: #ffffff;
-    }
-
-    .photo-viewer-body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      background: #000000;
-      min-height: 380px;
-      max-height: 70vh;
-      overflow: hidden;
-    }
-
-    .photo-viewer-img {
-      max-width: 100%;
-      max-height: 70vh;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto;
-    }
-
+    .photo-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #0f172a; }
+    .photo-modal-title { font-size: 0.95rem; font-weight: 600; color: #f8fafc; }
+    .photo-modal-close-btn { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 2px 6px; }
+    .photo-modal-close-btn:hover { color: #ffffff; }
+    .photo-viewer-body { display: flex; align-items: center; justify-content: center; position: relative; background: #000000; min-height: 380px; max-height: 70vh; overflow: hidden; }
+    .photo-viewer-img { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; margin: 0 auto; }
     .photo-nav-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(30, 41, 59, 0.65);
-      color: #ffffff;
-      border: none;
-      font-size: 1.2rem;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: background 0.2s ease;
-      z-index: 10;
+      position: absolute; top: 50%; transform: translateY(-50%); background: rgba(30, 41, 59, 0.65); color: #ffffff; border: none; font-size: 1.2rem; width: 38px; height: 38px;
+      border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: background 0.2s ease; z-index: 10;
     }
-
-    .photo-nav-btn:hover {
-      background: rgba(15, 23, 42, 0.95);
-    }
-
-    .photo-nav-prev { left: 12px; }
-    .photo-nav-next { right: 12px; }
-
-    .photo-modal-footer {
-      padding: 10px 16px;
-      background: #0f172a;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.78rem;
-      color: #cbd5e1;
-    }
-
-    .photo-info-text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 75%;
-    }
-
-    .photo-page-counter {
-      font-weight: 600;
-      color: #94a3b8;
-      font-size: 0.75rem;
-    }
+    .photo-nav-btn:hover { background: rgba(15, 23, 42, 0.95); }
+    .photo-nav-prev { left: 12px; } .photo-nav-next { right: 12px; }
+    .photo-modal-footer { padding: 10px 16px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #cbd5e1; }
+    .photo-info-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 75%; }
+    .photo-page-counter { font-weight: 600; color: #94a3b8; font-size: 0.75rem; }
 
     @media (max-width: 768px) {
-      .modal-content { max-width: 100%; border-radius: 6px; }
-      .modal-body { padding: 6px; gap: 8px; }
-      .day-calendar-grid { gap: 2px; }
-      .day-cell { min-height: 58px; padding: 2px; }
-      .day-num { font-size: 0.7rem; }
-      .holiday-tag { font-size: 0.52rem; }
-      .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
-      .more-badge { font-size: 0.52rem; padding: 1px 2px; }
-      .day-detail-panel { padding: 8px 10px; }
-      .detail-list { max-height: 190px; }
-      .detail-date-title { font-size: 0.78rem; }
-      .detail-item-card { padding: 5px 8px; }
-      .category-chip { width: 32px; font-size: 0.6rem; }
-      .detail-bottom-row { padding-left: 38px; }
-      .detail-item-title { font-size: 0.75rem; }
-      .detail-item-place-inline { font-size: 0.72rem; }
-      .detail-item-note-inline { font-size: 0.7rem; }
-      .detail-item-attendees { font-size: 0.68rem; }
-      .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; min-width: 54px; }
-      .detail-error-val-common { font-size: 0.58rem; }
-      .photo-view-btn { font-size: 0.62rem; padding: 1px 5px; }
-      .photo-viewer-body { min-height: 260px; max-height: 55vh; }
-      .photo-viewer-img { max-height: 55vh; }
-      .photo-nav-btn { width: 32px; height: 32px; font-size: 1rem; }
+      .modal-content { max-width: 100%; border-radius: 6px; } .modal-body { padding: 6px; gap: 8px; }
+      .day-calendar-grid { gap: 2px; } .day-cell { min-height: 58px; padding: 2px; } .day-num { font-size: 0.7rem; }
+      .holiday-tag { font-size: 0.52rem; } .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
+      .more-badge { font-size: 0.52rem; padding: 1px 2px; } .day-detail-panel { padding: 8px 10px; } .detail-list { max-height: 190px; }
+      .detail-date-title { font-size: 0.78rem; } .detail-item-card { padding: 5px 8px; } .category-chip { width: 32px; font-size: 0.6rem; }
+      .detail-bottom-row { padding-left: 38px; } .detail-item-title { font-size: 0.75rem; } .detail-item-place-inline { font-size: 0.72rem; }
+      .detail-item-note-inline { font-size: 0.7rem; } .detail-item-attendees { font-size: 0.68rem; }
+      .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; min-width: 54px; } .detail-error-val-common { font-size: 0.58rem; }
+      .photo-view-btn { font-size: 0.62rem; padding: 1px 5px; } .photo-viewer-body { min-height: 260px; max-height: 55vh; }
+      .photo-viewer-img { max-height: 55vh; } .photo-nav-btn { width: 32px; height: 32px; font-size: 1rem; }
     }
   </style>
 </head>
@@ -959,7 +270,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.3.1</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.4</span></span>
       </h1>
     </header>
 
@@ -1079,22 +390,35 @@
     // 2. 사진DB 탭 CSV URL (Photo Path ID)
     const photoDbCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDT3n0XaTAnxMjvbFKg8GRdMytfgsNWltOD67BiBPg02PYGh5ndC1vmb2jP6nvMHzy5cGWI0wiy_e4/pub?gid=0&single=true&output=csv';
 
+    // 💡 [리팩토링] 카테고리 스타일 설정 중앙화
+    const CATEGORY_CONFIG = {
+      '중요': { css: 'important', symbol: '★', label: '중요' },
+      '행사': { css: 'event',     symbol: '●', label: '행사' },
+      '결혼': { css: 'marriage',  symbol: '●', label: '결혼' },
+      '부고': { css: 'funeral',   symbol: '●', label: '부고' },
+      '기타': { css: 'etc',       symbol: '●', label: '기타' },
+      '오류': { css: 'error',     symbol: 'X', label: '오류 X' }
+    };
+
+    function getCategoryProps(item) {
+      if (!item.isValid) return CATEGORY_CONFIG['오류'];
+      return CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG['기타'];
+    }
+
     let globalEventMap = {};
-    let globalPhotoMap = {}; // { 'YYYYMMDD_seq': [ { id, name, desc, tags } ] }
-    let globalPhotoDateFallbackMap = {}; // { 'YYYYMMDD': [ ... ] }
+    let globalPhotoMap = {}; 
+    let globalPhotoDateFallbackMap = {}; 
     let currentSearchTerm = '';
 
     // 사진 뷰어 상태
     let currentPhotoList = [];
     let currentPhotoIndex = 0;
 
-    // 양력 법정 공휴일 정의
+    // 공휴일 및 음력-양력 변환 로직 (유지)
     const solarHolidays = {
       '1-1': '신정', '3-1': '삼일절', '5-5': '어린이날', '6-6': '현충일',
       '8-15': '광복절', '10-3': '개천절', '10-9': '한글날', '12-25': '성탄절'
     };
-
-    // 음력-양력 변환 데이터
     const lunarInfo = [
       0x095b0, 0x04ba0, 0x0a5b4, 0x052b0, 0x0a930, 0x05495, 0x052d0, 0x02ac0, 0x0cd15, 0x06aa0,
       0x0ad50, 0x02d52, 0x04b60, 0x0a577, 0x0a4e0, 0x0d260, 0x0e935, 0x0d520, 0x0daa0, 0x06b53,
@@ -1112,20 +436,14 @@
       for (let y = 1975; y < lunarYear; y++) {
         const idx = y - 1975;
         const leap = lunarInfo[idx] & 0xf;
-        for (let m = 1; m <= 12; m++) {
-          totalDays += (lunarInfo[idx] & (0x10000 >> m)) ? 30 : 29;
-        }
-        if (leap > 0) {
-          totalDays += (lunarInfo[idx] & 0x10000) ? 30 : 29;
-        }
+        for (let m = 1; m <= 12; m++) { totalDays += (lunarInfo[idx] & (0x10000 >> m)) ? 30 : 29; }
+        if (leap > 0) { totalDays += (lunarInfo[idx] & 0x10000) ? 30 : 29; }
       }
       const curIdx = lunarYear - 1975;
       const curLeap = lunarInfo[curIdx] & 0xf;
       for (let m = 1; m < lunarMonth; m++) {
         totalDays += (lunarInfo[curIdx] & (0x10000 >> m)) ? 30 : 29;
-        if (curLeap > 0 && curLeap === m) {
-          totalDays += (lunarInfo[curIdx] & (0x10000) ? 30 : 29);
-        }
+        if (curLeap > 0 && curLeap === m) { totalDays += (lunarInfo[curIdx] & (0x10000) ? 30 : 29); }
       }
       totalDays += (lunarDay - 1);
       const baseDate = new Date(1975, 1, 11);
@@ -1135,7 +453,6 @@
     function getLunarHolidaysForYear(year) {
       const holidayMap = {};
       if (year < 1975 || year > 2050) return holidayMap;
-
       const seollal = lunarToSolar(year, 1, 1);
       if (seollal) {
         const prev = new Date(seollal.getTime() - 86400000);
@@ -1144,12 +461,8 @@
         holidayMap[`${seollal.getFullYear()}-${seollal.getMonth() + 1}-${seollal.getDate()}`] = '설날';
         holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '설 다음날';
       }
-
       const buddha = lunarToSolar(year, 4, 8);
-      if (buddha) {
-        holidayMap[`${buddha.getFullYear()}-${buddha.getMonth() + 1}-${buddha.getDate()}`] = '부처님오신날';
-      }
-
+      if (buddha) { holidayMap[`${buddha.getFullYear()}-${buddha.getMonth() + 1}-${buddha.getDate()}`] = '부처님오신날'; }
       const chuseok = lunarToSolar(year, 8, 15);
       if (chuseok) {
         const prev = new Date(chuseok.getTime() - 86400000);
@@ -1158,7 +471,6 @@
         holidayMap[`${chuseok.getFullYear()}-${chuseok.getMonth() + 1}-${chuseok.getDate()}`] = '추석';
         holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '추석 다음날';
       }
-
       return holidayMap;
     }
 
@@ -1166,29 +478,18 @@
       const ruleBox = document.getElementById('rule-box-inner');
       const toggleBtn = document.getElementById('rule-toggle-btn');
       if (ruleBox.style.display === 'none' || ruleBox.style.display === '') {
-        ruleBox.style.display = 'block';
-        toggleBtn.textContent = '데이터 규칙 ▲';
+        ruleBox.style.display = 'block'; toggleBtn.textContent = '데이터 규칙 ▲';
       } else {
-        ruleBox.style.display = 'none';
-        toggleBtn.textContent = '데이터 규칙 ▼';
+        ruleBox.style.display = 'none'; toggleBtn.textContent = '데이터 규칙 ▼';
       }
     }
 
-    function closeDayModal() {
-      document.getElementById('dayModal').style.display = 'none';
-    }
-
-    function handleModalOverlayClick(event) {
-      if (event.target.id === 'dayModal') {
-        closeDayModal();
-      }
-    }
+    function closeDayModal() { document.getElementById('dayModal').style.display = 'none'; }
+    function handleModalOverlayClick(event) { if (event.target.id === 'dayModal') closeDayModal(); }
 
     function openPhotoViewer(photoList, eventTitle) {
       if (!photoList || photoList.length === 0) return;
-      currentPhotoList = photoList;
-      currentPhotoIndex = 0;
-
+      currentPhotoList = photoList; currentPhotoIndex = 0;
       document.getElementById('photoModalTitle').textContent = `📷 ${eventTitle || '사진 보기'}`;
       updatePhotoViewerDisplay();
       document.getElementById('photoModal').style.display = 'flex';
@@ -1198,12 +499,7 @@
       document.getElementById('photoModal').style.display = 'none';
       document.getElementById('photoViewerImg').src = '';
     }
-
-    function handlePhotoModalOverlayClick(event) {
-      if (event.target.id === 'photoModal') {
-        closePhotoModal();
-      }
-    }
+    function handlePhotoModalOverlayClick(event) { if (event.target.id === 'photoModal') closePhotoModal(); }
 
     function navigatePhoto(direction) {
       if (currentPhotoList.length <= 1) return;
@@ -1220,21 +516,17 @@
       const nextBtn = document.getElementById('photoNextBtn');
 
       imgElem.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w1600`;
-
       let infoParts = [];
       if (item.desc) infoParts.push(item.desc);
       if (item.tags) infoParts.push(`[${item.tags}]`);
       if (infoParts.length === 0) infoParts.push(item.name);
       infoElem.textContent = infoParts.join(' - ');
-
       counterElem.textContent = `${currentPhotoIndex + 1} / ${currentPhotoList.length}`;
 
       if (currentPhotoList.length <= 1) {
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
+        prevBtn.style.display = 'none'; nextBtn.style.display = 'none';
       } else {
-        prevBtn.style.display = 'flex';
-        nextBtn.style.display = 'flex';
+        prevBtn.style.display = 'flex'; nextBtn.style.display = 'flex';
       }
     }
 
@@ -1244,9 +536,7 @@
         if (e.key === 'Escape') closePhotoModal();
         if (e.key === 'ArrowLeft') navigatePhoto(-1);
         if (e.key === 'ArrowRight') navigatePhoto(1);
-      } else if (e.key === 'Escape') {
-        closeDayModal();
-      }
+      } else if (e.key === 'Escape') { closeDayModal(); }
     });
 
     const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
@@ -1258,23 +548,18 @@
       return text.replace(regex, '<mark class="search-highlight">$1</mark>');
     }
 
-    // [날짜 + 순번] 복합 키 매칭 함수
     function getPhotosForEvent(evt, totalEventsOnDay) {
       const targetSeq = evt.seq || '1';
       const exactKey = `${evt.dateStr}_${targetSeq}`;
-
-      if (globalPhotoMap[exactKey] && globalPhotoMap[exactKey].length > 0) {
-        return globalPhotoMap[exactKey];
-      }
-
+      if (globalPhotoMap[exactKey] && globalPhotoMap[exactKey].length > 0) return globalPhotoMap[exactKey];
       if (totalEventsOnDay <= 1) {
         const fallback = globalPhotoDateFallbackMap[evt.dateStr] || [];
         if (fallback.length > 0) return fallback;
       }
-
       return [];
     }
 
+    // 💡 [리팩토링] 하단 상세 카드 렌더링을 깔끔하게 정리
     function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
       document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
       const selectedCell = document.getElementById(`day-cell-${day}`);
@@ -1290,80 +575,48 @@
       badgeElem.textContent = `${events.length}건`;
 
       if (!events || events.length === 0) {
-        listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다.</div>`;
-        return;
+        listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다.</div>`; return;
       }
 
       let cardsHtml = '';
       events.forEach((evt, idx) => {
-        let chipClass = 'etc';
-        let cardClass = 'etc';
-        let chipText = evt.category;
-
-        if (!evt.isValid) {
-          chipClass = 'error';
-          cardClass = 'error';
-          chipText = '오류 X';
-        } else {
-          switch (evt.category) {
-            case '중요': chipClass = 'important'; cardClass = 'important'; break;
-            case '행사': chipClass = 'event'; cardClass = 'event'; break;
-            case '결혼': chipClass = 'marriage'; cardClass = 'marriage'; break;
-            case '부고': chipClass = 'funeral'; cardClass = 'funeral'; break;
-            case '기타': chipClass = 'etc'; cardClass = 'etc'; break;
-          }
-        }
-
-        let isCardMatch = false;
+        const catProps = getCategoryProps(evt);
+        let cardClass = catProps.css;
+        
         if (currentSearchTerm) {
           const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
           if (checkText.includes(currentSearchTerm.toLowerCase())) {
-            isCardMatch = true;
             cardClass += ' card-search-match';
           }
         }
 
-        const rawTitle = evt.title ? evt.title : '(제목 없음)';
+        const rawTitle = evt.title || '(제목 없음)';
         const displayTitle = highlightSearchText(rawTitle, currentSearchTerm);
-        
-        // 💡 1. 장소는 소괄호 ()
         const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, currentSearchTerm)})</span>` : '';
-        
-        // 💡 1. 비고는 대괄호 []
-        const noteInlineHtml = evt.note 
-          ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, currentSearchTerm)}]</span>` 
-          : '';
+        const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, currentSearchTerm)}]</span>` : '';
 
-        // 💡 2. 참석자 목록 가나다순 정렬
+        // 참석자 가나다순 정렬 처리
         let sortedAttendeesStr = '';
         if (evt.attendees) {
-          const names = evt.attendees.split(',')
-            .map(n => n.trim())
-            .filter(n => n.length > 0);
+          const names = evt.attendees.split(',').map(n => n.trim()).filter(n => n.length > 0);
           names.sort((a, b) => a.localeCompare(b, 'ko'));
           sortedAttendeesStr = names.join(', ');
         }
-
         const attendeesHtml = sortedAttendeesStr 
           ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, currentSearchTerm)}</div>`
           : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
 
-        // [날짜 + 순번] 매칭된 사진 계산
+        // 사진 처리
         const matchedPhotos = getPhotosForEvent(evt, events.length);
         let photoBtnHtml = '';
         if (matchedPhotos.length > 0) {
           window[`tempPhotos_${evt.dateStr}_${evt.seq}_${idx}`] = matchedPhotos;
-          const safeTitle = (evt.title || '').replace(/'/g, "\\'");
-          photoBtnHtml = `
-            <button type="button" class="photo-view-btn" onclick="openPhotoViewer(window['tempPhotos_${evt.dateStr}_${evt.seq}_${idx}'], '${safeTitle}')">
-              📷 사진 ${matchedPhotos.length}장
-            </button>
-          `;
+          const safeTitle = rawTitle.replace(/'/g, "\\'");
+          photoBtnHtml = `<button type="button" class="photo-view-btn" onclick="openPhotoViewer(window['tempPhotos_${evt.dateStr}_${evt.seq}_${idx}'], '${safeTitle}')">📷 사진 ${matchedPhotos.length}장</button>`;
         }
 
-        let topErrorHtml = '';
-        let bottomErrorHtml = '';
-
+        // 에러 처리
+        let topErrorHtml = ''; let bottomErrorHtml = '';
         if (!evt.isValid) {
           const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
           const badgeText = (evt.errorType === 'DATE_ERROR') ? '날짜 오류' : '분류 오류';
@@ -1376,30 +629,25 @@
         cardsHtml += `
           <div class="detail-item-card ${cardClass}">
             <div class="detail-item-top">
-              <span class="category-chip ${chipClass}">${chipText}</span>
+              <span class="category-chip ${catProps.css}">${catProps.label}</span>
               <span class="detail-item-title">${displayTitle}</span>
-              ${placeHtml}
-              ${noteInlineHtml}
-              ${photoBtnHtml}
-              ${topErrorHtml}
+              ${placeHtml} ${noteInlineHtml} ${photoBtnHtml} ${topErrorHtml}
             </div>
             <div class="detail-bottom-row">
-              ${attendeesHtml}
-              ${bottomErrorHtml}
+              ${attendeesHtml} ${bottomErrorHtml}
             </div>
           </div>
         `;
       });
-
       listElem.innerHTML = cardsHtml;
     }
 
+    // 💡 [리팩토링] 일력(달력) 모달 렌더링 간소화
     function openDayModal(year, month) {
       const modal = document.getElementById('dayModal');
-      const modalTitle = document.getElementById('modalTitle');
       const dayGridBody = document.getElementById('dayGridBody');
 
-      modalTitle.textContent = `${year}년 ${month}월 일력`;
+      document.getElementById('modalTitle').textContent = `${year}년 ${month}월 일력`;
       dayGridBody.innerHTML = '';
       document.getElementById('detailDateTitle').innerHTML = '📅 날짜를 클릭하면 상세 일정이 표시됩니다.';
       document.getElementById('detailCountBadge').style.display = 'none';
@@ -1407,7 +655,6 @@
 
       const firstDayIndex = new Date(year, month - 1, 1).getDay();
       const lastDate = new Date(year, month, 0).getDate();
-
       const key = `${year}-${month}`;
       const monthEvents = globalEventMap[key] || [];
       const lunarHolidays = getLunarHolidaysForYear(year);
@@ -1433,19 +680,12 @@
         const cell = document.createElement('div');
         cell.id = `day-cell-${d}`;
         const colIndex = (firstDayIndex + d - 1) % 7;
-        let dayClass = 'day-cell';
-        if (colIndex === 0) dayClass += ' sun';
-        if (colIndex === 6) dayClass += ' sat';
+        let dayClass = 'day-cell' + (colIndex === 0 ? ' sun' : '') + (colIndex === 6 ? ' sat' : '');
 
-        const solarKey = `${month}-${d}`;
-        const lunarKey = `${year}-${month}-${d}`;
-        const holidayName = solarHolidays[solarKey] || lunarHolidays[lunarKey];
-        if (holidayName) {
-          dayClass += ' holiday';
-        }
+        const holidayName = solarHolidays[`${month}-${d}`] || lunarHolidays[`${year}-${month}-${d}`];
+        if (holidayName) dayClass += ' holiday';
 
         const currentEvents = dayEventsMap[d] || [];
-        
         if (currentSearchTerm && currentEvents.length > 0) {
           const hasMatch = currentEvents.some(evt => {
             const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
@@ -1470,36 +710,16 @@
         cellHtml += `<div class="day-events">`;
         if (currentEvents.length > 0) {
           const firstEvt = currentEvents[0];
-          let cssClass = 'day-event-item etc';
-          if (!firstEvt.isValid) {
-            cssClass = 'day-event-item error';
-          } else {
-            switch (firstEvt.category) {
-              case '중요': cssClass = 'day-event-item important'; break;
-              case '행사': cssClass = 'day-event-item event'; break;
-              case '결혼': cssClass = 'day-event-item marriage'; break;
-              case '부고': cssClass = 'day-event-item funeral'; break;
-              case '기타': cssClass = 'day-event-item etc'; break;
-            }
-          }
-          const displayText = firstEvt.title ? firstEvt.title : '(제목 없음)';
-          cellHtml += `
-            <div class="${cssClass}">
-              ${displayText}
-            </div>
-          `;
-
+          const catProps = getCategoryProps(firstEvt);
+          const cssClass = `day-event-item ${catProps.css}`;
+          const displayText = firstEvt.title || '(제목 없음)';
+          
+          cellHtml += `<div class="${cssClass}">${displayText}</div>`;
           if (currentEvents.length > 1) {
-            const moreCount = currentEvents.length - 1;
-            cellHtml += `
-              <div class="more-badge">
-                +${moreCount}개 더보기
-              </div>
-            `;
+            cellHtml += `<div class="more-badge">+${currentEvents.length - 1}개 더보기</div>`;
           }
         }
         cellHtml += `</div>`;
-
         cell.innerHTML = cellHtml;
         dayGridBody.appendChild(cell);
       }
@@ -1513,7 +733,6 @@
       }
 
       modal.style.display = 'flex';
-
       if (firstMatchDay) {
         selectDayDetail(year, month, firstMatchDay.day, firstMatchDay.colIndex, firstMatchDay.holidayName, firstMatchDay.currentEvents);
       }
@@ -1527,25 +746,20 @@
       currentSearchTerm = query;
 
       clearBtn.style.display = query ? 'block' : 'none';
-
       let matchCount = 0;
       const monthCellMatchMap = {};
 
       if (query) {
         const qLower = query.toLowerCase();
         for (const key in globalEventMap) {
-          const list = globalEventMap[key];
           let monthHasMatch = false;
-          list.forEach(evt => {
+          globalEventMap[key].forEach(evt => {
             const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
             if (combined.includes(qLower)) {
-              matchCount++;
-              monthHasMatch = true;
+              matchCount++; monthHasMatch = true;
             }
           });
-          if (monthHasMatch) {
-            monthCellMatchMap[key] = true;
-          }
+          if (monthHasMatch) monthCellMatchMap[key] = true;
         }
         badge.style.display = 'inline-block';
         badge.textContent = `총 ${matchCount}건 발견`;
@@ -1553,74 +767,41 @@
         badge.style.display = 'none';
       }
 
-      const allCells = document.querySelectorAll('.month-cell');
-      allCells.forEach(td => {
-        const cellKey = td.dataset.key;
+      document.querySelectorAll('.month-cell').forEach(td => {
         td.classList.remove('search-match', 'search-dimmed');
-
         if (query) {
-          if (monthCellMatchMap[cellKey]) {
-            td.classList.add('search-match');
-          } else {
-            td.classList.add('search-dimmed');
-          }
+          if (monthCellMatchMap[td.dataset.key]) td.classList.add('search-match');
+          else td.classList.add('search-dimmed');
         }
       });
     }
 
     function clearSearch() {
       const input = document.getElementById('searchInput');
-      input.value = '';
-      handleSearchInput();
-      input.focus();
+      input.value = ''; handleSearchInput(); input.focus();
     }
 
     function parseCSV(text) {
-      let p = '', row = [''];
-      const ret = [row];
-      let i = 0, r = 0, s = !0;
+      let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
       for (let l of text) {
-        if ('"' === l) {
-          if (s && l === p) row[r] += l;
-          s = !s;
-        } else if (',' === l && s) {
-          l = row[++r] = '';
-        } else if ('\n' === l && s) {
-          if ('\r' === p) row[r] = row[r].slice(0, -1);
-          row = ret[++i] = [l = ''];
-          r = 0;
-        } else {
-          row[r] += l;
-        }
+        if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
+        else if (',' === l && s) l = row[++r] = '';
+        else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
+        else row[r] += l;
         p = l;
       }
       return ret;
     }
 
-    // 사진DB CSV 파싱: [파일명(0), File ID(1), 썸네일(2), 날짜(3), 순번(4), 태그목록(5)]
     function parsePhotoDB(csvText) {
       const rows = parseCSV(csvText);
-      const photoMap = {};
-      const fallbackMap = {};
-
+      const photoMap = {}; const fallbackMap = {};
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i].map(c => c.trim());
-        const fileName = cols[0];
-        const fileId = cols[1];
-        const dateStr = cols[3];
-        const seq = cols[4] || '1';
-        const tags = cols[5] || '';
-
+        const fileName = cols[0], fileId = cols[1], dateStr = cols[3], seq = cols[4] || '1', tags = cols[5] || '';
         if (!fileId || !dateStr) continue;
 
-        const photoObj = {
-          id: fileId,
-          name: fileName,
-          desc: '',
-          tags: tags,
-          seq: seq
-        };
-
+        const photoObj = { id: fileId, name: fileName, desc: '', tags: tags, seq: seq };
         const key = `${dateStr}_${seq}`;
         if (!photoMap[key]) photoMap[key] = [];
         photoMap[key].push(photoObj);
@@ -1628,98 +809,56 @@
         if (!fallbackMap[dateStr]) fallbackMap[dateStr] = [];
         fallbackMap[dateStr].push(photoObj);
       }
-      globalPhotoMap = photoMap;
-      globalPhotoDateFallbackMap = fallbackMap;
+      globalPhotoMap = photoMap; globalPhotoDateFallbackMap = fallbackMap;
     }
 
-    // 이벤트DB 파싱: [일자(0), 순번(1), 분류(2), 행사명(3), 장소(4), 비고(5), 참석자(6)]
+    // 💡 [리팩토링] 메인 월력 렌더링 간소화
     function parseAndRenderCalendar(csvText) {
       const rows = parseCSV(csvText);
       if (rows.length < 2) return;
 
-      const eventMap = {};
-      const errorList = [];
-      const validCategories = ['중요', '결혼', '부고', '행사', '기타'];
-
+      const eventMap = {}; const errorList = [];
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i].map(c => c.trim());
-        const dateStr = cols[0];
-        const seq = cols[1] || '1';
-        const category = cols[2];
-        const title = cols[3];
-        const place = cols[4] || '';
-        const note = cols[5] || '';
-        const attendees = cols[6] || ''; // G열: 참석자
-
+        const dateStr = cols[0], seq = cols[1] || '1', category = cols[2], title = cols[3];
+        const place = cols[4] || '', note = cols[5] || '', attendees = cols[6] || '';
         if (!dateStr && !category && !title) continue;
 
-        let isDataValid = true;
-        let errorReason = '';
-        let errorType = '';
-        let errorInputVal = '';
+        let isDataValid = true, errorReason = '', errorType = '', errorInputVal = '';
+        let parsedYear = null, parsedMonth = null, parsedDay = null;
 
-        const dateRegex = /^\d{8}$/;
-        let parsedYear = null;
-        let parsedMonth = null;
-        let parsedDay = null;
-
-        if (!dateRegex.test(dateStr)) {
-          isDataValid = false;
-          errorType = 'DATE_ERROR';
-          errorInputVal = dateStr || '공란';
+        if (!/^\d{8}$/.test(dateStr)) {
+          isDataValid = false; errorType = 'DATE_ERROR'; errorInputVal = dateStr || '공란';
           errorReason = `날짜 형식 오류 (8자리 숫자가 아님: '${dateStr}')`;
           errorList.push(`날짜 오류: "${title || '제목없음'}" (입력값: '${dateStr}')`);
         } else {
           parsedYear = parseInt(dateStr.substring(0, 4), 10);
           parsedMonth = parseInt(dateStr.substring(4, 6), 10);
           parsedDay = parseInt(dateStr.substring(6, 8), 10);
-
           if (parsedMonth < 1 || parsedMonth > 12 || parsedDay < 1 || parsedDay > 31) {
-            isDataValid = false;
-            errorType = 'DATE_ERROR';
-            errorInputVal = dateStr;
+            isDataValid = false; errorType = 'DATE_ERROR'; errorInputVal = dateStr;
             errorReason = `유효하지 않은 날짜 범위 ('${dateStr}')`;
             errorList.push(`날짜 범위 오류: "${title || '제목없음'}" ('${dateStr}')`);
           }
         }
 
-        if (!validCategories.includes(category)) {
-          isDataValid = false;
-          errorType = 'CATEGORY_ERROR';
-          errorInputVal = category || '공란';
+        if (!['중요', '결혼', '부고', '행사', '기타'].includes(category)) {
+          isDataValid = false; errorType = 'CATEGORY_ERROR'; errorInputVal = category || '공란';
           errorReason = `유효하지 않은 분류명 ('${category}')`;
           errorList.push(`분류 오류: "${title || '제목없음'}" ('${category}')`);
         }
 
         if (parsedYear && parsedMonth && parsedDay) {
           const key = `${parsedYear}-${parsedMonth}`;
-          if (!eventMap[key]) {
-            eventMap[key] = [];
-          }
-          eventMap[key].push({
-            dateStr: dateStr,
-            seq: seq,
-            isValid: isDataValid,
-            category: category,
-            title: title,
-            place: place,
-            note: note,
-            attendees: attendees,
-            day: parsedDay,
-            errorReason: errorReason,
-            errorType: errorType,
-            errorInputVal: errorInputVal
-          });
+          if (!eventMap[key]) eventMap[key] = [];
+          eventMap[key].push({ dateStr, seq, isValid: isDataValid, category, title, place, note, attendees, day: parsedDay, errorReason, errorType, errorInputVal });
         }
       }
-
       globalEventMap = eventMap;
 
       const errorContainer = document.getElementById('error-container');
-      const errorListElement = document.getElementById('error-list');
       if (errorList.length > 0) {
-        const uniqueErrors = [...new Set(errorList)];
-        errorListElement.innerHTML = uniqueErrors.map(err => `<li>${err}</li>`).join('');
+        document.getElementById('error-list').innerHTML = [...new Set(errorList)].map(err => `<li>${err}</li>`).join('');
         errorContainer.style.display = 'block';
       } else {
         errorContainer.style.display = 'none';
@@ -1731,50 +870,32 @@
       for (let year = 1975; year <= 2026; year++) {
         const tr = document.createElement('tr');
         const thYear = document.createElement('th');
-        thYear.textContent = year;
-        tr.appendChild(thYear);
+        thYear.textContent = year; tr.appendChild(thYear);
 
         for (let month = 1; month <= 12; month++) {
           const td = document.createElement('td');
-          td.className = 'month-cell';
-          const key = `${year}-${month}`;
-          td.dataset.key = key;
+          td.className = 'month-cell'; td.dataset.key = `${year}-${month}`;
           td.onclick = () => openDayModal(year, month);
 
-          if (eventMap[key] && eventMap[key].length > 0) {
+          const monthEvents = eventMap[`${year}-${month}`];
+          if (monthEvents && monthEvents.length > 0) {
             let symbolsHtml = '<div class="symbol-wrapper">';
-            symbolsHtml += eventMap[key].map(item => {
+            symbolsHtml += monthEvents.map(item => {
               let tooltipLines = [];
               if (item.isValid) {
                 tooltipLines.push(`[${month}월 ${item.day}일] [${item.category}] ${item.title || '(제목 없음)'}`);
-                if (item.place) {
-                  tooltipLines.push(`📍 장소: ${item.place}`);
-                }
-                if (item.note) {
-                  tooltipLines.push(`📝 메모: ${item.note}`);
-                }
-                if (item.attendees) {
-                  tooltipLines.push(`👥 참석: ${item.attendees}`);
-                }
+                if (item.place) tooltipLines.push(`📍 장소: ${item.place}`);
+                if (item.note) tooltipLines.push(`📝 메모: ${item.note}`);
+                if (item.attendees) tooltipLines.push(`👥 참석: ${item.attendees}`);
               } else {
                 tooltipLines.push(`[${month}월 ${item.day}일] 오류: ${item.title || '(제목 없음)'}`);
-                if (item.errorReason) {
-                  tooltipLines.push(`⚠️ 원인: ${item.errorReason}`);
-                }
+                if (item.errorReason) tooltipLines.push(`⚠️ 원인: ${item.errorReason}`);
               }
               const tooltipText = tooltipLines.join('\n').replace(/"/g, '&quot;');
-
-              if (!item.isValid) {
-                return `<span class="symbol-error" title="${tooltipText}">X</span>`;
-              }
-              switch (item.category) {
-                case '중요': return `<span class="symbol-important" title="${tooltipText}">★</span>`;
-                case '행사': return `<span class="symbol-event" title="${tooltipText}">●</span>`;
-                case '결혼': return `<span class="symbol-marriage" title="${tooltipText}">●</span>`;
-                case '부고': return `<span class="symbol-funeral" title="${tooltipText}">●</span>`;
-                case '기타': return `<span class="symbol-etc" title="${tooltipText}">●</span>`;
-                default: return `<span class="symbol-error" title="${tooltipText}">X</span>`;
-              }
+              const catProps = getCategoryProps(item);
+              const renderSymbol = item.isValid ? catProps.symbol : 'X';
+              
+              return `<span class="symbol-${catProps.css}" title="${tooltipText}">${renderSymbol}</span>`;
             }).join('');
             symbolsHtml += '</div>';
             td.innerHTML = symbolsHtml;
@@ -1785,23 +906,13 @@
         }
         tbody.appendChild(tr);
       }
-
-      if (currentSearchTerm) {
-        handleSearchInput();
-      }
+      if (currentSearchTerm) handleSearchInput();
     }
 
     async function loadCalendarAndPhotoData() {
       try {
-        const [eventRes, photoRes] = await Promise.all([
-          fetch(csvUrl),
-          fetch(photoDbCsvUrl)
-        ]);
-        const [eventText, photoText] = await Promise.all([
-          eventRes.text(),
-          photoRes.text()
-        ]);
-
+        const [eventRes, photoRes] = await Promise.all([fetch(csvUrl), fetch(photoDbCsvUrl)]);
+        const [eventText, photoText] = await Promise.all([eventRes.text(), photoRes.text()]);
         parsePhotoDB(photoText);
         parseAndRenderCalendar(eventText);
       } catch (error) {
@@ -1809,7 +920,6 @@
         document.getElementById('calendar-body').innerHTML = `<tr><td colspan="13" class="loading" style="color: red;">데이터를 불러오는데 실패했습니다.</td></tr>`;
       }
     }
-
     loadCalendarAndPhotoData();
   </script>
 </body>
