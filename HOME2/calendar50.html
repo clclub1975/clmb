@@ -1,4 +1,4 @@
-<!-- v7.2: 텍스트 통합 검색(행사명, 장소, 비고) 및 캘린더/일력 실시간 하이라이트 기능 추가 -->
+<!-- v7.3: 1개 표식 셀 중앙 정렬 복원 (symbol-wrapper flex 배치) 및 통합 검색 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -333,16 +333,14 @@
       opacity: 0.25;
     }
 
+    /* 표식 래퍼: flex를 적용하여 1개든 여러 개든 정중앙 정렬 보장 */
     .symbol-wrapper {
-      display: inline-grid;
-      grid-template-columns: repeat(4, auto);
+      display: flex;
       justify-content: center;
-      align-content: center;
-      justify-items: center;
       align-items: center;
+      flex-wrap: wrap;
       gap: 2px 4px;
       width: 100%;
-      height: 100%;
       min-height: 16px;
     }
 
@@ -370,13 +368,11 @@
 
     .symbol-empty {
       color: #adb5bd;
-      grid-column: 1 / -1;
       font-size: 0.7rem !important;
     }
 
     @media (max-width: 768px) {
       .symbol-wrapper {
-        grid-template-columns: repeat(2, auto);
         gap: 2px 2px;
       }
       .symbol-wrapper span {
@@ -807,7 +803,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v7.2</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v7.3</span></span>
       </h1>
     </header>
 
@@ -1011,7 +1007,6 @@
 
     const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
-    // 텍스트 검색 하이라이트 유틸 함수
     function highlightSearchText(text, keyword) {
       if (!text) return '';
       if (!keyword) return text;
@@ -1058,7 +1053,6 @@
           }
         }
 
-        // 검색어 매칭 여부 확인
         let isCardMatch = false;
         if (currentSearchTerm) {
           const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
@@ -1158,7 +1152,6 @@
 
         const currentEvents = dayEventsMap[d] || [];
         
-        // 검색어 매칭 여부 체크
         if (currentSearchTerm && currentEvents.length > 0) {
           const hasMatch = currentEvents.some(evt => {
             const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''}`.toLowerCase();
@@ -1227,13 +1220,11 @@
 
       modal.style.display = 'flex';
 
-      // 검색어가 있을 때 첫 매칭 날짜가 있다면 자동 상세 선택
       if (firstMatchDay) {
         selectDayDetail(year, month, firstMatchDay.day, firstMatchDay.colIndex, firstMatchDay.holidayName, firstMatchDay.currentEvents);
       }
     }
 
-    // 검색 입력 처리 함수
     function handleSearchInput() {
       const input = document.getElementById('searchInput');
       const clearBtn = document.getElementById('searchClearBtn');
@@ -1268,7 +1259,6 @@
         badge.style.display = 'none';
       }
 
-      // 월력 테이블 셀 하이라이트 반영
       const allCells = document.querySelectorAll('.month-cell');
       allCells.forEach(td => {
         const cellKey = td.dataset.key;
@@ -1324,7 +1314,6 @@
       return ret;
     }
 
-    // 나열식(테이블형) 이벤트DB 파싱 및 렌더링
     function parseAndRenderCalendar(csvText) {
       const rows = parseCSV(csvText);
       if (rows.length < 2) return;
@@ -1425,7 +1414,7 @@
           const td = document.createElement('td');
           td.className = 'month-cell';
           const key = `${year}-${month}`;
-          td.dataset.key = key; // 검색 매칭용 key 부여
+          td.dataset.key = key;
           td.onclick = () => openDayModal(year, month);
 
           if (eventMap[key] && eventMap[key].length > 0) {
@@ -1470,7 +1459,6 @@
         tbody.appendChild(tr);
       }
 
-      // 데이터 갱신 후 기존 검색어 유지 적용
       if (currentSearchTerm) {
         handleSearchInput();
       }
