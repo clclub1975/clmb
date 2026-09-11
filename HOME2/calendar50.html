@@ -1,4 +1,4 @@
-<!-- v10.0: 일력창 우클릭 이벤트 신규 등록 폼 모달 및 분류 라디오 버튼 UI 도입 -->
+<!-- v10.1: 참석자 입력창 영역의 자동 높이 조절(Auto-expand) 기능 보완 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -204,26 +204,38 @@
         .gallery-item-title { font-size: 0.72rem; font-weight: 600; color: #1e293b; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gallery-item-place { font-size: 0.65rem; color: #64748b; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* 신규 일정 추가 모달 스타일 (v10.0 추가) */
+        /* 신규 일정 추가 모달 스타일 (v10.1 자동 높이 조절 보완) */
         .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
-        .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
-        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; }
+        .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; max-height: 90vh; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
+        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; }
         .add-event-header h3 { font-size: 1rem; margin: 0; font-weight: 600; }
-        .add-event-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .add-event-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
         .form-field { display: flex; flex-direction: column; gap: 4px; }
         .form-field label { font-size: 0.78rem; font-weight: 700; color: #475569; }
-        .form-field input[type="text"] { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none; }
-        .form-field input[type="text"]:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        .form-field input[type="text"],
+        .form-field textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none; font-family: inherit; }
+        .form-field input[type="text"]:focus,
+        .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        
+        /* 참석자 등 입력창 자동 높이 확장 지원 스타일 (v10.1) */
+        .form-field textarea.auto-expand {
+            resize: vertical;
+            min-height: 60px;
+            max-height: 200px;
+            line-height: 1.4;
+            field-sizing: content; /* 최신 브라우저 자동 높이 조절 지원 */
+        }
+
         .info-row { display: flex; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; }
         .info-row span { font-weight: 600; color: #0f172a; }
         
-        /* 라디오 버튼 그룹 스타일 (v10.0 추가) */
+        /* 라디오 버튼 그룹 스타일 */
         .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
         .radio-label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; transition: all 0.15s ease; }
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
         
-        .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; }
+        .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
         .btn-cancel { padding: 8px 14px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-cancel:hover { background: #f1f5f9; }
         .btn-submit { padding: 8px 16px; background: #2563eb; border: none; color: #ffffff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
@@ -253,7 +265,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v10.0</span>
+                    <span class="version">v10.1</span>
                 </span>
             </h1>
         </header>
@@ -373,7 +385,7 @@
         </div>
     </div>
 
-    <!-- ➕ 신규 일정 입력 모달 (v10.0 신규 도입) -->
+    <!-- ➕ 신규 일정 입력 모달 (v10.1 자동 높이 확장 지원) -->
     <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
         <div class="add-event-modal-content">
             <div class="add-event-header">
@@ -414,7 +426,7 @@
 
                 <div class="form-field">
                     <label for="inputNewAttendees">참석자 (쉼표 구분)</label>
-                    <input type="text" id="inputNewAttendees" placeholder="예: 홍길동, 김철수, 이영희">
+                    <textarea id="inputNewAttendees" class="auto-expand" placeholder="예: 홍길동, 김철수, 이영희, 박민수, 최지훈... (명단이 길어지면 창이 자동으로 늘어납니다)"></textarea>
                 </div>
             </div>
             <div class="add-event-footer">
@@ -471,13 +483,10 @@
         let currentPhotoList = [];
         let currentPhotoIndex = 0;
 
-        // 현재 열려있는 일력 모달의 연·월 기억용 변수
         let activeModalYear = null;
         let activeModalMonth = null;
-        // 우클릭으로 선택된 날짜 임시 저장 객체
         let selectedTargetDateInfo = null;
 
-        // 모바일 뒤로가기(<) 히스토리 연동
         window.addEventListener('popstate', function(e) {
             const addEventModal = document.getElementById('addEventModal');
             const photoModal = document.getElementById('photoModal');
@@ -516,19 +525,13 @@
         function handleGalleryModalOverlayClick(event) { if (event.target.id === 'galleryModal') requestCloseGalleryModal(); }
         function handleAddEventOverlayClick(event) { if (event.target.id === 'addEventModal') closeAddEventModal(); }
 
-        // ==========================================
-        // [v10.0 신규] 우클릭 이벤트 및 일정 추가 폼 제어 함수
-        // ==========================================
         function openAddEventModal(year, month, day, eventsOnDay) {
             activeModalYear = year;
             activeModalMonth = month;
 
-            // YYYYMMDD 포맷 생성 (월, 일은 2자리로 패딩)
             const mmStr = String(month).padStart(2, '0');
             const ddStr = String(day).padStart(2, '0');
             const dateStr = `${year}${mmStr}${ddStr}`;
-
-            // 순번 계산: 해당 날짜의 기존 이벤트 수 + 1
             const nextSeq = (eventsOnDay ? eventsOnDay.length : 0) + 1;
 
             selectedTargetDateInfo = {
@@ -536,11 +539,9 @@
                 seq: nextSeq
             };
 
-            // 모달 UI에 정보 반영
             document.getElementById('lblTargetDate').textContent = `${year}.${mmStr}.${ddStr} (${dateStr})`;
             document.getElementById('lblTargetSeq').textContent = `${nextSeq}번`;
 
-            // 입력 폼 초기화
             document.querySelectorAll('input[name="newCategory"]').forEach(r => { r.checked = (r.value === '행사'); });
             document.getElementById('inputNewTitle').value = '';
             document.getElementById('inputNewPlace').value = '';
@@ -554,7 +555,6 @@
             document.getElementById('addEventModal').style.display = 'none';
         }
 
-        // 금번 작업 목표 범위 내 입력 데이터 확인 및 임시 테스트 처리
         function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
@@ -568,7 +568,6 @@
                 return;
             }
 
-            // 임시 데이터 객체 확인용 메시지 (다음 단계 GAS 연동 전 검증 단계)
             const summaryMsg = `[신규 입력 데이터 확인]\n` +
                                `- 일자: ${selectedTargetDateInfo.dateStr}\n` +
                                `- 순번: ${selectedTargetDateInfo.seq}\n` +
@@ -618,7 +617,6 @@
             document.getElementById('photoModal').style.display = 'flex';
         }
 
-        // 공휴일 및 음력 변환
         const solarHolidays = { '1-1': '신정', '3-1': '삼일절', '5-5': '어린이날', '6-6': '현충일', '8-15': '광복절', '10-3': '개천절', '10-9': '한글날', '12-25': '성탄절' };
         const lunarInfo = [0x095b0, 0x04ba0, 0x0a5b4, 0x052b0, 0x0a930, 0x05495, 0x052d0, 0x02ac0, 0x0cd15, 0x06aa0, 0x0ad50, 0x02d52, 0x04b60, 0x0a577, 0x0a4e0, 0x0d260, 0x0e935, 0x0d520, 0x0daa0, 0x06b53, 0x056d0, 0x04ae0, 0x0a4e4, 0x0a4d0, 0x0d150, 0x0f252, 0x0d520, 0x0dd45, 0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, 0x14b63, 0x09370, 0x049f8, 0x04970, 0x064b0, 0x068a6, 0x0ea50, 0x06aa0, 0x0a6c4, 0x0aae0, 0x092e0, 0x0d2e3, 0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4, 0x052d0, 0x0a9b8, 0x0a950, 0x0b4a0, 0x0b6a6, 0x0ad50, 0x055a0, 0x0aba4, 0x0a5b0, 0x052b0, 0x0b273, 0x06930, 0x07337, 0x06aa0, 0x0ad50, 0x14b55, 0x04b60, 0x0a570];
         
@@ -924,14 +922,9 @@
                 }
 
                 cell.className = dayClass;
-                // 좌클릭: 상세 내역 보기
                 cell.onclick = () => selectDayDetail(year, month, d, colIndex, holidayName, currentEvents);
-                
-                // ==========================================
-                // [v10.0 신규] 우클릭 이벤트 리스너 부착
-                // ==========================================
                 cell.oncontextmenu = (e) => {
-                    e.preventDefault(); // 크롬 기본 컨텍스트 메뉴 무력화
+                    e.preventDefault();
                     openAddEventModal(year, month, d, currentEvents);
                 };
 
