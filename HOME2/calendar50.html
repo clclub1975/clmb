@@ -1,4 +1,4 @@
-<!-- v11.0: 스프레드시트 웹 앱 API 연동 및 신규 일정 실시간 전송·캘린더 즉시 반영 구현 -->
+<!-- v11.1: 관리자 암호 인증 연동 및 더블클릭 히든 암호 입력창 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -140,7 +140,6 @@
         .detail-date-title { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .detail-count-badge { font-size: 0.7rem; background-color: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600; flex-shrink: 0; }
         
-        /* 모바일 및 상시 노출 신규 등록 버튼 */
         .detail-add-btn { background-color: #2563eb; color: #ffffff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; transition: background 0.2s ease; line-height: 1.2; }
         .detail-add-btn:hover { background-color: #1d4ed8; }
         .detail-add-btn:disabled { background-color: #94a3b8; cursor: not-allowed; opacity: 0.6; }
@@ -214,14 +213,17 @@
         /* 신규 일정 추가 모달 스타일 */
         .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
         .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; max-height: 90vh; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
-        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; }
-        .add-event-header h3 { font-size: 1rem; margin: 0; font-weight: 600; }
+        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; user-select: none; }
+        /* 더블클릭 유도를 위한 이스터에그 헤더 타이틀 */
+        .add-event-header h3 { font-size: 1rem; margin: 0; font-weight: 600; cursor: pointer; }
         .add-event-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
         .form-field { display: flex; flex-direction: column; gap: 4px; }
         .form-field label { font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between; align-items: center; }
         .form-field input[type="text"],
+        .form-field input[type="password"],
         .form-field textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none; font-family: inherit; }
         .form-field input[type="text"]:focus,
+        .form-field input[type="password"]:focus,
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
         .form-field textarea.auto-expand { resize: vertical; min-height: 60px; max-height: 200px; line-height: 1.4; field-sizing: content; }
         .attendee-count-badge { font-size: 0.72rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 1px 6px; border-radius: 4px; border: 1px solid #bfdbfe; }
@@ -231,6 +233,10 @@
         .radio-label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; transition: all 0.15s ease; }
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
+
+        /* [v11.1] 히든 관리자 비밀번호 필드 스타일 */
+        .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; }
+
         .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
         .btn-cancel { padding: 8px 14px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-cancel:hover { background: #f1f5f9; }
@@ -268,7 +274,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.0</span>
+                    <span class="version">v11.1</span>
                 </span>
             </h1>
         </header>
@@ -392,8 +398,9 @@
     <!-- ➕ 신규 일정 입력 모달 -->
     <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
         <div class="add-event-modal-content">
+            <!-- 타이틀을 더블클릭(또는 두 번 연속 터치)하면 관리자 암호창이 토글됨 -->
             <div class="add-event-header">
-                <h3 id="addEventModalTitle">새 일정 추가</h3>
+                <h3 id="addEventModalTitle" ondblclick="toggleAdminPasswordInput()" onclick="handleTitleTouchEasterEgg()" title="더블클릭 시 관리자 암호 입력창 토글">새 일정 추가</h3>
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
             </div>
             <div class="add-event-body">
@@ -434,6 +441,12 @@
                         <span id="attendeeCountBadge" class="attendee-count-badge">0명 입력됨</span>
                     </label>
                     <textarea id="inputNewAttendees" class="auto-expand" placeholder="예: 홍길동, 김철수, 이영희" oninput="updateAttendeeCount()"></textarea>
+                </div>
+
+                <!-- [v11.1] 히든 관리자 비밀번호 입력 필드 (기본 숨김) -->
+                <div id="adminPasswordFieldWrap" class="form-field hidden-admin-field">
+                    <label for="inputAdminPw" style="color: #854d0e;">🔑 관리자 비밀번호</label>
+                    <input type="password" id="inputAdminPw" placeholder="관리자 인증 암호를 입력하세요">
                 </div>
             </div>
             <div class="add-event-footer">
@@ -503,7 +516,7 @@
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=1230555011&single=true&output=csv';
         const photoDbCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDT3n0XaTAnxMjvbFKg8GRdMytfgsNWltOD67BiBPg02PYGh5ndC1vmb2jP6nvMHzy5cGWI0wiy_e4/pub?gid=0&single=true&output=csv';
-        // Apps Script 웹 앱 URL 연동
+        // Apps Script 웹 앱 URL
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbwfcRwbweUdxoMraSaI-MlhT6sGCzrS-q_U9ji_0jEZaOcrU8m4BHKl16QN5mtPHngo/exec';
         
         const CATEGORY_CONFIG = {
@@ -536,6 +549,9 @@
         let activeSelectedEvents = [];
         let selectedTargetDateInfo = null;
         let pendingNewEventPayload = null;
+
+        // 모바일 더블터치 감지용
+        let lastTitleTouchTime = 0;
 
         window.addEventListener('popstate', function(e) {
             const addEventModal = document.getElementById('addEventModal');
@@ -585,6 +601,26 @@
             openAddEventModal(activeModalYear, activeModalMonth, activeSelectedDay, activeSelectedEvents);
         }
 
+        // [v11.1] 히든 관리자 비밀번호 토글 이스터에그 함수
+        function toggleAdminPasswordInput() {
+            const pwWrap = document.getElementById('adminPasswordFieldWrap');
+            const pwInput = document.getElementById('inputAdminPw');
+            if (pwWrap.style.display === 'none' || pwWrap.style.display === '') {
+                pwWrap.style.display = 'flex';
+                pwInput.focus();
+            } else {
+                pwWrap.style.display = 'none';
+            }
+        }
+
+        function handleTitleTouchEasterEgg() {
+            const now = new Date().getTime();
+            if (now - lastTitleTouchTime < 400) {
+                toggleAdminPasswordInput();
+            }
+            lastTitleTouchTime = now;
+        }
+
         function openAddEventModal(year, month, day, eventsOnDay) {
             activeModalYear = year;
             activeModalMonth = month;
@@ -619,6 +655,10 @@
             document.getElementById('inputNewNote').value = '';
             document.getElementById('inputNewAttendees').value = '';
             
+            // 관리자 암호창 초기화 및 숨김 상태 유지
+            document.getElementById('inputAdminPw').value = '';
+            document.getElementById('adminPasswordFieldWrap').style.display = 'none';
+            
             updateAttendeeCount();
 
             document.getElementById('addEventModal').style.display = 'flex';
@@ -646,6 +686,7 @@
             const place = document.getElementById('inputNewPlace').value.trim();
             const note = document.getElementById('inputNewNote').value.trim();
             const attendees = document.getElementById('inputNewAttendees').value.trim();
+            const adminPassword = document.getElementById('inputAdminPw').value.trim();
 
             if (!title) {
                 alert('행사명을 입력해주세요.');
@@ -662,12 +703,12 @@
                 place: place,
                 note: note,
                 attendees: attendees,
+                adminPassword: adminPassword, // [v11.1] 관리자 암호 탑재
                 year: selectedTargetDateInfo.year,
                 month: selectedTargetDateInfo.month,
                 day: selectedTargetDateInfo.day
             };
 
-            // 모달 데이터 채우기
             document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
             document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
             document.getElementById('confirmPlace').textContent = place || '-';
@@ -687,25 +728,31 @@
             document.getElementById('confirmEventModal').style.display = 'none';
         }
 
-        // 백엔드(GAS) 데이터 전송 및 화면 즉시 반영
+        // [v11.1] 백엔드 응답 검증 및 관리자 인증 처리
         async function finalSubmitEvent() {
             if (!pendingNewEventPayload) return;
 
             const submitBtn = document.getElementById('btnFinalSubmit');
             const originalBtnText = submitBtn.textContent;
             submitBtn.disabled = true;
-            submitBtn.textContent = '전송 중...';
+            submitBtn.textContent = '인증 및 전송 중...';
 
             try {
-                // 구글 시트 웹 앱 API로 전송 (CORS 프리플라이트 우회를 위해 no-cors 사용)
-                await fetch(scriptUrl, {
+                // 구글 시트 웹 앱 API 호출 (JSON 응답 파싱)
+                const res = await fetch(scriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(pendingNewEventPayload)
                 });
+                const result = await res.json();
 
-                alert('새 일정이 구글 시트에 정상적으로 등록되었습니다!');
+                if (result.status === 'error') {
+                    alert(result.message); // 예: '관리자가 아닙니다.'
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                    return;
+                }
+
+                alert(result.message || '새 일정이 구글 시트에 정상적으로 등록되었습니다!');
 
                 // 클라이언트 메모리 즉시 반영 (낙관적 업데이트)
                 const p = pendingNewEventPayload;
@@ -728,11 +775,9 @@
                 };
                 globalEventMap[monthKey].push(newEvtObj);
 
-                // 모달 닫기
                 closeConfirmModal();
                 closeAddEventModal();
 
-                // 캘린더 테이블 및 상세 일력 즉시 다시 그리기
                 renderCalendarTable();
                 if (document.getElementById('dayModal').style.display === 'flex' && activeModalYear === p.year && activeModalMonth === p.month) {
                     openDayModal(p.year, p.month);
