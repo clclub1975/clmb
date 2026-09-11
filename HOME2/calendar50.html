@@ -1,4 +1,4 @@
-<!-- v11.5: 상단 관리자 전용 알림 바 및 참석자 가나다순 스마트 다중 자동완성 지원 -->
+<!-- v11.6: 모달 헤더 관리자 문구 통합 및 전체 입력 요소 컴팩트(라디오 높이) 축소 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -213,53 +213,57 @@
         /* 신규 일정 추가 모달 스타일 */
         .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
         .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; max-height: 90vh; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
-        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; user-select: none; }
-        .add-event-header h3 { font-size: 1rem; margin: 0; font-weight: 600; cursor: pointer; }
-        .add-event-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
-        
-        /* [v11.5] 모달 최상단 관리자 알림 바 (안1 & 위치A) */
-        .admin-notice-bar { background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 8px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; user-select: none; }
+        /* [v11.6] 헤더 타이틀에 통합 안내 문구 반영 */
+        .add-event-header h3 { font-size: 0.92rem; margin: 0; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .add-event-body { padding: 12px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
 
-        .form-field { display: flex; flex-direction: column; gap: 4px; position: relative; }
-        .form-field label { font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between; align-items: center; }
+        /* [v11.6] 날짜 및 순번 안내창 높이를 라디오 버튼 높이 수준으로 컴팩트화 */
+        .info-row { display: flex; gap: 12px; font-size: 0.76rem; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; line-height: 1.3; min-height: 28px; align-items: center; }
+        .info-row span { font-weight: 600; color: #0f172a; }
+
+        .form-field { display: flex; flex-direction: column; gap: 3px; position: relative; }
+        .form-field label { font-size: 0.74rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between; align-items: center; line-height: 1.2; }
+        
+        /* [v11.6] 입력창 높이를 라디오 버튼 높이 수준(약 28px)으로 컴팩트 축소 */
         .form-field input[type="text"],
-        .form-field input[type="password"],
-        .form-field textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none; font-family: inherit; }
+        .form-field input[type="password"] { width: 100%; height: 28px; padding: 3px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.8rem; outline: none; font-family: inherit; }
+        
+        /* [v11.6] 참석자 입력창 디폴트 높이를 1행(28px)으로 컴팩트 축소 */
+        .form-field textarea { width: 100%; min-height: 28px; height: 28px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.8rem; outline: none; font-family: inherit; line-height: 1.25; resize: vertical; }
+
         .form-field input[type="text"]:focus,
         .form-field input[type="password"]:focus,
-        .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
-        .form-field textarea.auto-expand { resize: vertical; min-height: 60px; max-height: 200px; line-height: 1.4; field-sizing: content; }
-        .attendee-count-badge { font-size: 0.72rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 1px 6px; border-radius: 4px; border: 1px solid #bfdbfe; }
+        .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
+        .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
         /* [v11.5] 참석자 스마트 가나다순 자동완성 드롭다운 레이어 */
-        .autocomplete-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 170px; overflow-y: auto; background: #ffffff; border: 1.5px solid #3b82f6; border-radius: 6px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); z-index: 3100; margin-top: 3px; }
-        .autocomplete-item { padding: 7px 12px; font-size: 0.82rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
+        .autocomplete-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 170px; overflow-y: auto; background: #ffffff; border: 1.5px solid #3b82f6; border-radius: 6px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); z-index: 3100; margin-top: 2px; }
+        .autocomplete-item { padding: 6px 10px; font-size: 0.78rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
         .autocomplete-item:last-child { border-bottom: none; }
         .autocomplete-item:hover, .autocomplete-item.active { background-color: #eff6ff; color: #1d4ed8; font-weight: 600; }
-        .autocomplete-empty { padding: 9px 12px; font-size: 0.78rem; color: #94a3b8; text-align: center; }
+        .autocomplete-empty { padding: 8px 10px; font-size: 0.74rem; color: #94a3b8; text-align: center; }
 
-        .info-row { display: flex; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; }
-        .info-row span { font-weight: 600; color: #0f172a; }
-        .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
-        .radio-label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; transition: all 0.15s ease; }
+        .radio-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1px; }
+        .radio-label { display: inline-flex; align-items: center; gap: 3px; font-size: 0.76rem; font-weight: 600; cursor: pointer; padding: 3px 6px; height: 26px; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; transition: all 0.15s ease; }
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
 
         /* 히든 관리자 인증 영역 스타일 */
-        .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; }
+        .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 6px 8px; border-radius: 6px; gap: 4px; }
 
-        .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
-        .btn-cancel { padding: 8px 14px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .add-event-footer { padding: 8px 14px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 6px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
+        .btn-cancel { padding: 6px 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 5px; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
         .btn-cancel:hover { background: #f1f5f9; }
-        .btn-submit { padding: 8px 16px; background: #2563eb; border: none; color: #ffffff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .btn-submit { padding: 6px 14px; background: #2563eb; border: none; color: #ffffff; border-radius: 5px; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
         .btn-submit:hover { background: #1d4ed8; }
         .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
 
         /* 커스텀 최종 확인 모달 스타일 */
-        .confirm-row { display: flex; gap: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; margin-bottom: 8px; align-items: flex-start; }
+        .confirm-row { display: flex; gap: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; margin-bottom: 6px; align-items: flex-start; }
         .confirm-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .confirm-label { color: #64748b; min-width: 55px; font-size: 0.78rem; font-weight: 700; padding-top: 2px; }
-        .confirm-value { color: #0f172a; font-size: 0.85rem; line-height: 1.4; word-break: keep-all; flex: 1; }
+        .confirm-label { color: #64748b; min-width: 55px; font-size: 0.75rem; font-weight: 700; padding-top: 1px; }
+        .confirm-value { color: #0f172a; font-size: 0.8rem; line-height: 1.35; word-break: keep-all; flex: 1; }
 
         @media (max-width: 768px) {
             .search-container { max-width: 100%; }
@@ -272,6 +276,7 @@
             .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
             .more-badge { font-size: 0.52rem; padding: 1px 2px; }
             .detail-add-btn { font-size: 0.7rem; padding: 3px 7px; }
+            .add-event-header h3 { font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -286,7 +291,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.5</span>
+                    <span class="version">v11.6</span>
                 </span>
             </h1>
         </header>
@@ -410,17 +415,16 @@
     <!-- ➕ 신규 일정 입력 모달 -->
     <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
         <div class="add-event-modal-content">
+            <!-- [v11.6] 헤더 라인에 통합 문구 반영 (더블클릭 토글 유지) -->
             <div class="add-event-header">
-                <h3 id="addEventModalTitle" ondblclick="toggleAdminPasswordInput()" onclick="handleTitleTouchEasterEgg()" title="더블클릭 시 관리자 인증창 토글">새 일정 추가</h3>
+                <h3 id="addEventModalTitle" ondblclick="toggleAdminPasswordInput()" onclick="handleTitleTouchEasterEgg()" title="더블클릭 시 관리자 인증창 토글">
+                    <span>새 일정 추가</span>
+                    <span style="font-size: 0.75rem; font-weight: normal; opacity: 0.88; margin-left: 2px;">(관리 비밀번호 필요)</span>
+                </h3>
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
             </div>
             <div class="add-event-body">
-                <!-- [v11.5] 상단 관리자 안내 바 (안1 & 위치A) -->
-                <div class="admin-notice-bar">
-                    <span>🔒</span>
-                    <span>새 일정 등록은 관리자만 가능합니다.</span>
-                </div>
-
+                <!-- [v11.6] 날짜 및 순번 안내창 슬림화 -->
                 <div class="info-row">
                     <div>날짜: <span id="lblTargetDate">-</span></div>
                     <div>자동 순번: <span id="lblTargetSeq">-</span></div>
@@ -437,6 +441,7 @@
                     </div>
                 </div>
 
+                <!-- [v11.6] 높이 축소된 컴팩트 입력 필드 -->
                 <div class="form-field">
                     <label for="inputNewTitle">행사명</label>
                     <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회">
@@ -452,13 +457,13 @@
                     <input type="text" id="inputNewNote" placeholder="예: 50주년 기념">
                 </div>
 
-                <!-- [v11.5] 참석자 스마트 가나다순 자동완성 영역 -->
+                <!-- [v11.6] 1행 디폴트 슬림화 및 가나다순 자동완성 영역 -->
                 <div class="form-field">
                     <label for="inputNewAttendees">
                         <span>참석자 (쉼표 구분 / 자동완성 지원)</span>
                         <span id="attendeeCountBadge" class="attendee-count-badge">0명 입력됨</span>
                     </label>
-                    <textarea id="inputNewAttendees" class="auto-expand" placeholder="예: 홍길동, 김철수, 이영희 (이름 또는 초성 입력 시 목록 추천)" oninput="handleAttendeeInput(event)" onfocus="handleAttendeeFocus()" autocomplete="off"></textarea>
+                    <textarea id="inputNewAttendees" placeholder="예: 홍길동, 김철수 (이름 또는 초성 입력 시 목록 추천)" oninput="handleAttendeeInput(event)" onfocus="handleAttendeeFocus()" autocomplete="off"></textarea>
                     
                     <!-- 자동완성 추천 레이어 드롭다운 -->
                     <div id="attendeeAutocompleteList" class="autocomplete-dropdown"></div>
@@ -466,10 +471,10 @@
 
                 <!-- 히든 관리자 인증 영역 (기본 숨김) -->
                 <div id="adminPasswordFieldWrap" class="form-field hidden-admin-field">
-                    <label for="inputAuthor" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">👤 등록자 성명</label>
-                    <input type="text" id="inputAuthor" placeholder="설정된 등록 가능자 성명 입력" style="margin-bottom: 8px;">
+                    <label for="inputAuthor" style="color: #854d0e; font-weight: bold;">👤 등록자 성명</label>
+                    <input type="text" id="inputAuthor" placeholder="설정된 등록 가능자 성명 입력" style="margin-bottom: 4px;">
 
-                    <label for="inputAdminPw" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">🔑 관리자 비밀번호</label>
+                    <label for="inputAdminPw" style="color: #854d0e; font-weight: bold;">🔑 관리자 비밀번호</label>
                     <input type="password" id="inputAdminPw" placeholder="관리자 인증 암호를 입력하세요">
                 </div>
             </div>
@@ -487,8 +492,8 @@
                 <h3 style="font-size: 1rem; margin: 0; font-weight: 600;">입력 데이터 최종 확인</h3>
                 <button type="button" class="modal-close-btn" onclick="closeConfirmModal()">&times;</button>
             </div>
-            <div class="modal-body" style="padding: 16px;">
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; display: flex; flex-direction: column;">
+            <div class="modal-body" style="padding: 14px;">
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; display: flex; flex-direction: column;">
                     <div class="confirm-row">
                         <span class="confirm-label">일련번호</span>
                         <strong id="confirmKey" class="confirm-value" style="color: #2563eb;">-</strong>
@@ -578,11 +583,8 @@
         let pendingNewEventPayload = null;
 
         let lastTitleTouchTime = 0;
-
-        // [v11.5] 50년사 전체 참석자 명단 (중복 제거 및 가나다순 정렬 보관)
         let globalAllAttendees = [];
 
-        // 한글 초성 분리 맵 및 유틸리티
         const CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
         
         function getChosung(str) {
@@ -702,7 +704,6 @@
             badge.textContent = `${count}명 입력됨`;
         }
 
-        // [v11.5] 참석자 스마트 가나다순 실시간 자동완성 처리 함수군
         function getCurrentQueryToken(textarea) {
             const text = textarea.value;
             const cursorPos = textarea.selectionStart || text.length;
@@ -732,16 +733,13 @@
 
             let matchedList = [];
             if (!token) {
-                // 입력값이 없으면 전체 가나다순 명단 노출
                 matchedList = globalAllAttendees.slice(0, 40);
             } else if (isKoreanChosungOnly(token)) {
-                // 초성 검색 (예: 'ㄱ' -> 강찬, 김철수 등)
                 matchedList = globalAllAttendees.filter(name => {
                     const cho = getChosung(name);
                     return cho.startsWith(token) || cho.includes(token);
                 });
             } else {
-                // 일반 글자 검색 (예: '가' -> 강찬 등, '김' -> 김○○ 등)
                 const qLower = token.toLowerCase();
                 matchedList = globalAllAttendees.filter(name => name.toLowerCase().includes(qLower));
             }
@@ -771,7 +769,6 @@
             const cursorPos = textarea.selectionStart || text.length;
             const textAfterCursor = text.substring(cursorPos);
 
-            // 기존 입력 토큰을 선택된 이름으로 대체하고 쉼표와 공백 부착
             let newText = '';
             if (tokensBefore) {
                 newText = `${tokensBefore}, ${name}, ${textAfterCursor.replace(/^,\s*/, '')}`;
@@ -790,7 +787,6 @@
             if (dropdown) dropdown.style.display = 'none';
         }
 
-        // 입력 영역 외부 클릭 시 자동완성 닫기
         document.addEventListener('click', function(e) {
             const wrap = document.getElementById('inputNewAttendees');
             const dropdown = document.getElementById('attendeeAutocompleteList');
@@ -799,7 +795,6 @@
             }
         });
 
-        // 등록 데이터 확인 버튼 클릭 시 실시간 백엔드 사전 검증
         async function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
@@ -815,7 +810,6 @@
                 return;
             }
 
-            // 일반 사용자가 정보 없이 누른 경우 즉시 차단
             const pwWrap = document.getElementById('adminPasswordFieldWrap');
             if (pwWrap.style.display === 'none' || !author || !adminPassword) {
                 alert('관리자만이 등록 가능합니다.');
@@ -828,7 +822,6 @@
             submitBtn.textContent = '인증 확인 중...';
 
             try {
-                // 백엔드 사전 검증(VERIFY) 요청
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -934,7 +927,6 @@
                 };
                 globalEventMap[monthKey].push(newEvtObj);
 
-                // 새 일정의 참석자들도 자동완성 명단에 즉시 합류
                 if (p.attendees) {
                     p.attendees.split(',').map(n => n.trim()).filter(n => n.length > 0).forEach(name => {
                         if (!globalAllAttendees.includes(name)) {
@@ -1593,7 +1585,6 @@
                 const place = cols[4] || '', note = cols[5] || '', attendees = cols[6] || '';
                 if (!dateStr && !category && !title) continue;
 
-                // [v11.5] 기존 50년사 전체 참석자 명단 수집
                 if (attendees) {
                     attendees.split(',').map(n => n.trim()).filter(n => n.length > 0).forEach(name => {
                         attendeesSet.add(name);
@@ -1631,7 +1622,6 @@
                 }
             }
 
-            // 가나다순으로 전체 참석자 정렬
             globalAllAttendees = Array.from(attendeesSet).sort((a, b) => a.localeCompare(b, 'ko'));
 
             globalEventMap = eventMap;
