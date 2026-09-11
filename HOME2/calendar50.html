@@ -1,4 +1,4 @@
-<!-- v11.7: 일력 하단 버튼 문구 변경 및 참석자 자동완성 레이어 돌출/스크롤바 제거 최적화 -->
+<!-- v11.8: 참석자 자동완성 한글 초성/중성(자모 음절 조합) 분해 검색 완벽 지원 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -210,7 +210,7 @@
         .gallery-item-title { font-size: 0.72rem; font-weight: 600; color: #1e293b; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gallery-item-place { font-size: 0.65rem; color: #64748b; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* [v11.7] 신규 일정 추가 모달 스타일: 스크롤바 제거 및 자동완성 레이어 돌출(visible) */
+        /* 신규 일정 추가 모달 스타일: 스크롤바 제거 및 자동완성 레이어 돌출(visible) */
         .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
         .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: visible; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; position: relative; }
         .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #2563eb; color: #ffffff; border-top-left-radius: 10px; border-top-right-radius: 10px; flex-shrink: 0; user-select: none; }
@@ -232,7 +232,7 @@
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
         .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
-        /* [v11.7] 모달창 위에 완전히 돌출되어 얹혀지는 최상위 자동완성 드롭다운 */
+        /* 모달창 위에 완전히 돌출되어 얹혀지는 최상위 자동완성 드롭다운 */
         .autocomplete-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; max-height: 190px; overflow-y: auto; background: #ffffff; border: 1.5px solid #2563eb; border-radius: 6px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25); z-index: 5000; }
         .autocomplete-item { padding: 6px 10px; font-size: 0.78rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
         .autocomplete-item:last-child { border-bottom: none; }
@@ -285,7 +285,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.7</span>
+                    <span class="version">v11.8</span>
                 </span>
             </h1>
         </header>
@@ -398,7 +398,6 @@
                             <div id="detailDateTitle" class="detail-date-title">📅 날짜를 터치/클릭하여 상세 일정을 확인하세요.</div>
                             <span id="detailCountBadge" class="detail-count-badge" style="display: none;">0건</span>
                         </div>
-                        <!-- [v11.7] '+ 새 일정 추가 (관리자 모드)'로 명확화 -->
                         <button type="button" id="detailAddBtn" class="detail-add-btn" onclick="triggerAddEventFromDetail()" style="display: none;">+ 새 일정 추가 (관리자 모드)</button>
                     </div>
                     <div id="detailList" class="detail-list" style="display: none;"></div>
@@ -449,15 +448,14 @@
                     <input type="text" id="inputNewNote" placeholder="예: 50주년 기념">
                 </div>
 
-                <!-- 참석자 스마트 가나다순 자동완성 영역 (드롭다운이 모달창 위로 시원하게 돌출) -->
+                <!-- 참석자 스마트 가나다순 자동완성 영역 (한글 분해 검색 지원) -->
                 <div class="form-field">
                     <label for="inputNewAttendees">
                         <span>참석자 (쉼표 구분 / 자동완성 지원)</span>
                         <span id="attendeeCountBadge" class="attendee-count-badge">0명 입력됨</span>
                     </label>
-                    <textarea id="inputNewAttendees" placeholder="예: 홍길동, 김철수 (이름 또는 초성 입력 시 목록 추천)" oninput="handleAttendeeInput(event)" onfocus="handleAttendeeFocus()" autocomplete="off"></textarea>
+                    <textarea id="inputNewAttendees" placeholder="예: 홍길동, 김철수 (이름 또는 초성/음절 입력 시 추천)" oninput="handleAttendeeInput(event)" onfocus="handleAttendeeFocus()" autocomplete="off"></textarea>
                     
-                    <!-- [v11.7] 자동완성 추천 레이어 드롭다운 (z-index: 5000) -->
                     <div id="attendeeAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
@@ -577,14 +575,33 @@
         let lastTitleTouchTime = 0;
         let globalAllAttendees = [];
 
-        const CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-        
+        /* [v11.8] 한글 초성/중성/종성 자모 분해 및 검색 유틸리티 */
+        const CHOSUNG = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+        const JUNGSUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+        const JONGSUNG = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+
+        function decomposeHangul(str) {
+            let result = '';
+            for (let i = 0; i < str.length; i++) {
+                const code = str.charCodeAt(i) - 44032;
+                if (code >= 0 && code <= 11171) {
+                    const choIdx = Math.floor(code / 588);
+                    const jungIdx = Math.floor((code % 588) / 28);
+                    const jongIdx = code % 28;
+                    result += CHOSUNG[choIdx] + JUNGSUNG[jungIdx] + JONGSUNG[jongIdx];
+                } else {
+                    result += str.charAt(i);
+                }
+            }
+            return result;
+        }
+
         function getChosung(str) {
             let result = '';
             for (let i = 0; i < str.length; i++) {
                 const code = str.charCodeAt(i) - 44032;
                 if (code >= 0 && code <= 11171) {
-                    result += CHOSUNG_LIST[Math.floor(code / 588)];
+                    result += CHOSUNG[Math.floor(code / 588)];
                 } else {
                     result += str.charAt(i);
                 }
@@ -594,6 +611,26 @@
 
         function isKoreanChosungOnly(str) {
             return /^[\u3131-\u314E]+$/.test(str);
+        }
+
+        /* [v11.8] '가'를 치면 '강찬'이 매칭되도록 하는 스마트 한글 대조 함수 */
+        function matchHangulKeyword(targetName, query) {
+            if (!query) return true;
+            if (!targetName) return false;
+
+            // 1. 단순 포함 검사 (가장 빠름)
+            if (targetName.toLowerCase().includes(query.toLowerCase())) return true;
+
+            // 2. 단독 초성 검색인 경우 (예: 'ㄱ' -> 강찬, 김철수)
+            if (isKoreanChosungOnly(query)) {
+                const nameCho = getChosung(targetName);
+                return nameCho.includes(query);
+            }
+
+            // 3. 자모 분해 매칭 (예: '가' -> 'ㄱㅏ', '강찬' -> 'ㄱㅏㅇㅊㅏㄴ' -> 매칭 성공!)
+            const targetDecomposed = decomposeHangul(targetName).toLowerCase();
+            const queryDecomposed = decomposeHangul(query).toLowerCase();
+            return targetDecomposed.includes(queryDecomposed);
         }
 
         window.addEventListener('popstate', function(e) {
@@ -718,6 +755,7 @@
             renderAttendeeAutocomplete();
         }
 
+        /* [v11.8] 한글 초성 및 자모 조합 분해 실시간 필터링 드롭다운 렌더링 */
         function renderAttendeeAutocomplete() {
             const textarea = document.getElementById('inputNewAttendees');
             const dropdown = document.getElementById('attendeeAutocompleteList');
@@ -726,14 +764,8 @@
             let matchedList = [];
             if (!token) {
                 matchedList = globalAllAttendees.slice(0, 40);
-            } else if (isKoreanChosungOnly(token)) {
-                matchedList = globalAllAttendees.filter(name => {
-                    const cho = getChosung(name);
-                    return cho.startsWith(token) || cho.includes(token);
-                });
             } else {
-                const qLower = token.toLowerCase();
-                matchedList = globalAllAttendees.filter(name => name.toLowerCase().includes(qLower));
+                matchedList = globalAllAttendees.filter(name => matchHangulKeyword(name, token));
             }
 
             if (matchedList.length === 0) {
