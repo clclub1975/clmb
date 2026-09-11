@@ -1,4 +1,4 @@
-<!-- v11.2: 설정 시트(B3) 등록 가능자 검증 및 새 일정 등록 모달 실명 입력란 연동 -->
+<!-- v11.3: 일반 사용자 접근 시 등록자/비밀번호 미입력 시 "관리자만이 등록 가능합니다." 메시지 출력 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -233,7 +233,7 @@
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
 
-        /* [v11.2] 히든 관리자 비밀번호 및 등록자 성명 필드 스타일 */
+        /* [v11.3] 히든 관리자 인증 영역 스타일 */
         .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; }
 
         .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
@@ -273,7 +273,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.2</span>
+                    <span class="version">v11.3</span>
                 </span>
             </h1>
         </header>
@@ -441,9 +441,9 @@
                     <textarea id="inputNewAttendees" class="auto-expand" placeholder="예: 홍길동, 김철수, 이영희" oninput="updateAttendeeCount()"></textarea>
                 </div>
 
-                <!-- [v11.2] 히든 관리자 인증 영역 (등록자 성명 + 비밀번호) -->
+                <!-- [v11.3] 히든 관리자 인증 영역 (기본 숨김) -->
                 <div id="adminPasswordFieldWrap" class="form-field hidden-admin-field">
-                    <label for="inputAuthor" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">👤 등록자 성명 (필수)</label>
+                    <label for="inputAuthor" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">👤 등록자 성명</label>
                     <input type="text" id="inputAuthor" placeholder="설정된 등록 가능자 성명 입력" style="margin-bottom: 8px;">
 
                     <label for="inputAdminPw" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">🔑 관리자 비밀번호</label>
@@ -652,6 +652,7 @@
             badge.textContent = `${count}명 입력됨`;
         }
 
+        // [v11.3] 일반 사용자가 등록 시도 시 "관리자만이 등록 가능합니다." 안내 메시지 출력
         function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
@@ -667,16 +668,10 @@
                 return;
             }
 
-            if (!author) {
-                alert('등록자 성명을 입력해주세요. (제목을 더블클릭하면 입력창이 나타납니다)');
-                toggleAdminPasswordInput();
-                document.getElementById('inputAuthor').focus();
-                return;
-            }
-
-            if (!adminPassword) {
-                alert('관리자 비밀번호를 입력해주세요.');
-                document.getElementById('inputAdminPw').focus();
+            // 히든 인증창이 닫혀있거나 관리자 정보가 누락된 경우 일반 방문자로 간주
+            const pwWrap = document.getElementById('adminPasswordFieldWrap');
+            if (pwWrap.style.display === 'none' || !author || !adminPassword) {
+                alert('관리자만이 등록 가능합니다.');
                 return;
             }
 
@@ -730,7 +725,7 @@
                 const result = await res.json();
 
                 if (result.status === 'error') {
-                    alert(result.message); // 예: '관리자 비밀번호가 일치하지 않습니다.' 또는 '등록 권한이 없는 성명입니다.'
+                    alert(result.message); 
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalBtnText;
                     closeConfirmModal();
