@@ -1,4 +1,4 @@
-<!-- v11.1: 관리자 암호 인증 연동 및 더블클릭 히든 암호 입력창 구현 -->
+<!-- v11.2: 설정 시트(B3) 등록 가능자 검증 및 새 일정 등록 모달 실명 입력란 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -214,7 +214,6 @@
         .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
         .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; max-height: 90vh; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
         .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; user-select: none; }
-        /* 더블클릭 유도를 위한 이스터에그 헤더 타이틀 */
         .add-event-header h3 { font-size: 1rem; margin: 0; font-weight: 600; cursor: pointer; }
         .add-event-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
         .form-field { display: flex; flex-direction: column; gap: 4px; }
@@ -234,7 +233,7 @@
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
 
-        /* [v11.1] 히든 관리자 비밀번호 필드 스타일 */
+        /* [v11.2] 히든 관리자 비밀번호 및 등록자 성명 필드 스타일 */
         .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; }
 
         .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
@@ -274,7 +273,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.1</span>
+                    <span class="version">v11.2</span>
                 </span>
             </h1>
         </header>
@@ -398,9 +397,8 @@
     <!-- ➕ 신규 일정 입력 모달 -->
     <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
         <div class="add-event-modal-content">
-            <!-- 타이틀을 더블클릭(또는 두 번 연속 터치)하면 관리자 암호창이 토글됨 -->
             <div class="add-event-header">
-                <h3 id="addEventModalTitle" ondblclick="toggleAdminPasswordInput()" onclick="handleTitleTouchEasterEgg()" title="더블클릭 시 관리자 암호 입력창 토글">새 일정 추가</h3>
+                <h3 id="addEventModalTitle" ondblclick="toggleAdminPasswordInput()" onclick="handleTitleTouchEasterEgg()" title="더블클릭 시 관리자 인증창 토글">새 일정 추가</h3>
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
             </div>
             <div class="add-event-body">
@@ -443,9 +441,12 @@
                     <textarea id="inputNewAttendees" class="auto-expand" placeholder="예: 홍길동, 김철수, 이영희" oninput="updateAttendeeCount()"></textarea>
                 </div>
 
-                <!-- [v11.1] 히든 관리자 비밀번호 입력 필드 (기본 숨김) -->
+                <!-- [v11.2] 히든 관리자 인증 영역 (등록자 성명 + 비밀번호) -->
                 <div id="adminPasswordFieldWrap" class="form-field hidden-admin-field">
-                    <label for="inputAdminPw" style="color: #854d0e;">🔑 관리자 비밀번호</label>
+                    <label for="inputAuthor" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">👤 등록자 성명 (필수)</label>
+                    <input type="text" id="inputAuthor" placeholder="설정된 등록 가능자 성명 입력" style="margin-bottom: 8px;">
+
+                    <label for="inputAdminPw" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">🔑 관리자 비밀번호</label>
                     <input type="password" id="inputAdminPw" placeholder="관리자 인증 암호를 입력하세요">
                 </div>
             </div>
@@ -468,6 +469,10 @@
                     <div class="confirm-row">
                         <span class="confirm-label">일련번호</span>
                         <strong id="confirmKey" class="confirm-value" style="color: #2563eb;">-</strong>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">등록자</span>
+                        <strong id="confirmAuthor" class="confirm-value" style="color: #059669;">-</strong>
                     </div>
                     <div class="confirm-row">
                         <span class="confirm-label">행사명</span>
@@ -516,7 +521,6 @@
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=1230555011&single=true&output=csv';
         const photoDbCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDT3n0XaTAnxMjvbFKg8GRdMytfgsNWltOD67BiBPg02PYGh5ndC1vmb2jP6nvMHzy5cGWI0wiy_e4/pub?gid=0&single=true&output=csv';
-        // Apps Script 웹 앱 URL
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbwfcRwbweUdxoMraSaI-MlhT6sGCzrS-q_U9ji_0jEZaOcrU8m4BHKl16QN5mtPHngo/exec';
         
         const CATEGORY_CONFIG = {
@@ -550,7 +554,6 @@
         let selectedTargetDateInfo = null;
         let pendingNewEventPayload = null;
 
-        // 모바일 더블터치 감지용
         let lastTitleTouchTime = 0;
 
         window.addEventListener('popstate', function(e) {
@@ -560,27 +563,11 @@
             const galleryModal = document.getElementById('galleryModal');
             const dayModal = document.getElementById('dayModal');
 
-            if (confirmEventModal && confirmEventModal.style.display === 'flex') {
-                confirmEventModal.style.display = 'none';
-                return;
-            }
-            if (addEventModal && addEventModal.style.display === 'flex') {
-                addEventModal.style.display = 'none';
-                return;
-            }
-            if (photoModal && photoModal.style.display === 'flex') {
-                photoModal.style.display = 'none';
-                document.getElementById('photoViewerImg').src = '';
-                return;
-            }
-            if (galleryModal && galleryModal.style.display === 'flex') {
-                galleryModal.style.display = 'none';
-                return;
-            }
-            if (dayModal && dayModal.style.display === 'flex') {
-                dayModal.style.display = 'none';
-                return;
-            }
+            if (confirmEventModal && confirmEventModal.style.display === 'flex') { confirmEventModal.style.display = 'none'; return; }
+            if (addEventModal && addEventModal.style.display === 'flex') { addEventModal.style.display = 'none'; return; }
+            if (photoModal && photoModal.style.display === 'flex') { photoModal.style.display = 'none'; document.getElementById('photoViewerImg').src = ''; return; }
+            if (galleryModal && galleryModal.style.display === 'flex') { galleryModal.style.display = 'none'; return; }
+            if (dayModal && dayModal.style.display === 'flex') { dayModal.style.display = 'none'; return; }
         });
 
         function requestClosePhotoModal() { if (window.location.hash.includes('photoView')) history.back(); else closePhotoModal(); }
@@ -601,13 +588,12 @@
             openAddEventModal(activeModalYear, activeModalMonth, activeSelectedDay, activeSelectedEvents);
         }
 
-        // [v11.1] 히든 관리자 비밀번호 토글 이스터에그 함수
         function toggleAdminPasswordInput() {
             const pwWrap = document.getElementById('adminPasswordFieldWrap');
-            const pwInput = document.getElementById('inputAdminPw');
+            const authorInput = document.getElementById('inputAuthor');
             if (pwWrap.style.display === 'none' || pwWrap.style.display === '') {
                 pwWrap.style.display = 'flex';
-                pwInput.focus();
+                authorInput.focus();
             } else {
                 pwWrap.style.display = 'none';
             }
@@ -615,9 +601,7 @@
 
         function handleTitleTouchEasterEgg() {
             const now = new Date().getTime();
-            if (now - lastTitleTouchTime < 400) {
-                toggleAdminPasswordInput();
-            }
+            if (now - lastTitleTouchTime < 400) { toggleAdminPasswordInput(); }
             lastTitleTouchTime = now;
         }
 
@@ -638,13 +622,7 @@
             }
             const nextSeq = maxSeq + 1;
 
-            selectedTargetDateInfo = {
-                dateStr: dateStr,
-                seq: nextSeq,
-                year: year,
-                month: month,
-                day: day
-            };
+            selectedTargetDateInfo = { dateStr: dateStr, seq: nextSeq, year: year, month: month, day: day };
 
             document.getElementById('lblTargetDate').textContent = `${year}.${mmStr}.${ddStr} (${dateStr})`;
             document.getElementById('lblTargetSeq').textContent = `${nextSeq}번`;
@@ -655,27 +633,21 @@
             document.getElementById('inputNewNote').value = '';
             document.getElementById('inputNewAttendees').value = '';
             
-            // 관리자 암호창 초기화 및 숨김 상태 유지
+            document.getElementById('inputAuthor').value = '';
             document.getElementById('inputAdminPw').value = '';
             document.getElementById('adminPasswordFieldWrap').style.display = 'none';
             
             updateAttendeeCount();
-
             document.getElementById('addEventModal').style.display = 'flex';
         }
 
-        function closeAddEventModal() {
-            document.getElementById('addEventModal').style.display = 'none';
-        }
+        function closeAddEventModal() { document.getElementById('addEventModal').style.display = 'none'; }
 
         function updateAttendeeCount() {
             const textarea = document.getElementById('inputNewAttendees');
             const badge = document.getElementById('attendeeCountBadge');
             const val = textarea.value.trim();
-            if (!val) {
-                badge.textContent = '0명 입력됨';
-                return;
-            }
+            if (!val) { badge.textContent = '0명 입력됨'; return; }
             const count = val.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
             badge.textContent = `${count}명 입력됨`;
         }
@@ -686,11 +658,25 @@
             const place = document.getElementById('inputNewPlace').value.trim();
             const note = document.getElementById('inputNewNote').value.trim();
             const attendees = document.getElementById('inputNewAttendees').value.trim();
+            const author = document.getElementById('inputAuthor').value.trim();
             const adminPassword = document.getElementById('inputAdminPw').value.trim();
 
             if (!title) {
                 alert('행사명을 입력해주세요.');
                 document.getElementById('inputNewTitle').focus();
+                return;
+            }
+
+            if (!author) {
+                alert('등록자 성명을 입력해주세요. (제목을 더블클릭하면 입력창이 나타납니다)');
+                toggleAdminPasswordInput();
+                document.getElementById('inputAuthor').focus();
+                return;
+            }
+
+            if (!adminPassword) {
+                alert('관리자 비밀번호를 입력해주세요.');
+                document.getElementById('inputAdminPw').focus();
                 return;
             }
 
@@ -703,13 +689,15 @@
                 place: place,
                 note: note,
                 attendees: attendees,
-                adminPassword: adminPassword, // [v11.1] 관리자 암호 탑재
+                author: author,
+                adminPassword: adminPassword,
                 year: selectedTargetDateInfo.year,
                 month: selectedTargetDateInfo.month,
                 day: selectedTargetDateInfo.day
             };
 
             document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
+            document.getElementById('confirmAuthor').textContent = author;
             document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
             document.getElementById('confirmPlace').textContent = place || '-';
             document.getElementById('confirmNote').textContent = note || '-';
@@ -724,11 +712,8 @@
             document.getElementById('confirmEventModal').style.display = 'flex';
         }
 
-        function closeConfirmModal() {
-            document.getElementById('confirmEventModal').style.display = 'none';
-        }
+        function closeConfirmModal() { document.getElementById('confirmEventModal').style.display = 'none'; }
 
-        // [v11.1] 백엔드 응답 검증 및 관리자 인증 처리
         async function finalSubmitEvent() {
             if (!pendingNewEventPayload) return;
 
@@ -738,7 +723,6 @@
             submitBtn.textContent = '인증 및 전송 중...';
 
             try {
-                // 구글 시트 웹 앱 API 호출 (JSON 응답 파싱)
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     body: JSON.stringify(pendingNewEventPayload)
@@ -746,15 +730,15 @@
                 const result = await res.json();
 
                 if (result.status === 'error') {
-                    alert(result.message); // 예: '관리자가 아닙니다.'
+                    alert(result.message); // 예: '관리자 비밀번호가 일치하지 않습니다.' 또는 '등록 권한이 없는 성명입니다.'
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalBtnText;
+                    closeConfirmModal();
                     return;
                 }
 
                 alert(result.message || '새 일정이 구글 시트에 정상적으로 등록되었습니다!');
 
-                // 클라이언트 메모리 즉시 반영 (낙관적 업데이트)
                 const p = pendingNewEventPayload;
                 const monthKey = `${p.year}-${p.month}`;
                 if (!globalEventMap[monthKey]) globalEventMap[monthKey] = [];
