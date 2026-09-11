@@ -1,4 +1,4 @@
-<!-- v9.2: 사진 검색 결과 미니 썸네일 스트립 바 + 전체 갤러리 모아보기 모달(1안+2안 결합형) 반영 -->
+<!-- v9.3: 사진 검색 결과 알림판 문구 정리 ('사진 O건 발견' 통일) 및 v9.3 갱신 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -91,13 +91,10 @@
       border: 1px solid #facc15; padding: 5px 9px; border-radius: 6px; display: none; white-space: nowrap; flex-shrink: 0;
     }
     .photo-search-badge {
-      background-color: #d1fae5; border-color: #6ee7b7; color: #065f46; cursor: pointer; transition: background 0.15s ease;
-    }
-    .photo-search-badge:hover {
-      background-color: #a7f3d0;
+      background-color: #d1fae5; border-color: #6ee7b7; color: #065f46;
     }
 
-    /* 💡 v9.2: 미니 썸네일 스트립 바 (가로 스크롤형) */
+    /* 미니 썸네일 스트립 바 (가로 스크롤형) */
     .photo-strip-container {
       display: none;
       width: 100%;
@@ -374,7 +371,7 @@
     .photo-info-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 75%; }
     .photo-page-counter { font-weight: 600; color: #94a3b8; font-size: 0.75rem; }
 
-    /* 💡 v9.2: 전체 갤러리 모아보기 모달 (1안 결합) */
+    /* 전체 갤러리 모아보기 모달 */
     .gallery-modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); z-index: 1500; justify-content: center; align-items: center; padding: 12px;
     }
@@ -439,7 +436,7 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v9.2</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v9.3</span></span>
       </h1>
     </header>
 
@@ -460,11 +457,12 @@
           <input type="text" id="photoSearchInput" class="search-input photo-search-input" placeholder="사진 검색 (참석자, 행사명, 장소, 비고...)" oninput="handlePhotoSearchInput()">
           <button type="button" id="photoSearchClearBtn" class="search-clear-btn" onclick="clearPhotoSearch()">&times;</button>
         </div>
-        <span id="photoSearchBadge" class="search-badge photo-search-badge" title="클릭하여 전체 갤러리 모아보기"></span>
+        <!-- 💡 v9.3: '사진 O건 발견'으로 간결하게 표기 -->
+        <span id="photoSearchBadge" class="search-badge photo-search-badge"></span>
       </div>
     </div>
 
-    <!-- 💡 v9.2: 미니 썸네일 스트립 바 영역 -->
+    <!-- 미니 썸네일 스트립 바 영역 -->
     <div id="photoStripContainer" class="photo-strip-container">
       <div class="photo-strip-header">
         <span id="photoStripTitle">📷 검색된 사진 미리보기</span>
@@ -516,7 +514,7 @@
     </div>
   </div>
 
-  <!-- 💡 v9.2: 전체 갤러리 모아보기 모달 (1안) -->
+  <!-- 전체 갤러리 모아보기 모달 -->
   <div id="galleryModal" class="gallery-modal-overlay" onclick="handleGalleryModalOverlayClick(event)">
     <div class="gallery-modal-content">
       <div class="gallery-modal-header">
@@ -601,7 +599,7 @@
     let globalPhotoMap = {}; 
     let globalPhotoDateFallbackMap = {}; 
     let globalPhotoList = [];
-    let currentMatchedPhotoList = []; // 검색에 매칭된 사진 모음
+    let currentMatchedPhotoList = [];
     
     let currentSearchTerm = '';
     let currentPhotoSearchTerm = '';
@@ -664,7 +662,6 @@
       if (event.target.id === 'galleryModal') requestCloseGalleryModal();
     }
 
-    // 💡 v9.2: 전체 갤러리 모달 열기
     function openGalleryModal() {
       if (!currentMatchedPhotoList || currentMatchedPhotoList.length === 0) return;
       const modal = document.getElementById('galleryModal');
@@ -1059,7 +1056,7 @@
       }
     }
 
-    // 💡 1. 행사 검색창 입력 처리
+    // 1. 행사 검색창 입력 처리
     function handleSearchInput() {
       const input = document.getElementById('searchInput');
       const clearBtn = document.getElementById('searchClearBtn');
@@ -1101,7 +1098,7 @@
       updateCalendarSearchHighlights(monthCellMatchMap, !!query, false);
     }
 
-    // 💡 2. 사진 검색창 입력 처리 + 미니 썸네일 스트립 바 갱신 (v9.2)
+    // 2. 사진 검색창 입력 처리 + 미니 썸네일 스트립 바 갱신 (v9.3)
     function handlePhotoSearchInput() {
       const input = document.getElementById('photoSearchInput');
       const clearBtn = document.getElementById('photoSearchClearBtn');
@@ -1142,11 +1139,10 @@
 
         currentMatchedPhotoList = matchedPhotos;
 
+        // 💡 v9.3: '사진 O건 발견'으로 텍스트 통일
         badge.style.display = 'inline-block';
-        badge.textContent = `사진 ${matchCount}건 발견 (전체 갤러리 🖼️)`;
-        badge.onclick = () => openGalleryModal();
+        badge.textContent = `사진 ${matchCount}건 발견`;
 
-        // 💡 썸네일 스트립 바 렌더링
         if (matchedPhotos.length > 0) {
           stripTitle.textContent = `📷 "${query}" 사진 ${matchedPhotos.length}장 검색됨`;
           let stripHtml = '';
@@ -1365,4 +1361,3 @@
   </script>
 </body>
 </html>
- 
