@@ -1,4 +1,4 @@
-<!-- v10.3: 커스텀 최종 확인 모달 도입 및 캘린더 상세 뷰 참석자 카운트 추가 -->
+<!-- v10.4: 일력창 하단 중복 안내 설명창 제거 및 [새 일정 추가] 모바일 겸용 헤더 버튼 통합 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -133,11 +133,18 @@
         .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
         .more-badge { font-size: 0.58rem; color: #495057; background-color: #e9ecef; border-radius: 10px; padding: 1px 4px; text-align: center; font-weight: 600; margin-top: auto; line-height: 1.1; }
 
-        /* 하단 상세 패널 및 카드 */
+        /* 하단 상세 패널 및 헤더 컨트롤 바 (v10.4 통합 정비) */
         .day-detail-panel { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
-        .detail-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
-        .detail-date-title { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 6px; }
-        .detail-count-badge { font-size: 0.7rem; background-color: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+        .detail-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; gap: 8px; flex-wrap: nowrap; }
+        .detail-header-left { display: flex; align-items: center; gap: 6px; flex: 1; overflow: hidden; }
+        .detail-date-title { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .detail-count-badge { font-size: 0.7rem; background-color: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600; flex-shrink: 0; }
+        
+        /* 모바일 및 상시 노출 신규 등록 버튼 (v10.4) */
+        .detail-add-btn { background-color: #2563eb; color: #ffffff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; transition: background 0.2s ease; line-height: 1.2; }
+        .detail-add-btn:hover { background-color: #1d4ed8; }
+        .detail-add-btn:disabled { background-color: #94a3b8; cursor: not-allowed; opacity: 0.6; }
+
         .detail-list { display: flex; flex-direction: column; gap: 6px; max-height: 230px; overflow-y: auto; padding-right: 2px; }
         .detail-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; border-left: 4px solid #cbd5e1; transition: all 0.15s ease; }
         .detail-item-card.important { border-left-color: #ff0033; }
@@ -230,7 +237,7 @@
         .btn-submit { padding: 8px 16px; background: #2563eb; border: none; color: #ffffff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-submit:hover { background: #1d4ed8; }
 
-        /* 커스텀 최종 확인 모달 스타일 (v10.3) */
+        /* 커스텀 최종 확인 모달 스타일 */
         .confirm-row { display: flex; gap: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; margin-bottom: 8px; align-items: flex-start; }
         .confirm-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .confirm-label { color: #64748b; min-width: 55px; font-size: 0.78rem; font-weight: 700; padding-top: 2px; }
@@ -246,6 +253,7 @@
             .holiday-tag { font-size: 0.52rem; }
             .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
             .more-badge { font-size: 0.52rem; padding: 1px 2px; }
+            .detail-add-btn { font-size: 0.7rem; padding: 3px 7px; }
         }
     </style>
 </head>
@@ -260,7 +268,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v10.3</span>
+                    <span class="version">v10.4</span>
                 </span>
             </h1>
         </header>
@@ -366,15 +374,16 @@
                 </div>
                 <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 4px;"></div>
 
-                <!-- 하단 상세 패널 -->
+                <!-- 하단 상세 패널 (v10.4 헤더 버튼 일체형 구성 및 중복안내 제거) -->
                 <div id="dayDetailPanel" class="day-detail-panel">
                     <div class="detail-header">
-                        <div id="detailDateTitle" class="detail-date-title">📅 날짜를 클릭하면 상세 일정이 표시됩니다. (우클릭 시 일정 추가)</div>
-                        <span id="detailCountBadge" class="detail-count-badge" style="display: none;">0건</span>
+                        <div class="detail-header-left">
+                            <div id="detailDateTitle" class="detail-date-title">📅 날짜를 터치/클릭하여 상세 일정을 확인하세요.</div>
+                            <span id="detailCountBadge" class="detail-count-badge" style="display: none;">0건</span>
+                        </div>
+                        <button type="button" id="detailAddBtn" class="detail-add-btn" onclick="triggerAddEventFromDetail()" style="display: none;">+ 새 일정 추가</button>
                     </div>
-                    <div id="detailList" class="detail-list">
-                        <div class="detail-empty-msg">원하는 날짜 셀을 선택하여 상세 내용을 확인하세요. (우클릭으로 새 일정 등록 가능)</div>
-                    </div>
+                    <div id="detailList" class="detail-list" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -434,7 +443,7 @@
         </div>
     </div>
 
-    <!-- 📝 최종 확인 커스텀 모달 (v10.3 신규 도입) -->
+    <!-- 📝 최종 확인 커스텀 모달 -->
     <div id="confirmEventModal" class="modal-overlay" style="z-index: 3000;">
         <div class="modal-content" style="max-width: 420px;">
             <div class="modal-header" style="background-color: #0f766e;">
@@ -521,6 +530,8 @@
 
         let activeModalYear = null;
         let activeModalMonth = null;
+        let activeSelectedDay = null;
+        let activeSelectedEvents = [];
         let selectedTargetDateInfo = null;
 
         window.addEventListener('popstate', function(e) {
@@ -566,6 +577,14 @@
         function handleGalleryModalOverlayClick(event) { if (event.target.id === 'galleryModal') requestCloseGalleryModal(); }
         function handleAddEventOverlayClick(event) { if (event.target.id === 'addEventModal') closeAddEventModal(); }
 
+        // ==========================================
+        // [v10.4 변경] 하단 헤더 [+ 새 일정 추가] 버튼 트리거
+        // ==========================================
+        function triggerAddEventFromDetail() {
+            if (!activeModalYear || !activeModalMonth || !activeSelectedDay) return;
+            openAddEventModal(activeModalYear, activeModalMonth, activeSelectedDay, activeSelectedEvents);
+        }
+
         function openAddEventModal(year, month, day, eventsOnDay) {
             activeModalYear = year;
             activeModalMonth = month;
@@ -573,7 +592,16 @@
             const mmStr = String(month).padStart(2, '0');
             const ddStr = String(day).padStart(2, '0');
             const dateStr = `${year}${mmStr}${ddStr}`;
-            const nextSeq = (eventsOnDay ? eventsOnDay.length : 0) + 1;
+            
+            // 고유 ID 번호 발급 (기존 순번들 중 [가장 큰 번호 + 1], 결번 안전 보존)
+            let maxSeq = 0;
+            if (eventsOnDay && eventsOnDay.length > 0) {
+                eventsOnDay.forEach(evt => {
+                    const parsed = parseInt(evt.seq, 10);
+                    if (!isNaN(parsed) && parsed > maxSeq) maxSeq = parsed;
+                });
+            }
+            const nextSeq = maxSeq + 1;
 
             selectedTargetDateInfo = {
                 dateStr: dateStr,
@@ -610,9 +638,6 @@
             badge.textContent = `${count}명 입력됨`;
         }
 
-        // ==========================================
-        // [v10.3 변경] 커스텀 확인 모달로 데이터 전달 및 노출
-        // ==========================================
         function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
@@ -626,7 +651,7 @@
                 return;
             }
 
-            // 모달 데이터 채우기 (요청하신 압축 포맷 적용)
+            // 모달 데이터 채우기
             document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
             document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
             document.getElementById('confirmPlace').textContent = place || '-';
@@ -647,7 +672,7 @@
         }
 
         function finalSubmitEvent() {
-            alert('최종 등록이 완료되었습니다! (추후 GAS 웹앱 전송 연동 예정)');
+            alert('최종 등록이 완료되었습니다! (다음 단계에서 스프레드시트 배포 URL 연동 예정)');
             closeConfirmModal();
             closeAddEventModal();
         }
@@ -830,22 +855,33 @@
             return [];
         }
 
+        // ==========================================
+        // [v10.4 변경] 날짜 선택 시 상세 패널 UI 업데이트
+        // ==========================================
         function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
+            activeSelectedDay = day;
+            activeSelectedEvents = events || [];
+
             document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
             const selectedCell = document.getElementById(`day-cell-${day}`);
             if (selectedCell) selectedCell.classList.add('selected');
 
             const titleElem = document.getElementById('detailDateTitle');
             const badgeElem = document.getElementById('detailCountBadge');
+            const addBtn = document.getElementById('detailAddBtn');
             const listElem = document.getElementById('detailList');
             const holidayHtml = holidayName ? ` <span class="holiday-tag" style="font-size:0.75rem;">(${holidayName})</span>` : '';
             
-            titleElem.innerHTML = `📅 ${year}년 ${month}월 ${day}일 (${dayNames[dayOfWeekIndex]})${holidayHtml} <span style="font-size:0.7rem; color:#2563eb; font-weight:normal; margin-left:8px;">(💡 우클릭: 새 일정 추가)</span>`;
+            // 헤더 정보 세팅
+            titleElem.innerHTML = `📅 ${year}년 ${month}월 ${day}일 (${dayNames[dayOfWeekIndex]})${holidayHtml}`;
             badgeElem.style.display = 'inline-block';
             badgeElem.textContent = `${events.length}건`;
+            addBtn.style.display = 'inline-flex';
+
+            listElem.style.display = 'flex';
 
             if (!events || events.length === 0) {
-                listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다. (우클릭하여 일정을 추가해보세요)</div>`;
+                listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다. 우측 상단의 '+ 새 일정 추가'를 눌러 일정을 등록해보세요.</div>`;
                 return;
             }
 
@@ -877,9 +913,6 @@
                 const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, activeKeyword, isPhotoSearchMode)})</span>` : '';
                 const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, activeKeyword, isPhotoSearchMode)}]</span>` : '';
 
-                // ==========================================
-                // [v10.3 변경] 참석자 수 캘린더 상세 뷰 표기
-                // ==========================================
                 let attendeeCountStr = '';
                 let sortedAttendeesStr = '';
                 if (evt.attendees) {
@@ -929,17 +962,28 @@
             listElem.innerHTML = cardsHtml;
         }
 
+        // ==========================================
+        // [v10.4 변경] 일력 모달 오픈 시 초기화
+        // ==========================================
         function openDayModal(year, month) {
             activeModalYear = year;
             activeModalMonth = month;
+            activeSelectedDay = null;
+            activeSelectedEvents = [];
 
             const modal = document.getElementById('dayModal');
             const dayGridBody = document.getElementById('dayGridBody');
             document.getElementById('modalTitle').textContent = `${year}년 ${month}월 일력`;
             dayGridBody.innerHTML = '';
-            document.getElementById('detailDateTitle').innerHTML = '📅 날짜를 클릭하면 상세 일정이 표시됩니다. (우클릭 시 일정 추가)';
+            
+            // 헤더 컨트롤 바 초기화
+            document.getElementById('detailDateTitle').textContent = '📅 날짜를 터치/클릭하여 상세 일정을 확인하세요.';
             document.getElementById('detailCountBadge').style.display = 'none';
-            document.getElementById('detailList').innerHTML = '<div class="detail-empty-msg">원하는 날짜 셀을 선택하여 상세 내용을 확인하세요. (우클릭으로 새 일정 등록 가능)</div>';
+            document.getElementById('detailAddBtn').style.display = 'none';
+            
+            const detailList = document.getElementById('detailList');
+            detailList.innerHTML = '';
+            detailList.style.display = 'none';
 
             const firstDayIndex = new Date(year, month - 1, 1).getDay();
             const lastDate = new Date(year, month, 0).getDate();
@@ -1001,7 +1045,9 @@
                 }
 
                 cell.className = dayClass;
+                // 좌클릭: 상세 내역 확인
                 cell.onclick = () => selectDayDetail(year, month, d, colIndex, holidayName, currentEvents);
+                // 우클릭: PC 전용 신규 일정 바로 등록
                 cell.oncontextmenu = (e) => {
                     e.preventDefault();
                     openAddEventModal(year, month, d, currentEvents);
