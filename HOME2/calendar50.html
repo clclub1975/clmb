@@ -1,4 +1,4 @@
-<!-- v9.0: 사진DB(F행사명, G장소, H비고, I참석자) 확장 및 독립된 사진 검색창 추가 반영 -->
+<!-- v9.1: 검색창 좌측 앞쪽 정렬, '행사 검색'/'사진 검색' 4글자 매칭 및 안내문구 순서 통일 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -56,16 +56,23 @@
     .rule-box-inner ul { margin: 0; padding-left: 16px; }
     .rule-box-inner li { margin-bottom: 4px; }
 
-    /* 검색 바 영역 */
+    /* 검색 바 영역 (앞쪽/좌측 정렬) */
     .search-wrapper-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-bottom: 12px;
-      align-items: center;
+      margin-bottom: 14px;
+      align-items: flex-start; /* 앞쪽 정렬 */
+      width: 100%;
     }
     .search-container {
-      display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 540px; flex-wrap: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start; /* 앞쪽 정렬 */
+      gap: 8px;
+      width: 100%;
+      max-width: 520px;
+      flex-wrap: nowrap;
     }
     .search-input-wrap { position: relative; display: flex; align-items: center; flex: 1; }
     .search-input {
@@ -270,6 +277,7 @@
     .photo-page-counter { font-weight: 600; color: #94a3b8; font-size: 0.75rem; }
 
     @media (max-width: 768px) {
+      .search-container { max-width: 100%; }
       .modal-content { max-width: 100%; border-radius: 6px; } .modal-body { padding: 6px; gap: 8px; }
       .day-calendar-grid { gap: 2px; } .day-cell { min-height: 58px; padding: 2px; } .day-num { font-size: 0.7rem; }
       .holiday-tag { font-size: 0.52rem; } .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
@@ -292,16 +300,16 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v9.0</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v9.1</span></span>
       </h1>
     </header>
 
-    <!-- 검색창 그룹 (1. 이벤트 검색 / 2. 사진 검색) -->
+    <!-- 검색창 그룹 (1. 행사 검색 / 2. 사진 검색) -->
     <div class="search-wrapper-group">
-      <!-- 1. 이벤트 검색 바 -->
+      <!-- 1. 행사 검색 바 -->
       <div class="search-container">
         <div class="search-input-wrap">
-          <input type="text" id="searchInput" class="search-input" placeholder="이벤트 검색 (행사명, 참석자, 장소, 비고...)" oninput="handleSearchInput()">
+          <input type="text" id="searchInput" class="search-input" placeholder="행사 검색 (참석자, 행사명, 장소, 비고...)" oninput="handleSearchInput()">
           <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">&times;</button>
         </div>
         <span id="searchBadge" class="search-badge"></span>
@@ -310,7 +318,7 @@
       <!-- 2. 사진 검색 바 -->
       <div class="search-container">
         <div class="search-input-wrap">
-          <input type="text" id="photoSearchInput" class="search-input photo-search-input" placeholder="사진 검색 (행사명, 장소, 비고, 참석자...)" oninput="handlePhotoSearchInput()">
+          <input type="text" id="photoSearchInput" class="search-input photo-search-input" placeholder="사진 검색 (참석자, 행사명, 장소, 비고...)" oninput="handlePhotoSearchInput()">
           <button type="button" id="photoSearchClearBtn" class="search-clear-btn" onclick="clearPhotoSearch()">&times;</button>
         </div>
         <span id="photoSearchBadge" class="search-badge photo-search-badge"></span>
@@ -433,7 +441,7 @@
     let globalEventMap = {};
     let globalPhotoMap = {}; 
     let globalPhotoDateFallbackMap = {}; 
-    let globalPhotoList = []; // 전체 사진 목록 (사진 검색용)
+    let globalPhotoList = [];
     
     let currentSearchTerm = '';
     let currentPhotoSearchTerm = '';
@@ -569,7 +577,6 @@
       updatePhotoViewerDisplay();
     }
 
-    // 💡 사진 뷰어 하단 캡션 정보 조합 표기
     function updatePhotoViewerDisplay() {
       const item = currentPhotoList[currentPhotoIndex];
       const imgElem = document.getElementById('photoViewerImg');
@@ -652,7 +659,7 @@
         const catProps = getCategoryProps(evt);
         let cardClass = catProps.css;
         
-        // 1. 이벤트 검색어 매칭 검사
+        // 1. 행사 검색어 매칭 검사
         if (currentSearchTerm) {
           const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
           if (checkText.includes(currentSearchTerm.toLowerCase())) {
@@ -771,7 +778,7 @@
 
         const currentEvents = dayEventsMap[d] || [];
         
-        // 이벤트 검색 매칭
+        // 행사 검색 매칭
         if (currentSearchTerm && currentEvents.length > 0) {
           const hasMatch = currentEvents.some(evt => {
             const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
@@ -841,7 +848,7 @@
       }
     }
 
-    // 💡 1. 이벤트 검색창 입력 처리
+    // 💡 1. 행사 검색창 입력 처리
     function handleSearchInput() {
       const input = document.getElementById('searchInput');
       const clearBtn = document.getElementById('searchClearBtn');
@@ -849,7 +856,6 @@
       const query = input.value.trim();
       currentSearchTerm = query;
 
-      // 이벤트 검색 시 사진 검색창 자동 초기화
       if (query) {
         document.getElementById('photoSearchInput').value = '';
         document.getElementById('photoSearchClearBtn').style.display = 'none';
@@ -874,7 +880,7 @@
           if (monthHasMatch) monthCellMatchMap[key] = true;
         }
         badge.style.display = 'inline-block';
-        badge.textContent = `이벤트 ${matchCount}건 발견`;
+        badge.textContent = `행사 ${matchCount}건 발견`;
       } else {
         badge.style.display = 'none';
       }
@@ -882,7 +888,7 @@
       updateCalendarSearchHighlights(monthCellMatchMap, !!query, false);
     }
 
-    // 💡 2. 사진 검색창 입력 처리 (F, G, H, I열 기준)
+    // 💡 2. 사진 검색창 입력 처리
     function handlePhotoSearchInput() {
       const input = document.getElementById('photoSearchInput');
       const clearBtn = document.getElementById('photoSearchClearBtn');
@@ -890,7 +896,6 @@
       const query = input.value.trim();
       currentPhotoSearchTerm = query;
 
-      // 사진 검색 시 이벤트 검색창 자동 초기화
       if (query) {
         document.getElementById('searchInput').value = '';
         document.getElementById('searchClearBtn').style.display = 'none';
@@ -924,7 +929,6 @@
       updateCalendarSearchHighlights(monthCellMatchMap, !!query, true);
     }
 
-    // 메인 월력 하이라이트 갱신 공통 함수
     function updateCalendarSearchHighlights(matchMap, hasQuery, isPhotoSearch) {
       document.querySelectorAll('.month-cell').forEach(td => {
         td.classList.remove('search-match', 'photo-search-match', 'search-dimmed');
@@ -960,7 +964,6 @@
       return ret;
     }
 
-    // 💡 사진DB CSV 파싱: [파일명(0), File ID(1), 썸네일(2), 날짜(3), 순번(4), 행사명(5), 장소(6), 비고(7), 참석자(8)]
     function parsePhotoDB(csvText) {
       const rows = parseCSV(csvText);
       const photoMap = {}; const fallbackMap = {};
