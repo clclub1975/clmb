@@ -1,7 +1,6 @@
 /**
- * 촛불회 50년사 캘린더 백엔드 API (GAS) v11.2
- * - 설정!B2(관리자 암호) 및 설정!B3(등록 가능자 명단) 복합 검증
- * - 신규 등록(NEW), 수정(EDIT), 삭제 요청(DELETE) 지원
+ * 촛불회 50년사 캘린더 백엔드 API (GAS) v11.4
+ * - '등록 데이터 확인' 단계에서 사전 검증(VERIFY) 로직 추가
  */
 
 function onOpen() {
@@ -46,27 +45,27 @@ function doPost(e) {
     var userProvidedPw = String(data.adminPassword || '').trim();
     var authorName = String(data.author || '').trim();
 
-    // 1. 관리자 암호 검증
-    if (correctAdminPw && userProvidedPw !== correctAdminPw) {
-      lock.releaseLock();
-      return responseJSON({ status: 'error', message: '관리자 비밀번호가 일치하지 않습니다.' });
-    }
-
-    // 2. 등록 가능자 명단(설정!B3) 검증
-    if (!authorName) {
-      lock.releaseLock();
-      return responseJSON({ status: 'error', message: '등록자 성명을 입력해주세요.' });
-    }
-
-    if (allowedAuthorsStr) {
+    // 🔑 통합 보안 검증 (이름 및 비밀번호 교차 확인)
+    var isAuthorValid = false;
+    if (allowedAuthorsStr && authorName) {
       var allowedList = allowedAuthorsStr.split(',').map(function(name) { return name.trim(); });
-      if (!allowedList.includes(authorName)) {
-        lock.releaseLock();
-        return responseJSON({ status: 'error', message: '등록 권한이 없는 성명입니다. (설정된 명단 확인 필요)' });
+      if (allowedList.includes(authorName)) {
+        isAuthorValid = true;
       }
     }
 
+    if (!isAuthorValid || (correctAdminPw && userProvidedPw !== correctAdminPw)) {
+      lock.releaseLock();
+      return responseJSON({ status: 'error', message: '관리자가 아니거나 비밀번호가 틀립니다.' });
+    }
+
     var action = data.action || 'NEW';
+
+    // [v11.4] 사전 인증(VERIFY) 요청인 경우 데이터 기록 없이 즉시 성공 반환
+    if (action === 'VERIFY') {
+      lock.releaseLock();
+      return responseJSON({ status: 'success', message: '인증 성공' });
+    }
 
     // 삭제 요청
     if (action === 'DELETE') {
