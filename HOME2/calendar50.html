@@ -1,4 +1,4 @@
-<!-- v10.2: 참석자 안내 문구 삭제 및 실시간 참석자 수 카운팅 표시 기능 추가 -->
+<!-- v10.3: 커스텀 최종 확인 모달 도입 및 캘린더 상세 뷰 참석자 카운트 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -204,7 +204,7 @@
         .gallery-item-title { font-size: 0.72rem; font-weight: 600; color: #1e293b; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gallery-item-place { font-size: 0.65rem; color: #64748b; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* 신규 일정 추가 모달 스타일 (v10.2 참석자 카운트 및 안내문구 삭제 반영) */
+        /* 신규 일정 추가 모달 스타일 */
         .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
         .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; max-height: 90vh; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
         .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; }
@@ -216,33 +216,25 @@
         .form-field textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none; font-family: inherit; }
         .form-field input[type="text"]:focus,
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
-        
-        /* 참석자 등 입력창 자동 높이 확장 지원 스타일 */
-        .form-field textarea.auto-expand {
-            resize: vertical;
-            min-height: 60px;
-            max-height: 200px;
-            line-height: 1.4;
-            field-sizing: content;
-        }
-
-        /* 실시간 참석자 카운트 뱃지 스타일 (v10.2 신규) */
+        .form-field textarea.auto-expand { resize: vertical; min-height: 60px; max-height: 200px; line-height: 1.4; field-sizing: content; }
         .attendee-count-badge { font-size: 0.72rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 1px 6px; border-radius: 4px; border: 1px solid #bfdbfe; }
-
         .info-row { display: flex; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; }
         .info-row span { font-weight: 600; color: #0f172a; }
-        
-        /* 라디오 버튼 그룹 스타일 */
         .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
         .radio-label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; transition: all 0.15s ease; }
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
-        
         .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
         .btn-cancel { padding: 8px 14px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-cancel:hover { background: #f1f5f9; }
         .btn-submit { padding: 8px 16px; background: #2563eb; border: none; color: #ffffff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-submit:hover { background: #1d4ed8; }
+
+        /* 커스텀 최종 확인 모달 스타일 (v10.3) */
+        .confirm-row { display: flex; gap: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; margin-bottom: 8px; align-items: flex-start; }
+        .confirm-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .confirm-label { color: #64748b; min-width: 55px; font-size: 0.78rem; font-weight: 700; padding-top: 2px; }
+        .confirm-value { color: #0f172a; font-size: 0.85rem; line-height: 1.4; word-break: keep-all; flex: 1; }
 
         @media (max-width: 768px) {
             .search-container { max-width: 100%; }
@@ -268,7 +260,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v10.2</span>
+                    <span class="version">v10.3</span>
                 </span>
             </h1>
         </header>
@@ -388,7 +380,7 @@
         </div>
     </div>
 
-    <!-- ➕ 신규 일정 입력 모달 (v10.2 반영) -->
+    <!-- ➕ 신규 일정 입력 모달 -->
     <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
         <div class="add-event-modal-content">
             <div class="add-event-header">
@@ -438,6 +430,44 @@
             <div class="add-event-footer">
                 <button type="button" class="btn-cancel" onclick="closeAddEventModal()">취소</button>
                 <button type="button" class="btn-submit" onclick="submitNewEventForm()">등록 데이터 확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📝 최종 확인 커스텀 모달 (v10.3 신규 도입) -->
+    <div id="confirmEventModal" class="modal-overlay" style="z-index: 3000;">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header" style="background-color: #0f766e;">
+                <h3 style="font-size: 1rem; margin: 0; font-weight: 600;">입력 데이터 최종 확인</h3>
+                <button type="button" class="modal-close-btn" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 16px;">
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; display: flex; flex-direction: column;">
+                    <div class="confirm-row">
+                        <span class="confirm-label">일련번호</span>
+                        <strong id="confirmKey" class="confirm-value" style="color: #2563eb;">-</strong>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">행사명</span>
+                        <strong id="confirmTitle" class="confirm-value">-</strong>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">장소</span>
+                        <span id="confirmPlace" class="confirm-value">-</span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">비고</span>
+                        <span id="confirmNote" class="confirm-value">-</span>
+                    </div>
+                    <div class="confirm-row" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+                        <span class="confirm-label">참석자</span>
+                        <span id="confirmAttendees" class="confirm-value">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="add-event-footer">
+                <button type="button" class="btn-cancel" onclick="closeConfirmModal()" style="flex: 1;">돌아가서 수정하기</button>
+                <button type="button" class="btn-submit" onclick="finalSubmitEvent()" style="flex: 1; background-color: #0f766e;">최종 등록 전송</button>
             </div>
         </div>
     </div>
@@ -495,10 +525,15 @@
 
         window.addEventListener('popstate', function(e) {
             const addEventModal = document.getElementById('addEventModal');
+            const confirmEventModal = document.getElementById('confirmEventModal');
             const photoModal = document.getElementById('photoModal');
             const galleryModal = document.getElementById('galleryModal');
             const dayModal = document.getElementById('dayModal');
 
+            if (confirmEventModal && confirmEventModal.style.display === 'flex') {
+                confirmEventModal.style.display = 'none';
+                return;
+            }
             if (addEventModal && addEventModal.style.display === 'flex') {
                 addEventModal.style.display = 'none';
                 return;
@@ -554,7 +589,6 @@
             document.getElementById('inputNewNote').value = '';
             document.getElementById('inputNewAttendees').value = '';
             
-            // 참석자 카운트 초기화
             updateAttendeeCount();
 
             document.getElementById('addEventModal').style.display = 'flex';
@@ -564,9 +598,6 @@
             document.getElementById('addEventModal').style.display = 'none';
         }
 
-        // ==========================================
-        // [v10.2 신규] 참석자 수 실시간 카운트 업데이트 함수
-        // ==========================================
         function updateAttendeeCount() {
             const textarea = document.getElementById('inputNewAttendees');
             const badge = document.getElementById('attendeeCountBadge');
@@ -575,11 +606,13 @@
                 badge.textContent = '0명 입력됨';
                 return;
             }
-            // 쉼표 기준 분리 후 빈 항목 제거
             const count = val.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
             badge.textContent = `${count}명 입력됨`;
         }
 
+        // ==========================================
+        // [v10.3 변경] 커스텀 확인 모달로 데이터 전달 및 노출
+        // ==========================================
         function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
@@ -593,16 +626,29 @@
                 return;
             }
 
-            const summaryMsg = `[신규 입력 데이터 확인]\n` +
-                               `- 일자: ${selectedTargetDateInfo.dateStr}\n` +
-                               `- 순번: ${selectedTargetDateInfo.seq}\n` +
-                               `- 분류: ${category}\n` +
-                               `- 행사명: ${title}\n` +
-                               `- 장소: ${place || '(없음)'}\n` +
-                               `- 비고: ${note || '(없음)'}\n` +
-                               `- 참석자: ${attendees || '(없음)'}\n\n` +
-                               `입력이 정상적으로 수집되었습니다! (다음 단계에서 GAS 웹앱 전송 연동 예정)`;
-            alert(summaryMsg);
+            // 모달 데이터 채우기 (요청하신 압축 포맷 적용)
+            document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
+            document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
+            document.getElementById('confirmPlace').textContent = place || '-';
+            document.getElementById('confirmNote').textContent = note || '-';
+            
+            if (attendees) {
+                const count = attendees.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
+                document.getElementById('confirmAttendees').textContent = `${attendees} (${count}명)`;
+            } else {
+                document.getElementById('confirmAttendees').textContent = '-';
+            }
+
+            document.getElementById('confirmEventModal').style.display = 'flex';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmEventModal').style.display = 'none';
+        }
+
+        function finalSubmitEvent() {
+            alert('최종 등록이 완료되었습니다! (추후 GAS 웹앱 전송 연동 예정)');
+            closeConfirmModal();
             closeAddEventModal();
         }
 
@@ -744,10 +790,13 @@
 
         document.addEventListener('keydown', (e) => {
             const addEventModal = document.getElementById('addEventModal');
+            const confirmEventModal = document.getElementById('confirmEventModal');
             const photoModal = document.getElementById('photoModal');
             const galleryModal = document.getElementById('galleryModal');
             
-            if (addEventModal && addEventModal.style.display === 'flex') {
+            if (confirmEventModal && confirmEventModal.style.display === 'flex') {
+                if (e.key === 'Escape') closeConfirmModal();
+            } else if (addEventModal && addEventModal.style.display === 'flex') {
                 if (e.key === 'Escape') closeAddEventModal();
             } else if (photoModal && photoModal.style.display === 'flex') {
                 if (e.key === 'Escape') requestClosePhotoModal();
@@ -828,13 +877,18 @@
                 const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, activeKeyword, isPhotoSearchMode)})</span>` : '';
                 const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, activeKeyword, isPhotoSearchMode)}]</span>` : '';
 
+                // ==========================================
+                // [v10.3 변경] 참석자 수 캘린더 상세 뷰 표기
+                // ==========================================
+                let attendeeCountStr = '';
                 let sortedAttendeesStr = '';
                 if (evt.attendees) {
                     const names = evt.attendees.split(',').map(n => n.trim()).filter(n => n.length > 0);
                     names.sort((a, b) => a.localeCompare(b, 'ko'));
                     sortedAttendeesStr = names.join(', ');
+                    attendeeCountStr = `(${names.length}명)`;
                 }
-                const attendeesHtml = sortedAttendeesStr ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, activeKeyword, isPhotoSearchMode)}</div>` : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
+                const attendeesHtml = sortedAttendeesStr ? `<div class="detail-item-attendees"><strong>참석자${attendeeCountStr}:</strong> ${highlightSearchText(sortedAttendeesStr, activeKeyword, isPhotoSearchMode)}</div>` : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
 
                 let photoBtnHtml = '';
                 if (matchedPhotos.length > 0) {
