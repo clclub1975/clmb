@@ -1,4 +1,4 @@
-<!-- v11.6: 모달 헤더 관리자 문구 통합 및 전체 입력 요소 컴팩트(라디오 높이) 축소 적용 -->
+<!-- v11.7: 일력 하단 버튼 문구 변경 및 참석자 자동완성 레이어 돌출/스크롤바 제거 최적화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -210,26 +210,21 @@
         .gallery-item-title { font-size: 0.72rem; font-weight: 600; color: #1e293b; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gallery-item-place { font-size: 0.65rem; color: #64748b; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* 신규 일정 추가 모달 스타일 */
+        /* [v11.7] 신규 일정 추가 모달 스타일: 스크롤바 제거 및 자동완성 레이어 돌출(visible) */
         .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
-        .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; max-height: 90vh; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
-        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #2563eb; color: #ffffff; flex-shrink: 0; user-select: none; }
-        /* [v11.6] 헤더 타이틀에 통합 안내 문구 반영 */
+        .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: visible; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; position: relative; }
+        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #2563eb; color: #ffffff; border-top-left-radius: 10px; border-top-right-radius: 10px; flex-shrink: 0; user-select: none; }
         .add-event-header h3 { font-size: 0.92rem; margin: 0; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        .add-event-body { padding: 12px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .add-event-body { padding: 12px 14px; overflow: visible; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
 
-        /* [v11.6] 날짜 및 순번 안내창 높이를 라디오 버튼 높이 수준으로 컴팩트화 */
         .info-row { display: flex; gap: 12px; font-size: 0.76rem; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; line-height: 1.3; min-height: 28px; align-items: center; }
         .info-row span { font-weight: 600; color: #0f172a; }
 
         .form-field { display: flex; flex-direction: column; gap: 3px; position: relative; }
         .form-field label { font-size: 0.74rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between; align-items: center; line-height: 1.2; }
         
-        /* [v11.6] 입력창 높이를 라디오 버튼 높이 수준(약 28px)으로 컴팩트 축소 */
         .form-field input[type="text"],
         .form-field input[type="password"] { width: 100%; height: 28px; padding: 3px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.8rem; outline: none; font-family: inherit; }
-        
-        /* [v11.6] 참석자 입력창 디폴트 높이를 1행(28px)으로 컴팩트 축소 */
         .form-field textarea { width: 100%; min-height: 28px; height: 28px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.8rem; outline: none; font-family: inherit; line-height: 1.25; resize: vertical; }
 
         .form-field input[type="text"]:focus,
@@ -237,8 +232,8 @@
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
         .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
-        /* [v11.5] 참석자 스마트 가나다순 자동완성 드롭다운 레이어 */
-        .autocomplete-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 170px; overflow-y: auto; background: #ffffff; border: 1.5px solid #3b82f6; border-radius: 6px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); z-index: 3100; margin-top: 2px; }
+        /* [v11.7] 모달창 위에 완전히 돌출되어 얹혀지는 최상위 자동완성 드롭다운 */
+        .autocomplete-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; max-height: 190px; overflow-y: auto; background: #ffffff; border: 1.5px solid #2563eb; border-radius: 6px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25); z-index: 5000; }
         .autocomplete-item { padding: 6px 10px; font-size: 0.78rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
         .autocomplete-item:last-child { border-bottom: none; }
         .autocomplete-item:hover, .autocomplete-item.active { background-color: #eff6ff; color: #1d4ed8; font-weight: 600; }
@@ -249,10 +244,9 @@
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
 
-        /* 히든 관리자 인증 영역 스타일 */
         .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 6px 8px; border-radius: 6px; gap: 4px; }
 
-        .add-event-footer { padding: 8px 14px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 6px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
+        .add-event-footer { padding: 8px 14px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 6px; border-top: 1px solid #e2e8f0; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; flex-shrink: 0; }
         .btn-cancel { padding: 6px 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 5px; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
         .btn-cancel:hover { background: #f1f5f9; }
         .btn-submit { padding: 6px 14px; background: #2563eb; border: none; color: #ffffff; border-radius: 5px; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
@@ -291,7 +285,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.6</span>
+                    <span class="version">v11.7</span>
                 </span>
             </h1>
         </header>
@@ -404,7 +398,8 @@
                             <div id="detailDateTitle" class="detail-date-title">📅 날짜를 터치/클릭하여 상세 일정을 확인하세요.</div>
                             <span id="detailCountBadge" class="detail-count-badge" style="display: none;">0건</span>
                         </div>
-                        <button type="button" id="detailAddBtn" class="detail-add-btn" onclick="triggerAddEventFromDetail()" style="display: none;">+ 새 일정 추가</button>
+                        <!-- [v11.7] '+ 새 일정 추가 (관리자 모드)'로 명확화 -->
+                        <button type="button" id="detailAddBtn" class="detail-add-btn" onclick="triggerAddEventFromDetail()" style="display: none;">+ 새 일정 추가 (관리자 모드)</button>
                     </div>
                     <div id="detailList" class="detail-list" style="display: none;"></div>
                 </div>
@@ -415,7 +410,6 @@
     <!-- ➕ 신규 일정 입력 모달 -->
     <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
         <div class="add-event-modal-content">
-            <!-- [v11.6] 헤더 라인에 통합 문구 반영 (더블클릭 토글 유지) -->
             <div class="add-event-header">
                 <h3 id="addEventModalTitle" ondblclick="toggleAdminPasswordInput()" onclick="handleTitleTouchEasterEgg()" title="더블클릭 시 관리자 인증창 토글">
                     <span>새 일정 추가</span>
@@ -424,7 +418,6 @@
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
             </div>
             <div class="add-event-body">
-                <!-- [v11.6] 날짜 및 순번 안내창 슬림화 -->
                 <div class="info-row">
                     <div>날짜: <span id="lblTargetDate">-</span></div>
                     <div>자동 순번: <span id="lblTargetSeq">-</span></div>
@@ -441,7 +434,6 @@
                     </div>
                 </div>
 
-                <!-- [v11.6] 높이 축소된 컴팩트 입력 필드 -->
                 <div class="form-field">
                     <label for="inputNewTitle">행사명</label>
                     <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회">
@@ -457,7 +449,7 @@
                     <input type="text" id="inputNewNote" placeholder="예: 50주년 기념">
                 </div>
 
-                <!-- [v11.6] 1행 디폴트 슬림화 및 가나다순 자동완성 영역 -->
+                <!-- 참석자 스마트 가나다순 자동완성 영역 (드롭다운이 모달창 위로 시원하게 돌출) -->
                 <div class="form-field">
                     <label for="inputNewAttendees">
                         <span>참석자 (쉼표 구분 / 자동완성 지원)</span>
@@ -465,7 +457,7 @@
                     </label>
                     <textarea id="inputNewAttendees" placeholder="예: 홍길동, 김철수 (이름 또는 초성 입력 시 목록 추천)" oninput="handleAttendeeInput(event)" onfocus="handleAttendeeFocus()" autocomplete="off"></textarea>
                     
-                    <!-- 자동완성 추천 레이어 드롭다운 -->
+                    <!-- [v11.7] 자동완성 추천 레이어 드롭다운 (z-index: 5000) -->
                     <div id="attendeeAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
@@ -1156,7 +1148,7 @@
             listElem.style.display = 'flex';
 
             if (!events || events.length === 0) {
-                listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다. 우측 상단의 '+ 새 일정 추가'를 눌러 일정을 등록해보세요.</div>`;
+                listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다. 우측 상단의 '+ 새 일정 추가 (관리자 모드)'를 눌러 일정을 등록해보세요.</div>`;
                 return;
             }
 
