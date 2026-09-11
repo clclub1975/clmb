@@ -1,4 +1,4 @@
-<!-- v11.3: 일반 사용자 접근 시 등록자/비밀번호 미입력 시 "관리자만이 등록 가능합니다." 메시지 출력 -->
+<!-- v11.4: '등록 데이터 확인' 단계에서 실시간 백엔드 교차 검증 및 상황별 안내 분리 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -233,7 +233,7 @@
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
 
-        /* [v11.3] 히든 관리자 인증 영역 스타일 */
+        /* 히든 관리자 인증 영역 스타일 */
         .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; }
 
         .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
@@ -241,6 +241,7 @@
         .btn-cancel:hover { background: #f1f5f9; }
         .btn-submit { padding: 8px 16px; background: #2563eb; border: none; color: #ffffff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-submit:hover { background: #1d4ed8; }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
 
         /* 커스텀 최종 확인 모달 스타일 */
         .confirm-row { display: flex; gap: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; margin-bottom: 8px; align-items: flex-start; }
@@ -273,7 +274,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.3</span>
+                    <span class="version">v11.4</span>
                 </span>
             </h1>
         </header>
@@ -441,7 +442,7 @@
                     <textarea id="inputNewAttendees" class="auto-expand" placeholder="예: 홍길동, 김철수, 이영희" oninput="updateAttendeeCount()"></textarea>
                 </div>
 
-                <!-- [v11.3] 히든 관리자 인증 영역 (기본 숨김) -->
+                <!-- 히든 관리자 인증 영역 (기본 숨김) -->
                 <div id="adminPasswordFieldWrap" class="form-field hidden-admin-field">
                     <label for="inputAuthor" style="color: #854d0e; font-weight: bold; margin-bottom: 2px;">👤 등록자 성명</label>
                     <input type="text" id="inputAuthor" placeholder="설정된 등록 가능자 성명 입력" style="margin-bottom: 8px;">
@@ -452,7 +453,7 @@
             </div>
             <div class="add-event-footer">
                 <button type="button" class="btn-cancel" onclick="closeAddEventModal()">취소</button>
-                <button type="button" class="btn-submit" onclick="submitNewEventForm()">등록 데이터 확인</button>
+                <button type="button" id="btnVerifySubmit" class="btn-submit" onclick="submitNewEventForm()">등록 데이터 확인</button>
             </div>
         </div>
     </div>
@@ -652,8 +653,8 @@
             badge.textContent = `${count}명 입력됨`;
         }
 
-        // [v11.3] 일반 사용자가 등록 시도 시 "관리자만이 등록 가능합니다." 안내 메시지 출력
-        function submitNewEventForm() {
+        // [v11.4] 등록 데이터 확인 버튼 클릭 시 실시간 백엔드 사전 검증
+        async function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
             const place = document.getElementById('inputNewPlace').value.trim();
@@ -668,43 +669,78 @@
                 return;
             }
 
-            // 히든 인증창이 닫혀있거나 관리자 정보가 누락된 경우 일반 방문자로 간주
+            // 일반 사용자가 정보 없이 누른 경우 즉시 차단
             const pwWrap = document.getElementById('adminPasswordFieldWrap');
             if (pwWrap.style.display === 'none' || !author || !adminPassword) {
                 alert('관리자만이 등록 가능합니다.');
                 return;
             }
 
-            pendingNewEventPayload = {
-                action: 'NEW',
-                dateStr: selectedTargetDateInfo.dateStr,
-                seq: selectedTargetDateInfo.seq,
-                category: category,
-                title: title,
-                place: place,
-                note: note,
-                attendees: attendees,
-                author: author,
-                adminPassword: adminPassword,
-                year: selectedTargetDateInfo.year,
-                month: selectedTargetDateInfo.month,
-                day: selectedTargetDateInfo.day
-            };
+            const submitBtn = document.getElementById('btnVerifySubmit');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '인증 확인 중...';
 
-            document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
-            document.getElementById('confirmAuthor').textContent = author;
-            document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
-            document.getElementById('confirmPlace').textContent = place || '-';
-            document.getElementById('confirmNote').textContent = note || '-';
-            
-            if (attendees) {
-                const count = attendees.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
-                document.getElementById('confirmAttendees').textContent = `${attendees} (${count}명)`;
-            } else {
-                document.getElementById('confirmAttendees').textContent = '-';
+            try {
+                // 백엔드 사전 검증(VERIFY) 요청
+                const res = await fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'VERIFY',
+                        author: author,
+                        adminPassword: adminPassword
+                    })
+                });
+                
+                const result = await res.json();
+
+                // 일치하지 않으면 백엔드에서 에러 메시지 반환
+                if (result.status === 'error') {
+                    alert('관리자가 아니거나 비밀번호가 틀립니다.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    return;
+                }
+
+                // 인증 성공 시 최종 확인 모달로 데이터 세팅 및 호출
+                pendingNewEventPayload = {
+                    action: 'NEW',
+                    dateStr: selectedTargetDateInfo.dateStr,
+                    seq: selectedTargetDateInfo.seq,
+                    category: category,
+                    title: title,
+                    place: place,
+                    note: note,
+                    attendees: attendees,
+                    author: author,
+                    adminPassword: adminPassword,
+                    year: selectedTargetDateInfo.year,
+                    month: selectedTargetDateInfo.month,
+                    day: selectedTargetDateInfo.day
+                };
+
+                document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
+                document.getElementById('confirmAuthor').textContent = author;
+                document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
+                document.getElementById('confirmPlace').textContent = place || '-';
+                document.getElementById('confirmNote').textContent = note || '-';
+                
+                if (attendees) {
+                    const count = attendees.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
+                    document.getElementById('confirmAttendees').textContent = `${attendees} (${count}명)`;
+                } else {
+                    document.getElementById('confirmAttendees').textContent = '-';
+                }
+
+                document.getElementById('confirmEventModal').style.display = 'flex';
+
+            } catch (err) {
+                console.error('검증 통신 오류:', err);
+                alert('서버 통신 중 오류가 발생했습니다.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
-
-            document.getElementById('confirmEventModal').style.display = 'flex';
         }
 
         function closeConfirmModal() { document.getElementById('confirmEventModal').style.display = 'none'; }
@@ -715,9 +751,10 @@
             const submitBtn = document.getElementById('btnFinalSubmit');
             const originalBtnText = submitBtn.textContent;
             submitBtn.disabled = true;
-            submitBtn.textContent = '인증 및 전송 중...';
+            submitBtn.textContent = '전송 중...';
 
             try {
+                // 실제 기록 저장 요청 (NEW)
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     body: JSON.stringify(pendingNewEventPayload)
@@ -732,7 +769,7 @@
                     return;
                 }
 
-                alert(result.message || '새 일정이 구글 시트에 정상적으로 등록되었습니다!');
+                alert('새 일정이 구글 시트에 정상적으로 등록되었습니다!');
 
                 const p = pendingNewEventPayload;
                 const monthKey = `${p.year}-${p.month}`;
