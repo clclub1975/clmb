@@ -1,4 +1,4 @@
-<!-- v8.6: 스마트폰 뒤로가기(<) 버튼 누를 시 팝업 닫기(히스토리 연동) 및 메인 캘린더 복귀 적용 -->
+<!-- v9.0: 사진DB(F행사명, G장소, H비고, I참석자) 확장 및 독립된 사진 검색창 추가 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -56,24 +56,35 @@
     .rule-box-inner ul { margin: 0; padding-left: 16px; }
     .rule-box-inner li { margin-bottom: 4px; }
 
-    /* 검색 바 */
-    .search-container {
-      display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: nowrap;
+    /* 검색 바 영역 */
+    .search-wrapper-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
     }
-    .search-input-wrap { position: relative; display: flex; align-items: center; flex: 1; max-width: 420px; }
+    .search-container {
+      display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 540px; flex-wrap: nowrap;
+    }
+    .search-input-wrap { position: relative; display: flex; align-items: center; flex: 1; }
     .search-input {
-      width: 100%; padding: 8px 36px 8px 12px; font-size: 0.88rem; border: 1.5px solid #cbd5e1;
+      width: 100%; padding: 7px 34px 7px 11px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;
       border-radius: 6px; outline: none; transition: all 0.2s ease;
     }
     .search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+    .photo-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
     .search-clear-btn {
-      position: absolute; right: 10px; background: none; border: none; font-size: 1.1rem;
+      position: absolute; right: 8px; background: none; border: none; font-size: 1.1rem;
       color: #94a3b8; cursor: pointer; display: none; line-height: 1; padding: 2px;
     }
     .search-clear-btn:hover { color: #475569; }
     .search-badge {
-      font-size: 0.8rem; font-weight: 600; color: #1e293b; background-color: #fef08a;
-      border: 1px solid #facc15; padding: 5px 10px; border-radius: 6px; display: none; white-space: nowrap; flex-shrink: 0;
+      font-size: 0.78rem; font-weight: 600; color: #1e293b; background-color: #fef08a;
+      border: 1px solid #facc15; padding: 5px 9px; border-radius: 6px; display: none; white-space: nowrap; flex-shrink: 0;
+    }
+    .photo-search-badge {
+      background-color: #d1fae5; border-color: #6ee7b7; color: #065f46;
     }
 
     /* 표식 의미 안내 바 (Legend) */
@@ -106,6 +117,10 @@
     .month-cell.search-match {
       background-color: #fef08a !important; outline: 2px solid #f59e0b !important;
       outline-offset: -2px; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); opacity: 1 !important;
+    }
+    .month-cell.photo-search-match {
+      background-color: #d1fae5 !important; outline: 2px solid #10b981 !important;
+      outline-offset: -2px; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); opacity: 1 !important;
     }
     .month-cell.search-dimmed { opacity: 0.25; }
 
@@ -150,6 +165,7 @@
     .day-cell:hover:not(.other-month) { border-color: #3b82f6; background-color: #f8fafc; }
     .day-cell.selected { border: 2px solid #2563eb !important; background-color: #eff6ff !important; }
     .day-cell.day-search-match { background-color: #fef9c3 !important; border: 2px solid #f59e0b !important; }
+    .day-cell.day-photo-search-match { background-color: #d1fae5 !important; border: 2px solid #10b981 !important; }
     .day-cell.other-month { background-color: #f8f9fa; opacity: 0.35; cursor: default; }
     .day-num-wrap { display: flex; align-items: baseline; gap: 3px; margin-bottom: 3px; flex-wrap: wrap; }
     .day-num { font-weight: bold; font-size: 0.75rem; color: #333; line-height: 1; }
@@ -187,7 +203,10 @@
     .detail-item-card.etc       { border-left-color: #00ff00; }
     .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
     .detail-item-card.card-search-match { background-color: #fef9c3 !important; border-right: 2px solid #f59e0b; border-top: 1.5px solid #f59e0b; border-bottom: 1.5px solid #f59e0b; }
+    .detail-item-card.card-photo-search-match { background-color: #d1fae5 !important; border-right: 2px solid #10b981; border-top: 1.5px solid #10b981; border-bottom: 1.5px solid #10b981; }
+    
     mark.search-highlight { background-color: #fde047; color: #0f172a; font-weight: bold; padding: 0 2px; border-radius: 2px; }
+    mark.photo-search-highlight { background-color: #a7f3d0; color: #064e3b; font-weight: bold; padding: 0 2px; border-radius: 2px; }
 
     /* 상세 카드 내용 */
     .detail-item-top { display: flex; align-items: center; gap: 6px; width: 100%; flex-wrap: wrap; }
@@ -211,6 +230,9 @@
       font-size: 0.68rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: all 0.2s ease; line-height: 1.2;
     }
     .photo-view-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+    .photo-view-btn.highlight-photo-btn {
+      background: #10b981; color: #ffffff; border-color: #059669; font-weight: bold;
+    }
     
     /* 오류 배지 */
     .detail-error-badge-common {
@@ -270,17 +292,29 @@
     <header>
       <h1>
         <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v8.6</span></span>
+        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v9.0</span></span>
       </h1>
     </header>
 
-    <!-- 통합 검색 바 영역 -->
-    <div class="search-container">
-      <div class="search-input-wrap">
-        <input type="text" id="searchInput" class="search-input" placeholder="이벤트명, 인물/참석자, 장소, 비고 검색..." oninput="handleSearchInput()">
-        <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">&times;</button>
+    <!-- 검색창 그룹 (1. 이벤트 검색 / 2. 사진 검색) -->
+    <div class="search-wrapper-group">
+      <!-- 1. 이벤트 검색 바 -->
+      <div class="search-container">
+        <div class="search-input-wrap">
+          <input type="text" id="searchInput" class="search-input" placeholder="이벤트 검색 (행사명, 참석자, 장소, 비고...)" oninput="handleSearchInput()">
+          <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">&times;</button>
+        </div>
+        <span id="searchBadge" class="search-badge"></span>
       </div>
-      <span id="searchBadge" class="search-badge"></span>
+
+      <!-- 2. 사진 검색 바 -->
+      <div class="search-container">
+        <div class="search-input-wrap">
+          <input type="text" id="photoSearchInput" class="search-input photo-search-input" placeholder="사진 검색 (행사명, 장소, 비고, 참석자...)" oninput="handlePhotoSearchInput()">
+          <button type="button" id="photoSearchClearBtn" class="search-clear-btn" onclick="clearPhotoSearch()">&times;</button>
+        </div>
+        <span id="photoSearchBadge" class="search-badge photo-search-badge"></span>
+      </div>
     </div>
 
     <!-- 입력 데이터 오류 안내 영역 -->
@@ -291,15 +325,10 @@
       </div>
       <ul id="error-list" class="error-list"></ul>
       <div id="rule-box-inner" class="rule-box-inner">
-        <h4>💡 올바른 데이터 입력 규칙 안내 (이벤트DB 탭)</h4>
+        <h4>💡 올바른 데이터 입력 규칙 안내</h4>
         <ul>
-          <li><strong>A열 (일자):</strong> 반드시 <code>YYYYMMDD</code> 8자리 숫자로 입력해야 합니다.</li>
-          <li><strong>B열 (순번):</strong> 당일 이벤트 순번(1, 2, 3...)을 입력합니다 (생략 시 기본값 1).</li>
-          <li><strong>C열 (분류):</strong> <strong>'중요', '행사', '결혼', '부고', '기타'</strong> 중 하나여야 합니다.</li>
-          <li><strong>D열 (행사명):</strong> 이벤트 제목을 입력합니다.</li>
-          <li><strong>E열 (장소):</strong> 행사 장소를 입력합니다 (생략 가능).</li>
-          <li><strong>F열 (비고):</strong> 추가 설명이나 메모를 입력합니다.</li>
-          <li><strong>G열 (참석자):</strong> 참석한 인물 이름을 쉼표로 구분하여 입력합니다 (인물 검색 지원).</li>
+          <li><strong>이벤트DB 시트:</strong> A(일자), B(순번), C(분류), D(행사명), E(장소), F(비고), G(참석자)</li>
+          <li><strong>사진DB 시트:</strong> A(파일명), B(File ID), C(미리보기), D(날짜), E(순번), F(행사명), G(장소), H(비고), I(참석자)</li>
         </ul>
       </div>
     </div>
@@ -404,45 +433,38 @@
     let globalEventMap = {};
     let globalPhotoMap = {}; 
     let globalPhotoDateFallbackMap = {}; 
+    let globalPhotoList = []; // 전체 사진 목록 (사진 검색용)
+    
     let currentSearchTerm = '';
+    let currentPhotoSearchTerm = '';
 
     let currentPhotoList = [];
     let currentPhotoIndex = 0;
 
-    // 💡 [v8.6 핵심] 브라우저 뒤로가기(<) 버튼 연동 로직
+    // 모바일 뒤로가기(<) 히스토리 연동
     window.addEventListener('popstate', function(e) {
       const photoModal = document.getElementById('photoModal');
       const dayModal = document.getElementById('dayModal');
 
-      // 1. 사진 모달이 열려 있는 상태에서 뒤로가기 누른 경우 -> 사진만 닫기
       if (photoModal && photoModal.style.display === 'flex') {
         photoModal.style.display = 'none';
         document.getElementById('photoViewerImg').src = '';
         return;
       }
-
-      // 2. 일력 모달이 열려 있는 상태에서 뒤로가기 누른 경우 -> 일력 닫기 (메인 캘린더 유지)
       if (dayModal && dayModal.style.display === 'flex') {
         dayModal.style.display = 'none';
         return;
       }
     });
 
-    // 화면의 '×' 버튼을 직접 눌렀을 때 브라우저 히스토리도 함께 뒤로가기 처리
     function requestClosePhotoModal() {
-      if (window.location.hash.includes('photoView')) {
-        history.back();
-      } else {
-        closePhotoModal();
-      }
+      if (window.location.hash.includes('photoView')) history.back();
+      else closePhotoModal();
     }
 
     function requestCloseDayModal() {
-      if (window.location.hash.includes('dayView')) {
-        history.back();
-      } else {
-        closeDayModal();
-      }
+      if (window.location.hash.includes('dayView')) history.back();
+      else closeDayModal();
     }
 
     function closePhotoModal() {
@@ -537,8 +559,6 @@
       currentPhotoList = photoList; currentPhotoIndex = 0;
       document.getElementById('photoModalTitle').textContent = `📷 ${eventTitle || '사진 보기'}`;
       updatePhotoViewerDisplay();
-      
-      // 💡 히스토리에 사진 뷰어 상태 푸시
       history.pushState({ modal: 'photo' }, '', '#photoView');
       document.getElementById('photoModal').style.display = 'flex';
     }
@@ -549,6 +569,7 @@
       updatePhotoViewerDisplay();
     }
 
+    // 💡 사진 뷰어 하단 캡션 정보 조합 표기
     function updatePhotoViewerDisplay() {
       const item = currentPhotoList[currentPhotoIndex];
       const imgElem = document.getElementById('photoViewerImg');
@@ -558,11 +579,15 @@
       const nextBtn = document.getElementById('photoNextBtn');
 
       imgElem.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w1600`;
+      
       let infoParts = [];
-      if (item.desc) infoParts.push(item.desc);
-      if (item.tags) infoParts.push(`[${item.tags}]`);
+      if (item.title) infoParts.push(`[${item.title}]`);
+      if (item.place) infoParts.push(`(${item.place})`);
+      if (item.note) infoParts.push(item.note);
+      if (item.attendees) infoParts.push(`👥 ${item.attendees}`);
       if (infoParts.length === 0) infoParts.push(item.name);
-      infoElem.textContent = infoParts.join(' - ');
+
+      infoElem.textContent = infoParts.join(' ');
       counterElem.textContent = `${currentPhotoIndex + 1} / ${currentPhotoList.length}`;
 
       if (currentPhotoList.length <= 1) {
@@ -585,11 +610,12 @@
 
     const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
-    function highlightSearchText(text, keyword) {
+    function highlightSearchText(text, keyword, isPhoto = false) {
       if (!text) return '';
       if (!keyword) return text;
       const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+      const className = isPhoto ? 'photo-search-highlight' : 'search-highlight';
+      return text.replace(regex, `<mark class="${className}">$1</mark>`);
     }
 
     function getPhotosForEvent(evt, totalEventsOnDay) {
@@ -626,6 +652,7 @@
         const catProps = getCategoryProps(evt);
         let cardClass = catProps.css;
         
+        // 1. 이벤트 검색어 매칭 검사
         if (currentSearchTerm) {
           const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
           if (checkText.includes(currentSearchTerm.toLowerCase())) {
@@ -633,10 +660,28 @@
           }
         }
 
+        const matchedPhotos = getPhotosForEvent(evt, events.length);
+        let hasPhotoMatch = false;
+
+        // 2. 사진 검색어 매칭 검사
+        if (currentPhotoSearchTerm && matchedPhotos.length > 0) {
+          const qP = currentPhotoSearchTerm.toLowerCase();
+          hasPhotoMatch = matchedPhotos.some(p => {
+            const pText = `${p.title || ''} ${p.place || ''} ${p.note || ''} ${p.attendees || ''} ${p.name || ''}`.toLowerCase();
+            return pText.includes(qP);
+          });
+          if (hasPhotoMatch) {
+            cardClass += ' card-photo-search-match';
+          }
+        }
+
+        const activeKeyword = currentSearchTerm || (hasPhotoMatch ? currentPhotoSearchTerm : '');
+        const isPhotoSearchMode = !!(!currentSearchTerm && currentPhotoSearchTerm && hasPhotoMatch);
+
         const rawTitle = evt.title || '(제목 없음)';
-        const displayTitle = highlightSearchText(rawTitle, currentSearchTerm);
-        const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, currentSearchTerm)})</span>` : '';
-        const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, currentSearchTerm)}]</span>` : '';
+        const displayTitle = highlightSearchText(rawTitle, activeKeyword, isPhotoSearchMode);
+        const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, activeKeyword, isPhotoSearchMode)})</span>` : '';
+        const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, activeKeyword, isPhotoSearchMode)}]</span>` : '';
 
         let sortedAttendeesStr = '';
         if (evt.attendees) {
@@ -645,15 +690,15 @@
           sortedAttendeesStr = names.join(', ');
         }
         const attendeesHtml = sortedAttendeesStr 
-          ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, currentSearchTerm)}</div>`
+          ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, activeKeyword, isPhotoSearchMode)}</div>`
           : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
 
-        const matchedPhotos = getPhotosForEvent(evt, events.length);
         let photoBtnHtml = '';
         if (matchedPhotos.length > 0) {
           window[`tempPhotos_${evt.dateStr}_${evt.seq}_${idx}`] = matchedPhotos;
           const safeTitle = rawTitle.replace(/'/g, "\\'");
-          photoBtnHtml = `<button type="button" class="photo-view-btn" onclick="openPhotoViewer(window['tempPhotos_${evt.dateStr}_${evt.seq}_${idx}'], '${safeTitle}')">📷 사진 ${matchedPhotos.length}장</button>`;
+          const btnExtraClass = hasPhotoMatch ? 'highlight-photo-btn' : '';
+          photoBtnHtml = `<button type="button" class="photo-view-btn ${btnExtraClass}" onclick="openPhotoViewer(window['tempPhotos_${evt.dateStr}_${evt.seq}_${idx}'], '${safeTitle}')">📷 사진 ${matchedPhotos.length}장</button>`;
         }
 
         let topErrorHtml = ''; let bottomErrorHtml = '';
@@ -725,6 +770,8 @@
         if (holidayName) dayClass += ' holiday';
 
         const currentEvents = dayEventsMap[d] || [];
+        
+        // 이벤트 검색 매칭
         if (currentSearchTerm && currentEvents.length > 0) {
           const hasMatch = currentEvents.some(evt => {
             const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
@@ -732,6 +779,22 @@
           });
           if (hasMatch) {
             dayClass += ' day-search-match';
+            if (!firstMatchDay) firstMatchDay = { day: d, colIndex, holidayName, currentEvents };
+          }
+        }
+
+        // 사진 검색 매칭
+        if (currentPhotoSearchTerm && currentEvents.length > 0) {
+          const qP = currentPhotoSearchTerm.toLowerCase();
+          const hasPhotoMatch = currentEvents.some(evt => {
+            const photos = getPhotosForEvent(evt, currentEvents.length);
+            return photos.some(p => {
+              const pText = `${p.title || ''} ${p.place || ''} ${p.note || ''} ${p.attendees || ''} ${p.name || ''}`.toLowerCase();
+              return pText.includes(qP);
+            });
+          });
+          if (hasPhotoMatch) {
+            dayClass += ' day-photo-search-match';
             if (!firstMatchDay) firstMatchDay = { day: d, colIndex, holidayName, currentEvents };
           }
         }
@@ -771,21 +834,28 @@
         dayGridBody.appendChild(emptyCell);
       }
 
-      // 💡 히스토리에 일력 모달 상태 푸시
       history.pushState({ modal: 'day' }, '', '#dayView');
       modal.style.display = 'flex';
-
       if (firstMatchDay) {
         selectDayDetail(year, month, firstMatchDay.day, firstMatchDay.colIndex, firstMatchDay.holidayName, firstMatchDay.currentEvents);
       }
     }
 
+    // 💡 1. 이벤트 검색창 입력 처리
     function handleSearchInput() {
       const input = document.getElementById('searchInput');
       const clearBtn = document.getElementById('searchClearBtn');
       const badge = document.getElementById('searchBadge');
       const query = input.value.trim();
       currentSearchTerm = query;
+
+      // 이벤트 검색 시 사진 검색창 자동 초기화
+      if (query) {
+        document.getElementById('photoSearchInput').value = '';
+        document.getElementById('photoSearchClearBtn').style.display = 'none';
+        document.getElementById('photoSearchBadge').style.display = 'none';
+        currentPhotoSearchTerm = '';
+      }
 
       clearBtn.style.display = query ? 'block' : 'none';
       let matchCount = 0;
@@ -804,16 +874,66 @@
           if (monthHasMatch) monthCellMatchMap[key] = true;
         }
         badge.style.display = 'inline-block';
-        badge.textContent = `총 ${matchCount}건 발견`;
+        badge.textContent = `이벤트 ${matchCount}건 발견`;
       } else {
         badge.style.display = 'none';
       }
 
+      updateCalendarSearchHighlights(monthCellMatchMap, !!query, false);
+    }
+
+    // 💡 2. 사진 검색창 입력 처리 (F, G, H, I열 기준)
+    function handlePhotoSearchInput() {
+      const input = document.getElementById('photoSearchInput');
+      const clearBtn = document.getElementById('photoSearchClearBtn');
+      const badge = document.getElementById('photoSearchBadge');
+      const query = input.value.trim();
+      currentPhotoSearchTerm = query;
+
+      // 사진 검색 시 이벤트 검색창 자동 초기화
+      if (query) {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchClearBtn').style.display = 'none';
+        document.getElementById('searchBadge').style.display = 'none';
+        currentSearchTerm = '';
+      }
+
+      clearBtn.style.display = query ? 'block' : 'none';
+      let matchCount = 0;
+      const monthCellMatchMap = {};
+
+      if (query) {
+        const qLower = query.toLowerCase();
+        globalPhotoList.forEach(photo => {
+          const combined = `${photo.title || ''} ${photo.place || ''} ${photo.note || ''} ${photo.attendees || ''} ${photo.name || ''}`.toLowerCase();
+          if (combined.includes(qLower)) {
+            matchCount++;
+            if (photo.dateStr && photo.dateStr.length >= 6) {
+              const y = parseInt(photo.dateStr.substring(0, 4), 10);
+              const m = parseInt(photo.dateStr.substring(4, 6), 10);
+              monthCellMatchMap[`${y}-${m}`] = true;
+            }
+          }
+        });
+        badge.style.display = 'inline-block';
+        badge.textContent = `사진 ${matchCount}건 발견`;
+      } else {
+        badge.style.display = 'none';
+      }
+
+      updateCalendarSearchHighlights(monthCellMatchMap, !!query, true);
+    }
+
+    // 메인 월력 하이라이트 갱신 공통 함수
+    function updateCalendarSearchHighlights(matchMap, hasQuery, isPhotoSearch) {
       document.querySelectorAll('.month-cell').forEach(td => {
-        td.classList.remove('search-match', 'search-dimmed');
-        if (query) {
-          if (monthCellMatchMap[td.dataset.key]) td.classList.add('search-match');
-          else td.classList.add('search-dimmed');
+        td.classList.remove('search-match', 'photo-search-match', 'search-dimmed');
+        if (hasQuery) {
+          if (matchMap[td.dataset.key]) {
+            td.classList.add(isPhotoSearch ? 'photo-search-match' : 'search-match');
+          } else {
+            td.classList.add('search-dimmed');
+          }
         }
       });
     }
@@ -821,6 +941,11 @@
     function clearSearch() {
       const input = document.getElementById('searchInput');
       input.value = ''; handleSearchInput(); input.focus();
+    }
+
+    function clearPhotoSearch() {
+      const input = document.getElementById('photoSearchInput');
+      input.value = ''; handlePhotoSearchInput(); input.focus();
     }
 
     function parseCSV(text) {
@@ -835,23 +960,48 @@
       return ret;
     }
 
+    // 💡 사진DB CSV 파싱: [파일명(0), File ID(1), 썸네일(2), 날짜(3), 순번(4), 행사명(5), 장소(6), 비고(7), 참석자(8)]
     function parsePhotoDB(csvText) {
       const rows = parseCSV(csvText);
       const photoMap = {}; const fallbackMap = {};
+      const photoList = [];
+
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i].map(c => c.trim());
-        const fileName = cols[0], fileId = cols[1], dateStr = cols[3], seq = cols[4] || '1', tags = cols[5] || '';
+        const fileName = cols[0];
+        const fileId = cols[1];
+        const dateStr = cols[3];
+        const seq = cols[4] || '1';
+        const title = cols[5] || '';
+        const place = cols[6] || '';
+        const note = cols[7] || '';
+        const attendees = cols[8] || '';
+
         if (!fileId || !dateStr) continue;
 
-        const photoObj = { id: fileId, name: fileName, desc: '', tags: tags, seq: seq };
+        const photoObj = {
+          id: fileId,
+          name: fileName,
+          dateStr: dateStr,
+          seq: seq,
+          title: title,
+          place: place,
+          note: note,
+          attendees: attendees
+        };
+
         const key = `${dateStr}_${seq}`;
         if (!photoMap[key]) photoMap[key] = [];
         photoMap[key].push(photoObj);
 
         if (!fallbackMap[dateStr]) fallbackMap[dateStr] = [];
         fallbackMap[dateStr].push(photoObj);
+
+        photoList.push(photoObj);
       }
-      globalPhotoMap = photoMap; globalPhotoDateFallbackMap = fallbackMap;
+      globalPhotoMap = photoMap;
+      globalPhotoDateFallbackMap = fallbackMap;
+      globalPhotoList = photoList;
     }
 
     function parseAndRenderCalendar(csvText) {
@@ -948,6 +1098,7 @@
         tbody.appendChild(tr);
       }
       if (currentSearchTerm) handleSearchInput();
+      if (currentPhotoSearchTerm) handlePhotoSearchInput();
     }
 
     async function loadCalendarAndPhotoData() {
@@ -965,4 +1116,3 @@
   </script>
 </body>
 </html>
- 
