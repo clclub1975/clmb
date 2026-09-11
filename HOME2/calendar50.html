@@ -1,1363 +1,1254 @@
-<!-- v9.3: 사진 검색 결과 알림판 문구 정리 ('사진 O건 발견' 통일) 및 v9.3 갱신 -->
+<!-- v10.0: 일력창 우클릭 이벤트 신규 등록 폼 모달 및 분류 라디오 버튼 UI 도입 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>촛불회 50년사 캘린더 (1975 - 2026)</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f8f9fa; color: #333; line-height: 1.4; padding: 8px; word-break: keep-all;
-    }
-    .container {
-      width: 100%; max-width: 1200px; margin: 0 auto; background: #ffffff; padding: 12px;
-      border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-    .home-btn-container { margin-bottom: 12px; }
-    .home-btn {
-      display: inline-block; padding: 6px 12px; background-color: #ffffff; color: #2c3e50;
-      text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;
-      border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); transition: all 0.2s ease;
-    }
-    .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
-    header { margin-bottom: 12px; border-bottom: 2px solid #eaeaea; padding-bottom: 8px; text-align: center; }
-    h1 { font-size: 1.5rem; color: #2c3e50; line-height: 1.35; }
-    .title-wrap { display: inline-block; }
-    @media (max-width: 768px) {
-      h1 { font-size: 1.35rem; }
-      .title-break { display: block; margin-top: 3px; }
-    }
-    h1 .version {
-      font-size: 0.75rem; color: #e74c3c; background: #fadbd8; padding: 2px 5px;
-      border-radius: 4px; vertical-align: middle; margin-left: 4px;
-    }
-    
-    /* 오류 안내 박스 */
-    .error-box {
-      border: 1px solid #f5c6cb; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;
-      font-size: 0.75rem; color: #721c24; background-color: #f8d7da;
-    }
-    .error-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .error-box h3 { font-size: 0.85rem; color: #721c24; margin: 0; }
-    .rule-toggle-btn {
-      background-color: #ffffff; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;
-      padding: 2px 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease;
-    }
-    .rule-toggle-btn:hover { background-color: #fce8e6; }
-    .error-list { padding-left: 16px; font-size: 0.75rem; }
-    .error-list li { margin: 2px 0; }
-    .rule-box-inner {
-      display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e8a7ad;
-      color: #491217; font-size: 0.75rem;
-    }
-    .rule-box-inner h4 { margin: 0 0 6px 0; font-size: 0.8rem; font-weight: bold; color: #721c24; }
-    .rule-box-inner ul { margin: 0; padding-left: 16px; }
-    .rule-box-inner li { margin-bottom: 4px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>촛불회 50년사 캘린더 (1975 - 2026)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; color: #333; line-height: 1.4; padding: 8px; word-break: keep-all; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; background: #ffffff; padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+        .home-btn-container { margin-bottom: 12px; }
+        .home-btn { display: inline-block; padding: 6px 12px; background-color: #ffffff; color: #2c3e50; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); transition: all 0.2s ease; }
+        .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
+        header { margin-bottom: 12px; border-bottom: 2px solid #eaeaea; padding-bottom: 8px; text-align: center; }
+        h1 { font-size: 1.5rem; color: #2c3e50; line-height: 1.35; }
+        .title-wrap { display: inline-block; }
+        @media (max-width: 768px) { h1 { font-size: 1.35rem; } .title-break { display: block; margin-top: 3px; } }
+        h1 .version { font-size: 0.75rem; color: #2563eb; background: #dbeafe; padding: 2px 5px; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
+        
+        /* 오류 안내 박스 */
+        .error-box { border: 1px solid #f5c6cb; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.75rem; color: #721c24; background-color: #f8d7da; }
+        .error-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .error-box h3 { font-size: 0.85rem; color: #721c24; margin: 0; }
+        .rule-toggle-btn { background-color: #ffffff; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
+        .rule-toggle-btn:hover { background-color: #fce8e6; }
+        .error-list { padding-left: 16px; font-size: 0.75rem; }
+        .error-list li { margin: 2px 0; }
+        .rule-box-inner { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e8a7ad; color: #491217; font-size: 0.75rem; }
+        .rule-box-inner h4 { margin: 0 0 6px 0; font-size: 0.8rem; font-weight: bold; color: #721c24; }
+        .rule-box-inner ul { margin: 0; padding-left: 16px; }
+        .rule-box-inner li { margin-bottom: 4px; }
 
-    /* 검색 바 영역 (앞쪽/좌측 정렬) */
-    .search-wrapper-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 10px;
-      align-items: flex-start;
-      width: 100%;
-    }
-    .search-container {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 8px;
-      width: 100%;
-      max-width: 520px;
-      flex-wrap: nowrap;
-    }
-    .search-input-wrap { position: relative; display: flex; align-items: center; flex: 1; }
-    .search-input {
-      width: 100%; padding: 7px 34px 7px 11px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;
-      border-radius: 6px; outline: none; transition: all 0.2s ease;
-    }
-    .search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
-    .photo-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
-    .search-clear-btn {
-      position: absolute; right: 8px; background: none; border: none; font-size: 1.1rem;
-      color: #94a3b8; cursor: pointer; display: none; line-height: 1; padding: 2px;
-    }
-    .search-clear-btn:hover { color: #475569; }
-    .search-badge {
-      font-size: 0.78rem; font-weight: 600; color: #1e293b; background-color: #fef08a;
-      border: 1px solid #facc15; padding: 5px 9px; border-radius: 6px; display: none; white-space: nowrap; flex-shrink: 0;
-    }
-    .photo-search-badge {
-      background-color: #d1fae5; border-color: #6ee7b7; color: #065f46;
-    }
+        /* 검색 바 영역 */
+        .search-wrapper-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; align-items: flex-start; width: 100%; }
+        .search-container { display: flex; align-items: center; justify-content: flex-start; gap: 8px; width: 100%; max-width: 520px; flex-wrap: nowrap; }
+        .search-input-wrap { position: relative; display: flex; align-items: center; flex: 1; }
+        .search-input { width: 100%; padding: 7px 34px 7px 11px; font-size: 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 6px; outline: none; transition: all 0.2s ease; }
+        .search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .photo-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .search-clear-btn { position: absolute; right: 8px; background: none; border: none; font-size: 1.1rem; color: #94a3b8; cursor: pointer; display: none; line-height: 1; padding: 2px; }
+        .search-clear-btn:hover { color: #475569; }
+        .search-badge { font-size: 0.78rem; font-weight: 600; color: #1e293b; background-color: #fef08a; border: 1px solid #facc15; padding: 5px 9px; border-radius: 6px; display: none; white-space: nowrap; flex-shrink: 0; }
+        .photo-search-badge { background-color: #d1fae5; border-color: #6ee7b7; color: #065f46; }
 
-    /* 미니 썸네일 스트립 바 (가로 스크롤형) */
-    .photo-strip-container {
-      display: none;
-      width: 100%;
-      background: #f0fdf4;
-      border: 1.5px solid #a7f3d0;
-      border-radius: 8px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      flex-direction: column;
-      gap: 6px;
-      animation: modalFadeIn 0.2s ease-out;
-    }
-    .photo-strip-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.75rem;
-      color: #065f46;
-      font-weight: 700;
-    }
-    .photo-gallery-open-btn {
-      background: #10b981;
-      color: #ffffff;
-      border: none;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      transition: background 0.2s ease;
-    }
-    .photo-gallery-open-btn:hover { background: #059669; }
-    .photo-strip-scroll {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      scroll-behavior: smooth;
-    }
-    .photo-strip-scroll::-webkit-scrollbar {
-      height: 6px;
-    }
-    .photo-strip-scroll::-webkit-scrollbar-thumb {
-      background-color: #a7f3d0;
-      border-radius: 3px;
-    }
-    .strip-card {
-      flex: 0 0 88px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 4px;
-      cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.15s ease;
-    }
-    .strip-card:hover {
-      transform: translateY(-2px);
-      border-color: #10b981;
-      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
-    }
-    .strip-card img {
-      width: 80px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 4px;
-      background: #f1f5f9;
-    }
-    .strip-card-date {
-      font-size: 0.62rem;
-      color: #475569;
-      font-weight: 600;
-      margin-top: 3px;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-    }
-    .strip-card-title {
-      font-size: 0.58rem;
-      color: #0f172a;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-    }
+        /* 미니 썸네일 스트립 바 */
+        .photo-strip-container { display: none; width: 100%; background: #f0fdf4; border: 1.5px solid #a7f3d0; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; flex-direction: column; gap: 6px; animation: modalFadeIn 0.2s ease-out; }
+        .photo-strip-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #065f46; font-weight: 700; }
+        .photo-gallery-open-btn { background: #10b981; color: #ffffff; border: none; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: background 0.2s ease; }
+        .photo-gallery-open-btn:hover { background: #059669; }
+        .photo-strip-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scroll-behavior: smooth; }
+        .photo-strip-scroll::-webkit-scrollbar { height: 6px; }
+        .photo-strip-scroll::-webkit-scrollbar-thumb { background-color: #a7f3d0; border-radius: 3px; }
+        .strip-card { flex: 0 0 88px; display: flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
+        .strip-card:hover { transform: translateY(-2px); border-color: #10b981; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2); }
+        .strip-card img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; background: #f1f5f9; }
+        .strip-card-date { font-size: 0.62rem; color: #475569; font-weight: 600; margin-top: 3px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .strip-card-title { font-size: 0.58rem; color: #0f172a; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-    /* 표식 의미 안내 바 (Legend) */
-    .legend-bar {
-      display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 16px;
-      background: #f1f3f5; border: 1px solid #e1e4e8; border-radius: 6px; padding: 10px 12px;
-      margin-bottom: 12px; font-size: 0.85rem; font-weight: 600;
-    }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
-    .table-container { width: 100%; overflow-x: visible; }
-    table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
-    th, td { padding: 4px 1px; border: 1px solid #e1e4e8; font-size: 0.6rem; overflow: hidden; vertical-align: middle; text-align: center; }
-    th { background-color: #f1f3f5; color: #495057; font-weight: 600; vertical-align: middle; }
-    tr:nth-child(even) { background-color: #fcfcfc; }
-    tr:hover { background-color: #f1f3f5; }
-    th:first-child, td:first-child { width: 9.1%; font-weight: bold; background-color: #f8f9fa; vertical-align: middle; }
-    th:not(:first-child), td:not(:first-child) { width: 7.55%; }
-    .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
+        /* 표식 의미 안내 바 (Legend) */
+        .legend-bar { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 16px; background: #f1f3f5; border: 1px solid #e1e4e8; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.85rem; font-weight: 600; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        
+        /* 테이블 영역 */
+        .table-container { width: 100%; overflow-x: visible; }
+        table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
+        th, td { padding: 4px 1px; border: 1px solid #e1e4e8; font-size: 0.6rem; overflow: hidden; vertical-align: middle; text-align: center; }
+        th { background-color: #f1f3f5; color: #495057; font-weight: 600; vertical-align: middle; }
+        tr:nth-child(even) { background-color: #fcfcfc; }
+        tr:hover { background-color: #f1f3f5; }
+        th:first-child, td:first-child { width: 9.1%; font-weight: bold; background-color: #f8f9fa; vertical-align: middle; }
+        th:not(:first-child), td:not(:first-child) { width: 7.55%; }
+        .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
 
-    /* 표식 색상 클래스 */
-    .legend-important { color: #ff0033; font-size: 1.1rem; }
-    .legend-event { color: #0066ff; font-size: 1.1rem; }
-    .legend-marriage { color: #f738f7; font-size: 1.1rem; }
-    .legend-funeral { color: #111111; font-size: 1.1rem; }
-    .legend-etc { color: #00ff00; font-size: 1.1rem; }
-    .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; }
+        /* 표식 색상 */
+        .legend-important { color: #ff0033; font-size: 1.1rem; }
+        .legend-event { color: #0066ff; font-size: 1.1rem; }
+        .legend-marriage { color: #f738f7; font-size: 1.1rem; }
+        .legend-funeral { color: #111111; font-size: 1.1rem; }
+        .legend-etc { color: #00ff00; font-size: 1.1rem; }
+        .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; }
 
-    .month-cell { cursor: pointer; transition: all 0.15s ease; }
-    .month-cell:hover { background-color: #e2e8f0 !important; }
-    .month-cell.search-match {
-      background-color: #fef08a !important; outline: 2px solid #f59e0b !important;
-      outline-offset: -2px; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); opacity: 1 !important;
-    }
-    .month-cell.photo-search-match {
-      background-color: #d1fae5 !important; outline: 2px solid #10b981 !important;
-      outline-offset: -2px; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); opacity: 1 !important;
-    }
-    .month-cell.search-dimmed { opacity: 0.25; }
+        .month-cell { cursor: pointer; transition: all 0.15s ease; }
+        .month-cell:hover { background-color: #e2e8f0 !important; }
+        .month-cell.search-match { background-color: #fef08a !important; outline: 2px solid #f59e0b !important; outline-offset: -2px; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); opacity: 1 !important; }
+        .month-cell.photo-search-match { background-color: #d1fae5 !important; outline: 2px solid #10b981 !important; outline-offset: -2px; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); opacity: 1 !important; }
+        .month-cell.search-dimmed { opacity: 0.25; }
 
-    .symbol-wrapper { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2px 4px; width: 100%; min-height: 16px; }
-    .symbol-wrapper span { display: inline-flex; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: bold; line-height: 1; }
-    .symbol-important { color: #ff0033; }
-    .symbol-event     { color: #0066ff; }
-    .symbol-marriage  { color: #f738f7; }
-    .symbol-funeral   { color: #111111; }
-    .symbol-etc       { color: #00ff00; }
-    .symbol-error { color: #ff1744; font-size: 0.85rem !important; font-weight: bold; background-color: transparent; padding: 0; }
-    .symbol-empty { color: #adb5bd; font-size: 0.7rem !important; }
+        .symbol-wrapper { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2px 4px; width: 100%; min-height: 16px; }
+        .symbol-wrapper span { display: inline-flex; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: bold; line-height: 1; }
+        .symbol-important { color: #ff0033; }
+        .symbol-event     { color: #0066ff; }
+        .symbol-marriage  { color: #f738f7; }
+        .symbol-funeral   { color: #111111; }
+        .symbol-etc       { color: #00ff00; }
+        .symbol-error { color: #ff1744; font-size: 0.85rem !important; font-weight: bold; background-color: transparent; padding: 0; }
+        .symbol-empty { color: #adb5bd; font-size: 0.7rem !important; }
 
-    @media (max-width: 768px) {
-      .symbol-wrapper { gap: 2px 2px; }
-      .symbol-wrapper span { font-size: 0.85rem; }
-      .symbol-error { font-size: 0.8rem !important; }
-    }
+        /* 모달 공통 스타일 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 8px; }
+        .modal-content { background: #ffffff; width: 100%; max-width: 740px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #2c3e50; color: #ffffff; }
+        .modal-header h2 { font-size: 1.1rem; margin: 0; font-weight: 600; }
+        .modal-close-btn { background: none; border: none; color: #ffffff; font-size: 1.3rem; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+        .modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .modal-body { padding: 10px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
 
-    /* 일력 모달 */
-    .modal-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 8px;
-    }
-    .modal-content {
-      background: #ffffff; width: 100%; max-width: 740px; border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out;
-    }
-    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #2c3e50; color: #ffffff; }
-    .modal-header h2 { font-size: 1.1rem; margin: 0; font-weight: 600; }
-    .modal-close-btn { background: none; border: none; color: #ffffff; font-size: 1.3rem; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; }
-    .modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
-    .modal-body { padding: 10px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    .day-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; width: 100%; }
-    .day-header { text-align: center; font-weight: bold; font-size: 0.75rem; padding: 5px 1px; background-color: #f1f3f5; border-radius: 4px; color: #495057; }
-    .day-header.sun { color: #e03131; } .day-header.sat { color: #1971c2; }
-    .day-cell {
-      min-height: 68px; border: 1px solid #e9ecef; border-radius: 4px; padding: 3px; display: flex; flex-direction: column;
-      background-color: #ffffff; font-size: 0.7rem; overflow: hidden; position: relative; cursor: pointer; transition: all 0.15s ease;
-    }
-    .day-cell:hover:not(.other-month) { border-color: #3b82f6; background-color: #f8fafc; }
-    .day-cell.selected { border: 2px solid #2563eb !important; background-color: #eff6ff !important; }
-    .day-cell.day-search-match { background-color: #fef9c3 !important; border: 2px solid #f59e0b !important; }
-    .day-cell.day-photo-search-match { background-color: #d1fae5 !important; border: 2px solid #10b981 !important; }
-    .day-cell.other-month { background-color: #f8f9fa; opacity: 0.35; cursor: default; }
-    .day-num-wrap { display: flex; align-items: baseline; gap: 3px; margin-bottom: 3px; flex-wrap: wrap; }
-    .day-num { font-weight: bold; font-size: 0.75rem; color: #333; line-height: 1; }
-    .day-cell.sun .day-num { color: #e03131; } .day-cell.sat .day-num { color: #1971c2; } .day-cell.holiday .day-num { color: #e03131 !important; }
-    .holiday-tag { font-size: 0.58rem; color: #e03131; font-weight: 500; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .day-events { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; }
-    .day-event-item {
-      font-size: 0.65rem; line-height: 1.2; padding: 2px 4px; border-radius: 3px; background-color: #f8f9fa; border-left: 3.5px solid #cbd5e1;
-      word-break: keep-all; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
-    }
-    .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
-    .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
-    .day-event-item.marriage  { border-left-color: #f738f7; background-color: #fdf5fd; }
-    .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
-    .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
-    .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
-    .more-badge { font-size: 0.58rem; color: #495057; background-color: #e9ecef; border-radius: 10px; padding: 1px 4px; text-align: center; font-weight: 600; margin-top: auto; line-height: 1.1; }
+        /* 일력 모달 그리드 */
+        .day-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; width: 100%; }
+        .day-header { text-align: center; font-weight: bold; font-size: 0.75rem; padding: 5px 1px; background-color: #f1f3f5; border-radius: 4px; color: #495057; }
+        .day-header.sun { color: #e03131; }
+        .day-header.sat { color: #1971c2; }
+        .day-cell { min-height: 68px; border: 1px solid #e9ecef; border-radius: 4px; padding: 3px; display: flex; flex-direction: column; background-color: #ffffff; font-size: 0.7rem; overflow: hidden; position: relative; cursor: pointer; transition: all 0.15s ease; }
+        .day-cell:hover:not(.other-month) { border-color: #3b82f6; background-color: #f8fafc; }
+        .day-cell.selected { border: 2px solid #2563eb !important; background-color: #eff6ff !important; }
+        .day-cell.day-search-match { background-color: #fef9c3 !important; border: 2px solid #f59e0b !important; }
+        .day-cell.day-photo-search-match { background-color: #d1fae5 !important; border: 2px solid #10b981 !important; }
+        .day-cell.other-month { background-color: #f8f9fa; opacity: 0.35; cursor: default; }
+        .day-num-wrap { display: flex; align-items: baseline; gap: 3px; margin-bottom: 3px; flex-wrap: wrap; }
+        .day-num { font-weight: bold; font-size: 0.75rem; color: #333; line-height: 1; }
+        .day-cell.sun .day-num { color: #e03131; }
+        .day-cell.sat .day-num { color: #1971c2; }
+        .day-cell.holiday .day-num { color: #e03131 !important; }
+        .holiday-tag { font-size: 0.58rem; color: #e03131; font-weight: 500; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .day-events { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; }
+        .day-event-item { font-size: 0.65rem; line-height: 1.2; padding: 2px 4px; border-radius: 3px; background-color: #f8f9fa; border-left: 3.5px solid #cbd5e1; word-break: keep-all; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+        .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
+        .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
+        .day-event-item.marriage  { border-left-color: #f738f7; background-color: #fdf5fd; }
+        .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
+        .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
+        .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
+        .more-badge { font-size: 0.58rem; color: #495057; background-color: #e9ecef; border-radius: 10px; padding: 1px 4px; text-align: center; font-weight: 600; margin-top: auto; line-height: 1.1; }
 
-    /* 하단 상세 영역 패널 */
-    .day-detail-panel { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
-    .detail-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
-    .detail-date-title { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 6px; }
-    .detail-count-badge { font-size: 0.7rem; background-color: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
-    .detail-list { display: flex; flex-direction: column; gap: 6px; max-height: 230px; overflow-y: auto; padding-right: 2px; }
-    
-    /* 카드 틀 */
-    .detail-item-card {
-      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px;
-      display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; border-left: 4px solid #cbd5e1; transition: all 0.15s ease;
-    }
-    .detail-item-card.important { border-left-color: #ff0033; }
-    .detail-item-card.event     { border-left-color: #0066ff; }
-    .detail-item-card.marriage  { border-left-color: #f738f7; }
-    .detail-item-card.funeral   { border-left-color: #111111; }
-    .detail-item-card.etc       { border-left-color: #00ff00; }
-    .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
-    .detail-item-card.card-search-match { background-color: #fef9c3 !important; border-right: 2px solid #f59e0b; border-top: 1.5px solid #f59e0b; border-bottom: 1.5px solid #f59e0b; }
-    .detail-item-card.card-photo-search-match { background-color: #d1fae5 !important; border-right: 2px solid #10b981; border-top: 1.5px solid #10b981; border-bottom: 1.5px solid #10b981; }
-    
-    mark.search-highlight { background-color: #fde047; color: #0f172a; font-weight: bold; padding: 0 2px; border-radius: 2px; }
-    mark.photo-search-highlight { background-color: #a7f3d0; color: #064e3b; font-weight: bold; padding: 0 2px; border-radius: 2px; }
+        /* 하단 상세 패널 및 카드 */
+        .day-detail-panel { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+        .detail-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+        .detail-date-title { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 6px; }
+        .detail-count-badge { font-size: 0.7rem; background-color: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+        .detail-list { display: flex; flex-direction: column; gap: 6px; max-height: 230px; overflow-y: auto; padding-right: 2px; }
+        .detail-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; border-left: 4px solid #cbd5e1; transition: all 0.15s ease; }
+        .detail-item-card.important { border-left-color: #ff0033; }
+        .detail-item-card.event     { border-left-color: #0066ff; }
+        .detail-item-card.marriage  { border-left-color: #f738f7; }
+        .detail-item-card.funeral   { border-left-color: #111111; }
+        .detail-item-card.etc       { border-left-color: #00ff00; }
+        .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
+        .detail-item-card.card-search-match { background-color: #fef9c3 !important; border-right: 2px solid #f59e0b; border-top: 1.5px solid #f59e0b; border-bottom: 1.5px solid #f59e0b; }
+        .detail-item-card.card-photo-search-match { background-color: #d1fae5 !important; border-right: 2px solid #10b981; border-top: 1.5px solid #10b981; border-bottom: 1.5px solid #10b981; }
+        mark.search-highlight { background-color: #fde047; color: #0f172a; font-weight: bold; padding: 0 2px; border-radius: 2px; }
+        mark.photo-search-highlight { background-color: #a7f3d0; color: #064e3b; font-weight: bold; padding: 0 2px; border-radius: 2px; }
 
-    /* 상세 카드 내용 */
-    .detail-item-top { display: flex; align-items: center; gap: 6px; width: 100%; flex-wrap: wrap; }
-    .category-chip {
-      font-size: 0.65rem; font-weight: bold; padding: 1px 0; width: 36px; text-align: center;
-      border-radius: 4px; color: #ffffff; display: inline-block; line-height: 1.3; flex-shrink: 0;
-    }
-    .category-chip.important { background-color: #ff0033; }
-    .category-chip.event     { background-color: #0066ff; }
-    .category-chip.marriage  { background-color: #f738f7; }
-    .category-chip.funeral   { background-color: #111111; }
-    .category-chip.etc       { background-color: #00b050; }
-    .category-chip.error     { background-color: #ff1744; }
-    .detail-item-title { font-weight: 700; color: #0f172a; font-size: 0.8rem; }
-    .detail-item-place-inline { font-size: 0.75rem; color: #475569; font-weight: 500; display: inline-flex; align-items: center; }
-    .detail-item-note-inline { font-size: 0.73rem; color: #475569; font-weight: normal; display: inline-flex; align-items: center; }
-    
-    /* 📷 사진 열기 버튼 */
-    .photo-view-btn {
-      margin-left: auto; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px; padding: 2px 7px;
-      font-size: 0.68rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: all 0.2s ease; line-height: 1.2;
-    }
-    .photo-view-btn:hover { background: #dbeafe; border-color: #93c5fd; }
-    .photo-view-btn.highlight-photo-btn {
-      background: #10b981; color: #ffffff; border-color: #059669; font-weight: bold;
-    }
-    
-    /* 오류 배지 */
-    .detail-error-badge-common {
-      margin-left: auto; font-size: 0.62rem; font-weight: bold; color: #dc2626; background-color: #fee2e2; border: 1px solid #fecaca;
-      border-radius: 4px; padding: 1px 6px; white-space: nowrap; line-height: 1.2; flex-shrink: 0; min-width: 64px; display: inline-flex; justify-content: center; align-items: center; text-align: center;
-    }
-    .detail-bottom-row { display: flex; align-items: baseline; width: 100%; min-height: 16px; padding-left: 42px; gap: 4px; }
-    .detail-item-attendees { font-size: 0.72rem; color: #334155; line-height: 1.35; word-break: keep-all; }
-    .detail-item-attendees strong { color: #1e293b; font-weight: 600; }
-    .detail-item-attendees.empty-attendees { color: transparent; user-select: none; }
-    .detail-error-val-common { font-size: 0.68rem; font-weight: bold; color: #b91c1c; letter-spacing: 0.3px; white-space: nowrap; display: inline-flex; }
-    .detail-empty-msg { font-size: 0.75rem; color: #94a3b8; text-align: center; padding: 12px 0; }
+        .detail-item-top { display: flex; align-items: center; gap: 6px; width: 100%; flex-wrap: wrap; }
+        .category-chip { font-size: 0.65rem; font-weight: bold; padding: 1px 0; width: 36px; text-align: center; border-radius: 4px; color: #ffffff; display: inline-block; line-height: 1.3; flex-shrink: 0; }
+        .category-chip.important { background-color: #ff0033; }
+        .category-chip.event     { background-color: #0066ff; }
+        .category-chip.marriage  { background-color: #f738f7; }
+        .category-chip.funeral   { background-color: #111111; }
+        .category-chip.etc       { background-color: #00b050; }
+        .category-chip.error     { background-color: #ff1744; }
+        .detail-item-title { font-weight: 700; color: #0f172a; font-size: 0.8rem; }
+        .detail-item-place-inline { font-size: 0.75rem; color: #475569; font-weight: 500; display: inline-flex; align-items: center; }
+        .detail-item-note-inline { font-size: 0.73rem; color: #475569; font-weight: normal; display: inline-flex; align-items: center; }
+        
+        .photo-view-btn { margin-left: auto; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px; padding: 2px 7px; font-size: 0.68rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: all 0.2s ease; line-height: 1.2; }
+        .photo-view-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+        .photo-view-btn.highlight-photo-btn { background: #10b981; color: #ffffff; border-color: #059669; font-weight: bold; }
+        .detail-error-badge-common { margin-left: auto; font-size: 0.62rem; font-weight: bold; color: #dc2626; background-color: #fee2e2; border: 1px solid #fecaca; border-radius: 4px; padding: 1px 6px; white-space: nowrap; line-height: 1.2; flex-shrink: 0; min-width: 64px; display: inline-flex; justify-content: center; align-items: center; text-align: center; }
+        .detail-bottom-row { display: flex; align-items: baseline; width: 100%; min-height: 16px; padding-left: 42px; gap: 4px; }
+        .detail-item-attendees { font-size: 0.72rem; color: #334155; line-height: 1.35; word-break: keep-all; }
+        .detail-item-attendees strong { color: #1e293b; font-weight: 600; }
+        .detail-item-attendees.empty-attendees { color: transparent; user-select: none; }
+        .detail-error-val-common { font-size: 0.68rem; font-weight: bold; color: #b91c1c; letter-spacing: 0.3px; white-space: nowrap; display: inline-flex; }
+        .detail-empty-msg { font-size: 0.75rem; color: #94a3b8; text-align: center; padding: 12px 0; }
 
-    /* 📸 사진 뷰어 모달 */
-    .photo-modal-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.88); z-index: 2000; justify-content: center; align-items: center; padding: 12px;
-    }
-    .photo-modal-content {
-      background: #1e293b; color: #ffffff; width: 100%; max-width: 820px; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); position: relative;
-    }
-    .photo-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #0f172a; }
-    .photo-modal-title { font-size: 0.95rem; font-weight: 600; color: #f8fafc; }
-    .photo-modal-close-btn { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 2px 6px; }
-    .photo-modal-close-btn:hover { color: #ffffff; }
-    .photo-viewer-body { display: flex; align-items: center; justify-content: center; position: relative; background: #000000; min-height: 380px; max-height: 70vh; overflow: hidden; }
-    .photo-viewer-img { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; margin: 0 auto; }
-    .photo-nav-btn {
-      position: absolute; top: 50%; transform: translateY(-50%); background: rgba(30, 41, 59, 0.65); color: #ffffff; border: none; font-size: 1.2rem; width: 38px; height: 38px;
-      border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: background 0.2s ease; z-index: 10;
-    }
-    .photo-nav-btn:hover { background: rgba(15, 23, 42, 0.95); }
-    .photo-nav-prev { left: 12px; } .photo-nav-next { right: 12px; }
-    .photo-modal-footer { padding: 10px 16px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #cbd5e1; }
-    .photo-info-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 75%; }
-    .photo-page-counter { font-weight: 600; color: #94a3b8; font-size: 0.75rem; }
+        /* 사진 뷰어 및 갤러리 모달 */
+        .photo-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.88); z-index: 2000; justify-content: center; align-items: center; padding: 12px; }
+        .photo-modal-content { background: #1e293b; color: #ffffff; width: 100%; max-width: 820px; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); position: relative; }
+        .photo-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #0f172a; }
+        .photo-modal-title { font-size: 0.95rem; font-weight: 600; color: #f8fafc; }
+        .photo-modal-close-btn { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 2px 6px; }
+        .photo-modal-close-btn:hover { color: #ffffff; }
+        .photo-viewer-body { display: flex; align-items: center; justify-content: center; position: relative; background: #000000; min-height: 380px; max-height: 70vh; overflow: hidden; }
+        .photo-viewer-img { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; margin: 0 auto; }
+        .photo-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(30, 41, 59, 0.65); color: #ffffff; border: none; font-size: 1.2rem; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: background 0.2s ease; z-index: 10; }
+        .photo-nav-btn:hover { background: rgba(15, 23, 42, 0.95); }
+        .photo-nav-prev { left: 12px; }
+        .photo-nav-next { right: 12px; }
+        .photo-modal-footer { padding: 10px 16px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #cbd5e1; }
+        .photo-info-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 75%; }
+        .photo-page-counter { font-weight: 600; color: #94a3b8; font-size: 0.75rem; }
 
-    /* 전체 갤러리 모아보기 모달 */
-    .gallery-modal-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); z-index: 1500; justify-content: center; align-items: center; padding: 12px;
-    }
-    .gallery-modal-content {
-      background: #ffffff; width: 100%; max-width: 860px; max-height: 90vh; border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out;
-    }
-    .gallery-modal-header {
-      display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background-color: #065f46; color: #ffffff;
-    }
-    .gallery-modal-header h2 { font-size: 1.05rem; font-weight: 700; margin: 0; }
-    .gallery-modal-body {
-      padding: 16px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 12px;
-    }
-    .gallery-item-card {
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; cursor: pointer;
-      display: flex; flex-direction: column; transition: all 0.2s ease;
-    }
-    .gallery-item-card:hover {
-      transform: translateY(-3px); border-color: #10b981; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-    }
-    .gallery-item-card img {
-      width: 100%; height: 95px; object-fit: cover; background: #e2e8f0;
-    }
-    .gallery-item-info {
-      padding: 6px 8px; display: flex; flex-direction: column; gap: 2px;
-    }
-    .gallery-item-date {
-      font-size: 0.68rem; font-weight: 700; color: #047857; line-height: 1.2;
-    }
-    .gallery-item-title {
-      font-size: 0.72rem; font-weight: 600; color: #1e293b; line-height: 1.3;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .gallery-item-place {
-      font-size: 0.65rem; color: #64748b; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+        .gallery-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); z-index: 1500; justify-content: center; align-items: center; padding: 12px; }
+        .gallery-modal-content { background: #ffffff; width: 100%; max-width: 860px; max-height: 90vh; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
+        .gallery-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background-color: #065f46; color: #ffffff; }
+        .gallery-modal-header h2 { font-size: 1.05rem; font-weight: 700; margin: 0; }
+        .gallery-modal-body { padding: 16px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 12px; }
+        .gallery-item-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; transition: all 0.2s ease; }
+        .gallery-item-card:hover { transform: translateY(-3px); border-color: #10b981; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .gallery-item-card img { width: 100%; height: 95px; object-fit: cover; background: #e2e8f0; }
+        .gallery-item-info { padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; }
+        .gallery-item-date { font-size: 0.68rem; font-weight: 700; color: #047857; line-height: 1.2; }
+        .gallery-item-title { font-size: 0.72rem; font-weight: 600; color: #1e293b; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-item-place { font-size: 0.65rem; color: #64748b; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    @media (max-width: 768px) {
-      .search-container { max-width: 100%; }
-      .modal-content { max-width: 100%; border-radius: 6px; } .modal-body { padding: 6px; gap: 8px; }
-      .day-calendar-grid { gap: 2px; } .day-cell { min-height: 58px; padding: 2px; } .day-num { font-size: 0.7rem; }
-      .holiday-tag { font-size: 0.52rem; } .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
-      .more-badge { font-size: 0.52rem; padding: 1px 2px; } .day-detail-panel { padding: 8px 10px; } .detail-list { max-height: 190px; }
-      .detail-date-title { font-size: 0.78rem; } .detail-item-card { padding: 5px 8px; } .category-chip { width: 32px; font-size: 0.6rem; }
-      .detail-bottom-row { padding-left: 38px; } .detail-item-title { font-size: 0.75rem; } .detail-item-place-inline { font-size: 0.72rem; }
-      .detail-item-note-inline { font-size: 0.7rem; } .detail-item-attendees { font-size: 0.68rem; }
-      .detail-error-badge-common { font-size: 0.55rem; padding: 1px 4px; min-width: 54px; } .detail-error-val-common { font-size: 0.58rem; }
-      .photo-view-btn { font-size: 0.62rem; padding: 1px 5px; } .photo-viewer-body { min-height: 260px; max-height: 55vh; }
-      .photo-viewer-img { max-height: 55vh; } .photo-nav-btn { width: 32px; height: 32px; font-size: 1rem; }
-      .gallery-modal-body { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 10px; }
-      .gallery-item-card img { height: 80px; }
-    }
-  </style>
+        /* 신규 일정 추가 모달 스타일 (v10.0 추가) */
+        .add-event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2500; justify-content: center; align-items: center; padding: 12px; }
+        .add-event-modal-content { background: #ffffff; width: 100%; max-width: 480px; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; animation: modalFadeIn 0.2s ease-out; }
+        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #2563eb; color: #ffffff; }
+        .add-event-header h3 { font-size: 1rem; margin: 0; font-weight: 600; }
+        .add-event-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .form-field { display: flex; flex-direction: column; gap: 4px; }
+        .form-field label { font-size: 0.78rem; font-weight: 700; color: #475569; }
+        .form-field input[type="text"] { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none; }
+        .form-field input[type="text"]:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        .info-row { display: flex; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; }
+        .info-row span { font-weight: 600; color: #0f172a; }
+        
+        /* 라디오 버튼 그룹 스타일 (v10.0 추가) */
+        .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+        .radio-label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; transition: all 0.15s ease; }
+        .radio-label:hover { background: #f1f5f9; }
+        .radio-label input[type="radio"] { accent-color: #2563eb; }
+        
+        .add-event-footer { padding: 10px 16px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #e2e8f0; }
+        .btn-cancel { padding: 8px 14px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .btn-cancel:hover { background: #f1f5f9; }
+        .btn-submit { padding: 8px 16px; background: #2563eb; border: none; color: #ffffff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .btn-submit:hover { background: #1d4ed8; }
+
+        @media (max-width: 768px) {
+            .search-container { max-width: 100%; }
+            .modal-content { max-width: 100%; border-radius: 6px; }
+            .modal-body { padding: 6px; gap: 8px; }
+            .day-calendar-grid { gap: 2px; }
+            .day-cell { min-height: 58px; padding: 2px; }
+            .day-num { font-size: 0.7rem; }
+            .holiday-tag { font-size: 0.52rem; }
+            .day-event-item { font-size: 0.58rem; padding: 1px 2px; border-left-width: 2.5px; line-height: 1.15; }
+            .more-badge { font-size: 0.52rem; padding: 1px 2px; }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="home-btn-container">
-      <a href="../index.html" class="home-btn">&larr; 메인으로 돌아가기</a>
-    </div>
 
-    <header>
-      <h1>
-        <span class="title-wrap">촛불회 50년사 캘린더</span>
-        <span class="title-break"><span class="title-wrap">(1975 - 2026)</span> <span class="version">v9.3</span></span>
-      </h1>
-    </header>
-
-    <!-- 검색창 그룹 (1. 행사 검색 / 2. 사진 검색) -->
-    <div class="search-wrapper-group">
-      <!-- 1. 행사 검색 바 -->
-      <div class="search-container">
-        <div class="search-input-wrap">
-          <input type="text" id="searchInput" class="search-input" placeholder="행사 검색 (참석자, 행사명, 장소, 비고...)" oninput="handleSearchInput()">
-          <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">&times;</button>
+    <div class="container">
+        <div class="home-btn-container">
+            <a href="../index.html" class="home-btn">&larr; 메인으로 돌아가기</a>
         </div>
-        <span id="searchBadge" class="search-badge"></span>
-      </div>
+        <header>
+            <h1>
+                <span class="title-wrap">촛불회 50년사 캘린더</span>
+                <span class="title-break">
+                    <span class="title-wrap">(1975 - 2026)</span>
+                    <span class="version">v10.0</span>
+                </span>
+            </h1>
+        </header>
 
-      <!-- 2. 사진 검색 바 -->
-      <div class="search-container">
-        <div class="search-input-wrap">
-          <input type="text" id="photoSearchInput" class="search-input photo-search-input" placeholder="사진 검색 (참석자, 행사명, 장소, 비고...)" oninput="handlePhotoSearchInput()">
-          <button type="button" id="photoSearchClearBtn" class="search-clear-btn" onclick="clearPhotoSearch()">&times;</button>
-        </div>
-        <!-- 💡 v9.3: '사진 O건 발견'으로 간결하게 표기 -->
-        <span id="photoSearchBadge" class="search-badge photo-search-badge"></span>
-      </div>
-    </div>
-
-    <!-- 미니 썸네일 스트립 바 영역 -->
-    <div id="photoStripContainer" class="photo-strip-container">
-      <div class="photo-strip-header">
-        <span id="photoStripTitle">📷 검색된 사진 미리보기</span>
-        <button type="button" class="photo-gallery-open-btn" onclick="openGalleryModal()">전체 갤러리 모아보기 🖼️</button>
-      </div>
-      <div id="photoStripScroll" class="photo-strip-scroll"></div>
-    </div>
-
-    <!-- 입력 데이터 오류 안내 영역 -->
-    <div id="error-container" class="error-box" style="display: none;">
-      <div class="error-header">
-        <h3>입력 데이터 오류 안내</h3>
-        <button type="button" id="rule-toggle-btn" class="rule-toggle-btn" onclick="toggleRuleBox()">데이터 규칙 ▼</button>
-      </div>
-      <ul id="error-list" class="error-list"></ul>
-      <div id="rule-box-inner" class="rule-box-inner">
-        <h4>💡 올바른 데이터 입력 규칙 안내</h4>
-        <ul>
-          <li><strong>이벤트DB 시트:</strong> A(일자), B(순번), C(분류), D(행사명), E(장소), F(비고), G(참석자)</li>
-          <li><strong>사진DB 시트:</strong> A(파일명), B(File ID), C(미리보기), D(날짜), E(순번), F(행사명), G(장소), H(비고), I(참석자)</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 표식 의미 안내 바 (Legend) -->
-    <div class="legend-bar">
-      <div class="legend-item"><span class="legend-important">★</span> 중요</div>
-      <div class="legend-item"><span class="legend-event">●</span> 행사</div>
-      <div class="legend-item"><span class="legend-marriage">●</span> 결혼</div>
-      <div class="legend-item"><span class="legend-funeral">●</span> 부고</div>
-      <div class="legend-item"><span class="legend-etc">●</span> 기타</div>
-      <div class="legend-item"><span class="legend-error">X 오류</span></div>
-    </div>
-
-    <!-- 월력 본문 테이블 영역 -->
-    <div class="table-container">
-      <table id="calendar-table">
-        <thead>
-          <tr>
-            <th>년도</th>
-            <th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th>
-            <th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th>
-          </tr>
-        </thead>
-        <tbody id="calendar-body">
-          <tr><td colspan="13" class="loading">데이터를 불러오는 중입니다...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- 전체 갤러리 모아보기 모달 -->
-  <div id="galleryModal" class="gallery-modal-overlay" onclick="handleGalleryModalOverlayClick(event)">
-    <div class="gallery-modal-content">
-      <div class="gallery-modal-header">
-        <h2 id="galleryModalTitle">🖼️ 사진 모아보기 갤러리</h2>
-        <button type="button" class="modal-close-btn" onclick="requestCloseGalleryModal()">&times;</button>
-      </div>
-      <div id="galleryModalBody" class="gallery-modal-body"></div>
-    </div>
-  </div>
-
-  <!-- 일력(월간 캘린더) 모달 팝업 구조 -->
-  <div id="dayModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="modalTitle">0000년 0월 일력</h2>
-        <button type="button" class="modal-close-btn" onclick="requestCloseDayModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="day-calendar-grid">
-          <div class="day-header sun">일</div>
-          <div class="day-header">월</div>
-          <div class="day-header">화</div>
-          <div class="day-header">수</div>
-          <div class="day-header">목</div>
-          <div class="day-header">금</div>
-          <div class="day-header sat">토</div>
-        </div>
-        <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 4px;"></div>
-
-        <!-- 하단 상세 보기 영역 패널 -->
-        <div id="dayDetailPanel" class="day-detail-panel">
-          <div class="detail-header">
-            <div id="detailDateTitle" class="detail-date-title">📅 날짜를 클릭하면 상세 일정이 표시됩니다.</div>
-            <span id="detailCountBadge" class="detail-count-badge" style="display: none;">0건</span>
-          </div>
-          <div id="detailList" class="detail-list">
-            <div class="detail-empty-msg">원하는 날짜 셀을 선택하여 상세 내용을 확인하세요.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 📸 대형 사진 뷰어 모달 -->
-  <div id="photoModal" class="photo-modal-overlay" onclick="handlePhotoModalOverlayClick(event)">
-    <div class="photo-modal-content">
-      <div class="photo-modal-header">
-        <span id="photoModalTitle" class="photo-modal-title">이벤트 사진 보기</span>
-        <button type="button" class="photo-modal-close-btn" onclick="requestClosePhotoModal()">&times;</button>
-      </div>
-      <div class="photo-viewer-body">
-        <button type="button" id="photoPrevBtn" class="photo-nav-btn photo-nav-prev" onclick="navigatePhoto(-1)">&lsaquo;</button>
-        <img id="photoViewerImg" class="photo-viewer-img" src="" alt="이벤트 사진">
-        <button type="button" id="photoNextBtn" class="photo-nav-btn photo-nav-next" onclick="navigatePhoto(1)">&rsaquo;</button>
-      </div>
-      <div class="photo-modal-footer">
-        <span id="photoInfoText" class="photo-info-text"></span>
-        <span id="photoPageCounter" class="photo-page-counter">1 / 1</span>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=1230555011&single=true&output=csv';
-    const photoDbCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDT3n0XaTAnxMjvbFKg8GRdMytfgsNWltOD67BiBPg02PYGh5ndC1vmb2jP6nvMHzy5cGWI0wiy_e4/pub?gid=0&single=true&output=csv';
-
-    const CATEGORY_CONFIG = {
-      '중요': { css: 'important', symbol: '★', label: '중요' },
-      '행사': { css: 'event',     symbol: '●', label: '행사' },
-      '결혼': { css: 'marriage',  symbol: '●', label: '결혼' },
-      '부고': { css: 'funeral',   symbol: '●', label: '부고' },
-      '기타': { css: 'etc',       symbol: '●', label: '기타' },
-      '오류': { css: 'error',     symbol: 'X', label: '오류 X' }
-    };
-
-    function getCategoryProps(item) {
-      if (!item.isValid) return CATEGORY_CONFIG['오류'];
-      return CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG['기타'];
-    }
-
-    let globalEventMap = {};
-    let globalPhotoMap = {}; 
-    let globalPhotoDateFallbackMap = {}; 
-    let globalPhotoList = [];
-    let currentMatchedPhotoList = [];
-    
-    let currentSearchTerm = '';
-    let currentPhotoSearchTerm = '';
-
-    let currentPhotoList = [];
-    let currentPhotoIndex = 0;
-
-    // 모바일 뒤로가기(<) 히스토리 연동
-    window.addEventListener('popstate', function(e) {
-      const photoModal = document.getElementById('photoModal');
-      const galleryModal = document.getElementById('galleryModal');
-      const dayModal = document.getElementById('dayModal');
-
-      if (photoModal && photoModal.style.display === 'flex') {
-        photoModal.style.display = 'none';
-        document.getElementById('photoViewerImg').src = '';
-        return;
-      }
-      if (galleryModal && galleryModal.style.display === 'flex') {
-        galleryModal.style.display = 'none';
-        return;
-      }
-      if (dayModal && dayModal.style.display === 'flex') {
-        dayModal.style.display = 'none';
-        return;
-      }
-    });
-
-    function requestClosePhotoModal() {
-      if (window.location.hash.includes('photoView')) history.back();
-      else closePhotoModal();
-    }
-    function requestCloseGalleryModal() {
-      if (window.location.hash.includes('galleryView')) history.back();
-      else closeGalleryModal();
-    }
-    function requestCloseDayModal() {
-      if (window.location.hash.includes('dayView')) history.back();
-      else closeDayModal();
-    }
-
-    function closePhotoModal() {
-      document.getElementById('photoModal').style.display = 'none';
-      document.getElementById('photoViewerImg').src = '';
-    }
-    function closeGalleryModal() {
-      document.getElementById('galleryModal').style.display = 'none';
-    }
-    function closeDayModal() {
-      document.getElementById('dayModal').style.display = 'none';
-    }
-
-    function handleModalOverlayClick(event) {
-      if (event.target.id === 'dayModal') requestCloseDayModal();
-    }
-    function handlePhotoModalOverlayClick(event) {
-      if (event.target.id === 'photoModal') requestClosePhotoModal();
-    }
-    function handleGalleryModalOverlayClick(event) {
-      if (event.target.id === 'galleryModal') requestCloseGalleryModal();
-    }
-
-    function openGalleryModal() {
-      if (!currentMatchedPhotoList || currentMatchedPhotoList.length === 0) return;
-      const modal = document.getElementById('galleryModal');
-      const titleElem = document.getElementById('galleryModalTitle');
-      const bodyElem = document.getElementById('galleryModalBody');
-
-      titleElem.textContent = `🖼️ "${currentPhotoSearchTerm}" 검색 사진 갤러리 (${currentMatchedPhotoList.length}장)`;
-      
-      let itemsHtml = '';
-      currentMatchedPhotoList.forEach((p, idx) => {
-        const dStr = p.dateStr ? `${p.dateStr.substring(0, 4)}.${p.dateStr.substring(4, 6)}.${p.dateStr.substring(6, 8)}` : '';
-        const thumbUrl = `https://drive.google.com/thumbnail?id=${p.id}&sz=w320`;
-        itemsHtml += `
-          <div class="gallery-item-card" onclick="openPhotoViewerFromGallery(${idx})">
-            <img src="${thumbUrl}" alt="사진" loading="lazy">
-            <div class="gallery-item-info">
-              <span class="gallery-item-date">${dStr}</span>
-              <span class="gallery-item-title">${p.title || '(행사명 없음)'}</span>
-              <span class="gallery-item-place">${p.place ? '📍 ' + p.place : ''}</span>
+        <!-- 검색창 그룹 -->
+        <div class="search-wrapper-group">
+            <div class="search-container">
+                <div class="search-input-wrap">
+                    <input type="text" id="searchInput" class="search-input" placeholder="행사 검색 (참석자, 행사명, 장소, 비고...)" oninput="handleSearchInput()">
+                    <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()">&times;</button>
+                </div>
+                <span id="searchBadge" class="search-badge"></span>
             </div>
-          </div>
-        `;
-      });
 
-      bodyElem.innerHTML = itemsHtml;
-      history.pushState({ modal: 'gallery' }, '', '#galleryView');
-      modal.style.display = 'flex';
-    }
+            <div class="search-container">
+                <div class="search-input-wrap">
+                    <input type="text" id="photoSearchInput" class="search-input photo-search-input" placeholder="사진 검색 (참석자, 행사명, 장소, 비고...)" oninput="handlePhotoSearchInput()">
+                    <button type="button" id="photoSearchClearBtn" class="search-clear-btn" onclick="clearPhotoSearch()">&times;</button>
+                </div>
+                <span id="photoSearchBadge" class="search-badge photo-search-badge"></span>
+            </div>
+        </div>
 
-    function openPhotoViewerFromGallery(index) {
-      if (!currentMatchedPhotoList || currentMatchedPhotoList.length === 0) return;
-      currentPhotoList = currentMatchedPhotoList;
-      currentPhotoIndex = index;
-      document.getElementById('photoModalTitle').textContent = `📷 ${currentMatchedPhotoList[index].title || '사진 보기'}`;
-      updatePhotoViewerDisplay();
-      history.pushState({ modal: 'photo' }, '', '#photoView');
-      document.getElementById('photoModal').style.display = 'flex';
-    }
+        <!-- 미니 썸네일 스트립 바 -->
+        <div id="photoStripContainer" class="photo-strip-container">
+            <div class="photo-strip-header">
+                <span id="photoStripTitle">📷 검색된 사진 미리보기</span>
+                <button type="button" class="photo-gallery-open-btn" onclick="openGalleryModal()">전체 갤러리 모아보기 🖼️</button>
+            </div>
+            <div id="photoStripScroll" class="photo-strip-scroll"></div>
+        </div>
 
-    // 공휴일 및 음력-양력 변환
-    const solarHolidays = {
-      '1-1': '신정', '3-1': '삼일절', '5-5': '어린이날', '6-6': '현충일',
-      '8-15': '광복절', '10-3': '개천절', '10-9': '한글날', '12-25': '성탄절'
-    };
-    const lunarInfo = [
-      0x095b0, 0x04ba0, 0x0a5b4, 0x052b0, 0x0a930, 0x05495, 0x052d0, 0x02ac0, 0x0cd15, 0x06aa0,
-      0x0ad50, 0x02d52, 0x04b60, 0x0a577, 0x0a4e0, 0x0d260, 0x0e935, 0x0d520, 0x0daa0, 0x06b53,
-      0x056d0, 0x04ae0, 0x0a4e4, 0x0a4d0, 0x0d150, 0x0f252, 0x0d520, 0x0dd45, 0x0b5a0, 0x056d0,
-      0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, 0x14b63, 0x09370,
-      0x049f8, 0x04970, 0x064b0, 0x068a6, 0x0ea50, 0x06aa0, 0x0a6c4, 0x0aae0, 0x092e0, 0x0d2e3,
-      0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4, 0x052d0, 0x0a9b8,
-      0x0a950, 0x0b4a0, 0x0b6a6, 0x0ad50, 0x055a0, 0x0aba4, 0x0a5b0, 0x052b0, 0x0b273, 0x06930,
-      0x07337, 0x06aa0, 0x0ad50, 0x14b55, 0x04b60, 0x0a570
-    ];
+        <!-- 오류 안내 영역 -->
+        <div id="error-container" class="error-box" style="display: none;">
+            <div class="error-header">
+                <h3>입력 데이터 오류 안내</h3>
+                <button type="button" id="rule-toggle-btn" class="rule-toggle-btn" onclick="toggleRuleBox()">데이터 규칙 ▼</button>
+            </div>
+            <ul id="error-list" class="error-list"></ul>
+            <div id="rule-box-inner" class="rule-box-inner">
+                <h4>💡 올바른 데이터 입력 규칙 안내</h4>
+                <ul>
+                    <li><strong>이벤트DB 시트:</strong> A(일자), B(순번), C(분류), D(행사명), E(장소), F(비고), G(참석자)</li>
+                    <li><strong>사진DB 시트:</strong> A(파일명), B(File ID), C(미리보기), D(날짜), E(순번), F(행사명), G(장소), H(비고), I(참석자)</li>
+                </ul>
+            </div>
+        </div>
 
-    function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
-      if (lunarYear < 1975 || lunarYear > 2050) return null;
-      let totalDays = 0;
-      for (let y = 1975; y < lunarYear; y++) {
-        const idx = y - 1975;
-        const leap = lunarInfo[idx] & 0xf;
-        for (let m = 1; m <= 12; m++) { totalDays += (lunarInfo[idx] & (0x10000 >> m)) ? 30 : 29; }
-        if (leap > 0) { totalDays += (lunarInfo[idx] & 0x10000) ? 30 : 29; }
-      }
-      const curIdx = lunarYear - 1975;
-      const curLeap = lunarInfo[curIdx] & 0xf;
-      for (let m = 1; m < lunarMonth; m++) {
-        totalDays += (lunarInfo[curIdx] & (0x10000 >> m)) ? 30 : 29;
-        if (curLeap > 0 && curLeap === m) { totalDays += (lunarInfo[curIdx] & (0x10000) ? 30 : 29); }
-      }
-      totalDays += (lunarDay - 1);
-      const baseDate = new Date(1975, 1, 11);
-      return new Date(baseDate.getTime() + totalDays * 86400000);
-    }
+        <!-- 범례 바 -->
+        <div class="legend-bar">
+            <div class="legend-item"><span class="legend-important">★</span> 중요</div>
+            <div class="legend-item"><span class="legend-event">●</span> 행사</div>
+            <div class="legend-item"><span class="legend-marriage">●</span> 결혼</div>
+            <div class="legend-item"><span class="legend-funeral">●</span> 부고</div>
+            <div class="legend-item"><span class="legend-etc">●</span> 기타</div>
+            <div class="legend-item"><span class="legend-error">X 오류</span></div>
+        </div>
 
-    function getLunarHolidaysForYear(year) {
-      const holidayMap = {};
-      if (year < 1975 || year > 2050) return holidayMap;
-      const seollal = lunarToSolar(year, 1, 1);
-      if (seollal) {
-        const prev = new Date(seollal.getTime() - 86400000);
-        const next = new Date(seollal.getTime() + 86400000);
-        holidayMap[`${prev.getFullYear()}-${prev.getMonth() + 1}-${prev.getDate()}`] = '설 전날';
-        holidayMap[`${seollal.getFullYear()}-${seollal.getMonth() + 1}-${seollal.getDate()}`] = '설날';
-        holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '설 다음날';
-      }
-      const buddha = lunarToSolar(year, 4, 8);
-      if (buddha) { holidayMap[`${buddha.getFullYear()}-${buddha.getMonth() + 1}-${buddha.getDate()}`] = '부처님오신날'; }
-      const chuseok = lunarToSolar(year, 8, 15);
-      if (chuseok) {
-        const prev = new Date(chuseok.getTime() - 86400000);
-        const next = new Date(chuseok.getTime() + 86400000);
-        holidayMap[`${prev.getFullYear()}-${prev.getMonth() + 1}-${prev.getDate()}`] = '추석 전날';
-        holidayMap[`${chuseok.getFullYear()}-${chuseok.getMonth() + 1}-${chuseok.getDate()}`] = '추석';
-        holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '추석 다음날';
-      }
-      return holidayMap;
-    }
+        <!-- 캘린더 본문 테이블 -->
+        <div class="table-container">
+            <table id="calendar-table">
+                <thead>
+                    <tr>
+                        <th>년도</th>
+                        <th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th>
+                        <th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th>
+                    </tr>
+                </thead>
+                <tbody id="calendar-body">
+                    <tr><td colspan="13" class="loading">데이터를 불러오는 중입니다...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    function toggleRuleBox() {
-      const ruleBox = document.getElementById('rule-box-inner');
-      const toggleBtn = document.getElementById('rule-toggle-btn');
-      if (ruleBox.style.display === 'none' || ruleBox.style.display === '') {
-        ruleBox.style.display = 'block'; toggleBtn.textContent = '데이터 규칙 ▲';
-      } else {
-        ruleBox.style.display = 'none'; toggleBtn.textContent = '데이터 규칙 ▼';
-      }
-    }
+    <!-- 전체 갤러리 모아보기 모달 -->
+    <div id="galleryModal" class="gallery-modal-overlay" onclick="handleGalleryModalOverlayClick(event)">
+        <div class="gallery-modal-content">
+            <div class="gallery-modal-header">
+                <h2 id="galleryModalTitle">🖼️ 사진 모아보기 갤러리</h2>
+                <button type="button" class="modal-close-btn" onclick="requestCloseGalleryModal()">&times;</button>
+            </div>
+            <div id="galleryModalBody" class="gallery-modal-body"></div>
+        </div>
+    </div>
 
-    function openPhotoViewer(photoList, eventTitle) {
-      if (!photoList || photoList.length === 0) return;
-      currentPhotoList = photoList; currentPhotoIndex = 0;
-      document.getElementById('photoModalTitle').textContent = `📷 ${eventTitle || '사진 보기'}`;
-      updatePhotoViewerDisplay();
-      history.pushState({ modal: 'photo' }, '', '#photoView');
-      document.getElementById('photoModal').style.display = 'flex';
-    }
+    <!-- 일력(월간 캘린더) 모달 팝업 -->
+    <div id="dayModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">0000년 0월 일력</h2>
+                <button type="button" class="modal-close-btn" onclick="requestCloseDayModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="day-calendar-grid">
+                    <div class="day-header sun">일</div>
+                    <div class="day-header">월</div>
+                    <div class="day-header">화</div>
+                    <div class="day-header">수</div>
+                    <div class="day-header">목</div>
+                    <div class="day-header">금</div>
+                    <div class="day-header sat">토</div>
+                </div>
+                <div id="dayGridBody" class="day-calendar-grid" style="margin-top: 4px;"></div>
 
-    function navigatePhoto(direction) {
-      if (currentPhotoList.length <= 1) return;
-      currentPhotoIndex = (currentPhotoIndex + direction + currentPhotoList.length) % currentPhotoList.length;
-      updatePhotoViewerDisplay();
-    }
+                <!-- 하단 상세 패널 -->
+                <div id="dayDetailPanel" class="day-detail-panel">
+                    <div class="detail-header">
+                        <div id="detailDateTitle" class="detail-date-title">📅 날짜를 클릭하면 상세 일정이 표시됩니다. (우클릭 시 일정 추가)</div>
+                        <span id="detailCountBadge" class="detail-count-badge" style="display: none;">0건</span>
+                    </div>
+                    <div id="detailList" class="detail-list">
+                        <div class="detail-empty-msg">원하는 날짜 셀을 선택하여 상세 내용을 확인하세요. (우클릭으로 새 일정 등록 가능)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function updatePhotoViewerDisplay() {
-      const item = currentPhotoList[currentPhotoIndex];
-      const imgElem = document.getElementById('photoViewerImg');
-      const infoElem = document.getElementById('photoInfoText');
-      const counterElem = document.getElementById('photoPageCounter');
-      const prevBtn = document.getElementById('photoPrevBtn');
-      const nextBtn = document.getElementById('photoNextBtn');
+    <!-- ➕ 신규 일정 입력 모달 (v10.0 신규 도입) -->
+    <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
+        <div class="add-event-modal-content">
+            <div class="add-event-header">
+                <h3 id="addEventModalTitle">새 일정 추가</h3>
+                <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
+            </div>
+            <div class="add-event-body">
+                <div class="info-row">
+                    <div>날짜: <span id="lblTargetDate">-</span></div>
+                    <div>자동 순번: <span id="lblTargetSeq">-</span></div>
+                </div>
+                
+                <div class="form-field">
+                    <label>분류 선택</label>
+                    <div class="radio-group">
+                        <label class="radio-label"><input type="radio" name="newCategory" value="중요"> 중요</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="행사" checked> 행사</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="결혼"> 결혼</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="부고"> 부고</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="기타"> 기타</label>
+                    </div>
+                </div>
 
-      imgElem.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w1600`;
-      
-      let infoParts = [];
-      if (item.title) infoParts.push(`[${item.title}]`);
-      if (item.place) infoParts.push(`(${item.place})`);
-      if (item.note) infoParts.push(item.note);
-      if (item.attendees) infoParts.push(`👥 ${item.attendees}`);
-      if (infoParts.length === 0) infoParts.push(item.name);
+                <div class="form-field">
+                    <label for="inputNewTitle">행사명</label>
+                    <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회">
+                </div>
 
-      infoElem.textContent = infoParts.join(' ');
-      counterElem.textContent = `${currentPhotoIndex + 1} / ${currentPhotoList.length}`;
+                <div class="form-field">
+                    <label for="inputNewPlace">장소</label>
+                    <input type="text" id="inputNewPlace" placeholder="예: 서울 회의실">
+                </div>
 
-      if (currentPhotoList.length <= 1) {
-        prevBtn.style.display = 'none'; nextBtn.style.display = 'none';
-      } else {
-        prevBtn.style.display = 'flex'; nextBtn.style.display = 'flex';
-      }
-    }
+                <div class="form-field">
+                    <label for="inputNewNote">비고</label>
+                    <input type="text" id="inputNewNote" placeholder="예: 50주년 기념">
+                </div>
 
-    document.addEventListener('keydown', (e) => {
-      const photoModal = document.getElementById('photoModal');
-      const galleryModal = document.getElementById('galleryModal');
-      if (photoModal && photoModal.style.display === 'flex') {
-        if (e.key === 'Escape') requestClosePhotoModal();
-        if (e.key === 'ArrowLeft') navigatePhoto(-1);
-        if (e.key === 'ArrowRight') navigatePhoto(1);
-      } else if (galleryModal && galleryModal.style.display === 'flex') {
-        if (e.key === 'Escape') requestCloseGalleryModal();
-      } else if (e.key === 'Escape') {
-        requestCloseDayModal();
-      }
-    });
+                <div class="form-field">
+                    <label for="inputNewAttendees">참석자 (쉼표 구분)</label>
+                    <input type="text" id="inputNewAttendees" placeholder="예: 홍길동, 김철수, 이영희">
+                </div>
+            </div>
+            <div class="add-event-footer">
+                <button type="button" class="btn-cancel" onclick="closeAddEventModal()">취소</button>
+                <button type="button" class="btn-submit" onclick="submitNewEventForm()">등록 데이터 확인</button>
+            </div>
+        </div>
+    </div>
 
-    const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+    <!-- 대형 사진 뷰어 모달 -->
+    <div id="photoModal" class="photo-modal-overlay" onclick="handlePhotoModalOverlayClick(event)">
+        <div class="photo-modal-content">
+            <div class="photo-modal-header">
+                <span id="photoModalTitle" class="photo-modal-title">이벤트 사진 보기</span>
+                <button type="button" class="photo-modal-close-btn" onclick="requestClosePhotoModal()">&times;</button>
+            </div>
+            <div class="photo-viewer-body">
+                <button type="button" id="photoPrevBtn" class="photo-nav-btn photo-nav-prev" onclick="navigatePhoto(-1)">&lsaquo;</button>
+                <img id="photoViewerImg" class="photo-viewer-img" src="" alt="이벤트 사진">
+                <button type="button" id="photoNextBtn" class="photo-nav-btn photo-nav-next" onclick="navigatePhoto(1)">&rsaquo;</button>
+            </div>
+            <div class="photo-modal-footer">
+                <span id="photoInfoText" class="photo-info-text"></span>
+                <span id="photoPageCounter" class="photo-page-counter">1 / 1</span>
+            </div>
+        </div>
+    </div>
 
-    function highlightSearchText(text, keyword, isPhoto = false) {
-      if (!text) return '';
-      if (!keyword) return text;
-      const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      const className = isPhoto ? 'photo-search-highlight' : 'search-highlight';
-      return text.replace(regex, `<mark class="${className}">$1</mark>`);
-    }
-
-    function getPhotosForEvent(evt, totalEventsOnDay) {
-      const targetSeq = evt.seq || '1';
-      const exactKey = `${evt.dateStr}_${targetSeq}`;
-      if (globalPhotoMap[exactKey] && globalPhotoMap[exactKey].length > 0) return globalPhotoMap[exactKey];
-      if (totalEventsOnDay <= 1) {
-        const fallback = globalPhotoDateFallbackMap[evt.dateStr] || [];
-        if (fallback.length > 0) return fallback;
-      }
-      return [];
-    }
-
-    function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
-      document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
-      const selectedCell = document.getElementById(`day-cell-${day}`);
-      if (selectedCell) selectedCell.classList.add('selected');
-
-      const titleElem = document.getElementById('detailDateTitle');
-      const badgeElem = document.getElementById('detailCountBadge');
-      const listElem = document.getElementById('detailList');
-
-      const holidayHtml = holidayName ? ` <span class="holiday-tag" style="font-size:0.75rem;">(${holidayName})</span>` : '';
-      titleElem.innerHTML = `📅 ${year}년 ${month}월 ${day}일 (${dayNames[dayOfWeekIndex]})${holidayHtml}`;
-      badgeElem.style.display = 'inline-block';
-      badgeElem.textContent = `${events.length}건`;
-
-      if (!events || events.length === 0) {
-        listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다.</div>`; return;
-      }
-
-      let cardsHtml = '';
-      events.forEach((evt, idx) => {
-        const catProps = getCategoryProps(evt);
-        let cardClass = catProps.css;
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpF0z0iOR_1wk1CnNvMG2yuBoyyx_kLYI1HNiDVxNeJQIBfXoEYmZv3PgYr-xZyUvCBgOudPSwsXYC/pub?gid=1230555011&single=true&output=csv';
+        const photoDbCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDT3n0XaTAnxMjvbFKg8GRdMytfgsNWltOD67BiBPg02PYGh5ndC1vmb2jP6nvMHzy5cGWI0wiy_e4/pub?gid=0&single=true&output=csv';
         
-        if (currentSearchTerm) {
-          const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
-          if (checkText.includes(currentSearchTerm.toLowerCase())) {
-            cardClass += ' card-search-match';
-          }
-        }
-
-        const matchedPhotos = getPhotosForEvent(evt, events.length);
-        let hasPhotoMatch = false;
-
-        if (currentPhotoSearchTerm && matchedPhotos.length > 0) {
-          const qP = currentPhotoSearchTerm.toLowerCase();
-          hasPhotoMatch = matchedPhotos.some(p => {
-            const pText = `${p.title || ''} ${p.place || ''} ${p.note || ''} ${p.attendees || ''} ${p.name || ''}`.toLowerCase();
-            return pText.includes(qP);
-          });
-          if (hasPhotoMatch) {
-            cardClass += ' card-photo-search-match';
-          }
-        }
-
-        const activeKeyword = currentSearchTerm || (hasPhotoMatch ? currentPhotoSearchTerm : '');
-        const isPhotoSearchMode = !!(!currentSearchTerm && currentPhotoSearchTerm && hasPhotoMatch);
-
-        const rawTitle = evt.title || '(제목 없음)';
-        const displayTitle = highlightSearchText(rawTitle, activeKeyword, isPhotoSearchMode);
-        const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, activeKeyword, isPhotoSearchMode)})</span>` : '';
-        const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, activeKeyword, isPhotoSearchMode)}]</span>` : '';
-
-        let sortedAttendeesStr = '';
-        if (evt.attendees) {
-          const names = evt.attendees.split(',').map(n => n.trim()).filter(n => n.length > 0);
-          names.sort((a, b) => a.localeCompare(b, 'ko'));
-          sortedAttendeesStr = names.join(', ');
-        }
-        const attendeesHtml = sortedAttendeesStr 
-          ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, activeKeyword, isPhotoSearchMode)}</div>`
-          : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
-
-        let photoBtnHtml = '';
-        if (matchedPhotos.length > 0) {
-          window[`tempPhotos_${evt.dateStr}_${evt.seq}_${idx}`] = matchedPhotos;
-          const safeTitle = rawTitle.replace(/'/g, "\\'");
-          const btnExtraClass = hasPhotoMatch ? 'highlight-photo-btn' : '';
-          photoBtnHtml = `<button type="button" class="photo-view-btn ${btnExtraClass}" onclick="openPhotoViewer(window['tempPhotos_${evt.dateStr}_${evt.seq}_${idx}'], '${safeTitle}')">📷 사진 ${matchedPhotos.length}장</button>`;
-        }
-
-        let topErrorHtml = ''; let bottomErrorHtml = '';
-        if (!evt.isValid) {
-          const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
-          const badgeText = (evt.errorType === 'DATE_ERROR') ? '날짜 오류' : '분류 오류';
-          topErrorHtml = `<span class="detail-error-badge-common" title="${tooltip}">${badgeText}</span>`;
-          if (evt.errorInputVal) {
-            bottomErrorHtml = `<span class="detail-error-val-common" title="${tooltip}">${evt.errorInputVal}</span>`;
-          }
-        }
-
-        cardsHtml += `
-          <div class="detail-item-card ${cardClass}">
-            <div class="detail-item-top">
-              <span class="category-chip ${catProps.css}">${catProps.label}</span>
-              <span class="detail-item-title">${displayTitle}</span>
-              ${placeHtml} ${noteInlineHtml} ${photoBtnHtml} ${topErrorHtml}
-            </div>
-            <div class="detail-bottom-row">
-              ${attendeesHtml} ${bottomErrorHtml}
-            </div>
-          </div>
-        `;
-      });
-      listElem.innerHTML = cardsHtml;
-    }
-
-    function openDayModal(year, month) {
-      const modal = document.getElementById('dayModal');
-      const dayGridBody = document.getElementById('dayGridBody');
-
-      document.getElementById('modalTitle').textContent = `${year}년 ${month}월 일력`;
-      dayGridBody.innerHTML = '';
-      document.getElementById('detailDateTitle').innerHTML = '📅 날짜를 클릭하면 상세 일정이 표시됩니다.';
-      document.getElementById('detailCountBadge').style.display = 'none';
-      document.getElementById('detailList').innerHTML = '<div class="detail-empty-msg">원하는 날짜 셀을 선택하여 상세 내용을 확인하세요.</div>';
-
-      const firstDayIndex = new Date(year, month - 1, 1).getDay();
-      const lastDate = new Date(year, month, 0).getDate();
-      const key = `${year}-${month}`;
-      const monthEvents = globalEventMap[key] || [];
-      const lunarHolidays = getLunarHolidaysForYear(year);
-
-      const dayEventsMap = {};
-      monthEvents.forEach(item => {
-        const day = item.day;
-        if (day && day >= 1 && day <= lastDate) {
-          if (!dayEventsMap[day]) dayEventsMap[day] = [];
-          dayEventsMap[day].push(item);
-        }
-      });
-
-      for (let i = 0; i < firstDayIndex; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'day-cell other-month';
-        dayGridBody.appendChild(emptyCell);
-      }
-
-      let firstMatchDay = null;
-
-      for (let d = 1; d <= lastDate; d++) {
-        const cell = document.createElement('div');
-        cell.id = `day-cell-${d}`;
-        const colIndex = (firstDayIndex + d - 1) % 7;
-        let dayClass = 'day-cell' + (colIndex === 0 ? ' sun' : '') + (colIndex === 6 ? ' sat' : '');
-
-        const holidayName = solarHolidays[`${month}-${d}`] || lunarHolidays[`${year}-${month}-${d}`];
-        if (holidayName) dayClass += ' holiday';
-
-        const currentEvents = dayEventsMap[d] || [];
-        
-        if (currentSearchTerm && currentEvents.length > 0) {
-          const hasMatch = currentEvents.some(evt => {
-            const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
-            return check.includes(currentSearchTerm.toLowerCase());
-          });
-          if (hasMatch) {
-            dayClass += ' day-search-match';
-            if (!firstMatchDay) firstMatchDay = { day: d, colIndex, holidayName, currentEvents };
-          }
-        }
-
-        if (currentPhotoSearchTerm && currentEvents.length > 0) {
-          const qP = currentPhotoSearchTerm.toLowerCase();
-          const hasPhotoMatch = currentEvents.some(evt => {
-            const photos = getPhotosForEvent(evt, currentEvents.length);
-            return photos.some(p => {
-              const pText = `${p.title || ''} ${p.place || ''} ${p.note || ''} ${p.attendees || ''} ${p.name || ''}`.toLowerCase();
-              return pText.includes(qP);
-            });
-          });
-          if (hasPhotoMatch) {
-            dayClass += ' day-photo-search-match';
-            if (!firstMatchDay) firstMatchDay = { day: d, colIndex, holidayName, currentEvents };
-          }
-        }
-
-        cell.className = dayClass;
-        cell.onclick = () => selectDayDetail(year, month, d, colIndex, holidayName, currentEvents);
-
-        let cellHtml = `
-          <div class="day-num-wrap">
-            <span class="day-num">${d}</span>
-            ${holidayName ? `<span class="holiday-tag">${holidayName}</span>` : ''}
-          </div>
-        `;
-
-        cellHtml += `<div class="day-events">`;
-        if (currentEvents.length > 0) {
-          const firstEvt = currentEvents[0];
-          const catProps = getCategoryProps(firstEvt);
-          const cssClass = `day-event-item ${catProps.css}`;
-          const displayText = firstEvt.title || '(제목 없음)';
-          
-          cellHtml += `<div class="${cssClass}">${displayText}</div>`;
-          if (currentEvents.length > 1) {
-            cellHtml += `<div class="more-badge">+${currentEvents.length - 1}개 더보기</div>`;
-          }
-        }
-        cellHtml += `</div>`;
-        cell.innerHTML = cellHtml;
-        dayGridBody.appendChild(cell);
-      }
-
-      const totalCells = firstDayIndex + lastDate;
-      const remainingCells = (7 - (totalCells % 7)) % 7;
-      for (let i = 0; i < remainingCells; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'day-cell other-month';
-        dayGridBody.appendChild(emptyCell);
-      }
-
-      history.pushState({ modal: 'day' }, '', '#dayView');
-      modal.style.display = 'flex';
-      if (firstMatchDay) {
-        selectDayDetail(year, month, firstMatchDay.day, firstMatchDay.colIndex, firstMatchDay.holidayName, firstMatchDay.currentEvents);
-      }
-    }
-
-    // 1. 행사 검색창 입력 처리
-    function handleSearchInput() {
-      const input = document.getElementById('searchInput');
-      const clearBtn = document.getElementById('searchClearBtn');
-      const badge = document.getElementById('searchBadge');
-      const query = input.value.trim();
-      currentSearchTerm = query;
-
-      if (query) {
-        document.getElementById('photoSearchInput').value = '';
-        document.getElementById('photoSearchClearBtn').style.display = 'none';
-        document.getElementById('photoSearchBadge').style.display = 'none';
-        document.getElementById('photoStripContainer').style.display = 'none';
-        currentPhotoSearchTerm = '';
-        currentMatchedPhotoList = [];
-      }
-
-      clearBtn.style.display = query ? 'block' : 'none';
-      let matchCount = 0;
-      const monthCellMatchMap = {};
-
-      if (query) {
-        const qLower = query.toLowerCase();
-        for (const key in globalEventMap) {
-          let monthHasMatch = false;
-          globalEventMap[key].forEach(evt => {
-            const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
-            if (combined.includes(qLower)) {
-              matchCount++; monthHasMatch = true;
-            }
-          });
-          if (monthHasMatch) monthCellMatchMap[key] = true;
-        }
-        badge.style.display = 'inline-block';
-        badge.textContent = `행사 ${matchCount}건 발견`;
-      } else {
-        badge.style.display = 'none';
-      }
-
-      updateCalendarSearchHighlights(monthCellMatchMap, !!query, false);
-    }
-
-    // 2. 사진 검색창 입력 처리 + 미니 썸네일 스트립 바 갱신 (v9.3)
-    function handlePhotoSearchInput() {
-      const input = document.getElementById('photoSearchInput');
-      const clearBtn = document.getElementById('photoSearchClearBtn');
-      const badge = document.getElementById('photoSearchBadge');
-      const stripContainer = document.getElementById('photoStripContainer');
-      const stripScroll = document.getElementById('photoStripScroll');
-      const stripTitle = document.getElementById('photoStripTitle');
-
-      const query = input.value.trim();
-      currentPhotoSearchTerm = query;
-
-      if (query) {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('searchClearBtn').style.display = 'none';
-        document.getElementById('searchBadge').style.display = 'none';
-        currentSearchTerm = '';
-      }
-
-      clearBtn.style.display = query ? 'block' : 'none';
-      let matchCount = 0;
-      const monthCellMatchMap = {};
-      const matchedPhotos = [];
-
-      if (query) {
-        const qLower = query.toLowerCase();
-        globalPhotoList.forEach(photo => {
-          const combined = `${photo.title || ''} ${photo.place || ''} ${photo.note || ''} ${photo.attendees || ''} ${photo.name || ''}`.toLowerCase();
-          if (combined.includes(qLower)) {
-            matchCount++;
-            matchedPhotos.push(photo);
-            if (photo.dateStr && photo.dateStr.length >= 6) {
-              const y = parseInt(photo.dateStr.substring(0, 4), 10);
-              const m = parseInt(photo.dateStr.substring(4, 6), 10);
-              monthCellMatchMap[`${y}-${m}`] = true;
-            }
-          }
-        });
-
-        currentMatchedPhotoList = matchedPhotos;
-
-        // 💡 v9.3: '사진 O건 발견'으로 텍스트 통일
-        badge.style.display = 'inline-block';
-        badge.textContent = `사진 ${matchCount}건 발견`;
-
-        if (matchedPhotos.length > 0) {
-          stripTitle.textContent = `📷 "${query}" 사진 ${matchedPhotos.length}장 검색됨`;
-          let stripHtml = '';
-          matchedPhotos.forEach((p, idx) => {
-            const shortDate = p.dateStr && p.dateStr.length === 8 ? `${p.dateStr.substring(2, 4)}.${p.dateStr.substring(4, 6)}.${p.dateStr.substring(6, 8)}` : '';
-            const thumbUrl = `https://drive.google.com/thumbnail?id=${p.id}&sz=w200`;
-            stripHtml += `
-              <div class="strip-card" onclick="openPhotoViewerFromGallery(${idx})" title="${p.title || ''} (${shortDate})">
-                <img src="${thumbUrl}" alt="사진" loading="lazy">
-                <span class="strip-card-date">${shortDate}</span>
-                <span class="strip-card-title">${p.title || '(행사명 없음)'}</span>
-              </div>
-            `;
-          });
-          stripScroll.innerHTML = stripHtml;
-          stripContainer.style.display = 'flex';
-        } else {
-          stripContainer.style.display = 'none';
-        }
-      } else {
-        badge.style.display = 'none';
-        stripContainer.style.display = 'none';
-        currentMatchedPhotoList = [];
-      }
-
-      updateCalendarSearchHighlights(monthCellMatchMap, !!query, true);
-    }
-
-    function updateCalendarSearchHighlights(matchMap, hasQuery, isPhotoSearch) {
-      document.querySelectorAll('.month-cell').forEach(td => {
-        td.classList.remove('search-match', 'photo-search-match', 'search-dimmed');
-        if (hasQuery) {
-          if (matchMap[td.dataset.key]) {
-            td.classList.add(isPhotoSearch ? 'photo-search-match' : 'search-match');
-          } else {
-            td.classList.add('search-dimmed');
-          }
-        }
-      });
-    }
-
-    function clearSearch() {
-      const input = document.getElementById('searchInput');
-      input.value = ''; handleSearchInput(); input.focus();
-    }
-
-    function clearPhotoSearch() {
-      const input = document.getElementById('photoSearchInput');
-      input.value = ''; handlePhotoSearchInput(); input.focus();
-    }
-
-    function parseCSV(text) {
-      let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
-      for (let l of text) {
-        if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
-        else if (',' === l && s) l = row[++r] = '';
-        else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
-        else row[r] += l;
-        p = l;
-      }
-      return ret;
-    }
-
-    function parsePhotoDB(csvText) {
-      const rows = parseCSV(csvText);
-      const photoMap = {}; const fallbackMap = {};
-      const photoList = [];
-
-      for (let i = 1; i < rows.length; i++) {
-        const cols = rows[i].map(c => c.trim());
-        const fileName = cols[0];
-        const fileId = cols[1];
-        const dateStr = cols[3];
-        const seq = cols[4] || '1';
-        const title = cols[5] || '';
-        const place = cols[6] || '';
-        const note = cols[7] || '';
-        const attendees = cols[8] || '';
-
-        if (!fileId || !dateStr) continue;
-
-        const photoObj = {
-          id: fileId,
-          name: fileName,
-          dateStr: dateStr,
-          seq: seq,
-          title: title,
-          place: place,
-          note: note,
-          attendees: attendees
+        const CATEGORY_CONFIG = {
+            '중요': { css: 'important', symbol: '★', label: '중요' },
+            '행사': { css: 'event',     symbol: '●', label: '행사' },
+            '결혼': { css: 'marriage',  symbol: '●', label: '결혼' },
+            '부고': { css: 'funeral',   symbol: '●', label: '부고' },
+            '기타': { css: 'etc',       symbol: '●', label: '기타' },
+            '오류': { css: 'error',     symbol: 'X', label: '오류 X' }
         };
 
-        const key = `${dateStr}_${seq}`;
-        if (!photoMap[key]) photoMap[key] = [];
-        photoMap[key].push(photoObj);
-
-        if (!fallbackMap[dateStr]) fallbackMap[dateStr] = [];
-        fallbackMap[dateStr].push(photoObj);
-
-        photoList.push(photoObj);
-      }
-      globalPhotoMap = photoMap;
-      globalPhotoDateFallbackMap = fallbackMap;
-      globalPhotoList = photoList;
-    }
-
-    function parseAndRenderCalendar(csvText) {
-      const rows = parseCSV(csvText);
-      if (rows.length < 2) return;
-
-      const eventMap = {}; const errorList = [];
-      for (let i = 1; i < rows.length; i++) {
-        const cols = rows[i].map(c => c.trim());
-        const dateStr = cols[0], seq = cols[1] || '1', category = cols[2], title = cols[3];
-        const place = cols[4] || '', note = cols[5] || '', attendees = cols[6] || '';
-        if (!dateStr && !category && !title) continue;
-
-        let isDataValid = true, errorReason = '', errorType = '', errorInputVal = '';
-        let parsedYear = null, parsedMonth = null, parsedDay = null;
-
-        if (!/^\d{8}$/.test(dateStr)) {
-          isDataValid = false; errorType = 'DATE_ERROR'; errorInputVal = dateStr || '공란';
-          errorReason = `날짜 형식 오류 (8자리 숫자가 아님: '${dateStr}')`;
-          errorList.push(`날짜 오류: "${title || '제목없음'}" (입력값: '${dateStr}')`);
-        } else {
-          parsedYear = parseInt(dateStr.substring(0, 4), 10);
-          parsedMonth = parseInt(dateStr.substring(4, 6), 10);
-          parsedDay = parseInt(dateStr.substring(6, 8), 10);
-          if (parsedMonth < 1 || parsedMonth > 12 || parsedDay < 1 || parsedDay > 31) {
-            isDataValid = false; errorType = 'DATE_ERROR'; errorInputVal = dateStr;
-            errorReason = `유효하지 않은 날짜 범위 ('${dateStr}')`;
-            errorList.push(`날짜 범위 오류: "${title || '제목없음'}" ('${dateStr}')`);
-          }
+        function getCategoryProps(item) {
+            if (!item.isValid) return CATEGORY_CONFIG['오류'];
+            return CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG['기타'];
         }
 
-        if (!['중요', '결혼', '부고', '행사', '기타'].includes(category)) {
-          isDataValid = false; errorType = 'CATEGORY_ERROR'; errorInputVal = category || '공란';
-          errorReason = `유효하지 않은 분류명 ('${category}')`;
-          errorList.push(`분류 오류: "${title || '제목없음'}" ('${category}')`);
+        let globalEventMap = {};
+        let globalPhotoMap = {};
+        let globalPhotoDateFallbackMap = {};
+        let globalPhotoList = [];
+        let currentMatchedPhotoList = [];
+        let currentSearchTerm = '';
+        let currentPhotoSearchTerm = '';
+        let currentPhotoList = [];
+        let currentPhotoIndex = 0;
+
+        // 현재 열려있는 일력 모달의 연·월 기억용 변수
+        let activeModalYear = null;
+        let activeModalMonth = null;
+        // 우클릭으로 선택된 날짜 임시 저장 객체
+        let selectedTargetDateInfo = null;
+
+        // 모바일 뒤로가기(<) 히스토리 연동
+        window.addEventListener('popstate', function(e) {
+            const addEventModal = document.getElementById('addEventModal');
+            const photoModal = document.getElementById('photoModal');
+            const galleryModal = document.getElementById('galleryModal');
+            const dayModal = document.getElementById('dayModal');
+
+            if (addEventModal && addEventModal.style.display === 'flex') {
+                addEventModal.style.display = 'none';
+                return;
+            }
+            if (photoModal && photoModal.style.display === 'flex') {
+                photoModal.style.display = 'none';
+                document.getElementById('photoViewerImg').src = '';
+                return;
+            }
+            if (galleryModal && galleryModal.style.display === 'flex') {
+                galleryModal.style.display = 'none';
+                return;
+            }
+            if (dayModal && dayModal.style.display === 'flex') {
+                dayModal.style.display = 'none';
+                return;
+            }
+        });
+
+        function requestClosePhotoModal() { if (window.location.hash.includes('photoView')) history.back(); else closePhotoModal(); }
+        function requestCloseGalleryModal() { if (window.location.hash.includes('galleryView')) history.back(); else closeGalleryModal(); }
+        function requestCloseDayModal() { if (window.location.hash.includes('dayView')) history.back(); else closeDayModal(); }
+        
+        function closePhotoModal() { document.getElementById('photoModal').style.display = 'none'; document.getElementById('photoViewerImg').src = ''; }
+        function closeGalleryModal() { document.getElementById('galleryModal').style.display = 'none'; }
+        function closeDayModal() { document.getElementById('dayModal').style.display = 'none'; }
+
+        function handleModalOverlayClick(event) { if (event.target.id === 'dayModal') requestCloseDayModal(); }
+        function handlePhotoModalOverlayClick(event) { if (event.target.id === 'photoModal') requestClosePhotoModal(); }
+        function handleGalleryModalOverlayClick(event) { if (event.target.id === 'galleryModal') requestCloseGalleryModal(); }
+        function handleAddEventOverlayClick(event) { if (event.target.id === 'addEventModal') closeAddEventModal(); }
+
+        // ==========================================
+        // [v10.0 신규] 우클릭 이벤트 및 일정 추가 폼 제어 함수
+        // ==========================================
+        function openAddEventModal(year, month, day, eventsOnDay) {
+            activeModalYear = year;
+            activeModalMonth = month;
+
+            // YYYYMMDD 포맷 생성 (월, 일은 2자리로 패딩)
+            const mmStr = String(month).padStart(2, '0');
+            const ddStr = String(day).padStart(2, '0');
+            const dateStr = `${year}${mmStr}${ddStr}`;
+
+            // 순번 계산: 해당 날짜의 기존 이벤트 수 + 1
+            const nextSeq = (eventsOnDay ? eventsOnDay.length : 0) + 1;
+
+            selectedTargetDateInfo = {
+                dateStr: dateStr,
+                seq: nextSeq
+            };
+
+            // 모달 UI에 정보 반영
+            document.getElementById('lblTargetDate').textContent = `${year}.${mmStr}.${ddStr} (${dateStr})`;
+            document.getElementById('lblTargetSeq').textContent = `${nextSeq}번`;
+
+            // 입력 폼 초기화
+            document.querySelectorAll('input[name="newCategory"]').forEach(r => { r.checked = (r.value === '행사'); });
+            document.getElementById('inputNewTitle').value = '';
+            document.getElementById('inputNewPlace').value = '';
+            document.getElementById('inputNewNote').value = '';
+            document.getElementById('inputNewAttendees').value = '';
+
+            document.getElementById('addEventModal').style.display = 'flex';
         }
 
-        if (parsedYear && parsedMonth && parsedDay) {
-          const key = `${parsedYear}-${parsedMonth}`;
-          if (!eventMap[key]) eventMap[key] = [];
-          eventMap[key].push({ dateStr, seq, isValid: isDataValid, category, title, place, note, attendees, day: parsedDay, errorReason, errorType, errorInputVal });
+        function closeAddEventModal() {
+            document.getElementById('addEventModal').style.display = 'none';
         }
-      }
-      globalEventMap = eventMap;
 
-      const errorContainer = document.getElementById('error-container');
-      if (errorList.length > 0) {
-        document.getElementById('error-list').innerHTML = [...new Set(errorList)].map(err => `<li>${err}</li>`).join('');
-        errorContainer.style.display = 'block';
-      } else {
-        errorContainer.style.display = 'none';
-      }
+        // 금번 작업 목표 범위 내 입력 데이터 확인 및 임시 테스트 처리
+        function submitNewEventForm() {
+            const category = document.querySelector('input[name="newCategory"]:checked').value;
+            const title = document.getElementById('inputNewTitle').value.trim();
+            const place = document.getElementById('inputNewPlace').value.trim();
+            const note = document.getElementById('inputNewNote').value.trim();
+            const attendees = document.getElementById('inputNewAttendees').value.trim();
 
-      const tbody = document.getElementById('calendar-body');
-      tbody.innerHTML = '';
+            if (!title) {
+                alert('행사명을 입력해주세요.');
+                document.getElementById('inputNewTitle').focus();
+                return;
+            }
 
-      for (let year = 1975; year <= 2026; year++) {
-        const tr = document.createElement('tr');
-        const thYear = document.createElement('th');
-        thYear.textContent = year; tr.appendChild(thYear);
-
-        for (let month = 1; month <= 12; month++) {
-          const td = document.createElement('td');
-          td.className = 'month-cell'; td.dataset.key = `${year}-${month}`;
-          td.onclick = () => openDayModal(year, month);
-
-          const monthEvents = eventMap[`${year}-${month}`];
-          if (monthEvents && monthEvents.length > 0) {
-            let symbolsHtml = '<div class="symbol-wrapper">';
-            symbolsHtml += monthEvents.map(item => {
-              let tooltipLines = [];
-              if (item.isValid) {
-                tooltipLines.push(`[${month}월 ${item.day}일] [${item.category}] ${item.title || '(제목 없음)'}`);
-                if (item.place) tooltipLines.push(`📍 장소: ${item.place}`);
-                if (item.note) tooltipLines.push(`📝 메모: ${item.note}`);
-                if (item.attendees) tooltipLines.push(`👥 참석: ${item.attendees}`);
-              } else {
-                tooltipLines.push(`[${month}월 ${item.day}일] 오류: ${item.title || '(제목 없음)'}`);
-                if (item.errorReason) tooltipLines.push(`⚠️ 원인: ${item.errorReason}`);
-              }
-              const tooltipText = tooltipLines.join('\n').replace(/"/g, '&quot;');
-              const catProps = getCategoryProps(item);
-              const renderSymbol = item.isValid ? catProps.symbol : 'X';
-              
-              return `<span class="symbol-${catProps.css}" title="${tooltipText}">${renderSymbol}</span>`;
-            }).join('');
-            symbolsHtml += '</div>';
-            td.innerHTML = symbolsHtml;
-          } else {
-            td.innerHTML = '<div class="symbol-wrapper"><span class="symbol-empty">·</span></div>';
-          }
-          tr.appendChild(td);
+            // 임시 데이터 객체 확인용 메시지 (다음 단계 GAS 연동 전 검증 단계)
+            const summaryMsg = `[신규 입력 데이터 확인]\n` +
+                               `- 일자: ${selectedTargetDateInfo.dateStr}\n` +
+                               `- 순번: ${selectedTargetDateInfo.seq}\n` +
+                               `- 분류: ${category}\n` +
+                               `- 행사명: ${title}\n` +
+                               `- 장소: ${place || '(없음)'}\n` +
+                               `- 비고: ${note || '(없음)'}\n` +
+                               `- 참석자: ${attendees || '(없음)'}\n\n` +
+                               `입력이 정상적으로 수집되었습니다! (다음 단계에서 GAS 웹앱 전송 연동 예정)`;
+            alert(summaryMsg);
+            closeAddEventModal();
         }
-        tbody.appendChild(tr);
-      }
-      if (currentSearchTerm) handleSearchInput();
-      if (currentPhotoSearchTerm) handlePhotoSearchInput();
-    }
 
-    async function loadCalendarAndPhotoData() {
-      try {
-        const [eventRes, photoRes] = await Promise.all([fetch(csvUrl), fetch(photoDbCsvUrl)]);
-        const [eventText, photoText] = await Promise.all([eventRes.text(), photoRes.text()]);
-        parsePhotoDB(photoText);
-        parseAndRenderCalendar(eventText);
-      } catch (error) {
-        console.error('데이터 로드 실패:', error);
-        document.getElementById('calendar-body').innerHTML = `<tr><td colspan="13" class="loading" style="color: red;">데이터를 불러오는데 실패했습니다.</td></tr>`;
-      }
-    }
-    loadCalendarAndPhotoData();
-  </script>
+        function openGalleryModal() {
+            if (!currentMatchedPhotoList || currentMatchedPhotoList.length === 0) return;
+            const modal = document.getElementById('galleryModal');
+            const titleElem = document.getElementById('galleryModalTitle');
+            const bodyElem = document.getElementById('galleryModalBody');
+            titleElem.textContent = `🖼️ "${currentPhotoSearchTerm}" 검색 사진 갤러리 (${currentMatchedPhotoList.length}장)`;
+            let itemsHtml = '';
+            currentMatchedPhotoList.forEach((p, idx) => {
+                const dStr = p.dateStr ? `${p.dateStr.substring(0, 4)}.${p.dateStr.substring(4, 6)}.${p.dateStr.substring(6, 8)}` : '';
+                const thumbUrl = `https://drive.google.com/thumbnail?id=${p.id}&sz=w320`;
+                itemsHtml += `
+                    <div class="gallery-item-card" onclick="openPhotoViewerFromGallery(${idx})">
+                        <img src="${thumbUrl}" alt="사진" loading="lazy">
+                        <div class="gallery-item-info">
+                            <span class="gallery-item-date">${dStr}</span>
+                            <span class="gallery-item-title">${p.title || '(행사명 없음)'}</span>
+                            <span class="gallery-item-place">${p.place ? '📍 ' + p.place : ''}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            bodyElem.innerHTML = itemsHtml;
+            history.pushState({ modal: 'gallery' }, '', '#galleryView');
+            modal.style.display = 'flex';
+        }
+
+        function openPhotoViewerFromGallery(index) {
+            if (!currentMatchedPhotoList || currentMatchedPhotoList.length === 0) return;
+            currentPhotoList = currentMatchedPhotoList;
+            currentPhotoIndex = index;
+            document.getElementById('photoModalTitle').textContent = `📷 ${currentMatchedPhotoList[index].title || '사진 보기'}`;
+            updatePhotoViewerDisplay();
+            history.pushState({ modal: 'photo' }, '', '#photoView');
+            document.getElementById('photoModal').style.display = 'flex';
+        }
+
+        // 공휴일 및 음력 변환
+        const solarHolidays = { '1-1': '신정', '3-1': '삼일절', '5-5': '어린이날', '6-6': '현충일', '8-15': '광복절', '10-3': '개천절', '10-9': '한글날', '12-25': '성탄절' };
+        const lunarInfo = [0x095b0, 0x04ba0, 0x0a5b4, 0x052b0, 0x0a930, 0x05495, 0x052d0, 0x02ac0, 0x0cd15, 0x06aa0, 0x0ad50, 0x02d52, 0x04b60, 0x0a577, 0x0a4e0, 0x0d260, 0x0e935, 0x0d520, 0x0daa0, 0x06b53, 0x056d0, 0x04ae0, 0x0a4e4, 0x0a4d0, 0x0d150, 0x0f252, 0x0d520, 0x0dd45, 0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, 0x14b63, 0x09370, 0x049f8, 0x04970, 0x064b0, 0x068a6, 0x0ea50, 0x06aa0, 0x0a6c4, 0x0aae0, 0x092e0, 0x0d2e3, 0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4, 0x052d0, 0x0a9b8, 0x0a950, 0x0b4a0, 0x0b6a6, 0x0ad50, 0x055a0, 0x0aba4, 0x0a5b0, 0x052b0, 0x0b273, 0x06930, 0x07337, 0x06aa0, 0x0ad50, 0x14b55, 0x04b60, 0x0a570];
+        
+        function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
+            if (lunarYear < 1975 || lunarYear > 2050) return null;
+            let totalDays = 0;
+            for (let y = 1975; y < lunarYear; y++) {
+                const idx = y - 1975;
+                const leap = lunarInfo[idx] & 0xf;
+                for (let m = 1; m <= 12; m++) { totalDays += (lunarInfo[idx] & (0x10000 >> m)) ? 30 : 29; }
+                if (leap > 0) { totalDays += (lunarInfo[idx] & 0x10000) ? 30 : 29; }
+            }
+            const curIdx = lunarYear - 1975;
+            const curLeap = lunarInfo[curIdx] & 0xf;
+            for (let m = 1; m < lunarMonth; m++) {
+                totalDays += (lunarInfo[curIdx] & (0x10000 >> m)) ? 30 : 29;
+                if (curLeap > 0 && curLeap === m) { totalDays += (lunarInfo[curIdx] & (0x10000) ? 30 : 29); }
+            }
+            totalDays += (lunarDay - 1);
+            const baseDate = new Date(1975, 1, 11);
+            return new Date(baseDate.getTime() + totalDays * 86400000);
+        }
+
+        function getLunarHolidaysForYear(year) {
+            const holidayMap = {};
+            if (year < 1975 || year > 2050) return holidayMap;
+            const seollal = lunarToSolar(year, 1, 1);
+            if (seollal) {
+                const prev = new Date(seollal.getTime() - 86400000);
+                const next = new Date(seollal.getTime() + 86400000);
+                holidayMap[`${prev.getFullYear()}-${prev.getMonth() + 1}-${prev.getDate()}`] = '설 전날';
+                holidayMap[`${seollal.getFullYear()}-${seollal.getMonth() + 1}-${seollal.getDate()}`] = '설날';
+                holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '설 다음날';
+            }
+            const buddha = lunarToSolar(year, 4, 8);
+            if (buddha) { holidayMap[`${buddha.getFullYear()}-${buddha.getMonth() + 1}-${buddha.getDate()}`] = '부처님오신날'; }
+            const chuseok = lunarToSolar(year, 8, 15);
+            if (chuseok) {
+                const prev = new Date(chuseok.getTime() - 86400000);
+                const next = new Date(chuseok.getTime() + 86400000);
+                holidayMap[`${prev.getFullYear()}-${prev.getMonth() + 1}-${prev.getDate()}`] = '추석 전날';
+                holidayMap[`${chuseok.getFullYear()}-${chuseok.getMonth() + 1}-${chuseok.getDate()}`] = '추석';
+                holidayMap[`${next.getFullYear()}-${next.getMonth() + 1}-${next.getDate()}`] = '추석 다음날';
+            }
+            return holidayMap;
+        }
+
+        function toggleRuleBox() {
+            const ruleBox = document.getElementById('rule-box-inner');
+            const toggleBtn = document.getElementById('rule-toggle-btn');
+            if (ruleBox.style.display === 'none' || ruleBox.style.display === '') {
+                ruleBox.style.display = 'block';
+                toggleBtn.textContent = '데이터 규칙 ▲';
+            } else {
+                ruleBox.style.display = 'none';
+                toggleBtn.textContent = '데이터 규칙 ▼';
+            }
+        }
+
+        function openPhotoViewer(photoList, eventTitle) {
+            if (!photoList || photoList.length === 0) return;
+            currentPhotoList = photoList;
+            currentPhotoIndex = 0;
+            document.getElementById('photoModalTitle').textContent = `📷 ${eventTitle || '사진 보기'}`;
+            updatePhotoViewerDisplay();
+            history.pushState({ modal: 'photo' }, '', '#photoView');
+            document.getElementById('photoModal').style.display = 'flex';
+        }
+
+        function navigatePhoto(direction) {
+            if (currentPhotoList.length <= 1) return;
+            currentPhotoIndex = (currentPhotoIndex + direction + currentPhotoList.length) % currentPhotoList.length;
+            updatePhotoViewerDisplay();
+        }
+
+        function updatePhotoViewerDisplay() {
+            const item = currentPhotoList[currentPhotoIndex];
+            const imgElem = document.getElementById('photoViewerImg');
+            const infoElem = document.getElementById('photoInfoText');
+            const counterElem = document.getElementById('photoPageCounter');
+            const prevBtn = document.getElementById('photoPrevBtn');
+            const nextBtn = document.getElementById('photoNextBtn');
+            imgElem.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w1600`;
+            let infoParts = [];
+            if (item.title) infoParts.push(`[${item.title}]`);
+            if (item.place) infoParts.push(`(${item.place})`);
+            if (item.note) infoParts.push(item.note);
+            if (item.attendees) infoParts.push(`👥 ${item.attendees}`);
+            if (infoParts.length === 0) infoParts.push(item.name);
+            infoElem.textContent = infoParts.join(' ');
+            counterElem.textContent = `${currentPhotoIndex + 1} / ${currentPhotoList.length}`;
+            if (currentPhotoList.length <= 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'flex';
+                nextBtn.style.display = 'flex';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const addEventModal = document.getElementById('addEventModal');
+            const photoModal = document.getElementById('photoModal');
+            const galleryModal = document.getElementById('galleryModal');
+            
+            if (addEventModal && addEventModal.style.display === 'flex') {
+                if (e.key === 'Escape') closeAddEventModal();
+            } else if (photoModal && photoModal.style.display === 'flex') {
+                if (e.key === 'Escape') requestClosePhotoModal();
+                if (e.key === 'ArrowLeft') navigatePhoto(-1);
+                if (e.key === 'ArrowRight') navigatePhoto(1);
+            } else if (galleryModal && galleryModal.style.display === 'flex') {
+                if (e.key === 'Escape') requestCloseGalleryModal();
+            } else if (e.key === 'Escape') {
+                requestCloseDayModal();
+            }
+        });
+
+        const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+        function highlightSearchText(text, keyword, isPhoto = false) {
+            if (!text) return '';
+            if (!keyword) return text;
+            const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            const className = isPhoto ? 'photo-search-highlight' : 'search-highlight';
+            return text.replace(regex, `<mark class="${className}">$1</mark>`);
+        }
+
+        function getPhotosForEvent(evt, totalEventsOnDay) {
+            const targetSeq = evt.seq || '1';
+            const exactKey = `${evt.dateStr}_${targetSeq}`;
+            if (globalPhotoMap[exactKey] && globalPhotoMap[exactKey].length > 0) return globalPhotoMap[exactKey];
+            if (totalEventsOnDay <= 1) {
+                const fallback = globalPhotoDateFallbackMap[evt.dateStr] || [];
+                if (fallback.length > 0) return fallback;
+            }
+            return [];
+        }
+
+        function selectDayDetail(year, month, day, dayOfWeekIndex, holidayName, events) {
+            document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
+            const selectedCell = document.getElementById(`day-cell-${day}`);
+            if (selectedCell) selectedCell.classList.add('selected');
+
+            const titleElem = document.getElementById('detailDateTitle');
+            const badgeElem = document.getElementById('detailCountBadge');
+            const listElem = document.getElementById('detailList');
+            const holidayHtml = holidayName ? ` <span class="holiday-tag" style="font-size:0.75rem;">(${holidayName})</span>` : '';
+            
+            titleElem.innerHTML = `📅 ${year}년 ${month}월 ${day}일 (${dayNames[dayOfWeekIndex]})${holidayHtml} <span style="font-size:0.7rem; color:#2563eb; font-weight:normal; margin-left:8px;">(💡 우클릭: 새 일정 추가)</span>`;
+            badgeElem.style.display = 'inline-block';
+            badgeElem.textContent = `${events.length}건`;
+
+            if (!events || events.length === 0) {
+                listElem.innerHTML = `<div class="detail-empty-msg">등록된 일정이 없습니다. (우클릭하여 일정을 추가해보세요)</div>`;
+                return;
+            }
+
+            let cardsHtml = '';
+            events.forEach((evt, idx) => {
+                const catProps = getCategoryProps(evt);
+                let cardClass = catProps.css;
+                if (currentSearchTerm) {
+                    const checkText = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
+                    if (checkText.includes(currentSearchTerm.toLowerCase())) {
+                        cardClass += ' card-search-match';
+                    }
+                }
+                const matchedPhotos = getPhotosForEvent(evt, events.length);
+                let hasPhotoMatch = false;
+                if (currentPhotoSearchTerm && matchedPhotos.length > 0) {
+                    const qP = currentPhotoSearchTerm.toLowerCase();
+                    hasPhotoMatch = matchedPhotos.some(p => {
+                        const pText = `${p.title || ''} ${p.place || ''} ${p.note || ''} ${p.attendees || ''} ${p.name || ''}`.toLowerCase();
+                        return pText.includes(qP);
+                    });
+                    if (hasPhotoMatch) { cardClass += ' card-photo-search-match'; }
+                }
+
+                const activeKeyword = currentSearchTerm || (hasPhotoMatch ? currentPhotoSearchTerm : '');
+                const isPhotoSearchMode = !!(!currentSearchTerm && currentPhotoSearchTerm && hasPhotoMatch);
+                const rawTitle = evt.title || '(제목 없음)';
+                const displayTitle = highlightSearchText(rawTitle, activeKeyword, isPhotoSearchMode);
+                const placeHtml = evt.place ? `<span class="detail-item-place-inline">(${highlightSearchText(evt.place, activeKeyword, isPhotoSearchMode)})</span>` : '';
+                const noteInlineHtml = evt.note ? `<span class="detail-item-note-inline">[${highlightSearchText(evt.note, activeKeyword, isPhotoSearchMode)}]</span>` : '';
+
+                let sortedAttendeesStr = '';
+                if (evt.attendees) {
+                    const names = evt.attendees.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                    names.sort((a, b) => a.localeCompare(b, 'ko'));
+                    sortedAttendeesStr = names.join(', ');
+                }
+                const attendeesHtml = sortedAttendeesStr ? `<div class="detail-item-attendees"><strong>참석자:</strong> ${highlightSearchText(sortedAttendeesStr, activeKeyword, isPhotoSearchMode)}</div>` : `<div class="detail-item-attendees empty-attendees">&nbsp;</div>`;
+
+                let photoBtnHtml = '';
+                if (matchedPhotos.length > 0) {
+                    window[`tempPhotos_${evt.dateStr}_${evt.seq}_${idx}`] = matchedPhotos;
+                    const safeTitle = rawTitle.replace(/'/g, "\\'");
+                    const btnExtraClass = hasPhotoMatch ? 'highlight-photo-btn' : '';
+                    photoBtnHtml = `<button type="button" class="photo-view-btn ${btnExtraClass}" onclick="openPhotoViewer(window['tempPhotos_${evt.dateStr}_${evt.seq}_${idx}'], '${safeTitle}')">📷 사진 ${matchedPhotos.length}장</button>`;
+                }
+
+                let topErrorHtml = '';
+                let bottomErrorHtml = '';
+                if (!evt.isValid) {
+                    const tooltip = evt.errorReason ? evt.errorReason.replace(/"/g, '&quot;') : '';
+                    const badgeText = (evt.errorType === 'DATE_ERROR') ? '날짜 오류' : '분류 오류';
+                    topErrorHtml = `<span class="detail-error-badge-common" title="${tooltip}">${badgeText}</span>`;
+                    if (evt.errorInputVal) {
+                        bottomErrorHtml = `<span class="detail-error-val-common" title="${tooltip}">${evt.errorInputVal}</span>`;
+                    }
+                }
+
+                cardsHtml += `
+                    <div class="detail-item-card ${cardClass}">
+                        <div class="detail-item-top">
+                            <span class="category-chip ${catProps.css}">${catProps.label}</span>
+                            <span class="detail-item-title">${displayTitle}</span>
+                            ${placeHtml}
+                            ${noteInlineHtml}
+                            ${photoBtnHtml}
+                            ${topErrorHtml}
+                        </div>
+                        <div class="detail-bottom-row">
+                            ${attendeesHtml}
+                            ${bottomErrorHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            listElem.innerHTML = cardsHtml;
+        }
+
+        function openDayModal(year, month) {
+            activeModalYear = year;
+            activeModalMonth = month;
+
+            const modal = document.getElementById('dayModal');
+            const dayGridBody = document.getElementById('dayGridBody');
+            document.getElementById('modalTitle').textContent = `${year}년 ${month}월 일력`;
+            dayGridBody.innerHTML = '';
+            document.getElementById('detailDateTitle').innerHTML = '📅 날짜를 클릭하면 상세 일정이 표시됩니다. (우클릭 시 일정 추가)';
+            document.getElementById('detailCountBadge').style.display = 'none';
+            document.getElementById('detailList').innerHTML = '<div class="detail-empty-msg">원하는 날짜 셀을 선택하여 상세 내용을 확인하세요. (우클릭으로 새 일정 등록 가능)</div>';
+
+            const firstDayIndex = new Date(year, month - 1, 1).getDay();
+            const lastDate = new Date(year, month, 0).getDate();
+            const key = `${year}-${month}`;
+            const monthEvents = globalEventMap[key] || [];
+            const lunarHolidays = getLunarHolidaysForYear(year);
+
+            const dayEventsMap = {};
+            monthEvents.forEach(item => {
+                const day = item.day;
+                if (day && day >= 1 && day <= lastDate) {
+                    if (!dayEventsMap[day]) dayEventsMap[day] = [];
+                    dayEventsMap[day].push(item);
+                }
+            });
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell other-month';
+                dayGridBody.appendChild(emptyCell);
+            }
+
+            let firstMatchDay = null;
+
+            for (let d = 1; d <= lastDate; d++) {
+                const cell = document.createElement('div');
+                cell.id = `day-cell-${d}`;
+                const colIndex = (firstDayIndex + d - 1) % 7;
+                let dayClass = 'day-cell' + (colIndex === 0 ? ' sun' : '') + (colIndex === 6 ? ' sat' : '');
+                const holidayName = solarHolidays[`${month}-${d}`] || lunarHolidays[`${year}-${month}-${d}`];
+                if (holidayName) dayClass += ' holiday';
+
+                const currentEvents = dayEventsMap[d] || [];
+
+                if (currentSearchTerm && currentEvents.length > 0) {
+                    const hasMatch = currentEvents.some(evt => {
+                        const check = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
+                        return check.includes(currentSearchTerm.toLowerCase());
+                    });
+                    if (hasMatch) {
+                        dayClass += ' day-search-match';
+                        if (!firstMatchDay) firstMatchDay = { day: d, colIndex, holidayName, currentEvents };
+                    }
+                }
+
+                if (currentPhotoSearchTerm && currentEvents.length > 0) {
+                    const qP = currentPhotoSearchTerm.toLowerCase();
+                    const hasPhotoMatch = currentEvents.some(evt => {
+                        const photos = getPhotosForEvent(evt, currentEvents.length);
+                        return photos.some(p => {
+                            const pText = `${p.title || ''} ${p.place || ''} ${p.note || ''} ${p.attendees || ''} ${p.name || ''}`.toLowerCase();
+                            return pText.includes(qP);
+                        });
+                    });
+                    if (hasPhotoMatch) {
+                        dayClass += ' day-photo-search-match';
+                        if (!firstMatchDay) firstMatchDay = { day: d, colIndex, holidayName, currentEvents };
+                    }
+                }
+
+                cell.className = dayClass;
+                // 좌클릭: 상세 내역 보기
+                cell.onclick = () => selectDayDetail(year, month, d, colIndex, holidayName, currentEvents);
+                
+                // ==========================================
+                // [v10.0 신규] 우클릭 이벤트 리스너 부착
+                // ==========================================
+                cell.oncontextmenu = (e) => {
+                    e.preventDefault(); // 크롬 기본 컨텍스트 메뉴 무력화
+                    openAddEventModal(year, month, d, currentEvents);
+                };
+
+                let cellHtml = `
+                    <div class="day-num-wrap">
+                        <span class="day-num">${d}</span>
+                        ${holidayName ? `<span class="holiday-tag">${holidayName}</span>` : ''}
+                    </div>
+                `;
+                cellHtml += `<div class="day-events">`;
+                if (currentEvents.length > 0) {
+                    const firstEvt = currentEvents[0];
+                    const catProps = getCategoryProps(firstEvt);
+                    const cssClass = `day-event-item ${catProps.css}`;
+                    const displayText = firstEvt.title || '(제목 없음)';
+                    cellHtml += `<div class="${cssClass}">${displayText}</div>`;
+                    if (currentEvents.length > 1) {
+                        cellHtml += `<div class="more-badge">+${currentEvents.length - 1}개 더보기</div>`;
+                    }
+                }
+                cellHtml += `</div>`;
+                cell.innerHTML = cellHtml;
+                dayGridBody.appendChild(cell);
+            }
+
+            const totalCells = firstDayIndex + lastDate;
+            const remainingCells = (7 - (totalCells % 7)) % 7;
+            for (let i = 0; i < remainingCells; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell other-month';
+                dayGridBody.appendChild(emptyCell);
+            }
+
+            history.pushState({ modal: 'day' }, '', '#dayView');
+            modal.style.display = 'flex';
+
+            if (firstMatchDay) {
+                selectDayDetail(year, month, firstMatchDay.day, firstMatchDay.colIndex, firstMatchDay.holidayName, firstMatchDay.currentEvents);
+            }
+        }
+
+        function handleSearchInput() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('searchClearBtn');
+            const badge = document.getElementById('searchBadge');
+            const query = input.value.trim();
+            currentSearchTerm = query;
+
+            if (query) {
+                document.getElementById('photoSearchInput').value = '';
+                document.getElementById('photoSearchClearBtn').style.display = 'none';
+                document.getElementById('photoSearchBadge').style.display = 'none';
+                document.getElementById('photoStripContainer').style.display = 'none';
+                currentPhotoSearchTerm = '';
+                currentMatchedPhotoList = [];
+            }
+            clearBtn.style.display = query ? 'block' : 'none';
+
+            let matchCount = 0;
+            const monthCellMatchMap = {};
+            if (query) {
+                const qLower = query.toLowerCase();
+                for (const key in globalEventMap) {
+                    let monthHasMatch = false;
+                    globalEventMap[key].forEach(evt => {
+                        const combined = `${evt.title || ''} ${evt.place || ''} ${evt.note || ''} ${evt.attendees || ''}`.toLowerCase();
+                        if (combined.includes(qLower)) {
+                            matchCount++;
+                            monthHasMatch = true;
+                        }
+                    });
+                    if (monthHasMatch) monthCellMatchMap[key] = true;
+                }
+                badge.style.display = 'inline-block';
+                badge.textContent = `행사 ${matchCount}건 발견`;
+            } else {
+                badge.style.display = 'none';
+            }
+            updateCalendarSearchHighlights(monthCellMatchMap, !!query, false);
+        }
+
+        function handlePhotoSearchInput() {
+            const input = document.getElementById('photoSearchInput');
+            const clearBtn = document.getElementById('photoSearchClearBtn');
+            const badge = document.getElementById('photoSearchBadge');
+            const stripContainer = document.getElementById('photoStripContainer');
+            const stripScroll = document.getElementById('photoStripScroll');
+            const stripTitle = document.getElementById('photoStripTitle');
+            const query = input.value.trim();
+            currentPhotoSearchTerm = query;
+
+            if (query) {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchClearBtn').style.display = 'none';
+                document.getElementById('searchBadge').style.display = 'none';
+                currentSearchTerm = '';
+            }
+            clearBtn.style.display = query ? 'block' : 'none';
+
+            let matchCount = 0;
+            const monthCellMatchMap = {};
+            const matchedPhotos = [];
+
+            if (query) {
+                const qLower = query.toLowerCase();
+                globalPhotoList.forEach(photo => {
+                    const combined = `${photo.title || ''} ${photo.place || ''} ${photo.note || ''} ${photo.attendees || ''} ${photo.name || ''}`.toLowerCase();
+                    if (combined.includes(qLower)) {
+                        matchCount++;
+                        matchedPhotos.push(photo);
+                        if (photo.dateStr && photo.dateStr.length >= 6) {
+                            const y = parseInt(photo.dateStr.substring(0, 4), 10);
+                            const m = parseInt(photo.dateStr.substring(4, 6), 10);
+                            monthCellMatchMap[`${y}-${m}`] = true;
+                        }
+                    }
+                });
+                currentMatchedPhotoList = matchedPhotos;
+                badge.style.display = 'inline-block';
+                badge.textContent = `사진 ${matchCount}건 발견`;
+
+                if (matchedPhotos.length > 0) {
+                    stripTitle.textContent = `📷 "${query}" 사진 ${matchedPhotos.length}장 검색됨`;
+                    let stripHtml = '';
+                    matchedPhotos.forEach((p, idx) => {
+                        const shortDate = p.dateStr && p.dateStr.length === 8 ? `${p.dateStr.substring(2, 4)}.${p.dateStr.substring(4, 6)}.${p.dateStr.substring(6, 8)}` : '';
+                        const thumbUrl = `https://drive.google.com/thumbnail?id=${p.id}&sz=w200`;
+                        stripHtml += `
+                            <div class="strip-card" onclick="openPhotoViewerFromGallery(${idx})" title="${p.title || ''} (${shortDate})">
+                                <img src="${thumbUrl}" alt="사진" loading="lazy">
+                                <span class="strip-card-date">${shortDate}</span>
+                                <span class="strip-card-title">${p.title || '(행사명 없음)'}</span>
+                            </div>
+                        `;
+                    });
+                    stripScroll.innerHTML = stripHtml;
+                    stripContainer.style.display = 'flex';
+                } else {
+                    stripContainer.style.display = 'none';
+                }
+            } else {
+                badge.style.display = 'none';
+                stripContainer.style.display = 'none';
+                currentMatchedPhotoList = [];
+            }
+            updateCalendarSearchHighlights(monthCellMatchMap, !!query, true);
+        }
+
+        function updateCalendarSearchHighlights(matchMap, hasQuery, isPhotoSearch) {
+            document.querySelectorAll('.month-cell').forEach(td => {
+                td.classList.remove('search-match', 'photo-search-match', 'search-dimmed');
+                if (hasQuery) {
+                    if (matchMap[td.dataset.key]) {
+                        td.classList.add(isPhotoSearch ? 'photo-search-match' : 'search-match');
+                    } else {
+                        td.classList.add('search-dimmed');
+                    }
+                }
+            });
+        }
+
+        function clearSearch() { const input = document.getElementById('searchInput'); input.value = ''; handleSearchInput(); input.focus(); }
+        function clearPhotoSearch() { const input = document.getElementById('photoSearchInput'); input.value = ''; handlePhotoSearchInput(); input.focus(); }
+
+        function parseCSV(text) {
+            let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
+            for (let l of text) {
+                if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
+                else if (',' === l && s) l = row[++r] = '';
+                else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
+                else row[r] += l;
+                p = l;
+            }
+            return ret;
+        }
+
+        function parsePhotoDB(csvText) {
+            const rows = parseCSV(csvText);
+            const photoMap = {};
+            const fallbackMap = {};
+            const photoList = [];
+            for (let i = 1; i < rows.length; i++) {
+                const cols = rows[i].map(c => c.trim());
+                const fileName = cols[0];
+                const fileId = cols[1];
+                const dateStr = cols[3];
+                const seq = cols[4] || '1';
+                const title = cols[5] || '';
+                const place = cols[6] || '';
+                const note = cols[7] || '';
+                const attendees = cols[8] || '';
+                if (!fileId || !dateStr) continue;
+                const photoObj = { id: fileId, name: fileName, dateStr: dateStr, seq: seq, title: title, place: place, note: note, attendees: attendees };
+                const key = `${dateStr}_${seq}`;
+                if (!photoMap[key]) photoMap[key] = [];
+                photoMap[key].push(photoObj);
+                if (!fallbackMap[dateStr]) fallbackMap[dateStr] = [];
+                fallbackMap[dateStr].push(photoObj);
+                photoList.push(photoObj);
+            }
+            globalPhotoMap = photoMap;
+            globalPhotoDateFallbackMap = fallbackMap;
+            globalPhotoList = photoList;
+        }
+
+        function parseAndRenderCalendar(csvText) {
+            const rows = parseCSV(csvText);
+            if (rows.length < 2) return;
+            const eventMap = {};
+            const errorList = [];
+
+            for (let i = 1; i < rows.length; i++) {
+                const cols = rows[i].map(c => c.trim());
+                const dateStr = cols[0], seq = cols[1] || '1', category = cols[2], title = cols[3];
+                const place = cols[4] || '', note = cols[5] || '', attendees = cols[6] || '';
+                if (!dateStr && !category && !title) continue;
+
+                let isDataValid = true, errorReason = '', errorType = '', errorInputVal = '';
+                let parsedYear = null, parsedMonth = null, parsedDay = null;
+
+                if (!/^\d{8}$/.test(dateStr)) {
+                    isDataValid = false; errorType = 'DATE_ERROR'; errorInputVal = dateStr || '공란';
+                    errorReason = `날짜 형식 오류 (8자리 숫자가 아님: '${dateStr}')`;
+                    errorList.push(`날짜 오류: "${title || '제목없음'}" (입력값: '${dateStr}')`);
+                } else {
+                    parsedYear = parseInt(dateStr.substring(0, 4), 10);
+                    parsedMonth = parseInt(dateStr.substring(4, 6), 10);
+                    parsedDay = parseInt(dateStr.substring(6, 8), 10);
+                    if (parsedMonth < 1 || parsedMonth > 12 || parsedDay < 1 || parsedDay > 31) {
+                        isDataValid = false; errorType = 'DATE_ERROR'; errorInputVal = dateStr;
+                        errorReason = `유효하지 않은 날짜 범위 ('${dateStr}')`;
+                        errorList.push(`날짜 범위 오류: "${title || '제목없음'}" ('${dateStr}')`);
+                    }
+                }
+
+                if (!['중요', '결혼', '부고', '행사', '기타'].includes(category)) {
+                    isDataValid = false; errorType = 'CATEGORY_ERROR'; errorInputVal = category || '공란';
+                    errorReason = `유효하지 않은 분류명 ('${category}')`;
+                    errorList.push(`분류 오류: "${title || '제목없음'}" ('${category}')`);
+                }
+
+                if (parsedYear && parsedMonth && parsedDay) {
+                    const key = `${parsedYear}-${parsedMonth}`;
+                    if (!eventMap[key]) eventMap[key] = [];
+                    eventMap[key].push({ dateStr, seq, isValid: isDataValid, category, title, place, note, attendees, day: parsedDay, errorReason, errorType, errorInputVal });
+                }
+            }
+
+            globalEventMap = eventMap;
+            const errorContainer = document.getElementById('error-container');
+            if (errorList.length > 0) {
+                document.getElementById('error-list').innerHTML = [...new Set(errorList)].map(err => `<li>${err}</li>`).join('');
+                errorContainer.style.display = 'block';
+            } else {
+                errorContainer.style.display = 'none';
+            }
+
+            const tbody = document.getElementById('calendar-body');
+            tbody.innerHTML = '';
+            for (let year = 1975; year <= 2026; year++) {
+                const tr = document.createElement('tr');
+                const thYear = document.createElement('th');
+                thYear.textContent = year;
+                tr.appendChild(thYear);
+
+                for (let month = 1; month <= 12; month++) {
+                    const td = document.createElement('td');
+                    td.className = 'month-cell';
+                    td.dataset.key = `${year}-${month}`;
+                    td.onclick = () => openDayModal(year, month);
+
+                    const monthEvents = eventMap[`${year}-${month}`];
+                    if (monthEvents && monthEvents.length > 0) {
+                        let symbolsHtml = '<div class="symbol-wrapper">';
+                        symbolsHtml += monthEvents.map(item => {
+                            let tooltipLines = [];
+                            if (item.isValid) {
+                                tooltipLines.push(`[${month}월 ${item.day}일] [${item.category}] ${item.title || '(제목 없음)'}`);
+                                if (item.place) tooltipLines.push(`📍 장소: ${item.place}`);
+                                if (item.note) tooltipLines.push(`📝 메모: ${item.note}`);
+                                if (item.attendees) tooltipLines.push(`👥 참석: ${item.attendees}`);
+                            } else {
+                                tooltipLines.push(`[${month}월 ${item.day}일] 오류: ${item.title || '(제목 없음)'}`);
+                                if (item.errorReason) tooltipLines.push(`⚠️ 원인: ${item.errorReason}`);
+                            }
+                            const tooltipText = tooltipLines.join('\n').replace(/"/g, '&quot;');
+                            const catProps = getCategoryProps(item);
+                            const renderSymbol = item.isValid ? catProps.symbol : 'X';
+                            return `<span class="symbol-${catProps.css}" title="${tooltipText}">${renderSymbol}</span>`;
+                        }).join('');
+                        symbolsHtml += '</div>';
+                        td.innerHTML = symbolsHtml;
+                    } else {
+                        td.innerHTML = '<div class="symbol-wrapper"><span class="symbol-empty">·</span></div>';
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+
+            if (currentSearchTerm) handleSearchInput();
+            if (currentPhotoSearchTerm) handlePhotoSearchInput();
+        }
+
+        async function loadCalendarAndPhotoData() {
+            try {
+                const [eventRes, photoRes] = await Promise.all([fetch(csvUrl), fetch(photoDbCsvUrl)]);
+                const [eventText, photoText] = await Promise.all([eventRes.text(), photoRes.text()]);
+                parsePhotoDB(photoText);
+                parseAndRenderCalendar(eventText);
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                document.getElementById('calendar-body').innerHTML = `<tr><td colspan="13" class="loading" style="color: red;">데이터를 불러오는데 실패했습니다.</td></tr>`;
+            }
+        }
+
+        loadCalendarAndPhotoData();
+    </script>
 </body>
 </html>
