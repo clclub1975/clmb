@@ -1,4 +1,4 @@
-<!-- v12.4: 4개 입력 영역(입력창+드롭다운) mouseleave 감지 자동완성 자동 닫힘 기능 적용 -->
+<!-- v12.5: 일정 등록 완료 알림 문구 개선 (캘린더 반영 안내 수정) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -325,7 +325,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.4</span>
+                    <span class="version">v12.5</span>
                 </span>
             </h1>
         </header>
@@ -480,28 +480,28 @@
                     </div>
                 </div>
 
-                <!-- [v12.4] 행사명 최근입력 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <!-- 행사명 최근입력 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('title')">
                     <label for="inputNewTitle">행사명 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회" oninput="handleFieldInput(this, 'title')" onfocus="handleFieldFocus(this, 'title')" onkeydown="handleFieldKeyDown(event, this, 'title')" autocomplete="off">
                     <div id="titleAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- [v12.4] 장소 최근입력 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <!-- 장소 최근입력 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('place')">
                     <label for="inputNewPlace">장소 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewPlace" placeholder="예: 서울 회의실" oninput="handleFieldInput(this, 'place')" onfocus="handleFieldFocus(this, 'place')" onkeydown="handleFieldKeyDown(event, this, 'place')" autocomplete="off">
                     <div id="placeAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- [v12.4] 비고 최근입력 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <!-- 비고 최근입력 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('note')">
                     <label for="inputNewNote">비고 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewNote" placeholder="예: 50주년 기념" oninput="handleFieldInput(this, 'note')" onfocus="handleFieldFocus(this, 'note')" onkeydown="handleFieldKeyDown(event, this, 'note')" autocomplete="off">
                     <div id="noteAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- [v12.4] 참석자 다중 스마트 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <!-- 참석자 다중 스마트 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('attendees')">
                     <label for="inputNewAttendees">
                         <span>참석자 (쉼표 구분 / 자동완성 지원)</span>
@@ -511,7 +511,7 @@
                     <div id="attendeesAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- 관리자 인증 영역 (가로 2분할 1행 2열 및 자동저장 체크박스) -->
+                <!-- 관리자 인증 영역 -->
                 <div id="adminPasswordFieldWrap" class="admin-auth-box">
                     <div class="admin-auth-row">
                         <div class="admin-auth-col">
@@ -544,7 +544,6 @@
                 <button type="button" class="modal-close-btn" onclick="closeConfirmModal()">&times;</button>
             </div>
             <div class="modal-body" style="padding: 14px; position: relative;">
-                <!-- 최종 확인 창 위에 또렷하게 뜨는 완료 알림 레이어 -->
                 <div id="confirmAlertBox" class="custom-alert-box alert-success" style="top: 10px;">
                     <span id="confirmAlertIcon">✅</span>
                     <span id="confirmAlertMsg">알림 메시지</span>
@@ -640,7 +639,6 @@
         let pendingNewEventPayload = null;
         let modalAlertTimer = null;
         let confirmAlertTimer = null;
-
         let mouseDownTarget = null;
 
         const LOCAL_STORAGE_KEYS = {
@@ -977,7 +975,6 @@
             renderFieldAutocomplete(element, fieldType);
         }
 
-        // [v12.4] 입력창 및 드롭다운 영역에서 마우스가 완전히 빠져나갔을 때 해당 자동완성 닫기
         function handleFieldMouseLeave(fieldType) {
             const dropdown = document.getElementById(`${fieldType}AutocompleteList`);
             if (dropdown) {
@@ -1257,7 +1254,7 @@
                     return;
                 }
 
-                showConfirmAlert('새 일정이 구글 시트에 정상적으로 등록되었습니다!', 'success');
+                showConfirmAlert('새 일정이 정상적으로 등록되었습니다. 캘린더 반영에는 잠시(수 분)의 시간이 소요될 수 있습니다.', 'success');
 
                 const p = pendingNewEventPayload;
                 const monthKey = `${p.year}-${p.month}`;
