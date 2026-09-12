@@ -1,4 +1,4 @@
-<!-- v12.20: 장소 및 비고 입력창 호버링 툴팁 안내 추가 및 전 입력필드 안내 통일 -->
+<!-- v12.21: 행사명, 장소, 비고 입력창 호버링 툴팁 문구 간결화 ('목록이 1개일 때는 엔터 키를 치면 바로 입력됩니다.') -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.20</span>
+                    <span class="version">v12.21</span>
                 </span>
             </h1>
         </header>
@@ -511,21 +511,21 @@
 
                 <!-- 행사명 최근입력 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('title')">
-                    <label for="inputNewTitle" title="💡 입력창에 단어를 치면 최근 입력 목록이 자동완성되며, 목록이 1개만 남았을 때 엔터(Enter)를 치면 바로 입력됩니다.">행사명 (최근 입력 자동완성)</label>
+                    <label for="inputNewTitle" title="💡 목록이 1개일 때는 엔터 키를 치면 바로 입력됩니다.">행사명 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회" oninput="handleFieldInput(this, 'title')" onfocus="handleFieldFocus(this, 'title')" onkeydown="handleFieldKeyDown(event, this, 'title')" autocomplete="off">
                     <div id="titleAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
                 <!-- 장소 최근입력 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('place')">
-                    <label for="inputNewPlace" title="💡 입력창에 단어를 치면 최근 입력 목록이 자동완성되며, 목록이 1개만 남았을 때 엔터(Enter)를 치면 바로 입력됩니다.">장소 (최근 입력 자동완성)</label>
+                    <label for="inputNewPlace" title="💡 목록이 1개일 때는 엔터 키를 치면 바로 입력됩니다.">장소 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewPlace" placeholder="예: 서울 회의실" oninput="handleFieldInput(this, 'place')" onfocus="handleFieldFocus(this, 'place')" onkeydown="handleFieldKeyDown(event, this, 'place')" autocomplete="off">
                     <div id="placeAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
                 <!-- 비고 최근입력 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('note')">
-                    <label for="inputNewNote" title="💡 입력창에 단어를 치면 최근 입력 목록이 자동완성되며, 목록이 1개만 남았을 때 엔터(Enter)를 치면 바로 입력됩니다.">비고 (최근 입력 자동완성)</label>
+                    <label for="inputNewNote" title="💡 목록이 1개일 때는 엔터 키를 치면 바로 입력됩니다.">비고 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewNote" placeholder="예: 50주년 기념" oninput="handleFieldInput(this, 'note')" onfocus="handleFieldFocus(this, 'note')" onkeydown="handleFieldKeyDown(event, this, 'note')" autocomplete="off">
                     <div id="noteAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
