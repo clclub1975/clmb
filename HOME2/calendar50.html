@@ -1,4 +1,4 @@
-<!-- v12.18: 참석자 자동완성 목록 번호 표시 및 숫자 키 단축 입력(1~9번) 기능 적용 -->
+<!-- v12.19: 참석자 목록 PC 번호 점(.) 제거 및 입력창별(행사명, 참석자) 맞춤형 호버링 툴팁 안내 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.18</span>
+                    <span class="version">v12.19</span>
                 </span>
             </h1>
         </header>
@@ -511,7 +511,7 @@
 
                 <!-- 행사명 최근입력 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('title')">
-                    <label for="inputNewTitle">행사명 (최근 입력 자동완성)</label>
+                    <label for="inputNewTitle" title="💡 입력창에 단어를 치면 최근 입력 목록이 자동완성되며, 목록이 1개만 남았을 때 엔터(Enter)를 치면 바로 입력됩니다.">행사명 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회" oninput="handleFieldInput(this, 'title')" onfocus="handleFieldFocus(this, 'title')" onkeydown="handleFieldKeyDown(event, this, 'title')" autocomplete="off">
                     <div id="titleAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
@@ -532,7 +532,7 @@
 
                 <!-- 참석자 다중 스마트 자동완성 -->
                 <div class="form-field" onmouseleave="handleFieldMouseLeave('attendees')">
-                    <label for="inputNewAttendees">
+                    <label for="inputNewAttendees" title="💡 목록 앞의 번호를 치면 입력이 됩니다. 목록이 1개일 때는 엔터키도 됩니다.">
                         <span>참석자 (쉼표 구분 / 자동완성 지원)</span>
                         <span id="attendeeCountBadge" class="attendee-count-badge">0명 입력됨</span>
                     </label>
@@ -1116,7 +1116,7 @@
                     ? `<span class="autocomplete-del-btn" title="목록에서 삭제" onmousedown="deleteHistoryOption(event, '${fieldType}', '${safeVal}')">&times;</span>`
                     : '';
 
-                const displayNum = (fieldType === 'attendees' && idx < 9) ? `<strong style="color:#2563eb; margin-right:6px;">${idx + 1}.</strong>` : '';
+                const displayNum = (fieldType === 'attendees' && idx < 9) ? `<strong style="color:#2563eb; margin-right:6px;">${idx + 1}</strong>` : '';
 
                 html += `<div class="autocomplete-item" onmousedown="selectFieldOption('${fieldType}', '${safeVal}')">
                     <span>${displayNum}${val}</span>
