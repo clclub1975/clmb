@@ -1,4 +1,4 @@
-<!-- v12.17: 마스터키 로직 전면 제거 및 등록자 성명 '마스터' 허용 방식 적용 -->
+<!-- v12.18: 참석자 자동완성 목록 번호 표시 및 숫자 키 단축 입력(1~9번) 기능 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.17</span>
+                    <span class="version">v12.18</span>
                 </span>
             </h1>
         </header>
@@ -924,7 +924,6 @@
         }
 
         async function runBackgroundVerify(author, pw) {
-            // 등록자 성명 또는 비밀번호가 부족하면 대기 상태
             if (!author || !pw) {
                 isBackgroundVerified = false;
                 const saved = getSavedAdminCred();
@@ -1111,14 +1110,16 @@
             }
 
             let html = '';
-            matchedList.slice(0, 25).forEach(val => {
+            matchedList.slice(0, 25).forEach((val, idx) => {
                 const safeVal = val.replace(/'/g, "\\'");
                 const delBtnHtml = (fieldType !== 'attendees') 
                     ? `<span class="autocomplete-del-btn" title="목록에서 삭제" onmousedown="deleteHistoryOption(event, '${fieldType}', '${safeVal}')">&times;</span>`
                     : '';
 
+                const displayNum = (fieldType === 'attendees' && idx < 9) ? `<strong style="color:#2563eb; margin-right:6px;">${idx + 1}.</strong>` : '';
+
                 html += `<div class="autocomplete-item" onmousedown="selectFieldOption('${fieldType}', '${safeVal}')">
-                    <span>${val}</span>
+                    <span>${displayNum}${val}</span>
                     ${delBtnHtml}
                 </div>`;
             });
@@ -1172,6 +1173,19 @@
         }
 
         function handleFieldKeyDown(event, element, fieldType) {
+            const dropdown = document.getElementById(`${fieldType}AutocompleteList`);
+            const isDropdownVisible = dropdown && dropdown.style.display === 'block';
+
+            if (fieldType === 'attendees' && isDropdownVisible && /^[1-9]$/.test(event.key)) {
+                const num = parseInt(event.key, 10);
+                const list = currentFilteredMap[fieldType] || [];
+                if (num <= list.length) {
+                    event.preventDefault();
+                    selectFieldOption('attendees', list[num - 1]);
+                    return;
+                }
+            }
+
             if (event.key === 'Enter') {
                 const list = currentFilteredMap[fieldType] || [];
 
@@ -2153,4 +2167,3 @@
     </script>
 </body>
 </html>
- 
