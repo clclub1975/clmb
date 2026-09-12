@@ -1,4 +1,4 @@
-<!-- v11.9: 완벽한 한글 자모 분해 매칭, 4개 전 입력 필드 자동완성 통합, 1개 목록 시 엔터 즉시 입력 지원 -->
+<!-- v11.10: 행사/장소/비고 사용자 최근입력(LocalStorage) 관리, 목록 내 X(삭제) 버튼 적용, 참석자 접두어(첫머리 ^) 매칭 엄격화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -232,11 +232,13 @@
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
         .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
-        /* [v11.9] 통합 스마트 자동완성 드롭다운 레이어 */
+        /* [v11.10] 개별 삭제(X) 버튼을 갖춘 통합 스마트 자동완성 드롭다운 레이어 */
         .autocomplete-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; max-height: 190px; overflow-y: auto; background: #ffffff; border: 1.5px solid #2563eb; border-radius: 6px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25); z-index: 5000; }
         .autocomplete-item { padding: 6px 10px; font-size: 0.78rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
         .autocomplete-item:last-child { border-bottom: none; }
         .autocomplete-item:hover, .autocomplete-item.active { background-color: #eff6ff; color: #1d4ed8; font-weight: 600; }
+        .autocomplete-del-btn { color: #94a3b8; font-size: 0.85rem; padding: 0 4px; border-radius: 3px; cursor: pointer; transition: all 0.15s ease; }
+        .autocomplete-del-btn:hover { color: #ef4444; background-color: #fee2e2; }
         .autocomplete-empty { padding: 8px 10px; font-size: 0.74rem; color: #94a3b8; text-align: center; }
 
         .radio-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1px; }
@@ -285,7 +287,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v11.9</span>
+                    <span class="version">v11.10</span>
                 </span>
             </h1>
         </header>
@@ -433,34 +435,34 @@
                     </div>
                 </div>
 
-                <!-- [v11.9] 행사명 스마트 자동완성 -->
+                <!-- [v11.10] 행사명 최근입력 자동완성 -->
                 <div class="form-field">
-                    <label for="inputNewTitle">행사명 (자동완성 지원)</label>
+                    <label for="inputNewTitle">행사명 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회" oninput="handleFieldInput(this, 'title')" onfocus="handleFieldFocus(this, 'title')" onkeydown="handleFieldKeyDown(event, this, 'title')" autocomplete="off">
                     <div id="titleAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- [v11.9] 장소 스마트 자동완성 -->
+                <!-- [v11.10] 장소 최근입력 자동완성 -->
                 <div class="form-field">
-                    <label for="inputNewPlace">장소 (자동완성 지원)</label>
+                    <label for="inputNewPlace">장소 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewPlace" placeholder="예: 서울 회의실" oninput="handleFieldInput(this, 'place')" onfocus="handleFieldFocus(this, 'place')" onkeydown="handleFieldKeyDown(event, this, 'place')" autocomplete="off">
                     <div id="placeAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- [v11.9] 비고 스마트 자동완성 -->
+                <!-- [v11.10] 비고 최근입력 자동완성 -->
                 <div class="form-field">
-                    <label for="inputNewNote">비고 (자동완성 지원)</label>
+                    <label for="inputNewNote">비고 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewNote" placeholder="예: 50주년 기념" oninput="handleFieldInput(this, 'note')" onfocus="handleFieldFocus(this, 'note')" onkeydown="handleFieldKeyDown(event, this, 'note')" autocomplete="off">
                     <div id="noteAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- [v11.9] 참석자 다중 스마트 자동완성 -->
+                <!-- [v11.10] 참석자 다중 스마트 자동완성 (접두어 ^ 매칭) -->
                 <div class="form-field">
                     <label for="inputNewAttendees">
                         <span>참석자 (쉼표 구분 / 자동완성 지원)</span>
                         <span id="attendeeCountBadge" class="attendee-count-badge">0명 입력됨</span>
                     </label>
-                    <textarea id="inputNewAttendees" placeholder="예: 홍길동, 김철수 (이름 또는 초성/음절 입력 시 추천)" oninput="handleFieldInput(this, 'attendees')" onfocus="handleFieldFocus(this, 'attendees')" onkeydown="handleFieldKeyDown(event, this, 'attendees')" autocomplete="off"></textarea>
+                    <textarea id="inputNewAttendees" placeholder="예: 홍길동, 김철수 (이름 첫 글자 또는 초성 입력 시 추천)" oninput="handleFieldInput(this, 'attendees')" onfocus="handleFieldFocus(this, 'attendees')" onkeydown="handleFieldKeyDown(event, this, 'attendees')" autocomplete="off"></textarea>
                     <div id="attendeesAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
@@ -579,14 +581,47 @@
 
         let lastTitleTouchTime = 0;
 
-        // [v11.9] 4개 필드별 전체 데이터 수집 풀
-        const globalAutocompletePool = {
-            title: [],
-            place: [],
-            note: [],
-            attendees: []
+        // [v11.10] 행사명, 장소, 비고는 사용자 최근 입력(LocalStorage) 관리, 참석자는 50년사 전체 회원 관리
+        const LOCAL_STORAGE_KEYS = {
+            title: 'calendar50_recent_titles',
+            place: 'calendar50_recent_places',
+            note: 'calendar50_recent_notes'
         };
-        // 현재 화면에 필터링되어 떠 있는 목록 보관 (엔터 키용)
+
+        function getRecentUserHistory(type) {
+            try {
+                const stored = localStorage.getItem(LOCAL_STORAGE_KEYS[type]);
+                return stored ? JSON.parse(stored) : [];
+            } catch(e) { return []; }
+        }
+
+        function saveRecentUserHistory(type, value) {
+            if (!value) return;
+            try {
+                let list = getRecentUserHistory(type);
+                list = list.filter(item => item !== value);
+                list.unshift(value); // 최근 입력값을 맨 앞으로
+                if (list.length > 50) list = list.slice(0, 50);
+                localStorage.setItem(LOCAL_STORAGE_KEYS[type], JSON.stringify(list));
+            } catch(e) {}
+        }
+
+        function removeRecentHistoryItem(type, value) {
+            try {
+                let list = getRecentUserHistory(type);
+                list = list.filter(item => item !== value);
+                localStorage.setItem(LOCAL_STORAGE_KEYS[type], JSON.stringify(list));
+            } catch(e) {}
+        }
+
+        // 전체 데이터 수집 풀
+        const globalAutocompletePool = {
+            title: getRecentUserHistory('title'),
+            place: getRecentUserHistory('place'),
+            note: getRecentUserHistory('note'),
+            attendees: [] // 50년사 전체 참석자
+        };
+
         const currentFilteredMap = {
             title: [],
             place: [],
@@ -594,7 +629,7 @@
             attendees: []
         };
 
-        /* [v11.9] 한글 음절 단위 정밀 분해 및 매칭 알고리즘 */
+        /* [v11.10] 한글 음절 단위 분해 및 시작점(^ prefix) 대조 알고리즘 */
         const CHOSUNG = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
         const JUNGSUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
         const JONGSUNG = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -621,63 +656,57 @@
         }
 
         /* 
-           정밀 음절 대조:
-           '가'(ㄱ+ㅏ)를 입력했을 때:
-           - '강찬'의 첫 글자 '강'(ㄱ+ㅏ+ㅇ)의 초+중성은 'ㄱ+ㅏ'이므로 일치 -> TRUE
-           - '김갑수'의 첫 글자 '김'(ㄱ+ㅣ+ㅁ)은 불일치, 둘째 글자 '갑'은 단어 시작 위치가 아니므로 배제 -> FALSE
-           '행'(ㅎ+ㅐ+ㅇ)을 입력했을 때:
-           - '행사', '행상' 모두 첫 글자가 '행'이므로 완벽하게 일치 -> TRUE
+           [v11.10] 접두어(^ Prefix) 시작 일치 함수
+           - strictPrefix: true인 경우 (참석자), 반드시 단어의 맨 첫 글자(인덱스 0)부터 시작해야만 매칭됨
+           - '호' 입력 시: '홍병희'는 초+중성이 'ㅎ+ㅗ'이므로 첫 글자 일치 -> 매칭! / '이준호', '이기호'는 첫 글자가 '이'이므로 탈락!
         */
-        function matchHangulPrefix(targetStr, query) {
+        function matchHangulPrefix(targetStr, query, strictPrefix = false) {
             if (!query) return true;
             if (!targetStr) return false;
 
             const tLower = targetStr.toLowerCase();
             const qLower = query.toLowerCase();
 
-            // 1. 단순 포함 시 무조건 일치
-            if (tLower.includes(qLower)) return true;
-
-            // 2. 검색어가 단일 자음인 경우 (예: 'ㄱ')
+            // 1. 단일 자음인 경우 (예: 'ㄱ', 'ㅎ')
             if (isSingleChosung(qLower)) {
-                // 단어의 첫 글자 또는 공백 뒤 음절의 초성 대조
-                const syllables = targetStr.split('');
-                return syllables.some((char, idx) => {
-                    if (idx === 0 || targetStr[idx - 1] === ' ') {
-                        const dec = decomposeSyllable(char);
-                        return dec.cho === qLower;
-                    }
-                    return false;
-                });
+                if (strictPrefix) {
+                    const firstDec = decomposeSyllable(targetStr.charAt(0));
+                    return firstDec.cho === qLower;
+                } else {
+                    const syllables = targetStr.split('');
+                    return syllables.some((char, idx) => {
+                        if (idx === 0 || targetStr[idx - 1] === ' ') {
+                            const dec = decomposeSyllable(char);
+                            return dec.cho === qLower;
+                        }
+                        return false;
+                    });
+                }
             }
 
-            // 3. 음절 단위 정밀 순차 접두 대조 (예: '가' -> '강찬', '행' -> '행사')
+            // 2. 음절 단위 정밀 순차 접두 대조
             const qDec = Array.from(qLower).map(decomposeSyllable);
-            
-            // 단어 내 각 어절(시작점)별로 대조
-            for (let startIndex = 0; startIndex <= targetStr.length - qLower.length; startIndex++) {
-                // 단어의 첫머리이거나 띄어쓰기 직후인 경우 우선 매칭
-                if (startIndex !== 0 && targetStr[startIndex - 1] !== ' ') continue;
+            const maxStartIndex = strictPrefix ? 0 : (targetStr.length - qLower.length);
+
+            for (let startIndex = 0; startIndex <= maxStartIndex; startIndex++) {
+                if (!strictPrefix && startIndex !== 0 && targetStr[startIndex - 1] !== ' ') continue;
 
                 let isMatch = true;
                 for (let k = 0; k < qDec.length; k++) {
+                    if (startIndex + k >= targetStr.length) { isMatch = false; break; }
+
                     const tCharDec = decomposeSyllable(targetStr[startIndex + k]);
                     const qCharDec = qDec[k];
 
                     if (k === qDec.length - 1) {
-                        // 마지막 입력 중인 글자 비교
                         if (qCharDec.jung === '') {
-                            // 종성/모음 없는 초성만 있는 경우
                             if (tCharDec.cho !== qCharDec.cho) isMatch = false;
                         } else if (qCharDec.jong === '') {
-                            // 받침 없는 '가', '해' 등의 형태
                             if (tCharDec.choJung !== qCharDec.choJung) isMatch = false;
                         } else {
-                            // 받침까지 있는 '강', '행' 형태
                             if (tCharDec.full !== qCharDec.full) isMatch = false;
                         }
                     } else {
-                        // 앞 글자들은 완전 일치해야 함
                         if (tCharDec.full !== qCharDec.full) {
                             isMatch = false;
                             break;
@@ -790,7 +819,6 @@
             badge.textContent = `${count}명 입력됨`;
         }
 
-        /* [v11.9] 4대 입력 필드 공통 스마트 자동완성 컨트롤러 */
         function getFieldQueryToken(element, fieldType) {
             if (fieldType === 'attendees') {
                 const text = element.value;
@@ -820,19 +848,26 @@
             renderFieldAutocomplete(element, fieldType);
         }
 
+        /* [v11.10] 자동완성 렌더링 (참석자는 ^ strictPrefix 적용, 항목별 X 삭제 버튼 포함) */
         function renderFieldAutocomplete(element, fieldType) {
             hideAllAutocomplete();
             const dropdown = document.getElementById(`${fieldType}AutocompleteList`);
             if (!dropdown) return;
 
             const { token } = getFieldQueryToken(element, fieldType);
+            
+            // 행사/장소/비고는 최신 LocalStorage에서 실시간 갱신
+            if (fieldType !== 'attendees') {
+                globalAutocompletePool[fieldType] = getRecentUserHistory(fieldType);
+            }
             const pool = globalAutocompletePool[fieldType] || [];
 
             let matchedList = [];
             if (!token) {
                 matchedList = pool.slice(0, 30);
             } else {
-                matchedList = pool.filter(item => matchHangulPrefix(item, token));
+                const isStrict = (fieldType === 'attendees');
+                matchedList = pool.filter(item => matchHangulPrefix(item, token, isStrict));
             }
 
             currentFilteredMap[fieldType] = matchedList;
@@ -846,14 +881,32 @@
             let html = '';
             matchedList.slice(0, 25).forEach(val => {
                 const safeVal = val.replace(/'/g, "\\'");
+                // 최근 입력 히스토리(행사/장소/비고)에 대해서는 X 삭제 버튼 제공
+                const delBtnHtml = (fieldType !== 'attendees') 
+                    ? `<span class="autocomplete-del-btn" title="목록에서 삭제" onmousedown="deleteHistoryOption(event, '${fieldType}', '${safeVal}')">&times;</span>`
+                    : '';
+
                 html += `<div class="autocomplete-item" onmousedown="selectFieldOption('${fieldType}', '${safeVal}')">
                     <span>${val}</span>
-                    <span style="font-size:0.7rem; color:#94a3b8;">선택</span>
+                    ${delBtnHtml}
                 </div>`;
             });
 
             dropdown.innerHTML = html;
             dropdown.style.display = 'block';
+        }
+
+        function deleteHistoryOption(event, fieldType, value) {
+            event.stopPropagation(); // 부모 선택 이벤트 차단
+            event.preventDefault();
+            removeRecentHistoryItem(fieldType, value);
+            globalAutocompletePool[fieldType] = getRecentUserHistory(fieldType);
+            
+            let elemId = 'inputNewTitle';
+            if (fieldType === 'place') elemId = 'inputNewPlace';
+            if (fieldType === 'note') elemId = 'inputNewNote';
+            const element = document.getElementById(elemId);
+            renderFieldAutocomplete(element, fieldType);
         }
 
         function selectFieldOption(fieldType, value) {
@@ -887,12 +940,11 @@
             element.focus();
         }
 
-        /* [v11.9] 자동완성 목록이 단 1개 남았을 때 Enter 키 누르면 즉시 선택/등록 */
         function handleFieldKeyDown(event, element, fieldType) {
             if (event.key === 'Enter') {
                 const list = currentFilteredMap[fieldType] || [];
                 if (list.length === 1) {
-                    event.preventDefault(); // 줄바꿈 또는 폼 제출 방지
+                    event.preventDefault();
                     selectFieldOption(fieldType, list[0]);
                 }
             }
@@ -1043,19 +1095,12 @@
                 };
                 globalEventMap[monthKey].push(newEvtObj);
 
-                // 새 일정 데이터를 각 자동완성 풀에 합류
-                if (p.title && !globalAutocompletePool.title.includes(p.title)) {
-                    globalAutocompletePool.title.push(p.title);
-                    globalAutocompletePool.title.sort((a, b) => a.localeCompare(b, 'ko'));
-                }
-                if (p.place && !globalAutocompletePool.place.includes(p.place)) {
-                    globalAutocompletePool.place.push(p.place);
-                    globalAutocompletePool.place.sort((a, b) => a.localeCompare(b, 'ko'));
-                }
-                if (p.note && !globalAutocompletePool.note.includes(p.note)) {
-                    globalAutocompletePool.note.push(p.note);
-                    globalAutocompletePool.note.sort((a, b) => a.localeCompare(b, 'ko'));
-                }
+                // [v11.10] 등록 완료 시 사용자 최근 입력값 히스토리에 자동 저장 (LocalStorage)
+                if (p.title) saveRecentUserHistory('title', p.title);
+                if (p.place) saveRecentUserHistory('place', p.place);
+                if (p.note) saveRecentUserHistory('note', p.note);
+
+                // 새 일정의 참석자들도 전체 회원 명단에 추가
                 if (p.attendees) {
                     p.attendees.split(',').map(n => n.trim()).filter(n => n.length > 0).forEach(name => {
                         if (!globalAutocompletePool.attendees.includes(name)) {
@@ -1706,10 +1751,6 @@
             if (rows.length < 2) return;
             const eventMap = {};
             const errorList = [];
-            
-            const titleSet = new Set();
-            const placeSet = new Set();
-            const noteSet = new Set();
             const attendeesSet = new Set();
 
             for (let i = 1; i < rows.length; i++) {
@@ -1718,10 +1759,7 @@
                 const place = cols[4] || '', note = cols[5] || '', attendees = cols[6] || '';
                 if (!dateStr && !category && !title) continue;
 
-                // [v11.9] 4대 필드별 데이터 자동완성 풀 추출
-                if (title) titleSet.add(title);
-                if (place) placeSet.add(place);
-                if (note) noteSet.add(note);
+                // [v11.10] 참석자 전체 회원 풀 수집
                 if (attendees) {
                     attendees.split(',').map(n => n.trim()).filter(n => n.length > 0).forEach(name => {
                         attendeesSet.add(name);
@@ -1759,10 +1797,6 @@
                 }
             }
 
-            // 가나다순으로 전체 자동완성 풀 정렬
-            globalAutocompletePool.title = Array.from(titleSet).sort((a, b) => a.localeCompare(b, 'ko'));
-            globalAutocompletePool.place = Array.from(placeSet).sort((a, b) => a.localeCompare(b, 'ko'));
-            globalAutocompletePool.note = Array.from(noteSet).sort((a, b) => a.localeCompare(b, 'ko'));
             globalAutocompletePool.attendees = Array.from(attendeesSet).sort((a, b) => a.localeCompare(b, 'ko'));
 
             globalEventMap = eventMap;
