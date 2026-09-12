@@ -1,4 +1,4 @@
-<!-- v12.0: 새 일정 추가 창 제목 문구 '(관리자 인증 필요)' 변경 및 직관적인 열쇠(🔑) 인증 토글 버튼 추가 -->
+<!-- v12.1: 관리자 인증 정보 가로 2분할 배치, 자동저장(선택) 옵션 및 모달 상단 커스텀 알림 레이어 지원 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -216,11 +216,10 @@
         .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #2563eb; color: #ffffff; border-top-left-radius: 10px; border-top-right-radius: 10px; flex-shrink: 0; user-select: none; }
         .add-event-header h3 { font-size: 0.92rem; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px; }
         
-        /* [v12.0] 열쇠 아이콘 버튼 스타일 */
         .admin-key-toggle-btn { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 4px; color: #ffffff; cursor: pointer; font-size: 0.9rem; padding: 1px 6px; line-height: 1.2; display: inline-flex; align-items: center; transition: all 0.2s ease; }
         .admin-key-toggle-btn:hover { background: rgba(255, 255, 255, 0.35); border-color: #ffffff; transform: scale(1.05); }
 
-        .add-event-body { padding: 12px 14px; overflow: visible; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .add-event-body { padding: 12px 14px; overflow: visible; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; position: relative; }
 
         .info-row { display: flex; gap: 12px; font-size: 0.76rem; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; color: #334155; line-height: 1.3; min-height: 28px; align-items: center; }
         .info-row span { font-weight: 600; color: #0f172a; }
@@ -237,6 +236,14 @@
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
         .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
+        /* [v12.1] 관리자 인증 영역 가로 2분할 (1행 2열) 및 체크박스 */
+        .admin-auth-box { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; flex-direction: column; gap: 6px; }
+        .admin-auth-row { display: flex; gap: 8px; width: 100%; }
+        .admin-auth-col { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .admin-auth-col label { font-size: 0.73rem; font-weight: bold; color: #854d0e; }
+        .admin-save-opt { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #854d0e; font-weight: 600; cursor: pointer; user-select: none; padding-top: 2px; }
+        .admin-save-opt input[type="checkbox"] { accent-color: #2563eb; cursor: pointer; }
+
         /* 개별 삭제(X) 버튼을 갖춘 통합 스마트 자동완성 드롭다운 레이어 */
         .autocomplete-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; max-height: 190px; overflow-y: auto; background: #ffffff; border: 1.5px solid #2563eb; border-radius: 6px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25); z-index: 5000; }
         .autocomplete-item { padding: 6px 10px; font-size: 0.78rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
@@ -251,14 +258,17 @@
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
 
-        .hidden-admin-field { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 6px 8px; border-radius: 6px; gap: 4px; }
-
         .add-event-footer { padding: 8px 14px; background: #f1f5f9; display: flex; justify-content: flex-end; gap: 6px; border-top: 1px solid #e2e8f0; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; flex-shrink: 0; }
         .btn-cancel { padding: 6px 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 5px; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
         .btn-cancel:hover { background: #f1f5f9; }
         .btn-submit { padding: 6px 14px; background: #2563eb; border: none; color: #ffffff; border-radius: 5px; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
         .btn-submit:hover { background: #1d4ed8; }
         .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        /* [v12.1] 새 일정 추가 창 위에 또렷하게 뜨는 커스텀 알림창(Toast) 레이어 */
+        .custom-alert-box { display: none; position: absolute; top: 18px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #ffffff; padding: 10px 18px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35); font-size: 0.82rem; font-weight: 600; z-index: 6000; align-items: center; gap: 8px; white-space: nowrap; animation: modalFadeIn 0.2s ease-out; }
+        .custom-alert-box.alert-error { background: #ef4444; }
+        .custom-alert-box.alert-success { background: #059669; }
 
         /* 커스텀 최종 확인 모달 스타일 */
         .confirm-row { display: flex; gap: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; margin-bottom: 6px; align-items: flex-start; }
@@ -278,6 +288,7 @@
             .more-badge { font-size: 0.52rem; padding: 1px 2px; }
             .detail-add-btn { font-size: 0.7rem; padding: 3px 7px; }
             .add-event-header h3 { font-size: 0.85rem; }
+            .admin-auth-row { flex-direction: column; gap: 6px; }
         }
     </style>
 </head>
@@ -292,7 +303,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.0</span>
+                    <span class="version">v12.1</span>
                 </span>
             </h1>
         </header>
@@ -417,7 +428,6 @@
     <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
         <div class="add-event-modal-content">
             <div class="add-event-header">
-                <!-- [v12.0] 제목 문구 '(관리자 인증 필요)' 및 열쇠(🔑) 버튼 배치 -->
                 <h3 id="addEventModalTitle">
                     <span>새 일정 추가</span>
                     <span style="font-size: 0.75rem; font-weight: normal; opacity: 0.88; margin-left: 2px;">(관리자 인증 필요)</span>
@@ -426,6 +436,12 @@
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
             </div>
             <div class="add-event-body">
+                <!-- [v12.1] 새 일정 추가 창 위에 뜨는 커스텀 알림창 레이어 -->
+                <div id="modalAlertBox" class="custom-alert-box">
+                    <span id="modalAlertIcon">⚠️</span>
+                    <span id="modalAlertMsg">알림 메시지</span>
+                </div>
+
                 <div class="info-row">
                     <div>날짜: <span id="lblTargetDate">-</span></div>
                     <div>자동 순번: <span id="lblTargetSeq">-</span></div>
@@ -473,13 +489,22 @@
                     <div id="attendeesAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- 히든 관리자 인증 영역 (기본 숨김) -->
-                <div id="adminPasswordFieldWrap" class="form-field hidden-admin-field">
-                    <label for="inputAuthor" style="color: #854d0e; font-weight: bold;">👤 등록자 성명</label>
-                    <input type="text" id="inputAuthor" placeholder="설정된 등록 가능자 성명 입력" style="margin-bottom: 4px;">
-
-                    <label for="inputAdminPw" style="color: #854d0e; font-weight: bold;">🔑 관리자 비밀번호</label>
-                    <input type="password" id="inputAdminPw" placeholder="관리자 인증 암호를 입력하세요">
+                <!-- [v12.1] 관리자 인증 영역 (가로 2분할 1행 2열 및 자동저장 체크박스) -->
+                <div id="adminPasswordFieldWrap" class="admin-auth-box">
+                    <div class="admin-auth-row">
+                        <div class="admin-auth-col">
+                            <label for="inputAuthor">👤 등록자 성명</label>
+                            <input type="text" id="inputAuthor" placeholder="등록 가능자 성명">
+                        </div>
+                        <div class="admin-auth-col">
+                            <label for="inputAdminPw">🔑 관리자 비밀번호</label>
+                            <input type="password" id="inputAdminPw" placeholder="인증 비밀번호">
+                        </div>
+                    </div>
+                    <label class="admin-save-opt">
+                        <input type="checkbox" id="chkSaveAdminCred">
+                        <span>관리자 인증 정보 저장 (이 기기에서 자동 로그인)</span>
+                    </label>
                 </div>
             </div>
             <div class="add-event-footer">
@@ -585,11 +610,13 @@
         let activeSelectedEvents = [];
         let selectedTargetDateInfo = null;
         let pendingNewEventPayload = null;
+        let modalAlertTimer = null;
 
         const LOCAL_STORAGE_KEYS = {
             title: 'calendar50_recent_titles',
             place: 'calendar50_recent_places',
-            note: 'calendar50_recent_notes'
+            note: 'calendar50_recent_notes',
+            adminCred: 'calendar50_saved_admin_cred'
         };
 
         function getRecentUserHistory(type) {
@@ -616,6 +643,44 @@
                 list = list.filter(item => item !== value);
                 localStorage.setItem(LOCAL_STORAGE_KEYS[type], JSON.stringify(list));
             } catch(e) {}
+        }
+
+        // [v12.1] 관리자 인증 저장 정보 관리 함수군
+        function getSavedAdminCred() {
+            try {
+                const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.adminCred);
+                return stored ? JSON.parse(stored) : null;
+            } catch(e) { return null; }
+        }
+
+        function saveAdminCred(author, pw) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEYS.adminCred, JSON.stringify({ author, pw }));
+            } catch(e) {}
+        }
+
+        function clearAdminCred() {
+            try {
+                localStorage.removeItem(LOCAL_STORAGE_KEYS.adminCred);
+            } catch(e) {}
+        }
+
+        // [v12.1] 새 일정 추가 모달 상단 커스텀 알림 토스트 표시 함수
+        function showModalAlert(msg, type = 'error') {
+            const box = document.getElementById('modalAlertBox');
+            const icon = document.getElementById('modalAlertIcon');
+            const txt = document.getElementById('modalAlertMsg');
+            if (!box) return;
+
+            box.className = `custom-alert-box ${type === 'error' ? 'alert-error' : 'alert-success'}`;
+            icon.textContent = type === 'error' ? '⚠️' : '✅';
+            txt.textContent = msg;
+            box.style.display = 'flex';
+
+            if (modalAlertTimer) clearTimeout(modalAlertTimer);
+            modalAlertTimer = setTimeout(() => {
+                box.style.display = 'none';
+            }, 3000);
         }
 
         const globalAutocompletePool = {
@@ -746,7 +811,6 @@
             openAddEventModal(activeModalYear, activeModalMonth, activeSelectedDay, activeSelectedEvents);
         }
 
-        // [v12.0] 열쇠 아이콘 클릭 또는 필요 시 관리자 인증창 토글
         function toggleAdminPasswordInput() {
             const pwWrap = document.getElementById('adminPasswordFieldWrap');
             const authorInput = document.getElementById('inputAuthor');
@@ -785,10 +849,25 @@
             document.getElementById('inputNewPlace').value = '';
             document.getElementById('inputNewNote').value = '';
             document.getElementById('inputNewAttendees').value = '';
-            
-            document.getElementById('inputAuthor').value = '';
-            document.getElementById('inputAdminPw').value = '';
+
+            // [v12.1] 저장된 관리자 인증 정보가 있으면 자동 채움 및 체크 활성화
+            const savedCred = getSavedAdminCred();
+            const authorInput = document.getElementById('inputAuthor');
+            const pwInput = document.getElementById('inputAdminPw');
+            const chkSave = document.getElementById('chkSaveAdminCred');
+
+            if (savedCred && savedCred.author && savedCred.pw) {
+                authorInput.value = savedCred.author;
+                pwInput.value = savedCred.pw;
+                chkSave.checked = true;
+            } else {
+                authorInput.value = '';
+                pwInput.value = '';
+                chkSave.checked = false;
+            }
+
             document.getElementById('adminPasswordFieldWrap').style.display = 'none';
+            document.getElementById('modalAlertBox').style.display = 'none';
             hideAllAutocomplete();
             
             updateAttendeeCount();
@@ -797,6 +876,7 @@
 
         function closeAddEventModal() { 
             hideAllAutocomplete();
+            document.getElementById('modalAlertBox').style.display = 'none';
             document.getElementById('addEventModal').style.display = 'none'; 
         }
 
@@ -934,7 +1014,6 @@
             if (event.key === 'Enter') {
                 const list = currentFilteredMap[fieldType] || [];
 
-                // 참석자 입력창: 1개만 남았을 때 엔터 누르면 해당 단어 자동 완성 입력
                 if (fieldType === 'attendees') {
                     if (list.length === 1) {
                         event.preventDefault();
@@ -943,14 +1022,12 @@
                     return;
                 }
 
-                // 행사명, 장소, 비고 입력창
                 event.preventDefault();
                 if (list.length === 1) {
                     element.value = list[0];
                 }
                 hideAllAutocomplete();
 
-                // 다음 입력 필드로 포커스 순차 이동
                 if (fieldType === 'title') {
                     const nextElem = document.getElementById('inputNewPlace');
                     if (nextElem) nextElem.focus();
@@ -977,24 +1054,36 @@
             }
         });
 
+        // [v12.1] 등록 데이터 확인: 자동 저장된 인증 정보 활용 및 커스텀 알림 연동
         async function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
             const place = document.getElementById('inputNewPlace').value.trim();
             const note = document.getElementById('inputNewNote').value.trim();
             let rawAttendees = document.getElementById('inputNewAttendees').value.trim();
-            const author = document.getElementById('inputAuthor').value.trim();
-            const adminPassword = document.getElementById('inputAdminPw').value.trim();
+            
+            let author = document.getElementById('inputAuthor').value.trim();
+            let adminPassword = document.getElementById('inputAdminPw').value.trim();
+            const chkSave = document.getElementById('chkSaveAdminCred').checked;
 
             if (!title) {
-                alert('행사명을 입력해주세요.');
+                showModalAlert('행사명을 입력해주세요.', 'error');
                 document.getElementById('inputNewTitle').focus();
                 return;
             }
 
-            const pwWrap = document.getElementById('adminPasswordFieldWrap');
-            if (pwWrap.style.display === 'none' || !author || !adminPassword) {
-                alert('관리자만이 등록 가능합니다.');
+            // 입력창에 비어있을 경우 저장된 인증 정보 확인
+            if (!author || !adminPassword) {
+                const saved = getSavedAdminCred();
+                if (saved && saved.author && saved.pw) {
+                    author = saved.author;
+                    adminPassword = saved.pw;
+                }
+            }
+
+            if (!author || !adminPassword) {
+                showModalAlert('관리자 인증이 필요합니다. 열쇠(🔑)를 눌러 성명과 암호를 입력하세요.', 'error');
+                toggleAdminPasswordInput();
                 return;
             }
 
@@ -1022,10 +1111,18 @@
                 const result = await res.json();
 
                 if (result.status === 'error') {
-                    alert('관리자가 아니거나 비밀번호가 틀립니다.');
+                    showModalAlert('관리자가 아니거나 비밀번호가 틀립니다.', 'error');
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
+                    toggleAdminPasswordInput();
                     return;
+                }
+
+                // 인증 성공 시 사용자 선택(체크박스)에 따라 영구 저장 또는 삭제
+                if (chkSave) {
+                    saveAdminCred(author, adminPassword);
+                } else {
+                    clearAdminCred();
                 }
 
                 pendingNewEventPayload = {
@@ -1061,7 +1158,7 @@
 
             } catch (err) {
                 console.error('검증 통신 오류:', err);
-                alert('서버 통신 중 오류가 발생했습니다.');
+                showModalAlert('서버 통신 중 오류가 발생했습니다.', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
@@ -1086,7 +1183,7 @@
                 const result = await res.json();
 
                 if (result.status === 'error') {
-                    alert(result.message); 
+                    showModalAlert(result.message, 'error'); 
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalBtnText;
                     closeConfirmModal();
