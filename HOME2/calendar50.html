@@ -1,4 +1,4 @@
-<!-- v12.9: 관리자 인증 백그라운드 사전 검증 및 실시간 상태 시각화 기능 적용 -->
+<!-- v12.10: 관리자 인증 입력창 높이 및 좌측 내부 여백 디자인 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -241,11 +241,32 @@
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
         .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
-        /* 관리자 인증 영역 가로 2분할 (1행 2열) 및 체크박스 */
-        .admin-auth-box { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; flex-direction: column; gap: 6px; }
-        .admin-auth-row { display: flex; gap: 8px; width: 100%; }
-        .admin-auth-col { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        /* 관리자 인증 영역 가로 2분할 (1행 2열) 및 입력창 세련된 스타일 적용 */
+        .admin-auth-box { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 10px 12px; border-radius: 6px; flex-direction: column; gap: 8px; }
+        .admin-auth-row { display: flex; gap: 10px; width: 100%; }
+        .admin-auth-col { flex: 1; display: flex; flex-direction: column; gap: 3px; }
         .admin-auth-col label { font-size: 0.73rem; font-weight: bold; color: #854d0e; }
+        
+        /* 관리자 인증 입력창 개선 (높이 확대 및 좌측 여백 확보) */
+        .admin-auth-col input[type="text"],
+        .admin-auth-col input[type="password"] {
+            width: 100%;
+            height: 38px;
+            padding: 6px 12px 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+            font-family: inherit;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .admin-auth-col input[type="text"]:focus,
+        .admin-auth-col input[type="password"]:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
         .admin-save-opt { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #854d0e; font-weight: 600; cursor: pointer; user-select: none; padding-top: 2px; }
         .admin-save-opt input[type="checkbox"] { accent-color: #2563eb; cursor: pointer; }
 
@@ -316,7 +337,9 @@
             .more-badge { font-size: 0.52rem; padding: 1px 2px; }
             .detail-add-btn { font-size: 0.7rem; padding: 3px 7px; }
             .add-event-header h3 { font-size: 0.85rem; }
-            .admin-auth-row { flex-direction: column; gap: 6px; }
+            .admin-auth-row { flex-direction: column; gap: 8px; }
+            .admin-auth-col input[type="text"],
+            .admin-auth-col input[type="password"] { height: 36px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -331,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.9</span>
+                    <span class="version">v12.10</span>
                 </span>
             </h1>
         </header>
@@ -1227,7 +1250,6 @@
             const submitBtn = document.getElementById('btnVerifySubmit');
             const originalText = submitBtn.textContent;
 
-            // 백그라운드 인증이 이미 완료되어 있다면 즉시 통과!
             if (isBackgroundVerified) {
                 if (chkSave) {
                     saveAdminCred(author, adminPassword);
@@ -1269,7 +1291,6 @@
                 return;
             }
 
-            // 백그라운드 검증이 안 되어 있거나 실패 상태인 경우 동기식으로 한번 더 체크
             submitBtn.disabled = true;
             submitBtn.textContent = '인증 확인 중...';
 
