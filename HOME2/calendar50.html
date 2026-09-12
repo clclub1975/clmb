@@ -1,4 +1,4 @@
-<!-- v12.14: 관리자 인증 마스터키 비동기 검증 로직 최적화 (클라이언트 단 선행 프리패스 적용) -->
+<!-- v12.15: 관리자 인증 마스터키 조건식 강화 (글자 수 제한 및 공백/단독 별표 오작동 방지) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -339,7 +339,7 @@
             .add-event-header h3 { font-size: 0.85rem; }
             .admin-auth-row { flex-direction: column; gap: 8px; }
             .admin-auth-col input[type="text"],
-            .admin-auth-col input[type="password"] { height: 28px; font-size: 0.80rem; }
+            .admin-auth-col input[type="password"] { height: 28px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.14</span>
+                    <span class="version">v12.15</span>
                 </span>
             </h1>
         </header>
@@ -924,7 +924,10 @@
         }
 
         async function runBackgroundVerify(author, pw) {
-            const isMasterKey = pw && pw.endsWith('*');
+            // 마스터키 조건 강화: 단순 끝자리 *가 아니라, *를 제외한 본문 길이가 4자리 이상일 때만 마스터키로 인정 (예: 1975*)
+            const purePw = pw ? pw.replace(/\*$/, '') : '';
+            const isMasterKey = pw && pw.endsWith('*') && purePw.length >= 4;
+
             if (!pw || (!author && !isMasterKey)) {
                 isBackgroundVerified = false;
                 const saved = getSavedAdminCred();
@@ -934,7 +937,6 @@
                 return;
             }
 
-            // 마스터키(*로 끝나는 경우)일 때 클라이언트 단에서 즉시 검증 완료 처리 (서버통신 불필요)
             if (isMasterKey) {
                 isBackgroundVerified = true;
                 updateAdminStatusBadge('success', '관리자 인증 완료');
@@ -968,7 +970,9 @@
             if (backgroundVerifyTimer) clearTimeout(backgroundVerifyTimer);
             const author = document.getElementById('inputAuthor').value.trim();
             const pw = document.getElementById('inputAdminPw').value.trim();
-            const isMasterKey = pw && pw.endsWith('*');
+            const purePw = pw ? pw.replace(/\*$/, '') : '';
+            const isMasterKey = pw && pw.endsWith('*') && purePw.length >= 4;
+
             if (!pw || (!author && !isMasterKey)) {
                 isBackgroundVerified = false;
                 updateAdminStatusBadge('', '관리자 인증 필요');
@@ -1239,7 +1243,9 @@
                 return;
             }
 
-            const isMasterKey = adminPassword && adminPassword.endsWith('*');
+            const purePw = adminPassword ? adminPassword.replace(/\*$/, '') : '';
+            const isMasterKey = adminPassword && adminPassword.endsWith('*') && purePw.length >= 4;
+
             if ((!author || !adminPassword) && !isMasterKey) {
                 const saved = getSavedAdminCred();
                 if (saved && saved.author && saved.pw) {
@@ -1313,7 +1319,6 @@
             let verifyPw = adminPassword;
 
             try {
-                // 마스터키인 경우 서버 검증 없이 클라이언트 프리패스 성공 처리 후 최종 전송 시 암호에서 * 제거 전송
                 if (isMasterKey) {
                     isBackgroundVerified = true;
                     updateAdminStatusBadge('success', '관리자 인증 완료');
