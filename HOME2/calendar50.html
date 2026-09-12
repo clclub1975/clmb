@@ -1,4 +1,4 @@
-<!-- v12.5: 일정 등록 완료 알림 문구 개선 (캘린더 반영 안내 수정) -->
+<!-- v12.6: 일정 등록 완료 알림 안내 창 UI/UX 개선 (두 줄 개행 및 노출 시간 연장) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -286,7 +286,8 @@
             z-index: 6000; 
             align-items: center; 
             gap: 8px; 
-            white-space: nowrap; 
+            text-align: center;
+            line-height: 1.35;
             animation: alertSlideDown 0.2s ease-out forwards; 
         }
         .custom-alert-box.alert-warning { background: #334155; border: 1px solid #475569; }
@@ -325,7 +326,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.5</span>
+                    <span class="version">v12.6</span>
                 </span>
             </h1>
         </header>
@@ -701,13 +702,13 @@
 
             box.className = `custom-alert-box ${type === 'warning' ? 'alert-warning' : 'alert-success'}`;
             icon.textContent = type === 'warning' ? '💡' : '✅';
-            txt.textContent = msg;
+            txt.innerHTML = msg;
             box.style.display = 'flex';
 
             if (modalAlertTimer) clearTimeout(modalAlertTimer);
             modalAlertTimer = setTimeout(() => {
                 box.style.display = 'none';
-            }, 3000);
+            }, 5000);
         }
 
         function showConfirmAlert(msg, type = 'success') {
@@ -718,13 +719,13 @@
 
             box.className = `custom-alert-box ${type === 'success' ? 'alert-success' : 'alert-warning'}`;
             icon.textContent = type === 'success' ? '✅' : '💡';
-            txt.textContent = msg;
+            txt.innerHTML = msg;
             box.style.display = 'flex';
 
             if (confirmAlertTimer) clearTimeout(confirmAlertTimer);
             confirmAlertTimer = setTimeout(() => {
                 box.style.display = 'none';
-            }, 3000);
+            }, 5000);
         }
 
         const globalAutocompletePool = {
@@ -1254,7 +1255,7 @@
                     return;
                 }
 
-                showConfirmAlert('새 일정이 정상적으로 등록되었습니다. 캘린더 반영에는 잠시(수 분)의 시간이 소요될 수 있습니다.', 'success');
+                showConfirmAlert('새 일정이 정상적으로 등록되었습니다.<br>캘린더 반영에는 잠시(수 분)의 시간이 소요될 수 있습니다.', 'success');
 
                 const p = pendingNewEventPayload;
                 const monthKey = `${p.year}-${p.month}`;
