@@ -1,4 +1,4 @@
-<!-- v12.15: 관리자 인증 마스터키 조건식 강화 (글자 수 제한 및 공백/단독 별표 오작동 방지) -->
+<!-- v12.16: 관리자 인증 마스터키 입력 규약 변경 적용 (* + 4자리 숫자 조합 방식) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.15</span>
+                    <span class="version">v12.16</span>
                 </span>
             </h1>
         </header>
@@ -924,9 +924,8 @@
         }
 
         async function runBackgroundVerify(author, pw) {
-            // 마스터키 조건 강화: 단순 끝자리 *가 아니라, *를 제외한 본문 길이가 4자리 이상일 때만 마스터키로 인정 (예: 1975*)
-            const purePw = pw ? pw.replace(/\*$/, '') : '';
-            const isMasterKey = pw && pw.endsWith('*') && purePw.length >= 4;
+            // 마스터키 규약 (*로 시작하고 뒤에 4자리 숫자, 예: *1975) 체크
+            const isMasterKey = pw && pw.startsWith('*') && /^\*\d{4}$/.test(pw);
 
             if (!pw || (!author && !isMasterKey)) {
                 isBackgroundVerified = false;
@@ -937,14 +936,9 @@
                 return;
             }
 
-            if (isMasterKey) {
-                isBackgroundVerified = true;
-                updateAdminStatusBadge('success', '관리자 인증 완료');
-                return;
-            }
-
+            // 마스터키인 경우 클라이언트 단에서 서버로 VERIFY 요청을 보내어 실제 4자리 비밀번호 일치 여부 검증
             let verifyAuthor = author || '관리자';
-            let verifyPw = pw;
+            let verifyPw = isMasterKey ? pw.substring(1) : pw;
 
             updateAdminStatusBadge('loading', '관리자 인증 진행 중');
             try {
@@ -970,8 +964,7 @@
             if (backgroundVerifyTimer) clearTimeout(backgroundVerifyTimer);
             const author = document.getElementById('inputAuthor').value.trim();
             const pw = document.getElementById('inputAdminPw').value.trim();
-            const purePw = pw ? pw.replace(/\*$/, '') : '';
-            const isMasterKey = pw && pw.endsWith('*') && purePw.length >= 4;
+            const isMasterKey = pw && pw.startsWith('*') && /^\*\d{4}$/.test(pw);
 
             if (!pw || (!author && !isMasterKey)) {
                 isBackgroundVerified = false;
@@ -1243,9 +1236,7 @@
                 return;
             }
 
-            const purePw = adminPassword ? adminPassword.replace(/\*$/, '') : '';
-            const isMasterKey = adminPassword && adminPassword.endsWith('*') && purePw.length >= 4;
-
+            const isMasterKey = adminPassword && adminPassword.startsWith('*') && /^\*\d{4}$/.test(adminPassword);
             if ((!author || !adminPassword) && !isMasterKey) {
                 const saved = getSavedAdminCred();
                 if (saved && saved.author && saved.pw) {
@@ -1288,7 +1279,7 @@
                     note: note,
                     attendees: cleanAttendees,
                     author: finalAuthor,
-                    adminPassword: adminPassword,
+                    adminPassword: isMasterKey ? adminPassword.substring(1) : adminPassword,
                     year: selectedTargetDateInfo.year,
                     month: selectedTargetDateInfo.month,
                     day: selectedTargetDateInfo.day
@@ -1316,49 +1307,9 @@
             submitBtn.textContent = '인증 확인 중...';
 
             let verifyAuthor = finalAuthor;
-            let verifyPw = adminPassword;
+            let verifyPw = isMasterKey ? adminPassword.substring(1) : adminPassword;
 
             try {
-                if (isMasterKey) {
-                    isBackgroundVerified = true;
-                    updateAdminStatusBadge('success', '관리자 인증 완료');
-                    
-                    pendingNewEventPayload = {
-                        action: 'NEW',
-                        dateStr: selectedTargetDateInfo.dateStr,
-                        seq: selectedTargetDateInfo.seq,
-                        category: category,
-                        title: title,
-                        place: place,
-                        note: note,
-                        attendees: cleanAttendees,
-                        author: finalAuthor,
-                        adminPassword: adminPassword.slice(0, -1),
-                        year: selectedTargetDateInfo.year,
-                        month: selectedTargetDateInfo.month,
-                        day: selectedTargetDateInfo.day
-                    };
-
-                    document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
-                    document.getElementById('confirmAuthor').textContent = finalAuthor;
-                    document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
-                    document.getElementById('confirmPlace').textContent = place || '-';
-                    document.getElementById('confirmNote').textContent = note || '-';
-                    
-                    if (cleanAttendees) {
-                        const count = cleanAttendees.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
-                        document.getElementById('confirmAttendees').textContent = `${cleanAttendees} (${count}명)`;
-                    } else {
-                        document.getElementById('confirmAttendees').textContent = '-';
-                    }
-
-                    document.getElementById('confirmAlertBox').style.display = 'none';
-                    document.getElementById('confirmEventModal').style.display = 'flex';
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                    return;
-                }
-
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -1382,7 +1333,7 @@
                 isBackgroundVerified = true;
                 updateAdminStatusBadge('success', '관리자 인증 완료');
 
-                if (chkSave) {
+                if (chkSave && !isMasterKey) {
                     saveAdminCred(finalAuthor, adminPassword);
                 } else {
                     clearAdminCred();
@@ -1398,7 +1349,7 @@
                     note: note,
                     attendees: cleanAttendees,
                     author: finalAuthor,
-                    adminPassword: adminPassword,
+                    adminPassword: verifyPw,
                     year: selectedTargetDateInfo.year,
                     month: selectedTargetDateInfo.month,
                     day: selectedTargetDateInfo.day
