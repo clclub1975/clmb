@@ -1,4 +1,4 @@
-<!-- v12.3: 마우스 드래그 시 모달창 닫힘 방지(mousedown-mouseup 대조) 및 오버레이 닫힘 로직 안정화 -->
+<!-- v12.4: 4개 입력 영역(입력창+드롭다운) mouseleave 감지 자동완성 자동 닫힘 기능 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -325,7 +325,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.3</span>
+                    <span class="version">v12.4</span>
                 </span>
             </h1>
         </header>
@@ -480,29 +480,29 @@
                     </div>
                 </div>
 
-                <!-- 행사명 최근입력 자동완성 -->
-                <div class="form-field">
+                <!-- [v12.4] 행사명 최근입력 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <div class="form-field" onmouseleave="handleFieldMouseLeave('title')">
                     <label for="inputNewTitle">행사명 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewTitle" placeholder="예: 정기 모임 및 체육대회" oninput="handleFieldInput(this, 'title')" onfocus="handleFieldFocus(this, 'title')" onkeydown="handleFieldKeyDown(event, this, 'title')" autocomplete="off">
                     <div id="titleAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- 장소 최근입력 자동완성 -->
-                <div class="form-field">
+                <!-- [v12.4] 장소 최근입력 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <div class="form-field" onmouseleave="handleFieldMouseLeave('place')">
                     <label for="inputNewPlace">장소 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewPlace" placeholder="예: 서울 회의실" oninput="handleFieldInput(this, 'place')" onfocus="handleFieldFocus(this, 'place')" onkeydown="handleFieldKeyDown(event, this, 'place')" autocomplete="off">
                     <div id="placeAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- 비고 최근입력 자동완성 -->
-                <div class="form-field">
+                <!-- [v12.4] 비고 최근입력 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <div class="form-field" onmouseleave="handleFieldMouseLeave('note')">
                     <label for="inputNewNote">비고 (최근 입력 자동완성)</label>
                     <input type="text" id="inputNewNote" placeholder="예: 50주년 기념" oninput="handleFieldInput(this, 'note')" onfocus="handleFieldFocus(this, 'note')" onkeydown="handleFieldKeyDown(event, this, 'note')" autocomplete="off">
                     <div id="noteAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- 참석자 다중 스마트 자동완성 (접두어 ^ 매칭) -->
-                <div class="form-field">
+                <!-- [v12.4] 참석자 다중 스마트 자동완성 (영역 이탈 시 드롭다운 닫힘) -->
+                <div class="form-field" onmouseleave="handleFieldMouseLeave('attendees')">
                     <label for="inputNewAttendees">
                         <span>참석자 (쉼표 구분 / 자동완성 지원)</span>
                         <span id="attendeeCountBadge" class="attendee-count-badge">0명 입력됨</span>
@@ -641,7 +641,6 @@
         let modalAlertTimer = null;
         let confirmAlertTimer = null;
 
-        // [v12.3] 마우스 드래그 시 모달창 닫힘 방지를 위한 mousedown 타깃 추적 변수
         let mouseDownTarget = null;
 
         const LOCAL_STORAGE_KEYS = {
@@ -848,7 +847,6 @@
         function closeGalleryModal() { document.getElementById('galleryModal').style.display = 'none'; }
         function closeDayModal() { document.getElementById('dayModal').style.display = 'none'; }
 
-        // [v12.3] 마우스 드래그 시 모달창 닫힘 방지 이벤트 리스너 등록
         document.addEventListener('mousedown', function(e) {
             mouseDownTarget = e.target;
         });
@@ -857,7 +855,6 @@
             const modalElem = document.getElementById(modalId);
             if (!modalElem) return;
             modalElem.addEventListener('mouseup', function(e) {
-                // 마우스 버튼을 누른 곳과 뗀 곳이 둘 다 모달 배경 오버레이 자체일 때만 닫기
                 if (e.target === modalElem && mouseDownTarget === modalElem) {
                     closeFn();
                 }
@@ -978,6 +975,14 @@
 
         function handleFieldFocus(element, fieldType) {
             renderFieldAutocomplete(element, fieldType);
+        }
+
+        // [v12.4] 입력창 및 드롭다운 영역에서 마우스가 완전히 빠져나갔을 때 해당 자동완성 닫기
+        function handleFieldMouseLeave(fieldType) {
+            const dropdown = document.getElementById(`${fieldType}AutocompleteList`);
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
         }
 
         function renderFieldAutocomplete(element, fieldType) {
