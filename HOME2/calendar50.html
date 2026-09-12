@@ -1,4 +1,4 @@
-<!-- v12.11: 관리자 인증 입력창 높이 최적화 및 비밀번호 마스터키(*) 기능 적용 -->
+<!-- v12.12: 관리자 인증 로직 개선 (비밀번호 우선 검증 및 마스터키 조건 시 성명 무관 통과 처리) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.11</span>
+                    <span class="version">v12.12</span>
                 </span>
             </h1>
         </header>
@@ -924,7 +924,9 @@
         }
 
         async function runBackgroundVerify(author, pw) {
-            if (!author || !pw) {
+            // 마스터키(*로 끝나는 경우) 지원 처리 (비밀번호만 입력되어 있어도 마스터키면 통과)
+            const isMasterKey = pw && pw.endsWith('*');
+            if (!pw || (!author && !isMasterKey)) {
                 isBackgroundVerified = false;
                 const saved = getSavedAdminCred();
                 if (!saved || !saved.author || !saved.pw) {
@@ -933,12 +935,10 @@
                 return;
             }
 
-            // 마스터키(*로 끝나는 경우) 지원 처리
-            let verifyAuthor = author;
+            let verifyAuthor = author || '관리자';
             let verifyPw = pw;
-            if (pw.endsWith('*')) {
+            if (isMasterKey) {
                 verifyPw = pw.slice(0, -1);
-                // 마스터키 사용 시 빈 성명이어도 검증 통과를 위해 기본값 지정 가능하나 서버 스크립트 규격에 맞춤
             }
 
             updateAdminStatusBadge('loading', '관리자 인증 진행 중');
@@ -965,7 +965,8 @@
             if (backgroundVerifyTimer) clearTimeout(backgroundVerifyTimer);
             const author = document.getElementById('inputAuthor').value.trim();
             const pw = document.getElementById('inputAdminPw').value.trim();
-            if (!author || !pw) {
+            const isMasterKey = pw && pw.endsWith('*');
+            if (!pw || (!author && !isMasterKey)) {
                 isBackgroundVerified = false;
                 updateAdminStatusBadge('', '관리자 인증 필요');
                 return;
@@ -1235,7 +1236,8 @@
                 return;
             }
 
-            if (!author || !adminPassword) {
+            const isMasterKey = adminPassword && adminPassword.endsWith('*');
+            if ((!author || !adminPassword) && !isMasterKey) {
                 const saved = getSavedAdminCred();
                 if (saved && saved.author && saved.pw) {
                     author = saved.author;
@@ -1243,11 +1245,13 @@
                 }
             }
 
-            if (!author || !adminPassword) {
+            if ((!author || !adminPassword) && !isMasterKey) {
                 showModalAlert('관리자 인증이 필요합니다. 열쇠(🔑)를 눌러 성명과 암호를 입력하세요.', 'warning');
                 toggleAdminPasswordInput();
                 return;
             }
+
+            let finalAuthor = author || '관리자';
 
             let cleanAttendees = '';
             if (rawAttendees) {
@@ -1259,8 +1263,8 @@
             const originalText = submitBtn.textContent;
 
             if (isBackgroundVerified) {
-                if (chkSave) {
-                    saveAdminCred(author, adminPassword);
+                if (chkSave && !isMasterKey) {
+                    saveAdminCred(finalAuthor, adminPassword);
                 } else {
                     clearAdminCred();
                 }
@@ -1274,7 +1278,7 @@
                     place: place,
                     note: note,
                     attendees: cleanAttendees,
-                    author: author,
+                    author: finalAuthor,
                     adminPassword: adminPassword,
                     year: selectedTargetDateInfo.year,
                     month: selectedTargetDateInfo.month,
@@ -1282,7 +1286,7 @@
                 };
 
                 document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
-                document.getElementById('confirmAuthor').textContent = author;
+                document.getElementById('confirmAuthor').textContent = finalAuthor;
                 document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
                 document.getElementById('confirmPlace').textContent = place || '-';
                 document.getElementById('confirmNote').textContent = note || '-';
@@ -1302,9 +1306,9 @@
             submitBtn.disabled = true;
             submitBtn.textContent = '인증 확인 중...';
 
-            let verifyAuthor = author;
+            let verifyAuthor = finalAuthor;
             let verifyPw = adminPassword;
-            if (adminPassword.endsWith('*')) {
+            if (isMasterKey) {
                 verifyPw = adminPassword.slice(0, -1);
             }
 
@@ -1332,8 +1336,8 @@
                 isBackgroundVerified = true;
                 updateAdminStatusBadge('success', '관리자 인증 완료');
 
-                if (chkSave) {
-                    saveAdminCred(author, adminPassword);
+                if (chkSave && !isMasterKey) {
+                    saveAdminCred(finalAuthor, adminPassword);
                 } else {
                     clearAdminCred();
                 }
@@ -1347,7 +1351,7 @@
                     place: place,
                     note: note,
                     attendees: cleanAttendees,
-                    author: author,
+                    author: finalAuthor,
                     adminPassword: adminPassword,
                     year: selectedTargetDateInfo.year,
                     month: selectedTargetDateInfo.month,
@@ -1355,7 +1359,7 @@
                 };
 
                 document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
-                document.getElementById('confirmAuthor').textContent = author;
+                document.getElementById('confirmAuthor').textContent = finalAuthor;
                 document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
                 document.getElementById('confirmPlace').textContent = place || '-';
                 document.getElementById('confirmNote').textContent = note || '-';
