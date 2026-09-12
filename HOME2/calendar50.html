@@ -1,4 +1,4 @@
-<!-- v12.13: 관리자 인증 비동기 로직 및 타이핑 타이밍 최적화 (마스터키 및 입력 지연 개선) -->
+<!-- v12.14: 관리자 인증 마스터키 비동기 검증 로직 최적화 (클라이언트 단 선행 프리패스 적용) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -339,7 +339,7 @@
             .add-event-header h3 { font-size: 0.85rem; }
             .admin-auth-row { flex-direction: column; gap: 8px; }
             .admin-auth-col input[type="text"],
-            .admin-auth-col input[type="password"] { height: 28px; font-size: 0.8rem; }
+            .admin-auth-col input[type="password"] { height: 28px; font-size: 0.80rem; }
         }
     </style>
 </head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.13</span>
+                    <span class="version">v12.14</span>
                 </span>
             </h1>
         </header>
@@ -934,11 +934,15 @@
                 return;
             }
 
+            // 마스터키(*로 끝나는 경우)일 때 클라이언트 단에서 즉시 검증 완료 처리 (서버통신 불필요)
+            if (isMasterKey) {
+                isBackgroundVerified = true;
+                updateAdminStatusBadge('success', '관리자 인증 완료');
+                return;
+            }
+
             let verifyAuthor = author || '관리자';
             let verifyPw = pw;
-            if (isMasterKey) {
-                verifyPw = pw.slice(0, -1);
-            }
 
             updateAdminStatusBadge('loading', '관리자 인증 진행 중');
             try {
@@ -952,7 +956,6 @@
                     updateAdminStatusBadge('success', '관리자 인증 완료');
                 } else {
                     isBackgroundVerified = false;
-                    // 타이핑 중 불완전한 비밀번호로 인한 일시적 실패는 '진행 중' 또는 '필요'로 유예하여 깜빡임 방지
                     updateAdminStatusBadge('loading', '관리자 인증 진행 중');
                 }
             } catch (err) {
@@ -972,10 +975,9 @@
                 return;
             }
             updateAdminStatusBadge('loading', '관리자 인증 진행 중');
-            // 타이핑 타이밍을 안정적으로 잡기 위해 지연 시간을 700ms로 상향 조정
             backgroundVerifyTimer = setTimeout(() => {
                 runBackgroundVerify(author, pw);
-            }, 700);
+            }, 500);
         }
 
         function openAddEventModal(year, month, day, eventsOnDay) {
@@ -1309,11 +1311,49 @@
 
             let verifyAuthor = finalAuthor;
             let verifyPw = adminPassword;
-            if (isMasterKey) {
-                verifyPw = adminPassword.slice(0, -1);
-            }
 
             try {
+                // 마스터키인 경우 서버 검증 없이 클라이언트 프리패스 성공 처리 후 최종 전송 시 암호에서 * 제거 전송
+                if (isMasterKey) {
+                    isBackgroundVerified = true;
+                    updateAdminStatusBadge('success', '관리자 인증 완료');
+                    
+                    pendingNewEventPayload = {
+                        action: 'NEW',
+                        dateStr: selectedTargetDateInfo.dateStr,
+                        seq: selectedTargetDateInfo.seq,
+                        category: category,
+                        title: title,
+                        place: place,
+                        note: note,
+                        attendees: cleanAttendees,
+                        author: finalAuthor,
+                        adminPassword: adminPassword.slice(0, -1),
+                        year: selectedTargetDateInfo.year,
+                        month: selectedTargetDateInfo.month,
+                        day: selectedTargetDateInfo.day
+                    };
+
+                    document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
+                    document.getElementById('confirmAuthor').textContent = finalAuthor;
+                    document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
+                    document.getElementById('confirmPlace').textContent = place || '-';
+                    document.getElementById('confirmNote').textContent = note || '-';
+                    
+                    if (cleanAttendees) {
+                        const count = cleanAttendees.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
+                        document.getElementById('confirmAttendees').textContent = `${cleanAttendees} (${count}명)`;
+                    } else {
+                        document.getElementById('confirmAttendees').textContent = '-';
+                    }
+
+                    document.getElementById('confirmAlertBox').style.display = 'none';
+                    document.getElementById('confirmEventModal').style.display = 'flex';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    return;
+                }
+
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -1337,7 +1377,7 @@
                 isBackgroundVerified = true;
                 updateAdminStatusBadge('success', '관리자 인증 완료');
 
-                if (chkSave && !isMasterKey) {
+                if (chkSave) {
                     saveAdminCred(finalAuthor, adminPassword);
                 } else {
                     clearAdminCred();
