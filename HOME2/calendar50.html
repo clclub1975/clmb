@@ -1,4 +1,4 @@
-<!-- v12.12: 관리자 인증 로직 개선 (비밀번호 우선 검증 및 마스터키 조건 시 성명 무관 통과 처리) -->
+<!-- v12.13: 관리자 인증 비동기 로직 및 타이핑 타이밍 최적화 (마스터키 및 입력 지연 개선) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.12</span>
+                    <span class="version">v12.13</span>
                 </span>
             </h1>
         </header>
@@ -924,7 +924,6 @@
         }
 
         async function runBackgroundVerify(author, pw) {
-            // 마스터키(*로 끝나는 경우) 지원 처리 (비밀번호만 입력되어 있어도 마스터키면 통과)
             const isMasterKey = pw && pw.endsWith('*');
             if (!pw || (!author && !isMasterKey)) {
                 isBackgroundVerified = false;
@@ -953,11 +952,12 @@
                     updateAdminStatusBadge('success', '관리자 인증 완료');
                 } else {
                     isBackgroundVerified = false;
-                    updateAdminStatusBadge('fail', '관리자 인증 실패');
+                    // 타이핑 중 불완전한 비밀번호로 인한 일시적 실패는 '진행 중' 또는 '필요'로 유예하여 깜빡임 방지
+                    updateAdminStatusBadge('loading', '관리자 인증 진행 중');
                 }
             } catch (err) {
                 isBackgroundVerified = false;
-                updateAdminStatusBadge('fail', '관리자 인증 실패');
+                updateAdminStatusBadge('loading', '관리자 인증 진행 중');
             }
         }
 
@@ -972,9 +972,10 @@
                 return;
             }
             updateAdminStatusBadge('loading', '관리자 인증 진행 중');
+            // 타이핑 타이밍을 안정적으로 잡기 위해 지연 시간을 700ms로 상향 조정
             backgroundVerifyTimer = setTimeout(() => {
                 runBackgroundVerify(author, pw);
-            }, 400);
+            }, 700);
         }
 
         function openAddEventModal(year, month, day, eventsOnDay) {
