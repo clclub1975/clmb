@@ -1,4 +1,4 @@
-<!-- v12.16: 관리자 인증 마스터키 입력 규약 변경 적용 (* + 4자리 숫자 조합 방식) -->
+<!-- v12.17: 마스터키 로직 전면 제거 및 등록자 성명 '마스터' 허용 방식 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.16</span>
+                    <span class="version">v12.17</span>
                 </span>
             </h1>
         </header>
@@ -545,7 +545,7 @@
                     <div class="admin-auth-row">
                         <div class="admin-auth-col">
                             <label for="inputAuthor">👤 등록자 성명</label>
-                            <input type="text" id="inputAuthor" placeholder="등록 가능자 성명" oninput="triggerBackgroundVerify()">
+                            <input type="text" id="inputAuthor" placeholder="등록 가능자 성명 (또는 '마스터')" oninput="triggerBackgroundVerify()">
                         </div>
                         <div class="admin-auth-col">
                             <label for="inputAdminPw">🔑 관리자 비밀번호</label>
@@ -924,10 +924,8 @@
         }
 
         async function runBackgroundVerify(author, pw) {
-            // 마스터키 규약 (*로 시작하고 뒤에 4자리 숫자, 예: *1975) 체크
-            const isMasterKey = pw && pw.startsWith('*') && /^\*\d{4}$/.test(pw);
-
-            if (!pw || (!author && !isMasterKey)) {
+            // 등록자 성명 또는 비밀번호가 부족하면 대기 상태
+            if (!author || !pw) {
                 isBackgroundVerified = false;
                 const saved = getSavedAdminCred();
                 if (!saved || !saved.author || !saved.pw) {
@@ -936,9 +934,8 @@
                 return;
             }
 
-            // 마스터키인 경우 클라이언트 단에서 서버로 VERIFY 요청을 보내어 실제 4자리 비밀번호 일치 여부 검증
-            let verifyAuthor = author || '관리자';
-            let verifyPw = isMasterKey ? pw.substring(1) : pw;
+            let verifyAuthor = author.trim();
+            let verifyPw = pw.trim();
 
             updateAdminStatusBadge('loading', '관리자 인증 진행 중');
             try {
@@ -952,11 +949,11 @@
                     updateAdminStatusBadge('success', '관리자 인증 완료');
                 } else {
                     isBackgroundVerified = false;
-                    updateAdminStatusBadge('loading', '관리자 인증 진행 중');
+                    updateAdminStatusBadge('fail', '관리자 인증 실패');
                 }
             } catch (err) {
                 isBackgroundVerified = false;
-                updateAdminStatusBadge('loading', '관리자 인증 진행 중');
+                updateAdminStatusBadge('fail', '관리자 인증 실패');
             }
         }
 
@@ -964,9 +961,8 @@
             if (backgroundVerifyTimer) clearTimeout(backgroundVerifyTimer);
             const author = document.getElementById('inputAuthor').value.trim();
             const pw = document.getElementById('inputAdminPw').value.trim();
-            const isMasterKey = pw && pw.startsWith('*') && /^\*\d{4}$/.test(pw);
 
-            if (!pw || (!author && !isMasterKey)) {
+            if (!author || !pw) {
                 isBackgroundVerified = false;
                 updateAdminStatusBadge('', '관리자 인증 필요');
                 return;
@@ -1236,8 +1232,7 @@
                 return;
             }
 
-            const isMasterKey = adminPassword && adminPassword.startsWith('*') && /^\*\d{4}$/.test(adminPassword);
-            if ((!author || !adminPassword) && !isMasterKey) {
+            if (!author || !adminPassword) {
                 const saved = getSavedAdminCred();
                 if (saved && saved.author && saved.pw) {
                     author = saved.author;
@@ -1245,13 +1240,13 @@
                 }
             }
 
-            if ((!author || !adminPassword) && !isMasterKey) {
+            if (!author || !adminPassword) {
                 showModalAlert('관리자 인증이 필요합니다. 열쇠(🔑)를 눌러 성명과 암호를 입력하세요.', 'warning');
                 toggleAdminPasswordInput();
                 return;
             }
 
-            let finalAuthor = author || '관리자';
+            let finalAuthor = author;
 
             let cleanAttendees = '';
             if (rawAttendees) {
@@ -1263,7 +1258,7 @@
             const originalText = submitBtn.textContent;
 
             if (isBackgroundVerified) {
-                if (chkSave && !isMasterKey) {
+                if (chkSave) {
                     saveAdminCred(finalAuthor, adminPassword);
                 } else {
                     clearAdminCred();
@@ -1279,7 +1274,7 @@
                     note: note,
                     attendees: cleanAttendees,
                     author: finalAuthor,
-                    adminPassword: isMasterKey ? adminPassword.substring(1) : adminPassword,
+                    adminPassword: adminPassword,
                     year: selectedTargetDateInfo.year,
                     month: selectedTargetDateInfo.month,
                     day: selectedTargetDateInfo.day
@@ -1306,16 +1301,13 @@
             submitBtn.disabled = true;
             submitBtn.textContent = '인증 확인 중...';
 
-            let verifyAuthor = finalAuthor;
-            let verifyPw = isMasterKey ? adminPassword.substring(1) : adminPassword;
-
             try {
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'VERIFY',
-                        author: verifyAuthor,
-                        adminPassword: verifyPw
+                        author: finalAuthor,
+                        adminPassword: adminPassword
                     })
                 });
                 
@@ -1333,7 +1325,7 @@
                 isBackgroundVerified = true;
                 updateAdminStatusBadge('success', '관리자 인증 완료');
 
-                if (chkSave && !isMasterKey) {
+                if (chkSave) {
                     saveAdminCred(finalAuthor, adminPassword);
                 } else {
                     clearAdminCred();
@@ -1349,7 +1341,7 @@
                     note: note,
                     attendees: cleanAttendees,
                     author: finalAuthor,
-                    adminPassword: verifyPw,
+                    adminPassword: adminPassword,
                     year: selectedTargetDateInfo.year,
                     month: selectedTargetDateInfo.month,
                     day: selectedTargetDateInfo.day
