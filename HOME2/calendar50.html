@@ -1,4 +1,4 @@
-<!-- v12.1: 관리자 인증 정보 가로 2분할 배치, 자동저장(선택) 옵션 및 모달 상단 커스텀 알림 레이어 지원 -->
+<!-- v12.2: 등록 완료 토스트 레이어 연동, 차분한 슬레이트 알림 색상 및 팝업 떨림 애니메이션 버그 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -236,7 +236,7 @@
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
         .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
-        /* [v12.1] 관리자 인증 영역 가로 2분할 (1행 2열) 및 체크박스 */
+        /* 관리자 인증 영역 가로 2분할 (1행 2열) 및 체크박스 */
         .admin-auth-box { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 8px 10px; border-radius: 6px; flex-direction: column; gap: 6px; }
         .admin-auth-row { display: flex; gap: 8px; width: 100%; }
         .admin-auth-col { flex: 1; display: flex; flex-direction: column; gap: 2px; }
@@ -265,10 +265,32 @@
         .btn-submit:hover { background: #1d4ed8; }
         .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        /* [v12.1] 새 일정 추가 창 위에 또렷하게 뜨는 커스텀 알림창(Toast) 레이어 */
-        .custom-alert-box { display: none; position: absolute; top: 18px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #ffffff; padding: 10px 18px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35); font-size: 0.82rem; font-weight: 600; z-index: 6000; align-items: center; gap: 8px; white-space: nowrap; animation: modalFadeIn 0.2s ease-out; }
-        .custom-alert-box.alert-error { background: #ef4444; }
-        .custom-alert-box.alert-success { background: #059669; }
+        /* [v12.2] 점잖은 차콜 슬레이트 톤 및 우측 쏠림 떨림 현상 완벽 방지 전용 애니메이션 */
+        @keyframes alertSlideDown {
+            from { opacity: 0; transform: translate(-50%, -8px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        .custom-alert-box { 
+            display: none; 
+            position: absolute; 
+            top: 14px; 
+            left: 50%; 
+            transform: translate(-50%, 0); 
+            background: #334155; 
+            color: #ffffff; 
+            padding: 9px 18px; 
+            border-radius: 7px; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35); 
+            font-size: 0.82rem; 
+            font-weight: 600; 
+            z-index: 6000; 
+            align-items: center; 
+            gap: 8px; 
+            white-space: nowrap; 
+            animation: alertSlideDown 0.2s ease-out forwards; 
+        }
+        .custom-alert-box.alert-warning { background: #334155; border: 1px solid #475569; }
+        .custom-alert-box.alert-success { background: #065f46; border: 1px solid #047857; }
 
         /* 커스텀 최종 확인 모달 스타일 */
         .confirm-row { display: flex; gap: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; margin-bottom: 6px; align-items: flex-start; }
@@ -303,7 +325,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.1</span>
+                    <span class="version">v12.2</span>
                 </span>
             </h1>
         </header>
@@ -436,9 +458,9 @@
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
             </div>
             <div class="add-event-body">
-                <!-- [v12.1] 새 일정 추가 창 위에 뜨는 커스텀 알림창 레이어 -->
-                <div id="modalAlertBox" class="custom-alert-box">
-                    <span id="modalAlertIcon">⚠️</span>
+                <!-- [v12.2] 중앙 고정 슬레이트 차콜 커스텀 알림 토스트 레이어 -->
+                <div id="modalAlertBox" class="custom-alert-box alert-warning">
+                    <span id="modalAlertIcon">💡</span>
                     <span id="modalAlertMsg">알림 메시지</span>
                 </div>
 
@@ -489,7 +511,7 @@
                     <div id="attendeesAutocompleteList" class="autocomplete-dropdown"></div>
                 </div>
 
-                <!-- [v12.1] 관리자 인증 영역 (가로 2분할 1행 2열 및 자동저장 체크박스) -->
+                <!-- 관리자 인증 영역 (가로 2분할 1행 2열 및 자동저장 체크박스) -->
                 <div id="adminPasswordFieldWrap" class="admin-auth-box">
                     <div class="admin-auth-row">
                         <div class="admin-auth-col">
@@ -516,12 +538,18 @@
 
     <!-- 📝 최종 확인 커스텀 모달 -->
     <div id="confirmEventModal" class="modal-overlay" style="z-index: 3000;">
-        <div class="modal-content" style="max-width: 420px;">
+        <div class="modal-content" style="max-width: 420px; position: relative;">
             <div class="modal-header" style="background-color: #0f766e;">
                 <h3 style="font-size: 1rem; margin: 0; font-weight: 600;">입력 데이터 최종 확인</h3>
                 <button type="button" class="modal-close-btn" onclick="closeConfirmModal()">&times;</button>
             </div>
-            <div class="modal-body" style="padding: 14px;">
+            <div class="modal-body" style="padding: 14px; position: relative;">
+                <!-- [v12.2] 최종 확인 창 위에 또렷하게 뜨는 완료 알림 레이어 -->
+                <div id="confirmAlertBox" class="custom-alert-box alert-success" style="top: 10px;">
+                    <span id="confirmAlertIcon">✅</span>
+                    <span id="confirmAlertMsg">알림 메시지</span>
+                </div>
+
                 <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; display: flex; flex-direction: column;">
                     <div class="confirm-row">
                         <span class="confirm-label">일련번호</span>
@@ -550,7 +578,7 @@
                 </div>
             </div>
             <div class="add-event-footer">
-                <button type="button" class="btn-cancel" onclick="closeConfirmModal()" style="flex: 1;">돌아가서 수정하기</button>
+                <button type="button" id="btnConfirmCancel" class="btn-cancel" onclick="closeConfirmModal()" style="flex: 1;">돌아가서 수정하기</button>
                 <button type="button" id="btnFinalSubmit" class="btn-submit" onclick="finalSubmitEvent()" style="flex: 1; background-color: #0f766e;">최종 등록 전송</button>
             </div>
         </div>
@@ -611,6 +639,7 @@
         let selectedTargetDateInfo = null;
         let pendingNewEventPayload = null;
         let modalAlertTimer = null;
+        let confirmAlertTimer = null;
 
         const LOCAL_STORAGE_KEYS = {
             title: 'calendar50_recent_titles',
@@ -645,7 +674,6 @@
             } catch(e) {}
         }
 
-        // [v12.1] 관리자 인증 저장 정보 관리 함수군
         function getSavedAdminCred() {
             try {
                 const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.adminCred);
@@ -665,20 +693,38 @@
             } catch(e) {}
         }
 
-        // [v12.1] 새 일정 추가 모달 상단 커스텀 알림 토스트 표시 함수
-        function showModalAlert(msg, type = 'error') {
+        // [v12.2] 새 일정 추가 모달 상단 커스텀 알림 토스트 (차분한 슬레이트 차콜 톤)
+        function showModalAlert(msg, type = 'warning') {
             const box = document.getElementById('modalAlertBox');
             const icon = document.getElementById('modalAlertIcon');
             const txt = document.getElementById('modalAlertMsg');
             if (!box) return;
 
-            box.className = `custom-alert-box ${type === 'error' ? 'alert-error' : 'alert-success'}`;
-            icon.textContent = type === 'error' ? '⚠️' : '✅';
+            box.className = `custom-alert-box ${type === 'warning' ? 'alert-warning' : 'alert-success'}`;
+            icon.textContent = type === 'warning' ? '💡' : '✅';
             txt.textContent = msg;
             box.style.display = 'flex';
 
             if (modalAlertTimer) clearTimeout(modalAlertTimer);
             modalAlertTimer = setTimeout(() => {
+                box.style.display = 'none';
+            }, 3000);
+        }
+
+        // [v12.2] 최종 확인 창 상단 알림 토스트
+        function showConfirmAlert(msg, type = 'success') {
+            const box = document.getElementById('confirmAlertBox');
+            const icon = document.getElementById('confirmAlertIcon');
+            const txt = document.getElementById('confirmAlertMsg');
+            if (!box) return;
+
+            box.className = `custom-alert-box ${type === 'success' ? 'alert-success' : 'alert-warning'}`;
+            icon.textContent = type === 'success' ? '✅' : '💡';
+            txt.textContent = msg;
+            box.style.display = 'flex';
+
+            if (confirmAlertTimer) clearTimeout(confirmAlertTimer);
+            confirmAlertTimer = setTimeout(() => {
                 box.style.display = 'none';
             }, 3000);
         }
@@ -850,7 +896,6 @@
             document.getElementById('inputNewNote').value = '';
             document.getElementById('inputNewAttendees').value = '';
 
-            // [v12.1] 저장된 관리자 인증 정보가 있으면 자동 채움 및 체크 활성화
             const savedCred = getSavedAdminCred();
             const authorInput = document.getElementById('inputAuthor');
             const pwInput = document.getElementById('inputAdminPw');
@@ -1054,7 +1099,6 @@
             }
         });
 
-        // [v12.1] 등록 데이터 확인: 자동 저장된 인증 정보 활용 및 커스텀 알림 연동
         async function submitNewEventForm() {
             const category = document.querySelector('input[name="newCategory"]:checked').value;
             const title = document.getElementById('inputNewTitle').value.trim();
@@ -1067,12 +1111,11 @@
             const chkSave = document.getElementById('chkSaveAdminCred').checked;
 
             if (!title) {
-                showModalAlert('행사명을 입력해주세요.', 'error');
+                showModalAlert('행사명을 입력해주세요.', 'warning');
                 document.getElementById('inputNewTitle').focus();
                 return;
             }
 
-            // 입력창에 비어있을 경우 저장된 인증 정보 확인
             if (!author || !adminPassword) {
                 const saved = getSavedAdminCred();
                 if (saved && saved.author && saved.pw) {
@@ -1082,7 +1125,7 @@
             }
 
             if (!author || !adminPassword) {
-                showModalAlert('관리자 인증이 필요합니다. 열쇠(🔑)를 눌러 성명과 암호를 입력하세요.', 'error');
+                showModalAlert('관리자 인증이 필요합니다. 열쇠(🔑)를 눌러 성명과 암호를 입력하세요.', 'warning');
                 toggleAdminPasswordInput();
                 return;
             }
@@ -1111,14 +1154,13 @@
                 const result = await res.json();
 
                 if (result.status === 'error') {
-                    showModalAlert('관리자가 아니거나 비밀번호가 틀립니다.', 'error');
+                    showModalAlert('관리자가 아니거나 비밀번호가 틀립니다.', 'warning');
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                     toggleAdminPasswordInput();
                     return;
                 }
 
-                // 인증 성공 시 사용자 선택(체크박스)에 따라 영구 저장 또는 삭제
                 if (chkSave) {
                     saveAdminCred(author, adminPassword);
                 } else {
@@ -1154,11 +1196,12 @@
                     document.getElementById('confirmAttendees').textContent = '-';
                 }
 
+                document.getElementById('confirmAlertBox').style.display = 'none';
                 document.getElementById('confirmEventModal').style.display = 'flex';
 
             } catch (err) {
                 console.error('검증 통신 오류:', err);
-                showModalAlert('서버 통신 중 오류가 발생했습니다.', 'error');
+                showModalAlert('서버 통신 중 오류가 발생했습니다.', 'warning');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
@@ -1167,12 +1210,15 @@
 
         function closeConfirmModal() { document.getElementById('confirmEventModal').style.display = 'none'; }
 
+        // [v12.2] alert() 완전 제거 및 확인 모달 상단 토스트 표시 후 부드러운 자동 닫힘
         async function finalSubmitEvent() {
             if (!pendingNewEventPayload) return;
 
             const submitBtn = document.getElementById('btnFinalSubmit');
+            const cancelBtn = document.getElementById('btnConfirmCancel');
             const originalBtnText = submitBtn.textContent;
             submitBtn.disabled = true;
+            if (cancelBtn) cancelBtn.disabled = true;
             submitBtn.textContent = '전송 중...';
 
             try {
@@ -1183,14 +1229,15 @@
                 const result = await res.json();
 
                 if (result.status === 'error') {
-                    showModalAlert(result.message, 'error'); 
+                    showConfirmAlert(result.message || '등록 처리 실패', 'warning');
                     submitBtn.disabled = false;
+                    if (cancelBtn) cancelBtn.disabled = false;
                     submitBtn.textContent = originalBtnText;
-                    closeConfirmModal();
                     return;
                 }
 
-                alert('새 일정이 구글 시트에 정상적으로 등록되었습니다!');
+                // 모달창 상단 완료 토스트 출력
+                showConfirmAlert('새 일정이 구글 시트에 정상적으로 등록되었습니다!', 'success');
 
                 const p = pendingNewEventPayload;
                 const monthKey = `${p.year}-${p.month}`;
@@ -1225,21 +1272,25 @@
                     globalAutocompletePool.attendees.sort((a, b) => a.localeCompare(b, 'ko'));
                 }
 
-                closeConfirmModal();
-                closeAddEventModal();
-
                 renderCalendarTable();
-                if (document.getElementById('dayModal').style.display === 'flex' && activeModalYear === p.year && activeModalMonth === p.month) {
-                    openDayModal(p.year, p.month);
-                    const cell = document.getElementById(`day-cell-${p.day}`);
-                    if (cell) cell.click();
-                }
+
+                // 1.2초 후 모달창들을 자연스럽게 닫고 캘린더 갱신
+                setTimeout(() => {
+                    closeConfirmModal();
+                    closeAddEventModal();
+                    if (document.getElementById('dayModal').style.display === 'flex' && activeModalYear === p.year && activeModalMonth === p.month) {
+                        openDayModal(p.year, p.month);
+                        const cell = document.getElementById(`day-cell-${p.day}`);
+                        if (cell) cell.click();
+                    }
+                }, 1200);
 
             } catch (err) {
                 console.error('일정 전송 오류:', err);
-                alert('전송 중 오류가 발생했습니다: ' + err.message);
+                showConfirmAlert('전송 중 오류가 발생했습니다: ' + err.message, 'warning');
             } finally {
                 submitBtn.disabled = false;
+                if (cancelBtn) cancelBtn.disabled = false;
                 submitBtn.textContent = originalBtnText;
                 pendingNewEventPayload = null;
             }
