@@ -800,7 +800,6 @@
             document.getElementById('addEventModal').style.display = 'none'; 
         }
 
-        // [v11.11] 끝 쉼표 및 빈 항목을 안전하게 제외하여 정확한 인원수 표시
         function updateAttendeeCount() {
             const textarea = document.getElementById('inputNewAttendees');
             const badge = document.getElementById('attendeeCountBadge');
@@ -862,7 +861,10 @@
             currentFilteredMap[fieldType] = matchedList;
 
             if (matchedList.length === 0) {
-                dropdown.innerHTML = `<div class="autocomplete-empty">추천 목록이 없습니다. 직접 입력하세요.</div>`;
+                const emptyMsg = (fieldType === 'attendees')
+                    ? '일치하는 회원이 없습니다. 직접 타이핑하여 입력하세요.'
+                    : '추천 목록이 없습니다. 직접 입력 후 엔터 키를 누르세요.';
+                dropdown.innerHTML = `<div class="autocomplete-empty">${emptyMsg}</div>`;
                 dropdown.style.display = 'block';
                 return;
             }
@@ -928,21 +930,27 @@
             element.focus();
         }
 
-        // [v11.11] Enter 키 입력 시 추천단어 1개 완성 또는 직접입력 확정 후 다음 필드로 포커스 순차 이동
         function handleFieldKeyDown(event, element, fieldType) {
             if (event.key === 'Enter') {
-                if (fieldType === 'attendees') return; // 참석자는 다중 입력을 위해 Enter 기본 동작 허용
-
-                event.preventDefault(); // 기본 폼 전송 차단
                 const list = currentFilteredMap[fieldType] || [];
 
-                // 1개만 매칭되었을 경우 그 항목으로 채우기
+                // 참석자 입력창: 1개만 남았을 때 엔터 누르면 해당 단어 자동 완성 입력
+                if (fieldType === 'attendees') {
+                    if (list.length === 1) {
+                        event.preventDefault();
+                        selectFieldOption('attendees', list[0]);
+                    }
+                    return;
+                }
+
+                // 행사명, 장소, 비고 입력창
+                event.preventDefault();
                 if (list.length === 1) {
                     element.value = list[0];
                 }
                 hideAllAutocomplete();
 
-                // 다음 입력 필드로 포커스 순차 이동 (행사명 -> 장소 -> 비고 -> 참석자)
+                // 다음 입력 필드로 포커스 순차 이동
                 if (fieldType === 'title') {
                     const nextElem = document.getElementById('inputNewPlace');
                     if (nextElem) nextElem.focus();
@@ -990,7 +998,6 @@
                 return;
             }
 
-            // [v11.11] 끝 쉼표 및 연속 쉼표 정제
             let cleanAttendees = '';
             if (rawAttendees) {
                 const attList = rawAttendees.split(',').map(n => n.trim()).filter(n => n.length > 0);
