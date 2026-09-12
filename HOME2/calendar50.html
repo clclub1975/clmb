@@ -1,4 +1,4 @@
-<!-- v12.2: 등록 완료 토스트 레이어 연동, 차분한 슬레이트 알림 색상 및 팝업 떨림 애니메이션 버그 개선 -->
+<!-- v12.3: 마우스 드래그 시 모달창 닫힘 방지(mousedown-mouseup 대조) 및 오버레이 닫힘 로직 안정화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -265,7 +265,7 @@
         .btn-submit:hover { background: #1d4ed8; }
         .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        /* [v12.2] 점잖은 차콜 슬레이트 톤 및 우측 쏠림 떨림 현상 완벽 방지 전용 애니메이션 */
+        /* 점잖은 차콜 슬레이트 톤 및 우측 쏠림 떨림 현상 완벽 방지 전용 애니메이션 */
         @keyframes alertSlideDown {
             from { opacity: 0; transform: translate(-50%, -8px); }
             to { opacity: 1; transform: translate(-50%, 0); }
@@ -325,7 +325,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.2</span>
+                    <span class="version">v12.3</span>
                 </span>
             </h1>
         </header>
@@ -402,7 +402,7 @@
     </div>
 
     <!-- 전체 갤러리 모아보기 모달 -->
-    <div id="galleryModal" class="gallery-modal-overlay" onclick="handleGalleryModalOverlayClick(event)">
+    <div id="galleryModal" class="gallery-modal-overlay">
         <div class="gallery-modal-content">
             <div class="gallery-modal-header">
                 <h2 id="galleryModalTitle">🖼️ 사진 모아보기 갤러리</h2>
@@ -413,7 +413,7 @@
     </div>
 
     <!-- 일력(월간 캘린더) 모달 팝업 -->
-    <div id="dayModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+    <div id="dayModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">0000년 0월 일력</h2>
@@ -447,7 +447,7 @@
     </div>
 
     <!-- ➕ 신규 일정 입력 모달 -->
-    <div id="addEventModal" class="add-event-modal-overlay" onclick="handleAddEventOverlayClick(event)">
+    <div id="addEventModal" class="add-event-modal-overlay">
         <div class="add-event-modal-content">
             <div class="add-event-header">
                 <h3 id="addEventModalTitle">
@@ -458,7 +458,7 @@
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
             </div>
             <div class="add-event-body">
-                <!-- [v12.2] 중앙 고정 슬레이트 차콜 커스텀 알림 토스트 레이어 -->
+                <!-- 중앙 고정 슬레이트 차콜 커스텀 알림 토스트 레이어 -->
                 <div id="modalAlertBox" class="custom-alert-box alert-warning">
                     <span id="modalAlertIcon">💡</span>
                     <span id="modalAlertMsg">알림 메시지</span>
@@ -544,7 +544,7 @@
                 <button type="button" class="modal-close-btn" onclick="closeConfirmModal()">&times;</button>
             </div>
             <div class="modal-body" style="padding: 14px; position: relative;">
-                <!-- [v12.2] 최종 확인 창 위에 또렷하게 뜨는 완료 알림 레이어 -->
+                <!-- 최종 확인 창 위에 또렷하게 뜨는 완료 알림 레이어 -->
                 <div id="confirmAlertBox" class="custom-alert-box alert-success" style="top: 10px;">
                     <span id="confirmAlertIcon">✅</span>
                     <span id="confirmAlertMsg">알림 메시지</span>
@@ -585,7 +585,7 @@
     </div>
 
     <!-- 대형 사진 뷰어 모달 -->
-    <div id="photoModal" class="photo-modal-overlay" onclick="handlePhotoModalOverlayClick(event)">
+    <div id="photoModal" class="photo-modal-overlay">
         <div class="photo-modal-content">
             <div class="photo-modal-header">
                 <span id="photoModalTitle" class="photo-modal-title">이벤트 사진 보기</span>
@@ -641,6 +641,9 @@
         let modalAlertTimer = null;
         let confirmAlertTimer = null;
 
+        // [v12.3] 마우스 드래그 시 모달창 닫힘 방지를 위한 mousedown 타깃 추적 변수
+        let mouseDownTarget = null;
+
         const LOCAL_STORAGE_KEYS = {
             title: 'calendar50_recent_titles',
             place: 'calendar50_recent_places',
@@ -693,7 +696,6 @@
             } catch(e) {}
         }
 
-        // [v12.2] 새 일정 추가 모달 상단 커스텀 알림 토스트 (차분한 슬레이트 차콜 톤)
         function showModalAlert(msg, type = 'warning') {
             const box = document.getElementById('modalAlertBox');
             const icon = document.getElementById('modalAlertIcon');
@@ -711,7 +713,6 @@
             }, 3000);
         }
 
-        // [v12.2] 최종 확인 창 상단 알림 토스트
         function showConfirmAlert(msg, type = 'success') {
             const box = document.getElementById('confirmAlertBox');
             const icon = document.getElementById('confirmAlertIcon');
@@ -847,10 +848,26 @@
         function closeGalleryModal() { document.getElementById('galleryModal').style.display = 'none'; }
         function closeDayModal() { document.getElementById('dayModal').style.display = 'none'; }
 
-        function handleModalOverlayClick(event) { if (event.target.id === 'dayModal') requestCloseDayModal(); }
-        function handlePhotoModalOverlayClick(event) { if (event.target.id === 'photoModal') requestClosePhotoModal(); }
-        function handleGalleryModalOverlayClick(event) { if (event.target.id === 'galleryModal') requestCloseGalleryModal(); }
-        function handleAddEventOverlayClick(event) { if (event.target.id === 'addEventModal') closeAddEventModal(); }
+        // [v12.3] 마우스 드래그 시 모달창 닫힘 방지 이벤트 리스너 등록
+        document.addEventListener('mousedown', function(e) {
+            mouseDownTarget = e.target;
+        });
+
+        function attachSafeOverlayClose(modalId, closeFn) {
+            const modalElem = document.getElementById(modalId);
+            if (!modalElem) return;
+            modalElem.addEventListener('mouseup', function(e) {
+                // 마우스 버튼을 누른 곳과 뗀 곳이 둘 다 모달 배경 오버레이 자체일 때만 닫기
+                if (e.target === modalElem && mouseDownTarget === modalElem) {
+                    closeFn();
+                }
+            });
+        }
+
+        attachSafeOverlayClose('dayModal', requestCloseDayModal);
+        attachSafeOverlayClose('photoModal', requestClosePhotoModal);
+        attachSafeOverlayClose('galleryModal', requestCloseGalleryModal);
+        attachSafeOverlayClose('addEventModal', closeAddEventModal);
 
         function triggerAddEventFromDetail() {
             if (!activeModalYear || !activeModalMonth || !activeSelectedDay) return;
@@ -1210,7 +1227,6 @@
 
         function closeConfirmModal() { document.getElementById('confirmEventModal').style.display = 'none'; }
 
-        // [v12.2] alert() 완전 제거 및 확인 모달 상단 토스트 표시 후 부드러운 자동 닫힘
         async function finalSubmitEvent() {
             if (!pendingNewEventPayload) return;
 
@@ -1236,7 +1252,6 @@
                     return;
                 }
 
-                // 모달창 상단 완료 토스트 출력
                 showConfirmAlert('새 일정이 구글 시트에 정상적으로 등록되었습니다!', 'success');
 
                 const p = pendingNewEventPayload;
@@ -1274,7 +1289,6 @@
 
                 renderCalendarTable();
 
-                // 1.2초 후 모달창들을 자연스럽게 닫고 캘린더 갱신
                 setTimeout(() => {
                     closeConfirmModal();
                     closeAddEventModal();
