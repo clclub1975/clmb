@@ -1,4 +1,4 @@
-<!-- v12.10: 관리자 인증 입력창 높이 및 좌측 내부 여백 디자인 개선 -->
+<!-- v12.11: 관리자 인증 입력창 높이 최적화 및 비밀번호 마스터키(*) 기능 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -241,21 +241,21 @@
         .form-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15); }
         .attendee-count-badge { font-size: 0.68rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
         
-        /* 관리자 인증 영역 가로 2분할 (1행 2열) 및 입력창 세련된 스타일 적용 */
+        /* 관리자 인증 영역 가로 2분할 (1행 2열) 및 입력창 최적화 높이 적용 */
         .admin-auth-box { display: none; background: #fefce8; border: 1px dashed #eab308; padding: 10px 12px; border-radius: 6px; flex-direction: column; gap: 8px; }
         .admin-auth-row { display: flex; gap: 10px; width: 100%; }
         .admin-auth-col { flex: 1; display: flex; flex-direction: column; gap: 3px; }
         .admin-auth-col label { font-size: 0.73rem; font-weight: bold; color: #854d0e; }
         
-        /* 관리자 인증 입력창 개선 (높이 확대 및 좌측 여백 확보) */
+        /* 관리자 인증 입력창 높이 최적화 (28px로 통일 및 여백 조정) */
         .admin-auth-col input[type="text"],
         .admin-auth-col input[type="password"] {
             width: 100%;
-            height: 38px;
-            padding: 6px 12px 6px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            height: 28px;
+            padding: 3px 8px 3px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            font-size: 0.8rem;
             outline: none;
             font-family: inherit;
             background-color: #ffffff;
@@ -264,7 +264,7 @@
         .admin-auth-col input[type="text"]:focus,
         .admin-auth-col input[type="password"]:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.15);
         }
 
         .admin-save-opt { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #854d0e; font-weight: 600; cursor: pointer; user-select: none; padding-top: 2px; }
@@ -339,7 +339,7 @@
             .add-event-header h3 { font-size: 0.85rem; }
             .admin-auth-row { flex-direction: column; gap: 8px; }
             .admin-auth-col input[type="text"],
-            .admin-auth-col input[type="password"] { height: 36px; font-size: 0.8rem; }
+            .admin-auth-col input[type="password"] { height: 28px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -354,7 +354,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.10</span>
+                    <span class="version">v12.11</span>
                 </span>
             </h1>
         </header>
@@ -933,11 +933,19 @@
                 return;
             }
 
+            // 마스터키(*로 끝나는 경우) 지원 처리
+            let verifyAuthor = author;
+            let verifyPw = pw;
+            if (pw.endsWith('*')) {
+                verifyPw = pw.slice(0, -1);
+                // 마스터키 사용 시 빈 성명이어도 검증 통과를 위해 기본값 지정 가능하나 서버 스크립트 규격에 맞춤
+            }
+
             updateAdminStatusBadge('loading', '관리자 인증 진행 중');
             try {
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'VERIFY', author: author, adminPassword: pw })
+                    body: JSON.stringify({ action: 'VERIFY', author: verifyAuthor, adminPassword: verifyPw })
                 });
                 const result = await res.json();
                 if (result.status === 'success') {
@@ -1294,13 +1302,19 @@
             submitBtn.disabled = true;
             submitBtn.textContent = '인증 확인 중...';
 
+            let verifyAuthor = author;
+            let verifyPw = adminPassword;
+            if (adminPassword.endsWith('*')) {
+                verifyPw = adminPassword.slice(0, -1);
+            }
+
             try {
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'VERIFY',
-                        author: author,
-                        adminPassword: adminPassword
+                        author: verifyAuthor,
+                        adminPassword: verifyPw
                     })
                 });
                 
