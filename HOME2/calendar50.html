@@ -1,4 +1,4 @@
-<!-- v12.8: 입력 데이터 최종 확인 창 안내 문구 수정 (등록 완료 후 반영 지연 안내 텍스트 다듬기) -->
+<!-- v12.9: 관리자 인증 백그라운드 사전 검증 및 실시간 상태 시각화 기능 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -216,6 +216,11 @@
         .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #2563eb; color: #ffffff; border-top-left-radius: 10px; border-top-right-radius: 10px; flex-shrink: 0; user-select: none; }
         .add-event-header h3 { font-size: 0.92rem; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px; }
         
+        .admin-status-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); margin-left: 4px; display: inline-flex; align-items: center; }
+        .admin-status-badge.success { background-color: #059669; border-color: #10b981; color: #ffffff; }
+        .admin-status-badge.fail { background-color: #dc2626; border-color: #ef4444; color: #ffffff; }
+        .admin-status-badge.loading { background-color: #d97706; border-color: #f59e0b; color: #ffffff; }
+
         .admin-key-toggle-btn { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 4px; color: #ffffff; cursor: pointer; font-size: 0.9rem; padding: 1px 6px; line-height: 1.2; display: inline-flex; align-items: center; transition: all 0.2s ease; }
         .admin-key-toggle-btn:hover { background: rgba(255, 255, 255, 0.35); border-color: #ffffff; transform: scale(1.05); }
 
@@ -326,7 +331,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.8</span>
+                    <span class="version">v12.9</span>
                 </span>
             </h1>
         </header>
@@ -453,7 +458,7 @@
             <div class="add-event-header">
                 <h3 id="addEventModalTitle">
                     <span>새 일정 추가</span>
-                    <span style="font-size: 0.75rem; font-weight: normal; opacity: 0.88; margin-left: 2px;">(관리자 인증 필요)</span>
+                    <span id="adminStatusBadge" class="admin-status-badge">관리자 인증 필요</span>
                     <button type="button" class="admin-key-toggle-btn" onclick="toggleAdminPasswordInput()" title="관리자 인증 입력창 열기/닫기">🔑</button>
                 </h3>
                 <button type="button" class="modal-close-btn" onclick="closeAddEventModal()">&times;</button>
@@ -517,11 +522,11 @@
                     <div class="admin-auth-row">
                         <div class="admin-auth-col">
                             <label for="inputAuthor">👤 등록자 성명</label>
-                            <input type="text" id="inputAuthor" placeholder="등록 가능자 성명">
+                            <input type="text" id="inputAuthor" placeholder="등록 가능자 성명" oninput="triggerBackgroundVerify()">
                         </div>
                         <div class="admin-auth-col">
                             <label for="inputAdminPw">🔑 관리자 비밀번호</label>
-                            <input type="password" id="inputAdminPw" placeholder="인증 비밀번호">
+                            <input type="password" id="inputAdminPw" placeholder="인증 비밀번호" oninput="triggerBackgroundVerify()">
                         </div>
                     </div>
                     <label class="admin-save-opt">
@@ -646,6 +651,8 @@
         let modalAlertTimer = null;
         let confirmAlertTimer = null;
         let mouseDownTarget = null;
+        let isBackgroundVerified = false;
+        let backgroundVerifyTimer = null;
 
         const LOCAL_STORAGE_KEYS = {
             title: 'calendar50_recent_titles',
@@ -697,6 +704,13 @@
             try {
                 localStorage.removeItem(LOCAL_STORAGE_KEYS.adminCred);
             } catch(e) {}
+        }
+
+        function updateAdminStatusBadge(status, text) {
+            const badge = document.getElementById('adminStatusBadge');
+            if (!badge) return;
+            badge.className = `admin-status-badge ${status}`;
+            badge.textContent = text;
         }
 
         function showModalAlert(msg, type = 'warning') {
@@ -886,6 +900,51 @@
             }
         }
 
+        async function runBackgroundVerify(author, pw) {
+            if (!author || !pw) {
+                isBackgroundVerified = false;
+                const saved = getSavedAdminCred();
+                if (!saved || !saved.author || !saved.pw) {
+                    updateAdminStatusBadge('', '관리자 인증 필요');
+                }
+                return;
+            }
+
+            updateAdminStatusBadge('loading', '관리자 인증 진행 중');
+            try {
+                const res = await fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'VERIFY', author: author, adminPassword: pw })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    isBackgroundVerified = true;
+                    updateAdminStatusBadge('success', '관리자 인증 완료');
+                } else {
+                    isBackgroundVerified = false;
+                    updateAdminStatusBadge('fail', '관리자 인증 실패');
+                }
+            } catch (err) {
+                isBackgroundVerified = false;
+                updateAdminStatusBadge('fail', '관리자 인증 실패');
+            }
+        }
+
+        function triggerBackgroundVerify() {
+            if (backgroundVerifyTimer) clearTimeout(backgroundVerifyTimer);
+            const author = document.getElementById('inputAuthor').value.trim();
+            const pw = document.getElementById('inputAdminPw').value.trim();
+            if (!author || !pw) {
+                isBackgroundVerified = false;
+                updateAdminStatusBadge('', '관리자 인증 필요');
+                return;
+            }
+            updateAdminStatusBadge('loading', '관리자 인증 진행 중');
+            backgroundVerifyTimer = setTimeout(() => {
+                runBackgroundVerify(author, pw);
+            }, 400);
+        }
+
         function openAddEventModal(year, month, day, eventsOnDay) {
             activeModalYear = year;
             activeModalMonth = month;
@@ -919,14 +978,18 @@
             const pwInput = document.getElementById('inputAdminPw');
             const chkSave = document.getElementById('chkSaveAdminCred');
 
+            isBackgroundVerified = false;
+
             if (savedCred && savedCred.author && savedCred.pw) {
                 authorInput.value = savedCred.author;
                 pwInput.value = savedCred.pw;
                 chkSave.checked = true;
+                runBackgroundVerify(savedCred.author, savedCred.pw);
             } else {
                 authorInput.value = '';
                 pwInput.value = '';
                 chkSave.checked = false;
+                updateAdminStatusBadge('', '관리자 인증 필요');
             }
 
             document.getElementById('adminPasswordFieldWrap').style.display = 'none';
@@ -1163,6 +1226,50 @@
 
             const submitBtn = document.getElementById('btnVerifySubmit');
             const originalText = submitBtn.textContent;
+
+            // 백그라운드 인증이 이미 완료되어 있다면 즉시 통과!
+            if (isBackgroundVerified) {
+                if (chkSave) {
+                    saveAdminCred(author, adminPassword);
+                } else {
+                    clearAdminCred();
+                }
+
+                pendingNewEventPayload = {
+                    action: 'NEW',
+                    dateStr: selectedTargetDateInfo.dateStr,
+                    seq: selectedTargetDateInfo.seq,
+                    category: category,
+                    title: title,
+                    place: place,
+                    note: note,
+                    attendees: cleanAttendees,
+                    author: author,
+                    adminPassword: adminPassword,
+                    year: selectedTargetDateInfo.year,
+                    month: selectedTargetDateInfo.month,
+                    day: selectedTargetDateInfo.day
+                };
+
+                document.getElementById('confirmKey').textContent = `${selectedTargetDateInfo.dateStr}-${selectedTargetDateInfo.seq}`;
+                document.getElementById('confirmAuthor').textContent = author;
+                document.getElementById('confirmTitle').textContent = `[${category}] ${title}`;
+                document.getElementById('confirmPlace').textContent = place || '-';
+                document.getElementById('confirmNote').textContent = note || '-';
+                
+                if (cleanAttendees) {
+                    const count = cleanAttendees.split(',').map(n => n.trim()).filter(n => n.length > 0).length;
+                    document.getElementById('confirmAttendees').textContent = `${cleanAttendees} (${count}명)`;
+                } else {
+                    document.getElementById('confirmAttendees').textContent = '-';
+                }
+
+                document.getElementById('confirmAlertBox').style.display = 'none';
+                document.getElementById('confirmEventModal').style.display = 'flex';
+                return;
+            }
+
+            // 백그라운드 검증이 안 되어 있거나 실패 상태인 경우 동기식으로 한번 더 체크
             submitBtn.disabled = true;
             submitBtn.textContent = '인증 확인 중...';
 
@@ -1179,12 +1286,16 @@
                 const result = await res.json();
 
                 if (result.status === 'error') {
+                    updateAdminStatusBadge('fail', '관리자 인증 실패');
                     showModalAlert('관리자가 아니거나 비밀번호가 틀립니다.', 'warning');
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                     toggleAdminPasswordInput();
                     return;
                 }
+
+                isBackgroundVerified = true;
+                updateAdminStatusBadge('success', '관리자 인증 완료');
 
                 if (chkSave) {
                     saveAdminCred(author, adminPassword);
@@ -2014,4 +2125,3 @@
     </script>
 </body>
 </html>
- 
