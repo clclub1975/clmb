@@ -1,4 +1,4 @@
-<!-- v13.0: 7가지 분류 항목 체계('회의', '봉사', '행사', '학회', '재정', '경조', '보정') 및 전용 심볼/색상 매핑 적용 -->
+<!-- v13.1: 7가지 분류별 심볼 CSS 색상 누락분 추가 및 정상 렌더링 보완 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -73,14 +73,14 @@
         .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
 
         /* 7가지 분류별 표식 색상 및 심볼 */
-        .legend-meeting  { color: #0066ff; font-size: 1.1rem; }
-        .legend-service  { color: #00b050; font-size: 1.1rem; }
-        .legend-event    { color: #7030a0; font-size: 1.1rem; }
-        .legend-study    { color: #ed7d31; font-size: 1.1rem; }
-        .legend-finance  { color: #00b0f0; font-size: 1.1rem; }
-        .legend-family   { color: #f738f7; font-size: 1.1rem; }
-        .legend-correction { color: #595959; font-size: 1.1rem; }
-        .legend-error    { color: #ff1744; font-weight: bold; font-size: 0.85rem; }
+        .legend-회의  { color: #0066ff; font-size: 1.1rem; }
+        .legend-봉사  { color: #00b050; font-size: 1.1rem; }
+        .legend-행사  { color: #7030a0; font-size: 1.1rem; }
+        .legend-학회  { color: #ed7d31; font-size: 1.1rem; }
+        .legend-재정  { color: #00b0f0; font-size: 1.1rem; }
+        .legend-경조  { color: #f738f7; font-size: 1.1rem; }
+        .legend-보정  { color: #595959; font-size: 1.1rem; }
+        .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; }
 
         .month-cell { cursor: pointer; transition: all 0.15s ease; }
         .month-cell:hover { background-color: #e2e8f0 !important; }
@@ -91,13 +91,13 @@
         .symbol-wrapper { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2px 4px; width: 100%; min-height: 16px; }
         .symbol-wrapper span { display: inline-flex; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: bold; line-height: 1; }
         
-        .symbol-meeting     { color: #0066ff; }
-        .symbol-service     { color: #00b050; }
-        .symbol-event       { color: #7030a0; }
-        .symbol-study       { color: #ed7d31; }
-        .symbol-finance     { color: #00b0f0; }
-        .symbol-family      { color: #f738f7; }
-        .symbol-correction  { color: #595959; }
+        .symbol-회의   { color: #0066ff; }
+        .symbol-봉사   { color: #00b050; }
+        .symbol-행사   { color: #7030a0; }
+        .symbol-학회   { color: #ed7d31; }
+        .symbol-재정   { color: #00b0f0; }
+        .symbol-경조   { color: #f738f7; }
+        .symbol-보정   { color: #595959; }
         .symbol-error { color: #ff1744; font-size: 0.85rem !important; font-weight: bold; background-color: transparent; padding: 0; }
         .symbol-empty { color: #adb5bd; font-size: 0.7rem !important; }
 
@@ -371,7 +371,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v13.0</span>
+                    <span class="version">v13.1</span>
                 </span>
             </h1>
         </header>
@@ -422,13 +422,13 @@
 
         <!-- 범례 바 (7개 분류) -->
         <div class="legend-bar">
-            <div class="legend-item"><span class="legend-meeting">●</span> 회의</div>
-            <div class="legend-item"><span class="legend-service">●</span> 봉사</div>
-            <div class="legend-item"><span class="legend-event">●</span> 행사</div>
-            <div class="legend-item"><span class="legend-study">●</span> 학회</div>
-            <div class="legend-item"><span class="legend-finance">●</span> 재정</div>
-            <div class="legend-item"><span class="legend-family">●</span> 경조</div>
-            <div class="legend-item"><span class="legend-correction">●</span> 보정</div>
+            <div class="legend-item"><span class="legend-회의">●</span> 회의</div>
+            <div class="legend-item"><span class="legend-봉사">●</span> 봉사</div>
+            <div class="legend-item"><span class="legend-행사">●</span> 행사</div>
+            <div class="legend-item"><span class="legend-학회">●</span> 학회</div>
+            <div class="legend-item"><span class="legend-재정">●</span> 재정</div>
+            <div class="legend-item"><span class="legend-경조">●</span> 경조</div>
+            <div class="legend-item"><span class="legend-보정">●</span> 보정</div>
             <div class="legend-item"><span class="legend-error">X 오류</span></div>
         </div>
 
