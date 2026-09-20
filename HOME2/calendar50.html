@@ -1,4 +1,4 @@
-<!-- v12.21: 행사명, 장소, 비고 입력창 호버링 툴팁 문구 간결화 ('목록이 1개일 때는 엔터 키를 치면 바로 입력됩니다.') -->
+<!-- v13.0: 7가지 분류 항목 체계('회의', '봉사', '행사', '학회', '재정', '경조', '보정') 및 전용 심볼/색상 매핑 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -58,7 +58,7 @@
         .strip-card-title { font-size: 0.58rem; color: #0f172a; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
         /* 표식 의미 안내 바 */
-        .legend-bar { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 16px; background: #f1f3f5; border: 1px solid #e1e4e8; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.85rem; font-weight: 600; }
+        .legend-bar { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; background: #f1f3f5; border: 1px solid #e1e4e8; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.8rem; font-weight: 600; }
         .legend-item { display: flex; align-items: center; gap: 4px; }
         
         /* 테이블 영역 */
@@ -72,13 +72,15 @@
         th:not(:first-child), td:not(:first-child) { width: 7.55%; }
         .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
 
-        /* 표식 색상 */
-        .legend-important { color: #ff0033; font-size: 1.1rem; }
-        .legend-event { color: #0066ff; font-size: 1.1rem; }
-        .legend-marriage { color: #f738f7; font-size: 1.1rem; }
-        .legend-funeral { color: #111111; font-size: 1.1rem; }
-        .legend-etc { color: #00ff00; font-size: 1.1rem; }
-        .legend-error { color: #ff1744; font-weight: bold; font-size: 0.85rem; }
+        /* 7가지 분류별 표식 색상 및 심볼 */
+        .legend-meeting  { color: #0066ff; font-size: 1.1rem; }
+        .legend-service  { color: #00b050; font-size: 1.1rem; }
+        .legend-event    { color: #7030a0; font-size: 1.1rem; }
+        .legend-study    { color: #ed7d31; font-size: 1.1rem; }
+        .legend-finance  { color: #00b0f0; font-size: 1.1rem; }
+        .legend-family   { color: #f738f7; font-size: 1.1rem; }
+        .legend-correction { color: #595959; font-size: 1.1rem; }
+        .legend-error    { color: #ff1744; font-weight: bold; font-size: 0.85rem; }
 
         .month-cell { cursor: pointer; transition: all 0.15s ease; }
         .month-cell:hover { background-color: #e2e8f0 !important; }
@@ -88,11 +90,14 @@
 
         .symbol-wrapper { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2px 4px; width: 100%; min-height: 16px; }
         .symbol-wrapper span { display: inline-flex; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: bold; line-height: 1; }
-        .symbol-important { color: #ff0033; }
-        .symbol-event     { color: #0066ff; }
-        .symbol-marriage  { color: #f738f7; }
-        .symbol-funeral   { color: #111111; }
-        .symbol-etc       { color: #00ff00; }
+        
+        .symbol-meeting     { color: #0066ff; }
+        .symbol-service     { color: #00b050; }
+        .symbol-event       { color: #7030a0; }
+        .symbol-study       { color: #ed7d31; }
+        .symbol-finance     { color: #00b0f0; }
+        .symbol-family      { color: #f738f7; }
+        .symbol-correction  { color: #595959; }
         .symbol-error { color: #ff1744; font-size: 0.85rem !important; font-weight: bold; background-color: transparent; padding: 0; }
         .symbol-empty { color: #adb5bd; font-size: 0.7rem !important; }
 
@@ -125,12 +130,16 @@
         .holiday-tag { font-size: 0.58rem; color: #e03131; font-weight: 500; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .day-events { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; }
         .day-event-item { font-size: 0.65rem; line-height: 1.2; padding: 2px 4px; border-radius: 3px; background-color: #f8f9fa; border-left: 3.5px solid #cbd5e1; word-break: keep-all; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
-        .day-event-item.important { border-left-color: #ff0033; background-color: #fff5f5; }
-        .day-event-item.event     { border-left-color: #0066ff; background-color: #f0f7ff; }
-        .day-event-item.marriage  { border-left-color: #f738f7; background-color: #fdf5fd; }
-        .day-event-item.funeral   { border-left-color: #111111; background-color: #f3f4f6; }
-        .day-event-item.etc       { border-left-color: #00ff00; background-color: #f0fdf4; }
-        .day-event-item.error     { border-left-color: #ff1744; background-color: #fff1f2; }
+        
+        .day-event-item.회의   { border-left-color: #0066ff; background-color: #f0f7ff; }
+        .day-event-item.봉사   { border-left-color: #00b050; background-color: #f0fdf4; }
+        .day-event-item.행사   { border-left-color: #7030a0; background-color: #f9f5ff; }
+        .day-event-item.학회   { border-left-color: #ed7d31; background-color: #fffaf5; }
+        .day-event-item.재정   { border-left-color: #00b0f0; background-color: #f0fbff; }
+        .day-event-item.경조   { border-left-color: #f738f7; background-color: #fdf5fd; }
+        .day-event-item.보정   { border-left-color: #595959; background-color: #f4f4f5; }
+        .day-event-item.error  { border-left-color: #ff1744; background-color: #fff1f2; }
+        
         .more-badge { font-size: 0.58rem; color: #495057; background-color: #e9ecef; border-radius: 10px; padding: 1px 4px; text-align: center; font-weight: 600; margin-top: auto; line-height: 1.1; }
 
         /* 하단 상세 패널 및 헤더 컨트롤 바 */
@@ -146,12 +155,16 @@
 
         .detail-list { display: flex; flex-direction: column; gap: 6px; max-height: 230px; overflow-y: auto; padding-right: 2px; }
         .detail-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; border-left: 4px solid #cbd5e1; transition: all 0.15s ease; }
-        .detail-item-card.important { border-left-color: #ff0033; }
-        .detail-item-card.event     { border-left-color: #0066ff; }
-        .detail-item-card.marriage  { border-left-color: #f738f7; }
-        .detail-item-card.funeral   { border-left-color: #111111; }
-        .detail-item-card.etc       { border-left-color: #00ff00; }
-        .detail-item-card.error     { border-left-color: #ff1744; background-color: #fff8f8; }
+        
+        .detail-item-card.회의   { border-left-color: #0066ff; }
+        .detail-item-card.봉사   { border-left-color: #00b050; }
+        .detail-item-card.행사   { border-left-color: #7030a0; }
+        .detail-item-card.학회   { border-left-color: #ed7d31; }
+        .detail-item-card.재정   { border-left-color: #00b0f0; }
+        .detail-item-card.경조   { border-left-color: #f738f7; }
+        .detail-item-card.보정   { border-left-color: #595959; }
+        .detail-item-card.error  { border-left-color: #ff1744; background-color: #fff8f8; }
+
         .detail-item-card.card-search-match { background-color: #fef9c3 !important; border-right: 2px solid #f59e0b; border-top: 1.5px solid #f59e0b; border-bottom: 1.5px solid #f59e0b; }
         .detail-item-card.card-photo-search-match { background-color: #d1fae5 !important; border-right: 2px solid #10b981; border-top: 1.5px solid #10b981; border-bottom: 1.5px solid #10b981; }
         mark.search-highlight { background-color: #fde047; color: #0f172a; font-weight: bold; padding: 0 2px; border-radius: 2px; }
@@ -159,12 +172,16 @@
 
         .detail-item-top { display: flex; align-items: center; gap: 6px; width: 100%; flex-wrap: wrap; }
         .category-chip { font-size: 0.65rem; font-weight: bold; padding: 1px 0; width: 36px; text-align: center; border-radius: 4px; color: #ffffff; display: inline-block; line-height: 1.3; flex-shrink: 0; }
-        .category-chip.important { background-color: #ff0033; }
-        .category-chip.event     { background-color: #0066ff; }
-        .category-chip.marriage  { background-color: #f738f7; }
-        .category-chip.funeral   { background-color: #111111; }
-        .category-chip.etc       { background-color: #00b050; }
-        .category-chip.error     { background-color: #ff1744; }
+        
+        .category-chip.회의   { background-color: #0066ff; }
+        .category-chip.봉사   { background-color: #00b050; }
+        .category-chip.행사   { background-color: #7030a0; }
+        .category-chip.학회   { background-color: #ed7d31; }
+        .category-chip.재정   { background-color: #00b0f0; }
+        .category-chip.경조   { background-color: #f738f7; }
+        .category-chip.보정   { background-color: #595959; }
+        .category-chip.error  { background-color: #ff1744; }
+
         .detail-item-title { font-weight: 700; color: #0f172a; font-size: 0.8rem; }
         .detail-item-place-inline { font-size: 0.75rem; color: #475569; font-weight: 500; display: inline-flex; align-items: center; }
         .detail-item-note-inline { font-size: 0.73rem; color: #475569; font-weight: normal; display: inline-flex; align-items: center; }
@@ -279,8 +296,8 @@
         .autocomplete-del-btn:hover { color: #ef4444; background-color: #fee2e2; }
         .autocomplete-empty { padding: 8px 10px; font-size: 0.74rem; color: #94a3b8; text-align: center; }
 
-        .radio-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1px; }
-        .radio-label { display: inline-flex; align-items: center; gap: 3px; font-size: 0.76rem; font-weight: 600; cursor: pointer; padding: 3px 6px; height: 26px; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; transition: all 0.15s ease; }
+        .radio-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 1px; }
+        .radio-label { display: inline-flex; align-items: center; gap: 3px; font-size: 0.74rem; font-weight: 600; cursor: pointer; padding: 3px 5px; height: 26px; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; transition: all 0.15s ease; }
         .radio-label:hover { background: #f1f5f9; }
         .radio-label input[type="radio"] { accent-color: #2563eb; }
 
@@ -354,7 +371,7 @@
                 <span class="title-wrap">촛불회 50년사 캘린더</span>
                 <span class="title-break">
                     <span class="title-wrap">(1975 - 2026)</span>
-                    <span class="version">v12.21</span>
+                    <span class="version">v13.0</span>
                 </span>
             </h1>
         </header>
@@ -403,13 +420,15 @@
             </div>
         </div>
 
-        <!-- 범례 바 -->
+        <!-- 범례 바 (7개 분류) -->
         <div class="legend-bar">
-            <div class="legend-item"><span class="legend-important">★</span> 중요</div>
+            <div class="legend-item"><span class="legend-meeting">●</span> 회의</div>
+            <div class="legend-item"><span class="legend-service">●</span> 봉사</div>
             <div class="legend-item"><span class="legend-event">●</span> 행사</div>
-            <div class="legend-item"><span class="legend-marriage">●</span> 결혼</div>
-            <div class="legend-item"><span class="legend-funeral">●</span> 부고</div>
-            <div class="legend-item"><span class="legend-etc">●</span> 기타</div>
+            <div class="legend-item"><span class="legend-study">●</span> 학회</div>
+            <div class="legend-item"><span class="legend-finance">●</span> 재정</div>
+            <div class="legend-item"><span class="legend-family">●</span> 경조</div>
+            <div class="legend-item"><span class="legend-correction">●</span> 보정</div>
             <div class="legend-item"><span class="legend-error">X 오류</span></div>
         </div>
 
@@ -499,13 +518,15 @@
                 </div>
                 
                 <div class="form-field">
-                    <label>분류 선택</label>
+                    <label>분류 선택 (7개 항목)</label>
                     <div class="radio-group">
-                        <label class="radio-label"><input type="radio" name="newCategory" value="중요"> 중요</label>
-                        <label class="radio-label"><input type="radio" name="newCategory" value="행사" checked> 행사</label>
-                        <label class="radio-label"><input type="radio" name="newCategory" value="결혼"> 결혼</label>
-                        <label class="radio-label"><input type="radio" name="newCategory" value="부고"> 부고</label>
-                        <label class="radio-label"><input type="radio" name="newCategory" value="기타"> 기타</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="회의" checked> 회의</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="봉사"> 봉사</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="행사"> 행사</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="학회"> 학회</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="재정"> 재정</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="경조"> 경조</label>
+                        <label class="radio-label"><input type="radio" name="newCategory" value="보정"> 보정</label>
                     </div>
                 </div>
 
@@ -641,18 +662,22 @@
         const photoDbCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDT3n0XaTAnxMjvbFKg8GRdMytfgsNWltOD67BiBPg02PYGh5ndC1vmb2jP6nvMHzy5cGWI0wiy_e4/pub?gid=0&single=true&output=csv';
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbwfcRwbweUdxoMraSaI-MlhT6sGCzrS-q_U9ji_0jEZaOcrU8m4BHKl16QN5mtPHngo/exec';
         
+        const VALID_CATEGORIES = ['회의', '봉사', '행사', '학회', '재정', '경조', '보정'];
+
         const CATEGORY_CONFIG = {
-            '중요': { css: 'important', symbol: '★', label: '중요' },
-            '행사': { css: 'event',     symbol: '●', label: '행사' },
-            '결혼': { css: 'marriage',  symbol: '●', label: '결혼' },
-            '부고': { css: 'funeral',   symbol: '●', label: '부고' },
-            '기타': { css: 'etc',       symbol: '●', label: '기타' },
-            '오류': { css: 'error',     symbol: 'X', label: '오류 X' }
+            '회의': { css: '회의', symbol: '●', label: '회의' },
+            '봉사': { css: '봉사', symbol: '●', label: '봉사' },
+            '행사': { css: '행사', symbol: '●', label: '행사' },
+            '학회': { css: '학회', symbol: '●', label: '학회' },
+            '재정': { css: '재정', symbol: '●', label: '재정' },
+            '경조': { css: '경조', symbol: '●', label: '경조' },
+            '보정': { css: '보정', symbol: '●', label: '보정' },
+            '오류': { css: 'error', symbol: 'X', label: '오류 X' }
         };
 
         function getCategoryProps(item) {
             if (!item.isValid) return CATEGORY_CONFIG['오류'];
-            return CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG['기타'];
+            return CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG['회의'];
         }
 
         let globalEventMap = {};
@@ -994,7 +1019,7 @@
             document.getElementById('lblTargetDate').textContent = `${year}.${mmStr}.${ddStr} (${dateStr})`;
             document.getElementById('lblTargetSeq').textContent = `${nextSeq}번`;
 
-            document.querySelectorAll('input[name="newCategory"]').forEach(r => { r.checked = (r.value === '행사'); });
+            document.querySelectorAll('input[name="newCategory"]').forEach(r => { r.checked = (r.value === '회의'); });
             document.getElementById('inputNewTitle').value = '';
             document.getElementById('inputNewPlace').value = '';
             document.getElementById('inputNewNote').value = '';
@@ -2124,7 +2149,7 @@
                     }
                 }
 
-                if (!['중요', '결혼', '부고', '행사', '기타'].includes(category)) {
+                if (!VALID_CATEGORIES.includes(category)) {
                     isDataValid = false; errorType = 'CATEGORY_ERROR'; errorInputVal = category || '공란';
                     errorReason = `유효하지 않은 분류명 ('${category}')`;
                     errorList.push(`분류 오류: "${title || '제목없음'}" ('${category}')`);
@@ -2167,4 +2192,3 @@
     </script>
 </body>
 </html>
- 
