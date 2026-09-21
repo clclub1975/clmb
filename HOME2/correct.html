@@ -1,4 +1,4 @@
-<!-- v8.5: '요약' 버튼 클릭 시 스크롤 지연 없이 앵커 위치로 즉시 점프하도록 상대 경로 앵커 적용 -->
+<!-- v8.6: '요약' 버튼 클릭 시 마크다운 코드가 아닌 GitHub 웹 렌더링 미리보기 화면으로 정확히 연결 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -234,7 +234,7 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.5</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.6</span></h1>
     </div>
 
     <div class="intro-box">
@@ -242,7 +242,7 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 마크다운 요약 아카이브(abstract.md)를 보는데 활용됩니다.</li>
-            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 스크롤 지연 없이 해당 호수로 즉시 이동합니다.</li>
+            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 마크다운 미리보기 렌더링 화면으로 연결됩니다.</li>
         </ol>
     </div>
 
@@ -304,8 +304,8 @@
 
                 validIssues.forEach((item) => {
                     const formattedNumStr = String(item.num).padStart(3, '0') + '호';
-                    // v8.5 핵심 변경: 스크롤 지연 없이 즉시 해당 호수로 꽂히도록 abstract.md 직접 앵커 연동
-                    const mdSummaryUrl = `abstract.md#${formattedNumStr}`;
+                    // v8.6 핵심 변경: GitHub 정식 마크다운 렌더링 뷰어(blob/main) 경로 연결
+                    const mdSummaryUrl = `https://github.com/clclub1975/clmb/blob/main/HOME2/abstract.md#${formattedNumStr}`;
 
                     window.sampleData[item.num] = {
                         title: `1984년 ${Math.ceil(item.num / 12)}월호`,
@@ -338,7 +338,7 @@
                             <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                             <div class="issue-body">
                                 <div class="sub-cell"><a href="${issueInfo.pdf}" target="_blank">회보</a></div>
-                                <div class="sub-cell"><a href="${issueInfo.summary}">요약</a></div>
+                                <div class="sub-cell"><a href="${issueInfo.summary}" target="_blank">요약</a></div>
                                 <div class="sub-cell"><span class="plain-text">교정</span></div>
                             </div>
                         `;
