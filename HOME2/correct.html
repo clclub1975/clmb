@@ -1,4 +1,4 @@
-<!-- v9.8: 각 셀 내부에 3개의 독립적인 블록(호수, 요약, 교정)을 구성하여 스마트폰에서 개별 핀셋 연동이 가능하도록 구조 및 스타일 전면 개편 -->
+<!-- v9.9: 각 셀 내부에 3개의 독립된 인터랙션 블록(호수, 요약, 교정)을 배치하고 블록 사이에 얇은 경계선(테두리)을 추가하여 스마트폰 핀셋 터치 편의성 대폭 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -70,12 +70,12 @@
             table-layout: fixed;
         }
         th, td {
-            padding: 2px 1px;
+            padding: 1px;
             border: 1px solid #e1e4e8;
             font-size: 0.7rem;
             vertical-align: middle;
             text-align: center;
-            height: 64px;
+            height: 68px;
         }
         th {
             background-color: #f1f3f5;
@@ -93,22 +93,25 @@
         }
         th:not(:first-child), td:not(:first-child) { width: 7.62%; }
 
-        /* 3분할 독립 블록 셀 구조 스타일 (스마트폰 핀셋 연동 최적화) */
+        /* 3분할 독립 블록 셀 구조 스타일 (구분선 추가) */
         .cell-content {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             width: 100%;
             height: 100%;
-            padding: 2px 0;
         }
         .cell-block {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
+            height: 33.33%;
             text-decoration: none;
-            padding: 1px 0;
-            border-radius: 3px;
             transition: background-color 0.15s ease;
+        }
+        .cell-block:not(:last-child) {
+            border-bottom: 1px solid #edf2f7; /* 행나누기 테두리 선 */
         }
         .cell-block:active {
             background-color: rgba(0, 0, 0, 0.08);
@@ -118,18 +121,18 @@
             font-weight: bold;
             font-size: 0.72rem;
             color: #2563eb;
-            line-height: 1.1;
+            line-height: 1;
         }
         .cell-summary {
             font-size: 0.58rem;
             color: #475569;
-            line-height: 1.1;
+            line-height: 1;
         }
         .cell-status {
             font-size: 0.52rem;
             color: #16a34a;
             font-weight: 500;
-            line-height: 1.1;
+            line-height: 1;
         }
         .cell-status.pending {
             color: #dc2626;
@@ -138,7 +141,7 @@
 
         @media (max-width: 768px) {
             h1 { font-size: 1.1rem; }
-            th, td { height: 58px; }
+            th, td { height: 60px; }
             th { font-size: 0.65rem; }
             th:first-child, td:first-child { font-size: 0.65rem; }
             .cell-issue { font-size: 0.62rem; }
@@ -156,7 +159,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.8</span>
+                <span class="version">v9.9</span>
             </h1>
         </header>
 
@@ -259,7 +262,7 @@
                     if (data !== undefined) {
                         const statusClass = data.status === '교정완료' ? '' : 'pending';
                         
-                        // 각 줄을 독립된 인터랙션 블록(<a> 태그)으로 분리하여 스마트폰 핀셋 연동 최적화
+                        // 각 블록 사이에 경계선을 두어 핀셋 터치 영역 명확화
                         td.innerHTML = `
                             <div class="cell-content">
                                 <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 연동'); return false;">
