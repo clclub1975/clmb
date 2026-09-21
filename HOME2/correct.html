@@ -1,4 +1,4 @@
-<!-- v8.11: 모달 본문 내 마크다운 1행 제목 태그 강제 제거, 헤더 타이틀 포맷 적용, v8.1 셀 높이(76px) 복원 -->
+<!-- v8.12: 모달 창 내 테이블 셀 높이 및 패딩을 콤팩트하게 축소하여 가독성 및 공간 활용도 극대화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -112,7 +112,7 @@
             color: #ffffff;
             border-color: #0366d6;
         }
-        /* PC 세로 스크롤 래퍼 (v8.1 기준 높이 536px 복원) */
+        /* PC 세로 스크롤 래퍼 (v8.1 기준 높이 536px) */
         .archive-scroll-wrapper {
             max-width: 75%;
             margin-left: auto;
@@ -154,7 +154,7 @@
             display: flex;
             flex-direction: column;
             scroll-snap-align: start;
-            height: 76px; /* [v8.1 기준 복원] 셀 세로 높이 원상 복구 */
+            height: 76px;
             box-sizing: border-box;
             overflow: hidden;
         }
@@ -261,34 +261,33 @@
             color: #000000;
         }
         .modal-body {
-            padding: 25px;
+            padding: 20px;
             overflow-y: auto;
-            font-size: 14.5px;
+            font-size: 14px;
             color: #24292e;
-            line-height: 1.65;
+            line-height: 1.5;
         }
-        /* 모달 본문 내 첫 번째 제목(## [호수]) 숨김 처리 및 스타일 정리 */
         .modal-body h2:first-of-type { display: none; }
-        .modal-body h3 { border-bottom: 1px solid #eaecef; padding-bottom: .3em; margin-top: 20px; margin-bottom: 10px; font-size: 1.2em; color: #1a1a1a; }
+        .modal-body h3 { border-bottom: 1px solid #eaecef; padding-bottom: .2em; margin-top: 14px; margin-bottom: 8px; font-size: 1.1em; color: #1a1a1a; }
         
-        /* 모달 내 마크다운 요소 및 테이블 디자인 안정화 */
+        /* [v8.12 수정] 모달 내 테이블 셀 패딩 및 마진을 슬림하게 축소 */
         .modal-body hr {
             border: 0;
             height: 1px;
             background-color: #d1d5db;
-            margin: 16px 0;
+            margin: 12px 0;
         }
         .modal-body table {
             width: 100%;
             border-collapse: collapse;
-            margin: 12px 0;
+            margin: 8px 0;
             table-layout: fixed;
         }
         .modal-body th, .modal-body td {
             border: 1px solid #cbd5e1;
-            padding: 8px 10px;
+            padding: 4px 8px; /* 셀 높이를 컴팩트하게 줄임 */
             text-align: left;
-            font-size: 14px;
+            font-size: 13.5px;
             word-break: break-word;
         }
         .modal-body th {
@@ -302,9 +301,9 @@
         .modal-body tr:nth-child(even) {
             background-color: #f8fafc;
         }
-        .modal-body ul, .modal-body ol { padding-left: 1.8em; margin: 6px 0; }
-        .modal-body li { margin-bottom: 3px; }
-        .modal-body p { margin: 6px 0; }
+        .modal-body ul, .modal-body ol { padding-left: 1.8em; margin: 4px 0; }
+        .modal-body li { margin-bottom: 2px; }
+        .modal-body p { margin: 4px 0; }
 
         /* 반응형 디자인 */
         @media (max-width: 1024px) {
@@ -330,7 +329,7 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.11</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.12</span></h1>
     </div>
 
     <div class="intro-box">
@@ -338,7 +337,7 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 마크다운 요약 아카이브(abstract.md)를 보는데 활용됩니다.</li>
-            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 모달창에서 깔끔하고 정돈된 미리보기를 제공합니다.</li>
+            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 모달창에서 컴팩트하게 정돈된 미리보기를 제공합니다.</li>
         </ol>
     </div>
 
@@ -480,7 +479,6 @@
             }
         }
 
-        // 특정 호수 요약 모달 팝업 열기 ([통권 OOO호] 날짜 요약 아카이브 형식 적용)
         async function openSummaryModal(issueNum) {
             const modal = document.getElementById('summaryModal');
             const modalTitle = document.getElementById('modalTitle');
