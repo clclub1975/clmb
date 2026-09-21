@@ -1,4 +1,4 @@
-<!-- v9.0: 구글 시트 연동을 제외한 1984년~2003년 빈 캘린더 매트릭스 틀 구성 및 표준 규약 반영 -->
+<!-- v9.1: 구글 시트의 호수별 발행년월 데이터를 매칭하여 캘린더 셀에 3자리 포맷으로 표기 및 통합본 앞월 귀속 규칙 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -91,9 +91,23 @@
         }
         th:not(:first-child), td:not(:first-child) { width: 7.55%; }
 
+        /* 호수 표기 배지 스타일 */
+        .issue-badge {
+            display: inline-block;
+            font-weight: bold;
+            font-size: 0.78rem;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 3px 6px;
+            border-radius: 4px;
+            border: 1px solid #bfdbfe;
+        }
+        .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
+
         @media (max-width: 768px) {
             h1 { font-size: 1.25rem; }
             th, td { font-size: 0.65rem; padding: 6px 1px; height: 35px; }
+            .issue-badge { font-size: 0.68rem; padding: 2px 4px; }
         }
     </style>
 </head>
@@ -106,11 +120,11 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.0</span>
+                <span class="version">v9.1</span>
             </h1>
         </header>
 
-        <!-- 캘린더 매트릭스 틀 (빈 칸 상태) -->
+        <!-- 캘린더 매트릭스 뷰어 -->
         <div class="table-container">
             <table id="calendar-table">
                 <thead>
@@ -121,14 +135,66 @@
                     </tr>
                 </thead>
                 <tbody id="calendar-body">
-                    <!-- 자바스크립트로 1984년부터 2003년까지 빈 행과 셀을 동적 생성 -->
+                    <tr><td colspan="13" class="loading">구글 시트에서 데이터를 불러오는 중입니다...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        function renderEmptyCalendar() {
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
+
+        function parseCSV(text) {
+            let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
+            for (let l of text) {
+                if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
+                else if (',' === l && s) l = row[++r] = '';
+                else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
+                else row[r] += l;
+                p = l;
+            }
+            return ret;
+        }
+
+        async function loadCalendarData() {
+            try {
+                const response = await fetch(csvUrl);
+                const csvText = await response.text();
+                const rows = parseCSV(csvText);
+                
+                let issueMap = {}; // key: "YYYY-M", value: 호수 숫자
+
+                for (let i = 0; i < rows.length; i++) {
+                    const cols = rows[i].map(c => c.trim());
+                    let foundNum = null;
+                    let foundMonth = null;
+                    let foundYear = null;
+
+                    cols.forEach(col => {
+                        const matchNum = col.match(/(?:통권)?(\d+)호/);
+                        if (matchNum) foundNum = parseInt(matchNum[1], 10);
+
+                        // 발행년월 파싱 (통합본의 경우 앞월 귀속을 위해 첫 번째 월 추출)
+                        const matchDate = col.match(/(\d{4})년\s*(\d{1,2})월/);
+                        if (matchDate) {
+                            foundYear = parseInt(matchDate[1], 10);
+                            foundMonth = parseInt(matchDate[2], 10);
+                        }
+                    });
+
+                    if (foundNum !== null && foundYear && foundMonth) {
+                        issueMap[`${foundYear}-${foundMonth}`] = foundNum;
+                    }
+                }
+
+                renderCalendarMatrix(issueMap);
+            } catch (error) {
+                console.error("구글 시트 연동 실패:", error);
+                document.getElementById('calendar-body').innerHTML = `<tr><td colspan="13" class="loading" style="color:red;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>`;
+            }
+        }
+
+        function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
 
@@ -143,10 +209,19 @@
                 thYear.textContent = year;
                 tr.appendChild(thYear);
 
-                // 1월부터 12월까지 빈 셀 생성
+                // 1월부터 12월까지 셀 생성
                 for (let month = 1; month <= 12; month++) {
                     const td = document.createElement('td');
-                    // 셀 안에는 아무것도 넣지 않음 (빈 상태)
+                    const key = `${year}-${month}`;
+                    const issueNum = issueMap[key];
+
+                    if (issueNum !== undefined) {
+                        const paddedNum = String(issueNum).padStart(3, '0') + '호';
+                        td.innerHTML = `<span class="issue-badge">${paddedNum}</span>`;
+                    } else {
+                        td.style.backgroundColor = '#fafafa';
+                        td.style.color = '#cbd5e1';
+                    }
                     tr.appendChild(td);
                 }
 
@@ -154,7 +229,7 @@
             }
         }
 
-        window.onload = renderEmptyCalendar;
+        window.onload = loadCalendarData;
     </script>
 </body>
 </html>
