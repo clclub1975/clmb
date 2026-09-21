@@ -1,4 +1,4 @@
-<!-- v9.7: 3행 컴팩트 셀 구조의 2번째 줄과 3번째 줄을 각각 '요약', '교정' 고정 단어로 단순화 적용 -->
+<!-- v9.8: 각 셀 내부에 3개의 독립적인 블록(호수, 요약, 교정)을 구성하여 스마트폰에서 개별 핀셋 연동이 가능하도록 구조 및 스타일 전면 개편 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -70,12 +70,12 @@
             table-layout: fixed;
         }
         th, td {
-            padding: 4px 1px;
+            padding: 2px 1px;
             border: 1px solid #e1e4e8;
             font-size: 0.7rem;
             vertical-align: middle;
             text-align: center;
-            height: 52px;
+            height: 64px;
         }
         th {
             background-color: #f1f3f5;
@@ -93,32 +93,43 @@
         }
         th:not(:first-child), td:not(:first-child) { width: 7.62%; }
 
-        /* 3행 컴팩트 셀 구조 스타일 */
+        /* 3분할 독립 블록 셀 구조 스타일 (스마트폰 핀셋 연동 최적화) */
         .cell-content {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 1px;
+            justify-content: space-between;
             width: 100%;
             height: 100%;
+            padding: 2px 0;
         }
+        .cell-block {
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            padding: 1px 0;
+            border-radius: 3px;
+            transition: background-color 0.15s ease;
+        }
+        .cell-block:active {
+            background-color: rgba(0, 0, 0, 0.08);
+        }
+        
         .cell-issue {
             font-weight: bold;
             font-size: 0.72rem;
             color: #2563eb;
-            line-height: 1;
+            line-height: 1.1;
         }
         .cell-summary {
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             color: #475569;
-            line-height: 1;
+            line-height: 1.1;
         }
         .cell-status {
-            font-size: 0.55rem;
+            font-size: 0.52rem;
             color: #16a34a;
             font-weight: 500;
-            line-height: 1;
+            line-height: 1.1;
         }
         .cell-status.pending {
             color: #dc2626;
@@ -127,12 +138,12 @@
 
         @media (max-width: 768px) {
             h1 { font-size: 1.1rem; }
-            th, td { height: 46px; }
+            th, td { height: 58px; }
             th { font-size: 0.65rem; }
             th:first-child, td:first-child { font-size: 0.65rem; }
-            .cell-issue { font-size: 0.65rem; }
-            .cell-summary { font-size: 0.52rem; }
-            .cell-status { font-size: 0.48rem; }
+            .cell-issue { font-size: 0.62rem; }
+            .cell-summary { font-size: 0.5rem; }
+            .cell-status { font-size: 0.45rem; }
         }
     </style>
 </head>
@@ -145,7 +156,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.7</span>
+                <span class="version">v9.8</span>
             </h1>
         </header>
 
@@ -205,10 +216,8 @@
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
 
-                    // 2번째 줄은 '요약' 고정 텍스트
                     const summaryText = "요약";
 
-                    // 3번째 줄은 '교정' 고정 텍스트 (또는 상태에 따라 변형 가능하나 기본 '교정')
                     let editStatus = "교정";
                     if (cols.length > 34 && cols[34] && cols[34].includes('교정완료')) {
                         editStatus = "교정완료";
@@ -249,11 +258,19 @@
 
                     if (data !== undefined) {
                         const statusClass = data.status === '교정완료' ? '' : 'pending';
+                        
+                        // 각 줄을 독립된 인터랙션 블록(<a> 태그)으로 분리하여 스마트폰 핀셋 연동 최적화
                         td.innerHTML = `
                             <div class="cell-content">
-                                <span class="cell-issue">${data.issueNo}</span>
-                                <span class="cell-summary">${data.summary}</span>
-                                <span class="cell-status ${statusClass}">${data.status}</span>
+                                <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 연동'); return false;">
+                                    <span class="cell-issue">${data.issueNo}</span>
+                                </a>
+                                <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 요약 연동'); return false;">
+                                    <span class="cell-summary">${data.summary}</span>
+                                </a>
+                                <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 교정 연동'); return false;">
+                                    <span class="cell-status ${statusClass}">${data.status}</span>
+                                </a>
                             </div>
                         `;
                     } else {
