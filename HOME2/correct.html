@@ -120,7 +120,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.1</span>
+                <span class="version">v9.2</span>
             </h1>
         </header>
 
@@ -171,18 +171,32 @@
                     let foundYear = null;
 
                     cols.forEach(col => {
-                        const matchNum = col.match(/(?:통권)?(\d+)호/);
+                        const matchNum = col.match(/(?:통권)?\s*(\d+)\s*호/);
                         if (matchNum) foundNum = parseInt(matchNum[1], 10);
 
-                        // 발행년월 파싱 (통합본의 경우 앞월 귀속을 위해 첫 번째 월 추출)
-                        const matchDate = col.match(/(\d{4})년\s*(\d{1,2})월/);
+                        const matchDate = col.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
                         if (matchDate) {
                             foundYear = parseInt(matchDate[1], 10);
                             foundMonth = parseInt(matchDate[2], 10);
                         }
                     });
 
-                    if (foundNum !== null && foundYear && foundMonth) {
+                    if (foundNum === null || !foundYear || isNaN(foundMonth)) {
+                        const fullRowText = cols.join(' ' );
+                        if (foundNum === null) {
+                            const matchNumAll = fullRowText.match(/(?:통권)?\s*(\d+)\s*호/);
+                            if (matchNumAll) foundNum = parseInt(matchNumAll[1], 10);
+                        }
+                        if (!foundYear || isNaN(foundMonth)) {
+                            const matchDateAll = fullRowText.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
+                            if (matchDateAll) {
+                                foundYear = parseInt(matchDateAll[1], 10);
+                                foundMonth = parseInt(matchDateAll[2], 10);
+                            }
+                        }
+                    }
+
+                    if (foundNum !== null && foundYear && !isNaN(foundMonth)) {
                         issueMap[`${foundYear}-${foundMonth}`] = foundNum;
                     }
                 }
@@ -204,12 +218,10 @@
             for (let year = startYear; year <= endYear; year++) {
                 const tr = document.createElement('tr');
                 
-                // 연도 표시 열
                 const thYear = document.createElement('th');
                 thYear.textContent = year;
                 tr.appendChild(thYear);
 
-                // 1월부터 12월까지 셀 생성
                 for (let month = 1; month <= 12; month++) {
                     const td = document.createElement('td');
                     const key = `${year}-${month}`;
