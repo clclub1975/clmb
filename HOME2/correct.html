@@ -1,4 +1,4 @@
-<!-- v8.13: 요약 아카이브 창 내 테이블 제목(th) 중앙 정렬 및 첫 열/날짜 열 폭 최소화 적용 -->
+<!-- v8.14: 모바일 화면에서 아카이브 모달 및 테이블 크기가 화면 폭에 맞게 자동 가변되도록 반응형 CSS 보완 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -222,14 +222,14 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
         }
         .modal-content {
             background-color: #ffffff;
             width: 100%;
             max-width: 850px;
-            max-height: 85vh;
+            max-height: 88vh;
             border-radius: 10px;
             display: flex;
             flex-direction: column;
@@ -237,7 +237,7 @@
             overflow: hidden;
         }
         .modal-header {
-            padding: 15px 20px;
+            padding: 12px 18px;
             background-color: #f6f8fa;
             border-bottom: 1px solid #d1d5db;
             display: flex;
@@ -246,8 +246,11 @@
         }
         .modal-header h2 {
             margin: 0;
-            font-size: 18px;
+            font-size: 17px;
             color: #24292e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .modal-close {
             background: none;
@@ -256,12 +259,14 @@
             font-weight: bold;
             color: #586069;
             cursor: pointer;
+            flex-shrink: 0;
+            margin-left: 10px;
         }
         .modal-close:hover {
             color: #000000;
         }
         .modal-body {
-            padding: 20px;
+            padding: 18px;
             overflow-y: auto;
             font-size: 14px;
             color: #24292e;
@@ -270,7 +275,7 @@
         .modal-body h2:first-of-type { display: none; }
         .modal-body h3 { border-bottom: 1px solid #eaecef; padding-bottom: .2em; margin-top: 14px; margin-bottom: 8px; font-size: 1.1em; color: #1a1a1a; }
         
-        /* 모달 내 마크다운 요소 및 테이블 디자인 최적화 (v8.13) */
+        /* 모달 내 마크다운 요소 및 테이블 디자인 최적화 */
         .modal-body hr {
             border: 0;
             height: 1px;
@@ -284,11 +289,10 @@
         }
         .modal-body th, .modal-body td {
             border: 1px solid #cbd5e1;
-            padding: 5px 9px;
+            padding: 5px 8px;
             font-size: 13.5px;
             word-break: keep-all;
         }
-        /* 1. 테이블 제목 행(th) 중앙 정렬 */
         .modal-body th {
             background-color: #f8fafc;
             font-weight: 600;
@@ -301,8 +305,7 @@
             background-color: #f8fafc;
         }
 
-        /* 2. 첫 번째 열 및 날짜 열 너비 최소화 (뒤 내용 공간 확장) */
-        /* 2열짜리 표 (기본 메타데이터, 주요 기고문 등): 첫 열 좁게, 두 번째 열 넓게 */
+        /* 테이블 열 비율 설정 (PC 기준) */
         .modal-body table tr td:first-child,
         .modal-body table tr th:first-child {
             width: 18% !important;
@@ -314,45 +317,38 @@
             width: 82% !important;
         }
 
-        /* 4열짜리 표 (행사이력 등): 날짜 열(1열) 및 구분 열(2열)을 좁게, 내용 열(4열 등)을 넓게 */
-        .modal-body table tr th:nth-child(1), .modal-body table tr td:nth-child(1) {
-            width: 14% !important;
-            text-align: center;
-            white-space: nowrap;
-        }
-        .modal-body table tr th:nth-child(2), .modal-body table tr td:nth-child(2) {
-            width: 22% !important;
-            text-align: center;
-            white-space: nowrap;
-        }
-        .modal-body table tr th:nth-child(3), .modal-body table tr td:nth-child(3) {
-            width: 24% !important;
-            text-align: center;
-        }
-        .modal-body table tr th:nth-child(4), .modal-body table tr td:nth-child(4) {
-            width: 40% !important;
-        }
+        .modal-body table tr th:nth-child(1), .modal-body table tr td:nth-child(1) { width: 14% !important; text-align: center; white-space: nowrap; }
+        .modal-body table tr th:nth-child(2), .modal-body table tr td:nth-child(2) { width: 22% !important; text-align: center; white-space: nowrap; }
+        .modal-body table tr th:nth-child(3), .modal-body table tr td:nth-child(3) { width: 24% !important; text-align: center; }
+        .modal-body table tr th:nth-child(4), .modal-body table tr td:nth-child(4) { width: 40% !important; }
 
         .modal-body ul, .modal-body ol { padding-left: 1.8em; margin: 4px 0; }
         .modal-body li { margin-bottom: 2px; }
         .modal-body p { margin: 4px 0; }
 
-        /* 반응형 디자인 */
-        @media (max-width: 1024px) {
-            .archive-scroll-wrapper, .jump-bar-container { max-width: 90%; }
-            .archive-grid { grid-template-columns: repeat(4, 1fr); }
-        }
+        /* [v8.14 추가] 스마트폰 등 모바일 화면에서 테이블 가로 밀림 방지를 위한 스크롤 래퍼 및 가변 처리 */
         @media (max-width: 768px) {
-            body { padding: 12px; }
+            body { padding: 10px; }
             .archive-scroll-wrapper, .jump-bar-container { max-width: 100%; }
-            .archive-scroll-wrapper { max-height: 644px !important; }
+            .archive-scroll-wrapper { max-height: 560px !important; }
             .archive-grid { grid-template-columns: repeat(3, 1fr); }
             .issue-unit { height: 64px; }
-            h1 { font-size: 22px; }
-            .issue-header { font-size: 12px; padding: 5px 2px; }
-            .sub-cell { font-size: 12px; padding: 0 2px; }
+            h1 { font-size: 20px; }
+            .issue-header { font-size: 11.5px; padding: 4px 2px; }
+            .sub-cell { font-size: 11.5px; padding: 0 2px; }
             .jump-bar-container { gap: 2px; justify-content: space-between; }
-            .jump-btn { padding: 4px 5px; font-size: 11px; flex-grow: 1; text-align: center; }
+            .jump-btn { padding: 3px 4px; font-size: 10.5px; flex-grow: 1; text-align: center; }
+
+            /* 모바일 모달 창 여백 축소 및 테이블 가로 스크롤 허용 (화면 밖 안 튀어나가게) */
+            .modal-overlay { padding: 10px; }
+            .modal-content { max-height: 92vh; }
+            .modal-body { padding: 12px; font-size: 13px; }
+            .modal-body table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
         }
     </style>
 </head>
@@ -361,7 +357,7 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.13</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.14</span></h1>
     </div>
 
     <div class="intro-box">
@@ -369,7 +365,7 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 마크다운 요약 아카이브(abstract.md)를 보는데 활용됩니다.</li>
-            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 모달창에서 컴팩트하고 깔끔한 미리보기를 제공합니다.</li>
+            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, 모바일과 PC 화면에 맞추어 가변형으로 깔끔하게 표시됩니다.</li>
         </ol>
     </div>
 
