@@ -1,4 +1,4 @@
-<!-- v9.9: 각 셀 내부에 3개의 독립된 인터랙션 블록(호수, 요약, 교정)을 배치하고 블록 사이에 얇은 경계선(테두리)을 추가하여 스마트폰 핀셋 터치 편의성 대폭 개선 -->
+<!-- v9.10: 헤더 하단의 '분실 회보' 문구를 '현재 누락'으로 변경하고 버전명을 v9.10으로 지정하여 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -40,7 +40,7 @@
         }
         .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
         header {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             border-bottom: 2px solid #eaeaea;
             padding-bottom: 6px;
             text-align: center;
@@ -61,8 +61,21 @@
             margin-left: 4px;
         }
         
+        /* 현재 누락 안내 바 스타일 */
+        .missing-notice {
+            background-color: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
         /* 캘린더 테이블 영역 (모바일 컴팩트 최적화) */
-        .table-container { width: 100%; overflow-x: auto; margin-top: 6px; }
+        .table-container { width: 100%; overflow-x: auto; margin-top: 4px; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -93,7 +106,7 @@
         }
         th:not(:first-child), td:not(:first-child) { width: 7.62%; }
 
-        /* 3분할 독립 블록 셀 구조 스타일 (구분선 추가) */
+        /* 3분할 독립 블록 셀 구조 스타일 (구분선 포함) */
         .cell-content {
             display: flex;
             flex-direction: column;
@@ -111,7 +124,7 @@
             transition: background-color 0.15s ease;
         }
         .cell-block:not(:last-child) {
-            border-bottom: 1px solid #edf2f7; /* 행나누기 테두리 선 */
+            border-bottom: 1px solid #edf2f7;
         }
         .cell-block:active {
             background-color: rgba(0, 0, 0, 0.08);
@@ -159,9 +172,14 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.9</span>
+                <span class="version">v9.10</span>
             </h1>
         </header>
+
+        <!-- 현재 누락 안내 영역 -->
+        <div class="missing-notice">
+            <strong>현재 누락:</strong> 007호, 010호, 011호, 015호, 024호, 047호, 055호, 068호, 080호, 088호, 089호, 090호, 091호, 092호, 093호, 094호, 099호, 101호~120호, 125호, 136호~138호, 140호~145호, 147호, 153호, 155호, 156호, 158호, 159호, 164호~168호, 170호, 173호, 174호
+        </div>
 
         <!-- 캘린더 매트릭스 뷰어 -->
         <div class="table-container">
@@ -262,7 +280,6 @@
                     if (data !== undefined) {
                         const statusClass = data.status === '교정완료' ? '' : 'pending';
                         
-                        // 각 블록 사이에 경계선을 두어 핀셋 터치 영역 명확화
                         td.innerHTML = `
                             <div class="cell-content">
                                 <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 연동'); return false;">
