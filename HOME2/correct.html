@@ -1,4 +1,4 @@
-<!-- v8.7: '요약' 버튼 클릭 시 페이지 이동 없이 모달 팝업창에서 해당 호수의 마크다운 내용을 즉시 렌더링 -->
+<!-- v8.8: 모달 창 내 마크다운 렌더링 내용에 가로선(hr) 및 표 테두리 스타일 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -269,6 +269,33 @@
         }
         .modal-body h2 { border-bottom: 1px solid #eaecef; padding-bottom: .3em; margin-top: 24px; margin-bottom: 16px; font-size: 1.5em; }
         .modal-body h3 { border-bottom: 1px solid #eaecef; padding-bottom: .3em; margin-top: 20px; margin-bottom: 12px; font-size: 1.25em; }
+        
+        /* [v8.8 추가] 모달 내 마크다운 가로선 및 표 테두리 명확화 스타일 */
+        .modal-body hr {
+            border: 0;
+            height: 2px;
+            background-color: #d1d5db;
+            margin: 24px 0;
+        }
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        .modal-body th, .modal-body td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 14.5px;
+        }
+        .modal-body th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        .modal-body tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
         .modal-body ul, .modal-body ol { padding-left: 2em; }
         .modal-body li { margin-bottom: 4px; }
 
@@ -296,7 +323,7 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.7</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.8</span></h1>
     </div>
 
     <div class="intro-box">
@@ -304,7 +331,7 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 마크다운 요약 아카이브(abstract.md)를 보는데 활용됩니다.</li>
-            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 화면 전환 없이 팝업 모달창에서 즉시 렌더링됩니다.</li>
+            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 모달창에서 가로선과 표 테두리가 적용된 깔끔한 미리보기를 제공합니다.</li>
         </ol>
     </div>
 
