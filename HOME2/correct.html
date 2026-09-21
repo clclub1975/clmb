@@ -1,12 +1,10 @@
-<!-- v14.1: 회보 보기 페이지를 연도별/월별 대시보드 캘린더 포맷으로 전면 개편 및 표준 규약 반영 -->
+<!-- v9.0: 구글 시트 연동을 제외한 1984년~2003년 빈 캘린더 매트릭스 틀 구성 및 표준 규약 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>촛불회 회보 캘린더 아카이브</title>
-    <!-- 마크다운 렌더링을 위한 marked.js 로드 -->
-    <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -72,11 +70,12 @@
             table-layout: fixed;
         }
         th, td {
-            padding: 6px 2px;
+            padding: 10px 2px;
             border: 1px solid #e1e4e8;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             vertical-align: middle;
             text-align: center;
+            height: 45px;
         }
         th {
             background-color: #f1f3f5;
@@ -91,120 +90,10 @@
             background-color: #f8f9fa;
         }
         th:not(:first-child), td:not(:first-child) { width: 7.55%; }
-        
-        .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
-
-        /* 셀 내부 호수 및 링크 스타일 */
-        .issue-cell {
-            cursor: pointer;
-            transition: all 0.15s ease;
-            background-color: #ffffff;
-            min-height: 45px;
-        }
-        .issue-cell:hover { background-color: #eff6ff !important; }
-        .cell-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-        }
-        .issue-num-badge {
-            font-weight: bold;
-            font-size: 0.78rem;
-            color: #2563eb;
-        }
-        .cell-links {
-            display: flex;
-            gap: 4px;
-            font-size: 0.62rem;
-        }
-        .cell-links a {
-            color: #475569;
-            text-decoration: none;
-            padding: 1px 3px;
-            background: #f1f5f9;
-            border-radius: 3px;
-            border: 1px solid #e2e8f0;
-        }
-        .cell-links a:hover {
-            background: #2563eb;
-            color: #fff;
-            border-color: #2563eb;
-        }
-
-        /* 상세 내용 뷰어 모달 레이아웃 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 12px;
-        }
-        .modal-content {
-            background: #ffffff;
-            width: 100%;
-            max-width: 800px;
-            max-height: 90vh;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 18px;
-            background-color: #2c3e50;
-            color: #ffffff;
-        }
-        .modal-header h2 { font-size: 1.05rem; margin: 0; font-weight: 600; }
-        .modal-close-btn {
-            background: none; border: none;
-            color: #ffffff; font-size: 1.4rem;
-            cursor: pointer; padding: 2px 6px;
-        }
-        .modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.2); border-radius: 4px; }
-        .modal-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex-grow: 1;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-        .modal-actions {
-            padding: 10px 18px;
-            background: #f8f9fa;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-        .btn-pdf {
-            padding: 6px 12px;
-            background-color: #2563eb;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .btn-pdf:hover { background-color: #1d4ed8; }
-
-        /* 마크다운 내부 테이블 스타일 최적화 */
-        .modal-body table { width: 100% !important; border-collapse: collapse; margin: 12px 0; }
-        .modal-body th, .modal-body td { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 0.85rem; text-align: left !important; }
-        .modal-body th { background-color: #f1f5f9; font-weight: 600; }
 
         @media (max-width: 768px) {
             h1 { font-size: 1.25rem; }
-            th, td { font-size: 0.65rem; padding: 4px 1px; }
+            th, td { font-size: 0.65rem; padding: 6px 1px; height: 35px; }
         }
     </style>
 </head>
@@ -217,11 +106,11 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v14.1</span>
+                <span class="version">v9.0</span>
             </h1>
         </header>
 
-        <!-- 캘린더 매트릭스 테이블 -->
+        <!-- 캘린더 매트릭스 틀 (빈 칸 상태) -->
         <div class="table-container">
             <table id="calendar-table">
                 <thead>
@@ -232,27 +121,40 @@
                     </tr>
                 </thead>
                 <tbody id="calendar-body">
-                    <tr><td colspan="13" class="loading">구글 시트에서 회보 데이터를 불러오는 중입니다...</td></tr>
+                    <!-- 자바스크립트로 1984년부터 2003년까지 빈 행과 셀을 동적 생성 -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- 요약 내용 보기 모달 -->
-    <div id="summaryModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">회보 요약 정보</h2>
-                <button type="button" class="modal-close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modalBody">
-                불러오는 중...
-            </div>
-            <div class="modal-actions" id="modalActions">
-                <!-- 동적 PDF 링크 등 -->
-            </div>
-        </div>
-    </div>
-
     <script>
-        const csvUrl = '
+        function renderEmptyCalendar() {
+            const tbody = document.getElementById('calendar-body');
+            tbody.innerHTML = '';
+
+            const startYear = 1984;
+            const endYear = 2003;
+
+            for (let year = startYear; year <= endYear; year++) {
+                const tr = document.createElement('tr');
+                
+                // 연도 표시 열
+                const thYear = document.createElement('th');
+                thYear.textContent = year;
+                tr.appendChild(thYear);
+
+                // 1월부터 12월까지 빈 셀 생성
+                for (let month = 1; month <= 12; month++) {
+                    const td = document.createElement('td');
+                    // 셀 안에는 아무것도 넣지 않음 (빈 상태)
+                    tr.appendChild(td);
+                }
+
+                tbody.appendChild(tr);
+            }
+        }
+
+        window.onload = renderEmptyCalendar;
+    </script>
+</body>
+</html>
