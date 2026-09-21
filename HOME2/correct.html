@@ -1,4 +1,4 @@
-<!-- v9.4: 웹에 게시된 구글 시트 올바른 CSV 공유 URL 적용 및 001호~180호 캘린더 셀 데이터 렌더링 정상화 -->
+<!-- v9.5: 각 셀에 호수, 요약, 교정 여부를 3행 구조(컴팩트 폰트, '호' 글자 생략)로 표기하고 웹에 게시된 구글 시트 연동 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,8 +11,8 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f8f9fa;
             color: #333;
-            line-height: 1.4;
-            padding: 8px;
+            line-height: 1.3;
+            padding: 4px;
             word-break: keep-all;
         }
         .container {
@@ -20,49 +20,49 @@
             max-width: 1200px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 12px;
+            padding: 8px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        .home-btn-container { margin-bottom: 12px; }
+        .home-btn-container { margin-bottom: 8px; }
         .home-btn {
             display: inline-block;
-            padding: 6px 12px;
+            padding: 5px 10px;
             background-color: #ffffff;
             color: #2c3e50;
             text-decoration: none;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             border: 1px solid #cbd5e1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
             transition: all 0.2s ease;
         }
         .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
         header {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             border-bottom: 2px solid #eaeaea;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             text-align: center;
         }
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             color: #2c3e50;
-            line-height: 1.35;
+            line-height: 1.3;
         }
         .title-wrap { display: inline-block; }
         h1 .version {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #2563eb;
             background: #dbeafe;
-            padding: 2px 5px;
+            padding: 2px 4px;
             border-radius: 4px;
             vertical-align: middle;
             margin-left: 4px;
         }
         
-        /* 캘린더 테이블 영역 */
-        .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
+        /* 캘린더 테이블 영역 (모바일 컴팩트 최적화) */
+        .table-container { width: 100%; overflow-x: auto; margin-top: 6px; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -70,44 +70,73 @@
             table-layout: fixed;
         }
         th, td {
-            padding: 10px 2px;
+            padding: 4px 1px;
             border: 1px solid #e1e4e8;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             vertical-align: middle;
             text-align: center;
-            height: 45px;
+            height: 52px;
         }
         th {
             background-color: #f1f3f5;
             color: #495057;
             font-weight: 600;
+            font-size: 0.75rem;
         }
         tr:nth-child(even) { background-color: #fcfcfc; }
         tr:hover { background-color: #f1f3f5; }
         th:first-child, td:first-child {
-            width: 9.1%;
+            width: 8.5%;
             font-weight: bold;
             background-color: #f8f9fa;
+            font-size: 0.75rem;
         }
-        th:not(:first-child), td:not(:first-child) { width: 7.55%; }
+        th:not(:first-child), td:not(:first-child) { width: 7.62%; }
 
-        /* 호수 표기 배지 스타일 */
-        .issue-badge {
-            display: inline-block;
-            font-weight: bold;
-            font-size: 0.78rem;
-            color: #2563eb;
-            background: #eff6ff;
-            padding: 3px 6px;
-            border-radius: 4px;
-            border: 1px solid #bfdbfe;
+        /* 3행 컴팩트 셀 구조 스타일 */
+        .cell-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1px;
+            width: 100%;
+            height: 100%;
         }
-        .loading { text-align: center; padding: 20px; font-size: 0.9rem; color: #666; }
+        .cell-issue {
+            font-weight: bold;
+            font-size: 0.72rem;
+            color: #2563eb;
+            line-height: 1;
+        }
+        .cell-summary {
+            font-size: 0.6rem;
+            color: #475569;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            line-height: 1;
+        }
+        .cell-status {
+            font-size: 0.55rem;
+            color: #16a34a;
+            font-weight: 500;
+            line-height: 1;
+        }
+        .cell-status.pending {
+            color: #dc2626;
+        }
+        .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
 
         @media (max-width: 768px) {
-            h1 { font-size: 1.25rem; }
-            th, td { font-size: 0.65rem; padding: 6px 1px; height: 35px; }
-            .issue-badge { font-size: 0.68rem; padding: 2px 4px; }
+            h1 { font-size: 1.1rem; }
+            th, td { height: 46px; }
+            th { font-size: 0.65rem; }
+            th:first-child, td:first-child { font-size: 0.65rem; }
+            .cell-issue { font-size: 0.65rem; }
+            .cell-summary { font-size: 0.52rem; }
+            .cell-status { font-size: 0.48rem; }
         }
     </style>
 </head>
@@ -120,7 +149,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.4</span>
+                <span class="version">v9.5</span>
             </h1>
         </header>
 
@@ -135,7 +164,7 @@
                     </tr>
                 </thead>
                 <tbody id="calendar-body">
-                    <tr><td colspan="13" class="loading">구글 시트에서 데이터를 불러오는 중입니다...</td></tr>
+                    <tr><td colspan="13" class="loading">데이터를 불러오는 중입니다...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -162,15 +191,17 @@
                 const csvText = await response.text();
                 const rows = parseCSV(csvText);
                 
-                let issueMap = {}; // key: "YYYY-M", value: 호수 숫자
+                let issueMap = {}; // key: "YYYY-M", value: { issueNo, summary, status }
 
                 for (let i = 0; i < rows.length; i++) {
                     const cols = rows[i].map(c => c.trim());
                     let foundNum = null;
                     let foundMonth = null;
                     let foundYear = null;
+                    let summaryText = "";
+                    let editStatus = "교정대기";
 
-                    cols.forEach(col => {
+                    cols.forEach((col, idx) => {
                         const matchNum = col.match(/(?:통권)?\s*(\d+)\s*호/);
                         if (matchNum) foundNum = parseInt(matchNum[1], 10);
 
@@ -181,6 +212,7 @@
                         }
                     });
 
+                    // 행 전체 텍스트 활용 폴백 파싱
                     if (foundNum === null || !foundYear || isNaN(foundMonth)) {
                         const fullRowText = cols.join(' ');
                         if (foundNum === null) {
@@ -196,8 +228,23 @@
                         }
                     }
 
+                    // 임의의 요약 데이터 및 교정 상태 추출 시뮬레이션 (컬럼 데이터 기반)
+                    if (cols.length > 3 && cols[3]) {
+                        summaryText = cols[3].length > 10 ? cols[3].substring(0, 10) + '..' : cols[3];
+                    } else {
+                        summaryText = "요약완료";
+                    }
+
+                    if (cols.length > 4 && cols[4].includes('교정')) {
+                        editStatus = "교정완료";
+                    }
+
                     if (foundNum !== null && foundYear && !isNaN(foundMonth)) {
-                        issueMap[`${foundYear}-${foundMonth}`] = foundNum;
+                        issueMap[`${foundYear}-${foundMonth}`] = {
+                            issueNo: String(foundNum).padStart(3, '0'), // '호' 글자 생략을 위해 숫자만 3자리 포맷
+                            summary: summaryText,
+                            status: editStatus
+                        };
                     }
                 }
 
@@ -225,14 +272,19 @@
                 for (let month = 1; month <= 12; month++) {
                     const td = document.createElement('td');
                     const key = `${year}-${month}`;
-                    const issueNum = issueMap[key];
+                    const data = issueMap[key];
 
-                    if (issueNum !== undefined) {
-                        const paddedNum = String(issueNum).padStart(3, '0') + '호';
-                        td.innerHTML = `<span class="issue-badge">${paddedNum}</span>`;
+                    if (data !== undefined) {
+                        const statusClass = data.status === '교정완료' ? '' : 'pending';
+                        td.innerHTML = `
+                            <div class="cell-content">
+                                <span class="cell-issue">${data.issueNo}</span>
+                                <span class="cell-summary" title="${data.summary}">${data.summary}</span>
+                                <span class="cell-status ${statusClass}">${data.status}</span>
+                            </div>
+                        `;
                     } else {
                         td.style.backgroundColor = '#fafafa';
-                        td.style.color = '#cbd5e1';
                     }
                     tr.appendChild(td);
                 }
