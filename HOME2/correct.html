@@ -1,10 +1,12 @@
-<!-- v8.6: '요약' 버튼 클릭 시 마크다운 코드가 아닌 GitHub 웹 렌더링 미리보기 화면으로 정확히 연결 -->
+<!-- v8.7: '요약' 버튼 클릭 시 페이지 이동 없이 모달 팝업창에서 해당 호수의 마크다운 내용을 즉시 렌더링 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>촛불회 회보 제미나이 요약 교정 작업 안내</title>
+    <!-- 마크다운 렌더링을 위한 marked.js 라이브러리 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -110,7 +112,7 @@
             color: #ffffff;
             border-color: #0366d6;
         }
-        /* PC 세로 스크롤 래퍼 (셀 높이 76px * 7행 + 상하 테두리 4px = 정확히 536px 고정) */
+        /* PC 세로 스크롤 래퍼 */
         .archive-scroll-wrapper {
             max-width: 75%;
             margin-left: auto;
@@ -123,7 +125,6 @@
             background-color: #4a5568;
             margin-bottom: 40px;
         }
-        /* 스크롤바 스타일 */
         .archive-scroll-wrapper::-webkit-scrollbar {
             width: 10px;
         }
@@ -142,13 +143,10 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 0;
-            border-top: none;
-            border-left: none;
             background-color: #4a5568;
             margin: 0;
             padding: 0;
         }
-        /* 단위 셀 외곽선 및 스냅 정렬 */
         .issue-unit {
             border-right: 2px solid #4a5568;
             border-bottom: 2px solid #4a5568;
@@ -156,11 +154,10 @@
             display: flex;
             flex-direction: column;
             scroll-snap-align: start;
-            height: 76px; /* [핵심] Y축 고무줄 현상 원천 차단 */
+            height: 76px;
             box-sizing: border-box;
             overflow: hidden;
         }
-        /* 단위 셀 헤더 */
         .issue-header {
             background-color: #f6f8fa;
             color: #1a1a1a;
@@ -173,20 +170,17 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        /* 비활성 단위 셀 헤더 스타일 */
         .issue-unit.inactive .issue-header {
             color: #959da5;
             background-color: #fafbfc;
         }
-        /* 단위 셀 서브 셀 컨테이너 (3열 구조) */
         .issue-body {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             background-color: #ffffff;
             flex-grow: 1;
-            align-items: center; /* 텍스트를 세로 중앙에 고정 */
+            align-items: center;
         }
-        /* 내부 서브 셀 낱개 */
         .sub-cell {
             text-align: center;
             padding: 0 5px;
@@ -195,13 +189,18 @@
         .sub-cell:not(:last-child) {
             border-right: 1px solid #d1d5db;
         }
-        /* 하이퍼링크 및 텍스트 스타일 */
-        .sub-cell a {
+        .sub-cell a, .sub-cell button {
             text-decoration: underline;
             color: #0366d6;
             font-weight: 500;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: inherit;
+            cursor: pointer;
+            font-family: inherit;
         }
-        .sub-cell a:hover {
+        .sub-cell a:hover, .sub-cell button:hover {
             opacity: 0.8;
         }
         .plain-text {
@@ -210,7 +209,70 @@
         .empty-cell {
             color: #959da5;
         }
-        /* 반응형 디자인 (미디어 쿼리 적용) */
+
+        /* 모달 팝업창 디자인 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 15px 20px;
+            background-color: #f6f8fa;
+            border-bottom: 1px solid #d1d5db;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #24292e;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            font-weight: bold;
+            color: #586069;
+            cursor: pointer;
+        }
+        .modal-close:hover {
+            color: #000000;
+        }
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            font-size: 15px;
+            color: #24292e;
+            line-height: 1.7;
+        }
+        .modal-body h2 { border-bottom: 1px solid #eaecef; padding-bottom: .3em; margin-top: 24px; margin-bottom: 16px; font-size: 1.5em; }
+        .modal-body h3 { border-bottom: 1px solid #eaecef; padding-bottom: .3em; margin-top: 20px; margin-bottom: 12px; font-size: 1.25em; }
+        .modal-body ul, .modal-body ol { padding-left: 2em; }
+        .modal-body li { margin-bottom: 4px; }
+
+        /* 반응형 디자인 */
         @media (max-width: 1024px) {
             .archive-scroll-wrapper, .jump-bar-container { max-width: 90%; }
             .archive-grid { grid-template-columns: repeat(4, 1fr); }
@@ -234,7 +296,7 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.6</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.7</span></h1>
     </div>
 
     <div class="intro-box">
@@ -242,7 +304,7 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 마크다운 요약 아카이브(abstract.md)를 보는데 활용됩니다.</li>
-            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 마크다운 미리보기 렌더링 화면으로 연결됩니다.</li>
+            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 화면 전환 없이 팝업 모달창에서 즉시 렌더링됩니다.</li>
         </ol>
     </div>
 
@@ -267,14 +329,37 @@
         </div>
     </div>
 
-    <script>
-        // 전역 객체 저장소
-        window.sampleData = {};
+    <!-- 요약 내용 모달 팝업 -->
+    <div class="modal-overlay" id="summaryModal" onclick="closeModalOutside(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">회보 요약 내용</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                불러오는 중...
+            </div>
+        </div>
+    </div>
 
-        // 구글 시트 웹에 게시된 CSV 링크
+    <script>
+        window.sampleData = {};
+        let cachedMarkdownText = "";
+
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 로드하여 PDF 링크 추출
+        // 페이지 로드 시 abstract.md 미리 가져오기 캐싱
+        async function preloadMarkdown() {
+            try {
+                const response = await fetch('abstract.md');
+                if (response.ok) {
+                    cachedMarkdownText = await response.text();
+                }
+            } catch (e) {
+                console.error("abstract.md 로드 실패:", e);
+            }
+        }
+
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
@@ -303,14 +388,9 @@
                 });
 
                 validIssues.forEach((item) => {
-                    const formattedNumStr = String(item.num).padStart(3, '0') + '호';
-                    // v8.6 핵심 변경: GitHub 정식 마크다운 렌더링 뷰어(blob/main) 경로 연결
-                    const mdSummaryUrl = `https://github.com/clclub1975/clmb/blob/main/HOME2/abstract.md#${formattedNumStr}`;
-
                     window.sampleData[item.num] = {
                         title: `1984년 ${Math.ceil(item.num / 12)}월호`,
-                        pdf: item.pdf,
-                        summary: mdSummaryUrl
+                        pdf: item.pdf
                     };
                 });
             } catch (error) {
@@ -318,7 +398,6 @@
             }
         }
 
-        // 전체 카드 생성 및 렌더링
         async function renderAllIssues() {
             await loadPathDataFromSheet();
             const gridContainer = document.getElementById('archive-grid');
@@ -338,7 +417,7 @@
                             <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                             <div class="issue-body">
                                 <div class="sub-cell"><a href="${issueInfo.pdf}" target="_blank">회보</a></div>
-                                <div class="sub-cell"><a href="${issueInfo.summary}" target="_blank">요약</a></div>
+                                <div class="sub-cell"><button onclick="openSummaryModal(${i})">요약</button></div>
                                 <div class="sub-cell"><span class="plain-text">교정</span></div>
                             </div>
                         `;
@@ -368,7 +447,52 @@
             }
         }
 
-        // 빠른 이동 버튼 클릭 시 스크롤 이동
+        // 특정 호수 요약 모달 팝업 열기
+        async function openSummaryModal(issueNum) {
+            const modal = document.getElementById('summaryModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.innerText = `통권 ${String(issueNum).padStart(3, '0')}호 요약 아카이브`;
+            modalBody.innerHTML = '불러오는 중...';
+            modal.style.display = 'flex';
+
+            if (!cachedMarkdownText) {
+                await preloadMarkdown();
+            }
+
+            if (!cachedMarkdownText) {
+                modalBody.innerHTML = '<p style="color:red;">요약 데이터(abstract.md)를 불러오지 못했습니다.</p>';
+                return;
+            }
+
+            // abstract.md에서 해당 호수 구간 추출 (<a id="003호">부터 다음 <a id="..."> 또는 파일 끝까지)
+            const targetTagId = `${String(issueNum).padStart(3, '0')}호`;
+            const startIndex = cachedMarkdownText.indexOf(`id="${targetTagId}"`);
+
+            if (startIndex === -1) {
+                modalBody.innerHTML = `<p>아직 통권 ${targetTagId}에 대한 요약 아카이브가 작성되지 않았습니다.</p>`;
+                return;
+            }
+
+            // 다음 앵커 태그 위치 찾기
+            let nextIndex = cachedMarkdownText.indexOf('<a id="', startIndex + 10);
+            let issueContent = nextIndex !== -1 ? cachedMarkdownText.substring(startIndex, nextIndex) : cachedMarkdownText.substring(startIndex);
+
+            // 마크다운 파싱 후 모달에 삽입
+            modalBody.innerHTML = marked.parse(issueContent);
+        }
+
+        function closeModal() {
+            document.getElementById('summaryModal').style.display = 'none';
+        }
+
+        function closeModalOutside(event) {
+            if (event.target === document.getElementById('summaryModal')) {
+                closeModal();
+            }
+        }
+
         function scrollToSection(startNum, btnElement) {
             document.querySelectorAll('.jump-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
@@ -384,8 +508,8 @@
             document.getElementById('section-title').innerText = `📋 회보 요약 및 교정 현황 (${String(startNum).padStart(2, '0')}~${String(endNum).padStart(2, '0')})`;
         }
 
-        // 페이지 최초 진입 시 실행
         window.onload = function() {
+            preloadMarkdown();
             renderAllIssues();
         };
     </script>
