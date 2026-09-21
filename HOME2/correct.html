@@ -1,4 +1,4 @@
-<!-- v8.15: 모바일 모달 창 안에서 테이블이 창 밖으로 밀려나가지 않도록 테이블 폭 100% 강제 가변 고정 적용 -->
+<!-- v8.16: 모달 창 내 테이블 '내용' 열 왼쪽 정렬 및 모바일 환경 날짜 열 폭 최적화 (줄바꿈 방지) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -268,7 +268,7 @@
         .modal-body {
             padding: 18px;
             overflow-y: auto;
-            overflow-x: hidden; /* 모달 본문 가로 스크롤 원천 차단 */
+            overflow-x: hidden;
             font-size: 14px;
             color: #2b3137;
             line-height: 1.5;
@@ -277,7 +277,7 @@
         .modal-body h2:first-of-type { display: none; }
         .modal-body h3 { border-bottom: 1px solid #eaecef; padding-bottom: .2em; margin-top: 14px; margin-bottom: 8px; font-size: 1.1em; color: #1a1a1a; }
         
-        /* 모달 내 마크다운 요소 및 테이블 디자인 최적화 */
+        /* 모달 내 마크다운 요소 및 테이블 디자인 최적화 (v8.16) */
         .modal-body hr {
             border: 0;
             height: 1px;
@@ -289,13 +289,13 @@
             max-width: 100% !important;
             border-collapse: collapse;
             margin: 8px 0;
-            table-layout: fixed; /* 테이블 폭을 모달 창 크기에 딱 맞게 강제 고정 */
+            table-layout: fixed;
         }
         .modal-body th, .modal-body td {
             border: 1px solid #cbd5e1;
             padding: 5px 8px;
             font-size: 13.5px;
-            word-break: break-all; /* 긴 텍스트도 창 안에서 강제로 줄바꿈되도록 처리 */
+            word-break: break-all;
             box-sizing: border-box;
         }
         .modal-body th {
@@ -303,8 +303,9 @@
             font-weight: 600;
             text-align: center;
         }
+        /* 1. '내용' 열 및 모든 데이터 셀 기본 왼쪽 정렬 적용 */
         .modal-body td {
-            text-align: left;
+            text-align: left !important;
         }
         .modal-body tr:nth-child(even) {
             background-color: #f8fafc;
@@ -315,14 +316,15 @@
         .modal-body table tr th:first-child {
             width: 18% !important;
             text-align: center;
+            white-space: nowrap;
         }
         .modal-body table tr td:nth-child(2),
         .modal-body table tr th:nth-child(2) {
             width: 82% !important;
         }
 
-        .modal-body table tr th:nth-child(1), .modal-body table tr td:nth-child(1) { width: 14% !important; text-align: center; }
-        .modal-body table tr th:nth-child(2), .modal-body table tr td:nth-child(2) { width: 22% !important; text-align: center; }
+        .modal-body table tr th:nth-child(1), .modal-body table tr td:nth-child(1) { width: 14% !important; text-align: center; white-space: nowrap; }
+        .modal-body table tr th:nth-child(2), .modal-body table tr td:nth-child(2) { width: 22% !important; text-align: center; white-space: nowrap; }
         .modal-body table tr th:nth-child(3), .modal-body table tr td:nth-child(3) { width: 24% !important; text-align: center; }
         .modal-body table tr th:nth-child(4), .modal-body table tr td:nth-child(4) { width: 40% !important; }
 
@@ -330,7 +332,7 @@
         .modal-body li { margin-bottom: 2px; }
         .modal-body p { margin: 4px 0; }
 
-        /* [v8.15 추가] 스마트폰 등 모바일 화면에서 테이블이 모달 창 밖으로 절대 튀어나가지 않도록 강제 제한 */
+        /* [v8.16 수정] 모바일 환경 날짜 줄바꿈 방지 및 최적화 */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .archive-scroll-wrapper, .jump-bar-container { max-width: 100%; }
@@ -343,7 +345,6 @@
             .jump-bar-container { gap: 2px; justify-content: space-between; }
             .jump-btn { padding: 3px 4px; font-size: 10.5px; flex-grow: 1; text-align: center; }
 
-            /* 모바일 모달 창 및 테이블이 창 폭을 넘지 않도록 100% 밀착 가변 설정 */
             .modal-overlay { padding: 8px; }
             .modal-content { max-height: 94vh; width: 100%; }
             .modal-body { padding: 12px; font-size: 12.5px; overflow-x: hidden; }
@@ -353,9 +354,19 @@
                 table-layout: fixed !important;
             }
             .modal-body th, .modal-body td {
-                padding: 4px 5px;
-                font-size: 12px;
+                padding: 4px 4px;
+                font-size: 11.5px;
                 word-break: break-all;
+            }
+            /* 모바일에서 날짜 열(1열)이 줄바꿈되지 않도록 공간 확보 및 자동 맞춤 */
+            .modal-body table tr td:first-child,
+            .modal-body table tr th:first-child,
+            .modal-body table tr th:nth-child(1), 
+            .modal-body table tr td:nth-child(1) {
+                width: 21% !important;
+                white-space: nowrap !important;
+                font-size: 11px;
+                letter-spacing: -0.5px;
             }
         }
     </style>
@@ -365,7 +376,7 @@
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
 
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.15</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.16</span></h1>
     </div>
 
     <div class="intro-box">
@@ -373,7 +384,7 @@
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
             <li>아울러 촛불회 회보의 원본(PDF)과 마크다운 요약 아카이브(abstract.md)를 보는데 활용됩니다.</li>
-            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, 모바일과 PC 화면에 맞추어 테이블이 창 폭을 넘지 않도록 가변 처리됩니다.</li>
+            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, 모바일과 PC 화면에 맞추어 내용 정렬 및 날짜 폭이 최적화됩니다.</li>
         </ol>
     </div>
 
