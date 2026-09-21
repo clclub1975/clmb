@@ -1,4 +1,4 @@
-<!-- v9.6: 구글 시트 A열(통권 호수) 및 B열(발행년월) 인덱스를 고정 매핑하여 데이터 밀림 현상을 완벽히 해결하고 3행 컴팩트 구조 정밀 적용 -->
+<!-- v9.7: 3행 컴팩트 셀 구조의 2번째 줄과 3번째 줄을 각각 '요약', '교정' 고정 단어로 단순화 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -112,10 +112,6 @@
         .cell-summary {
             font-size: 0.6rem;
             color: #475569;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
             line-height: 1;
         }
         .cell-status {
@@ -149,7 +145,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.6</span>
+                <span class="version">v9.7</span>
             </h1>
         </header>
 
@@ -193,40 +189,31 @@
                 
                 let issueMap = {}; // key: "YYYY-M", value: { issueNo, summary, status }
 
-                // 첫 행(헤더)을 제외하고 데이터 행 순회
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].map(c => c.trim());
                     if (cols.length < 2) continue;
 
-                    // A열(인덱스 0): 통권 호수 (예: "통권 001호" 또는 "1호")
                     const colIssue = cols[0] || '';
                     const matchNum = colIssue.match(/(\d+)/);
                     if (!matchNum) continue;
                     const issueNumber = parseInt(matchNum[1], 10);
-                    const paddedNum = String(issueNumber).padStart(3, '0'); // '호' 제외 숫자 3자리
+                    const paddedNum = String(issueNumber).padStart(3, '0');
 
-                    // B열(인덱스 1): 발행년월 (예: "1984년 3월")
                     const colDate = cols[1] || '';
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
                     if (!matchDate) continue;
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
 
-                    // D열(인덱스 3): 한 줄 요약
-                    let summaryText = "";
-                    if (cols.length > 3 && cols[3]) {
-                        summaryText = cols[3].length > 10 ? cols[3].substring(0, 10) + '..' : cols[3];
-                    } else {
-                        summaryText = "요약완료";
-                    }
+                    // 2번째 줄은 '요약' 고정 텍스트
+                    const summaryText = "요약";
 
-                    // 교정 상태 기본값 설정
-                    let editStatus = "교정대기";
-                    if (cols.length > 34 && cols[34] && cols[34].includes('교정')) {
+                    // 3번째 줄은 '교정' 고정 텍스트 (또는 상태에 따라 변형 가능하나 기본 '교정')
+                    let editStatus = "교정";
+                    if (cols.length > 34 && cols[34] && cols[34].includes('교정완료')) {
                         editStatus = "교정완료";
                     }
 
-                    // 연도-월 키로 정확히 매핑 (데이터 밀림 원천 방지)
                     issueMap[`${year}-${month}`] = {
                         issueNo: paddedNum,
                         summary: summaryText,
@@ -265,7 +252,7 @@
                         td.innerHTML = `
                             <div class="cell-content">
                                 <span class="cell-issue">${data.issueNo}</span>
-                                <span class="cell-summary" title="${data.summary}">${data.summary}</span>
+                                <span class="cell-summary">${data.summary}</span>
                                 <span class="cell-status ${statusClass}">${data.status}</span>
                             </div>
                         `;
