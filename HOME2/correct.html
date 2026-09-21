@@ -1,4 +1,4 @@
-<!-- v9.3: 001호부터 180호까지 전체 회보의 발행년월 데이터를 캘린더 셀 매트릭스에 3자리 포맷으로 완전 매칭 및 v9.3 버전 업그레이드 반영 -->
+<!-- v9.4: 웹에 게시된 구글 시트 올바른 CSV 공유 URL 적용 및 001호~180호 캘린더 셀 데이터 렌더링 정상화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -120,7 +120,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.3</span>
+                <span class="version">v9.4</span>
             </h1>
         </header>
 
@@ -142,7 +142,7 @@
     </div>
 
     <script>
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSR_-FdmTp-4eZ6oHJPbbtRZVWrVVCj4Fqxx4foOQOndKiDbOYyCUEIEZNSN0l-EYhenSbTfYpcuYat/pub?gid=719467566&single=true&output=csv';
 
         function parseCSV(text) {
             let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
