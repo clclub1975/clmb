@@ -1,291 +1,248 @@
-<!-- v7.33: 모바일(768px 이하) 환경에서 3열 10행이 정확히 노출되도록 스크롤 박스 높이(644px) 고정  -->
+<!-- v8.1: '요약' 버튼을 구글 슬라이드 대신 GitHub의 abstract.md 파일 내 해당 호수 앵커(#OOO호)와 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>촛불회 회보 제미나이 요약 교정 작업 안내</title>
-<style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        line-height: 1.6;
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 20px 20px 40px 20px;
-        color: #2b3137;
-        background-color: #ffffff;
-        word-break: keep-all;
-    }
-    .back-btn {
-        display: inline-block;
-        padding: 6px 14px;
-        background-color: #f6f8fa;
-        color: #24292e;
-        text-decoration: none;
-        border-radius: 6px;
-        font-size: 13.5px;
-        font-weight: 600;
-        border: 1px solid #d1d5db;
-        margin-bottom: 12px;
-        transition: background-color 0.15s;
-    }
-    .back-btn:hover {
-        background-color: #e1e4e8;
-    }
-    .header-container {
-        text-align: center;
-        margin-bottom: 25px;
-    }
-    h1 {
-        font-size: 26px;
-        margin-bottom: 8px;
-        color: #1a1a1a;
-    }
-    .intro-box {
-        background: #f6f8fa;
-        border: 1px solid #e1e4e8;
-        border-radius: 8px;
-        padding: 20px 24px;
-        margin-bottom: 25px;
-        color: #586069;
-        font-size: 14.5px;
-    }
-    .intro-box h4 {
-        margin: 0 0 12px 0;
-        color: #24292e;
-        font-size: 16px;
-    }
-    .intro-box ol {
-        margin: 0;
-        padding-left: 20px;
-    }
-    .intro-box li {
-        margin-bottom: 8px;
-    }
-    .intro-box li:last-child {
-        margin-bottom: 0;
-    }
-
-    /* 소제목 스타일 */
-    h3 {
-        font-size: 18px;
-        color: #24292e;
-        margin-bottom: 12px;
-    }
-
-    /* 빠른 구간 이동 버튼 그룹 */
-    .jump-bar-container {
-        max-width: 75%;
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 15px;
-        display: flex;
-        gap: 3px;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 4px;
-    }
-    .jump-bar-container::-webkit-scrollbar {
-        height: 4px;
-    }
-    .jump-bar-container::-webkit-scrollbar-thumb {
-        background-color: #d1d5db;
-        border-radius: 2px;
-    }
-
-    .jump-btn {
-        padding: 5px 10px;
-        background-color: #f6f8fa;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        color: #0366d6;
-        font-size: 12.5px;
-        font-weight: 500;
-        text-decoration: none;
-        cursor: pointer;
-        white-space: nowrap;
-        flex-shrink: 0;
-        transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-    }
-    .jump-btn:hover, .jump-btn.active {
-        background-color: #0366d6;
-        color: #ffffff;
-        border-color: #0366d6;
-    }
-    
-    /* PC 세로 스크롤 래퍼 (셀 높이 76px * 7행 + 상하 테두리 4px = 정확히 536px 고정) */
-    .archive-scroll-wrapper {
-        max-width: 75%;
-        margin-left: auto;
-        margin-right: auto;
-        max-height: 536px;
-        overflow-y: scroll;
-        scroll-snap-type: y mandatory;
-        box-sizing: border-box;
-        border: 2px solid #4a5568;
-        background-color: #4a5568;
-        margin-bottom: 40px;
-    }
-    
-    /* 스크롤바 스타일 */
-    .archive-scroll-wrapper::-webkit-scrollbar {
-        width: 10px;
-    }
-    .archive-scroll-wrapper::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-left: 1px solid #cbd5e1;
-    }
-    .archive-scroll-wrapper::-webkit-scrollbar-thumb {
-        background-color: #94a3b8;
-    }
-    .archive-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-        background-color: #64748b;
-    }
-
-    /* CSS Grid 기반 기본 5열 배치 레이아웃 (PC) */
-    .archive-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0;
-        border-top: none;
-        border-left: none;
-        background-color: #4a5568;
-        margin: 0;
-        padding: 0;
-    }
-    
-    /* 단위 셀 외곽선 및 스냅 정렬 */
-    .issue-unit {
-        border-right: 2px solid #4a5568;
-        border-bottom: 2px solid #4a5568;
-        background-color: #ffffff;
-        display: flex;
-        flex-direction: column;
-        scroll-snap-align: start;
-        height: 76px; /* [핵심] Y축 고무줄 현상 원천 차단: 각 셀의 높이를 절대 픽셀로 못박음 */
-        box-sizing: border-box; /* 76px 안에 패딩과 2px 하단 테두리를 모두 포함시킴 */
-        overflow: hidden; /* 내부 텍스트가 76px을 초과해도 그리드가 깨지지 않도록 방어 */
-    }
-    
-    /* 단위 셀 헤더 */
-    .issue-header {
-        background-color: #f6f8fa;
-        color: #1a1a1a;
-        font-weight: 600;
-        text-align: center;
-        padding: 7px 5px;
-        border-bottom: 1px solid #d1d5db;
-        font-size: 14px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    /* 비활성 단위 셀 헤더 스타일 */
-    .issue-unit.inactive .issue-header {
-        color: #959da5;
-        background-color: #fafbfc;
-    }
-    
-    /* 단위 셀 서브 셀 컨테이너 (3열 구조) */
-    .issue-body {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        background-color: #ffffff;
-        flex-grow: 1;
-        align-items: center; /* 텍스트를 세로 중앙에 고정 */
-    }
-    
-    /* 내부 서브 셀 낱개 */
-    .sub-cell {
-        text-align: center;
-        padding: 0 5px;
-        font-size: 14px;
-    }
-    .sub-cell:not(:last-child) {
-        border-right: 1px solid #d1d5db;
-    }
-    
-    /* 하이퍼링크 및 텍스트 스타일 */
-    .sub-cell a {
-        text-decoration: underline;
-        color: #0366d6;
-        font-weight: 500;
-    }
-    .sub-cell a:hover {
-        opacity: 0.8;
-    }
-    .plain-text {
-        color: #2b3137;
-    }
-    .empty-cell {
-        color: #959da5;
-    }
-
-    /* 반응형 디자인 (미디어 쿼리 적용) */
-    @media (max-width: 1024px) {
-        .archive-scroll-wrapper, .jump-bar-container {
-            max-width: 90%;
-        }
-        .archive-grid {
-            grid-template-columns: repeat(4, 1fr);
-        }
-    }
-
-    @media (max-width: 768px) {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>촛불회 회보 제미나이 요약 교정 작업 안내</title>
+    <style>
         body {
-            padding: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 20px 40px 20px;
+            color: #2b3137;
+            background-color: #ffffff;
+            word-break: keep-all;
         }
-        .archive-scroll-wrapper, .jump-bar-container {
-            max-width: 100%;
+        .back-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: #f6f8fa;
+            color: #24292e;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            border: 1px solid #d1d5db;
+            margin-bottom: 12px;
+            transition: background-color 0.15s;
         }
-        /* 모바일: 셀 높이 64px * 10행 + 상하 테두리 4px = 644px */
-        .archive-scroll-wrapper {
-            max-height: 644px !important;
+        .back-btn:hover {
+            background-color: #e1e4e8;
         }
-        .archive-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        .issue-unit {
-            height: 64px; /* 모바일용 고정 높이 축소 */
+        .header-container {
+            text-align: center;
+            margin-bottom: 25px;
         }
         h1 {
-            font-size: 22px;
+            font-size: 26px;
+            margin-bottom: 8px;
+            color: #1a1a1a;
         }
-        .issue-header {
-            font-size: 12px;
-            padding: 5px 2px;
+        .intro-box {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 25px;
+            color: #586069;
+            font-size: 14.5px;
         }
-        .sub-cell {
-            font-size: 12px;
-            padding: 0 2px;
+        .intro-box h4 {
+            margin: 0 0 12px 0;
+            color: #24292e;
+            font-size: 16px;
         }
+        .intro-box ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .intro-box li {
+            margin-bottom: 8px;
+        }
+        .intro-box li:last-child {
+            margin-bottom: 0;
+        }
+        /* 소제목 스타일 */
+        h3 {
+            font-size: 18px;
+            color: #24292e;
+            margin-bottom: 12px;
+        }
+        /* 빠른 구간 이동 버튼 그룹 */
         .jump-bar-container {
-            gap: 2px;
-            justify-content: space-between;
+            max-width: 75%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 3px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+        }
+        .jump-bar-container::-webkit-scrollbar {
+            height: 4px;
+        }
+        .jump-bar-container::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 2px;
         }
         .jump-btn {
-            padding: 4px 5px;
-            font-size: 11px;
-            flex-grow: 1;
-            text-align: center;
+            padding: 5px 10px;
+            background-color: #f6f8fa;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            color: #0366d6;
+            font-size: 12.5px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s;
         }
-    }
-</style>
+        .jump-btn:hover, .jump-btn.active {
+            background-color: #0366d6;
+            color: #ffffff;
+            border-color: #0366d6;
+        }
+        /* PC 세로 스크롤 래퍼 (셀 높이 76px * 7행 + 상하 테두리 4px = 정확히 536px 고정) */
+        .archive-scroll-wrapper {
+            max-width: 75%;
+            margin-left: auto;
+            margin-right: auto;
+            max-height: 536px;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            box-sizing: border-box;
+            border: 2px solid #4a5568;
+            background-color: #4a5568;
+            margin-bottom: 40px;
+        }
+        /* 스크롤바 스타일 */
+        .archive-scroll-wrapper::-webkit-scrollbar {
+            width: 10px;
+        }
+        .archive-scroll-wrapper::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-left: 1px solid #cbd5e1;
+        }
+        .archive-scroll-wrapper::-webkit-scrollbar-thumb {
+            background-color: #94a3b8;
+        }
+        .archive-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+            background-color: #64748b;
+        }
+        /* CSS Grid 기반 기본 5열 배치 레이아웃 (PC) */
+        .archive-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0;
+            border-top: none;
+            border-left: none;
+            background-color: #4a5568;
+            margin: 0;
+            padding: 0;
+        }
+        /* 단위 셀 외곽선 및 스냅 정렬 */
+        .issue-unit {
+            border-right: 2px solid #4a5568;
+            border-bottom: 2px solid #4a5568;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            scroll-snap-align: start;
+            height: 76px; /* [핵심] Y축 고무줄 현상 원천 차단 */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        /* 단위 셀 헤더 */
+        .issue-header {
+            background-color: #f6f8fa;
+            color: #1a1a1a;
+            font-weight: 600;
+            text-align: center;
+            padding: 7px 5px;
+            border-bottom: 1px solid #d1d5db;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* 비활성 단위 셀 헤더 스타일 */
+        .issue-unit.inactive .issue-header {
+            color: #959da5;
+            background-color: #fafbfc;
+        }
+        /* 단위 셀 서브 셀 컨테이너 (3열 구조) */
+        .issue-body {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background-color: #ffffff;
+            flex-grow: 1;
+            align-items: center; /* 텍스트를 세로 중앙에 고정 */
+        }
+        /* 내부 서브 셀 낱개 */
+        .sub-cell {
+            text-align: center;
+            padding: 0 5px;
+            font-size: 14px;
+        }
+        .sub-cell:not(:last-child) {
+            border-right: 1px solid #d1d5db;
+        }
+        /* 하이퍼링크 및 텍스트 스타일 */
+        .sub-cell a {
+            text-decoration: underline;
+            color: #0366d6;
+            font-weight: 500;
+        }
+        .sub-cell a:hover {
+            opacity: 0.8;
+        }
+        .plain-text {
+            color: #2b3137;
+        }
+        .empty-cell {
+            color: #959da5;
+        }
+        /* 반응형 디자인 (미디어 쿼리 적용) */
+        @media (max-width: 1024px) {
+            .archive-scroll-wrapper, .jump-bar-container { max-width: 90%; }
+            .archive-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .archive-scroll-wrapper, .jump-bar-container { max-width: 100%; }
+            .archive-scroll-wrapper { max-height: 644px !important; }
+            .archive-grid { grid-template-columns: repeat(3, 1fr); }
+            .issue-unit { height: 64px; }
+            h1 { font-size: 22px; }
+            .issue-header { font-size: 12px; padding: 5px 2px; }
+            .sub-cell { font-size: 12px; padding: 0 2px; }
+            .jump-bar-container { gap: 2px; justify-content: space-between; }
+            .jump-btn { padding: 4px 5px; font-size: 11px; flex-grow: 1; text-align: center; }
+        }
+    </style>
 </head>
 <body>
+
     <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
+
     <div class="header-container">
-        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v7.33</span></h1>
+        <h1>🕯️ 촛불회 회보 제미나이 요약 교정 작업 안내 <span style="font-size: 0.5em; color: #666; font-weight: normal;">v8.1</span></h1>
     </div>
 
     <div class="intro-box">
         <h4>📌 본 페이지의 활용에 대한 설명</h4>
         <ol>
             <li>본 페이지는 제미나이가 촛불회 회보를 엉터리로 요약한 부분을 교정하기 위해 마련되었습니다.</li>
-            <li>아울러 촛불회 회보의 원본(PDF)과 요약(슬라이드)을 보는데 활용될 수도 있습니다.</li>
-            <li>현재는 구글 시트와 동적 연동되어 190권 전권의 현황 및 요약 슬라이드가 반영됩니다.</li>
+            <li>아울러 촛불회 회보의 원본(PDF)과 마크다운 요약 아카이브(abstract.md)를 보는데 활용됩니다.</li>
+            <li>구글 시트와 연동되어 회보 PDF 링크를 가져오며, '요약' 버튼은 GitHub의 <code>abstract.md</code> 내 해당 호수 앵커로 다이렉트 연결됩니다.</li>
         </ol>
     </div>
 
@@ -303,7 +260,7 @@
         <button class="jump-btn" onclick="scrollToSection(181, this)">181~190</button>
     </div>
 
-    <!-- 세로 스크롤 래퍼 (JavaScript 조작 없이 CSS로 완벽 통제) -->
+    <!-- 세로 스크롤 래퍼 -->
     <div class="archive-scroll-wrapper" id="scroll-wrapper">
         <div class="archive-grid" id="archive-grid">
             <!-- 자바스크립트에 의해 동적으로 렌더링됩니다 -->
@@ -317,20 +274,16 @@
         // 구글 시트 웹에 게시된 CSV 링크
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqNMLMCYLYofl5-GPEFv3j_LUvicHJhxveJvxMIzyTgvs9x9PeTT1qDHTXYBqswG2rX_qV-wlk30FK/pub?gid=0&single=true&output=csv';
 
-        // 구글 시트 CSV 데이터를 로드
+        // 구글 시트 CSV 데이터를 로드하여 PDF 링크 추출
         async function loadPathDataFromSheet() {
             try {
                 const response = await fetch(csvUrl);
                 const csvText = await response.text();
-                
                 const rows = csvText.split('\n');
-                const exactBaseSlideUrl = "https://docs.google.com/presentation/d/1HI9G7vevnFgdjJ57igO30tMYy6bVnwH6/edit?usp=drive_link&ouid=108392210159868939168&rtpof=true&sd=true";
-
                 let validIssues = [];
 
                 rows.forEach(row => {
                     const cols = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
-                    
                     let foundNum = null;
                     let foundPdfUrl = '';
 
@@ -349,26 +302,25 @@
                     }
                 });
 
-                validIssues.forEach((item, index) => {
-                    const slidePageIndex = index + 1;
-                    const slideSummaryUrl = `${exactBaseSlideUrl}#slide=id.p${slidePageIndex}`;
+                validIssues.forEach((item) => {
+                    const formattedNumStr = String(item.num).padStart(3, '0') + '호';
+                    // 핵심 변경: GitHub의 abstract.md 파일 경로에 앵커(#OOO호) 연결
+                    const mdSummaryUrl = `abstract.md#${formattedNumStr}`;
 
                     window.sampleData[item.num] = {
-                        title: `1984년 ${Math.ceil(item.num / 12)}월호`, 
+                        title: `1984년 ${Math.ceil(item.num / 12)}월호`,
                         pdf: item.pdf,
-                        summary: slideSummaryUrl
+                        summary: mdSummaryUrl
                     };
                 });
-
             } catch (error) {
                 console.error("구글 시트 연동 데이터를 불러오는 중 오류 발생:", error);
             }
         }
 
-        // 1부터 192호까지 전체 카드를 생성하여 렌더링 (불안정한 JS 높이 계산 전면 삭제)
+        // 전체 카드 생성 및 렌더링
         async function renderAllIssues() {
             await loadPathDataFromSheet();
-
             const gridContainer = document.getElementById('archive-grid');
             gridContainer.innerHTML = '';
 
@@ -386,7 +338,7 @@
                             <div class="issue-header">[${String(i).padStart(3, '0')}호]&nbsp;&nbsp;${issueInfo.title}</div>
                             <div class="issue-body">
                                 <div class="sub-cell"><a href="${issueInfo.pdf}" target="_blank">회보</a></div>
-                                <div class="sub-cell"><a href="${issueInfo.summary}" target="_blank">요약</a></div>
+                                <div class="sub-cell"><a href="${issueInfo.summary}">요약</a></div>
                                 <div class="sub-cell"><span class="plain-text">교정</span></div>
                             </div>
                         `;
@@ -416,20 +368,16 @@
             }
         }
 
-        // 빠른 이동 버튼 클릭 시 부드럽게 스크롤 이동
+        // 빠른 이동 버튼 클릭 시 스크롤 이동
         function scrollToSection(startNum, btnElement) {
             document.querySelectorAll('.jump-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
             const targetElement = document.getElementById(`issue-${startNum}`);
             const wrapper = document.getElementById('scroll-wrapper');
-
             if (targetElement && wrapper) {
                 const topPos = targetElement.offsetTop - wrapper.offsetTop;
-                wrapper.scrollTo({
-                    top: topPos,
-                    behavior: 'smooth'
-                });
+                wrapper.scrollTo({ top: topPos, behavior: 'smooth' });
             }
 
             const endNum = Math.min(startNum + 29, 190);
