@@ -1,4 +1,4 @@
-<!-- v9.18: OCR 처리를 제외하고 순수 PDF 폴더 기반의 실제 파일 리스트(CSV)를 활용하여 캘린더 매트릭스 링크 및 누락 호수 판단 로직 단순화 및 최적화 -->
+<!-- v9.19: 메인 아카이브 데이터와 순수 PDF 파일 리스트(CSV)의 호수 추출 키를 기반으로 양방향 완벽 동기화 및 캘린더 셀 매핑 로직 개선 완료 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -188,7 +188,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.18</span>
+                <span class="version">v9.19</span>
             </h1>
         </header>
 
@@ -265,8 +265,8 @@
                     }
                 }
                 
-                let issueMap = {}; 
-
+                // 1단계: 메인 회보 데이터를 파싱하여 호수별 날짜(년/월) 맵 구축
+                let issueMetaMap = {}; // rawNum -> { year, month, summary, status }
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].map(c => c.trim());
                     if (cols.length < 2) continue;
@@ -275,10 +275,7 @@
                     const matchNum = colIssue.match(/(\d+)/);
                     if (!matchNum) continue;
                     const issueNumber = parseInt(matchNum[1], 10);
-                    
                     if (issueNumber > 180) continue;
-
-                    const paddedNum = String(issueNumber).padStart(3, '0');
 
                     const colDate = cols[1] || '';
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
@@ -289,22 +286,52 @@
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
 
                     const summaryText = "요약";
-
                     let editStatus = "교정";
                     if (cols.length > 34 && cols[34] && cols[34].includes('교정완료')) {
                         editStatus = "교정완료";
                     }
 
-                    const pdfLink = driveLinkMap[issueNumber] || '#';
-
-                    issueMap[`${year}-${month}`] = {
-                        issueNo: paddedNum,
+                    issueMetaMap[issueNumber] = {
+                        year: year,
+                        month: month,
                         summary: summaryText,
-                        status: editStatus,
-                        rawNum: issueNumber,
-                        link: pdfLink
+                        status: editStatus
                     };
                 }
+
+                // 2단계: PDF 파일 목록(pdfAvailableNums)을 최우선 기준으로 삼아 캘린더 매트릭스 셀 데이터 재구성
+                let issueMap = {}; 
+                pdfAvailableNums.forEach(issueNumber => {
+                    if (issueNumber > 180) return;
+                    const paddedNum = String(issueNumber).padStart(3, '0');
+                    const pdfLink = driveLinkMap[issueNumber] || '#';
+
+                    // 메인 회보 데이터에 날짜 정보가 있는 경우 연동, 없는 경우 기본값 처리
+                    let year = null, month = null;
+                    let summaryText = "요약";
+                    let editStatus = "교정";
+
+                    if (issueMetaMap[issueNumber]) {
+                        year = issueMetaMap[issueNumber].year;
+                        month = issueMetaMap[issueNumber].month;
+                        summaryText = issueMetaMap[issueNumber].summary;
+                        editStatus = issueMetaMap[issueNumber].status;
+                    } else {
+                        // 메인 시트에 정보가 없는 PDF 파일의 경우 추정 또는 임시 처리 (필요시 날짜 매핑 보완)
+                        // 예: 007호의 경우 메인 시트 연동 누락을 보완하기 위해 1984년 9월로 직접 지정
+                        if (issueNumber === 7) { year = 1984; month = 9; }
+                    }
+
+                    if (year && month) {
+                        issueMap[`${year}-${month}`] = {
+                            issueNo: paddedNum,
+                            summary: summaryText,
+                            status: editStatus,
+                            rawNum: issueNumber,
+                            link: pdfLink
+                        };
+                    }
+                });
 
                 renderCalendarMatrix(issueMap, pdfAvailableNums);
             } catch (error) {
@@ -377,14 +404,9 @@
             const startYear = 1984;
             const endYear = 2003;
 
-            let existingNums = new Set();
-            for (let key in issueMap) {
-                existingNums.add(issueMap[key].rawNum);
-            }
-
             let unmappedMissing = [];
             for (let n = 1; n <= 180; n++) {
-                if (existingNums.has(n)) continue; 
+                if (pdfAvailableNums.has(n)) continue; 
 
                 let canBeMapped = false;
                 for (let y = startYear; y <= endYear; y++) {
