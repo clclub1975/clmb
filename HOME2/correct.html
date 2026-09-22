@@ -1,4 +1,4 @@
-<!-- v10.1: 호수(이슈 번호) 블록에 밑줄(underline) 스타일을 추가하여 하이퍼텍스트 연동 시각적 가인성 강화 -->
+<!-- v10.2: 단일 PDF URL 시트(E열 발행년월 통합) 기반 데이터 연동 및 캘린더 매트릭스 렌더링 최적화 완료 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -135,7 +135,7 @@
             font-size: 0.88rem;
             color: #2563eb;
             line-height: 1;
-            text-decoration: underline; /* 하이퍼텍스트 연동 밑줄 표시 추가 */
+            text-decoration: underline;
             text-underline-offset: 2px;
         }
         .cell-summary {
@@ -190,7 +190,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v10.1</span>
+                <span class="version">v10.2</span>
             </h1>
         </header>
 
@@ -217,7 +217,7 @@
     </div>
 
     <script>
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSR_-FdmTp-4eZ6oHJPbbtRZVWrVVCj4Fqxx4foOQOndKiDbOYyCUEIEZNSN0l-EYhenSbTfYpcuYat/pub?gid=719467566&single=true&output=csv';
+        // 통합된 단일 PDF URL 시트 CSV 링크 (E열에 발행년월 포함)
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
 
         function parseCSV(text) {
@@ -234,63 +234,45 @@
 
         async function loadCalendarData() {
             try {
-                const [respMain, respPdf] = await Promise.all([
-                    fetch(csvUrl),
-                    fetch(pdfCsvUrl)
-                ]);
-
-                const csvText = await respMain.text();
-                const rows = parseCSV(csvText);
-
+                const respPdf = await fetch(pdfCsvUrl);
                 const pdfCsvText = await respPdf.text();
                 const pdfRows = parseCSV(pdfCsvText);
 
-                let driveLinkMap = {};
+                let issueMap = {}; 
+
+                // PDF URL 시트 행 순회 (파일명: A열(0), URL: C열(2), 발행년월: E열(4))
                 for (let j = 1; j < pdfRows.length; j++) {
                     const pCols = pdfRows[j].map(c => c.trim());
                     if (pCols.length < 3) continue;
+                    
                     const fileName = pCols[0]; 
                     const fileUrl = pCols[2];  
+                    const colDate = pCols.length > 4 ? pCols[4] : '';
 
+                    // 파일명에서 호수 번호 추출
                     const matches = fileName.match(/(\d+)/g);
-                    if (matches && matches.length > 0) {
-                        let issueNum = parseInt(matches[0], 10);
-                        if (fileName.includes('100+1')) {
-                            issueNum = 101;
-                        }
-                        driveLinkMap[issueNum] = fileUrl;
+                    if (!matches || matches.length === 0) continue;
+                    
+                    let issueNumber = parseInt(matches[0], 10);
+                    if (fileName.includes('100+1')) {
+                        issueNumber = 101;
                     }
-                }
-
-                let issueMap = {}; 
-
-                for (let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].map(c => c.trim());
-                    if (cols.length < 2) continue;
-
-                    const colIssue = cols[0] || '';
-                    const matchNum = colIssue.match(/(\d+)/);
-                    if (!matchNum) continue;
-                    const issueNumber = parseInt(matchNum[1], 10);
                     if (issueNumber > 180) continue;
 
                     const paddedNum = String(issueNumber).padStart(3, '0');
 
-                    const colDate = cols[1] || '';
+                    // E열(발행년월) 파싱 (예: "1984년 3월")
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
                     if (!matchDate) continue;
+                    
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
 
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
 
                     const summaryText = "요약";
-                    let editStatus = "교정";
-                    if (cols.length > 34 && cols[34] && cols[34].includes('교정완료')) {
-                        editStatus = "교정완료";
-                    }
-
-                    const pdfLink = driveLinkMap[issueNumber] || '#';
+                    const editStatus = "교정"; // 필요에 따라 상태 컬럼 연동 확장 가능
+                    const pdfLink = (fileUrl && fileUrl.startsWith('http')) ? fileUrl : '#';
 
                     issueMap[`${year}-${month}`] = {
                         issueNo: paddedNum,
@@ -315,7 +297,6 @@
             const baseIndex = (startYear - startYear) * 12 + (startMonth - 1);
             
             if (targetIndex < baseIndex) return ""; 
-
             if (year > 2003 || (year === 2003 && month > 11)) return "";
 
             let prevNum = null, prevDist = Infinity;
