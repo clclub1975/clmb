@@ -1,4 +1,4 @@
-<!-- v10.0: 새로 변경된 PDF URL CSV 링크 연동 및 호수별 드라이브 원본 PDF 링크 매핑 기능 추가 -->
+<!-- v10.1: 호수(이슈 번호) 블록에 밑줄(underline) 스타일을 추가하여 하이퍼텍스트 연동 시각적 가인성 강화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -135,6 +135,8 @@
             font-size: 0.88rem;
             color: #2563eb;
             line-height: 1;
+            text-decoration: underline; /* 하이퍼텍스트 연동 밑줄 표시 추가 */
+            text-underline-offset: 2px;
         }
         .cell-summary {
             font-size: 0.78rem;
@@ -188,7 +190,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v10.0</span>
+                <span class="version">v10.1</span>
             </h1>
         </header>
 
@@ -232,7 +234,6 @@
 
         async function loadCalendarData() {
             try {
-                // 메인 회보 데이터와 PDF 링크 CSV를 동시에 비동기 호출
                 const [respMain, respPdf] = await Promise.all([
                     fetch(csvUrl),
                     fetch(pdfCsvUrl)
@@ -244,7 +245,6 @@
                 const pdfCsvText = await respPdf.text();
                 const pdfRows = parseCSV(pdfCsvText);
 
-                // PDF 파일 목록에서 호수별 공유 링크 매핑 딕셔너리 구축
                 let driveLinkMap = {};
                 for (let j = 1; j < pdfRows.length; j++) {
                     const pCols = pdfRows[j].map(c => c.trim());
@@ -290,7 +290,6 @@
                         editStatus = "교정완료";
                     }
 
-                    // 드라이브 링크 맵에서 해당 호수의 실제 URL 가져오기 (없으면 #)
                     const pdfLink = driveLinkMap[issueNumber] || '#';
 
                     issueMap[`${year}-${month}`] = {
@@ -425,8 +424,6 @@
 
                     if (data !== undefined) {
                         const statusClass = data.status === '교정완료' ? '' : 'pending';
-                        
-                        // PDF 링크가 존재하면 새 창으로 열기, 없으면 알림 띄우기
                         const linkAttr = (data.link && data.link !== '#') 
                             ? `href="${data.link}" target="_blank"` 
                             : `href="#" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
