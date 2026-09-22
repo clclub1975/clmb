@@ -1,4 +1,4 @@
-<!-- v9.14: 2003년 이후의 가짜 번호(181~229호)가 잘못 표기되던 문제를 해결하기 위해, 아카이브의 실제 최대 유효 번호(180호)를 상한선(Max Issue Cap)으로 강제 지정하여 초과 번호 생성 원천 차단 -->
+<!-- v9.15: PC 및 모바일 환경에서 '요약'과 '교정'의 폰트 크기 계층 구조를 정밀 보정하여 가독성 및 시인성 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -74,7 +74,7 @@
             font-weight: 500;
         }
 
-        /* 캘린더 테이블 영역 (PC 화면 가독성 및 폰트 크기 보정) */
+        /* 캘린더 테이블 영역 (PC 가독성 및 폰트 크기 보정) */
         .table-container { width: 100%; overflow-x: auto; margin-top: 4px; }
         table {
             width: 100%;
@@ -132,17 +132,18 @@
         
         .cell-issue {
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.88rem; /* PC 호수 크기 최적화 */
             color: #2563eb;
             line-height: 1;
         }
         .cell-summary {
-            font-size: 0.7rem;
+            font-size: 0.78rem; /* PC 요약 폰트 크기 상향 대폭 보정 */
             color: #475569;
+            font-weight: 500;
             line-height: 1;
         }
         .cell-status {
-            font-size: 0.65rem;
+            font-size: 0.68rem; /* PC 교정 폰트 크기 보정 (요약보다 작게 계층 유지) */
             color: #16a34a;
             font-weight: 500;
             line-height: 1;
@@ -151,7 +152,7 @@
             color: #dc2626;
         }
         
-        /* 비어 있는 셀 내 누락 호수 번호 스타일 (짙은 회색, 굵고 약간 큰 사이즈) */
+        /* 비어 있는 셀 내 누락 호수 번호 스타일 */
         .missing-cell-issue {
             display: flex;
             align-items: center;
@@ -166,14 +167,15 @@
 
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
 
+        /* 모바일 화면 최적화 (요약과 교정의 폰트 크기 역전 현상 방지 및 계층 재정립) */
         @media (max-width: 768px) {
             h1 { font-size: 1.1rem; }
             th, td { height: 60px; font-size: 0.7rem; }
             th { font-size: 0.65rem; }
             th:first-child, td:first-child { font-size: 0.65rem; }
-            .cell-issue { font-size: 0.62rem; }
-            .cell-summary { font-size: 0.5rem; }
-            .cell-status { font-size: 0.45rem; }
+            .cell-issue { font-size: 0.65rem; }
+            .cell-summary { font-size: 0.58rem; } /* 스마트폰에서 요약이 교정보다 확실히 크도록 보정 */
+            .cell-status { font-size: 0.48rem; } /* 스마트폰에서 교정이 요약보다 작게 조정 */
             .missing-cell-issue { font-size: 0.75rem; }
         }
     </style>
@@ -187,7 +189,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.14</span>
+                <span class="version">v9.15</span>
             </h1>
         </header>
 
@@ -245,7 +247,6 @@
                     if (!matchNum) continue;
                     const issueNumber = parseInt(matchNum[1], 10);
                     
-                    // 180호를 초과하는 잘못된 번호 데이터(181~229 등)는 아카이브 범위 밖이므로 파싱에서 제외
                     if (issueNumber > 180) continue;
 
                     const paddedNum = String(issueNumber).padStart(3, '0');
@@ -256,7 +257,6 @@
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
 
-                    // 2003년 11월 180호 이후의 날짜 데이터 무시
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
 
                     const summaryText = "요약";
@@ -281,16 +281,14 @@
             }
         }
 
-        // 전체 아카이브 기간 내 빈 셀에 대해 앞뒤 실데이터 흐름을 분석하여 정확한 누락 번호를 동적으로 추정 (180호 이내 및 2003년 11월 이전만 허용)
         function getEstimatedMissingNumber(year, month, issueMap) {
-            const startYear = 1984, startMonth = 3; // 첫 호수 기준점 (1984년 3월 = 1호)
+            const startYear = 1984, startMonth = 3; 
             
             const targetIndex = (year - startYear) * 12 + (month - 1);
             const baseIndex = (startYear - startYear) * 12 + (startMonth - 1);
             
-            if (targetIndex < baseIndex) return ""; // 1984년 3월 이전은 대상 아님
+            if (targetIndex < baseIndex) return ""; 
 
-            // 2003년 11월 이후(180호 이후) 빈 셀은 절대 누락 번호를 채우지 않음
             if (year > 2003 || (year === 2003 && month > 11)) return "";
 
             let prevNum = null, prevDist = Infinity;
@@ -299,7 +297,7 @@
             for (let y = 1984; y <= 2003; y++) {
                 for (let m = 1; m <= 12; m++) {
                     if (y === 1984 && m < 3) continue;
-                    if (y === 2003 && m > 11) continue; // 180호 상한선 기준
+                    if (y === 2003 && m > 11) continue; 
                     
                     const idx = (y - startYear) * 12 + (m - 1);
                     const data = issueMap[`${y}-${m}`];
@@ -324,7 +322,6 @@
                 estimated = nextNum - nextDist;
             }
 
-            // 추정된 번호가 180호 이하이고, 아직 다른 실데이터로 존재하지 않으며 유효한 경우에만 표시
             if (estimated !== null && estimated > 0 && estimated <= 180) {
                 let exists = false;
                 for (let key in issueMap) {
