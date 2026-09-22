@@ -1,4 +1,4 @@
-<!-- v9.19: 메인 아카이브 데이터와 순수 PDF 파일 리스트(CSV)의 호수 추출 키를 기반으로 양방향 완벽 동기화 및 캘린더 셀 매핑 로직 개선 완료 -->
+<!-- v9.16: 상단 안내 영역의 명칭을 '표기 못한 누락 호수'로 변경하고, 캘린더 매트릭스 셀에 자리가 없어 배치할 수 없는 누락 호수들만 정확하게 필터링하여 동적으로 표시하도록 로직 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -188,7 +188,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.19</span>
+                <span class="version">v9.16</span>
             </h1>
         </header>
 
@@ -216,9 +216,6 @@
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSR_-FdmTp-4eZ6oHJPbbtRZVWrVVCj4Fqxx4foOQOndKiDbOYyCUEIEZNSN0l-EYhenSbTfYpcuYat/pub?gid=719467566&single=true&output=csv';
-        
-        // 순수 PDF 폴더 기반 링크 데이터 CSV 연동
-        const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRPSwSrJyEjpZ9Seeo_XNaXfJ1EVe_77WBcBWu-R27-lhQLl47rLEyeHDzLsV3CTNeJHLCfu4_D_iOA/pub?gid=0&single=true&output=csv';
 
         function parseCSV(text) {
             let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
@@ -234,39 +231,12 @@
 
         async function loadCalendarData() {
             try {
-                const [respMain, respPdf] = await Promise.all([
-                    fetch(csvUrl),
-                    fetch(pdfCsvUrl)
-                ]);
-
-                const csvText = await respMain.text();
+                const response = await fetch(csvUrl);
+                const csvText = await response.text();
                 const rows = parseCSV(csvText);
-
-                const pdfCsvText = await respPdf.text();
-                const pdfRows = parseCSV(pdfCsvText);
-
-                let driveLinkMap = {};
-                let pdfAvailableNums = new Set(); // 순수 PDF 파일이 존재하는 호수 번호 집합
-
-                for (let j = 1; j < pdfRows.length; j++) {
-                    const pCols = pdfRows[j].map(c => c.trim());
-                    if (pCols.length < 3) continue;
-                    const fileName = pCols[0]; 
-                    const fileUrl = pCols[2];  
-
-                    const matches = fileName.match(/(\d+)/g);
-                    if (matches && matches.length > 0) {
-                        let issueNum = parseInt(matches[0], 10);
-                        if (fileName.includes('100+1')) {
-                            issueNum = 101;
-                        }
-                        driveLinkMap[issueNum] = fileUrl;
-                        pdfAvailableNums.add(issueNum);
-                    }
-                }
                 
-                // 1단계: 메인 회보 데이터를 파싱하여 호수별 날짜(년/월) 맵 구축
-                let issueMetaMap = {}; // rawNum -> { year, month, summary, status }
+                let issueMap = {}; // key: "YYYY-M", value: { issueNo, summary, status, rawNum }
+
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].map(c => c.trim());
                     if (cols.length < 2) continue;
@@ -275,7 +245,10 @@
                     const matchNum = colIssue.match(/(\d+)/);
                     if (!matchNum) continue;
                     const issueNumber = parseInt(matchNum[1], 10);
+                    
                     if (issueNumber > 180) continue;
+
+                    const paddedNum = String(issueNumber).padStart(3, '0');
 
                     const colDate = cols[1] || '';
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
@@ -286,56 +259,23 @@
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
 
                     const summaryText = "요약";
+
                     let editStatus = "교정";
                     if (cols.length > 34 && cols[34] && cols[34].includes('교정완료')) {
                         editStatus = "교정완료";
                     }
 
-                    issueMetaMap[issueNumber] = {
-                        year: year,
-                        month: month,
+                    issueMap[`${year}-${month}`] = {
+                        issueNo: paddedNum,
                         summary: summaryText,
-                        status: editStatus
+                        status: editStatus,
+                        rawNum: issueNumber
                     };
                 }
 
-                // 2단계: PDF 파일 목록(pdfAvailableNums)을 최우선 기준으로 삼아 캘린더 매트릭스 셀 데이터 재구성
-                let issueMap = {}; 
-                pdfAvailableNums.forEach(issueNumber => {
-                    if (issueNumber > 180) return;
-                    const paddedNum = String(issueNumber).padStart(3, '0');
-                    const pdfLink = driveLinkMap[issueNumber] || '#';
-
-                    // 메인 회보 데이터에 날짜 정보가 있는 경우 연동, 없는 경우 기본값 처리
-                    let year = null, month = null;
-                    let summaryText = "요약";
-                    let editStatus = "교정";
-
-                    if (issueMetaMap[issueNumber]) {
-                        year = issueMetaMap[issueNumber].year;
-                        month = issueMetaMap[issueNumber].month;
-                        summaryText = issueMetaMap[issueNumber].summary;
-                        editStatus = issueMetaMap[issueNumber].status;
-                    } else {
-                        // 메인 시트에 정보가 없는 PDF 파일의 경우 추정 또는 임시 처리 (필요시 날짜 매핑 보완)
-                        // 예: 007호의 경우 메인 시트 연동 누락을 보완하기 위해 1984년 9월로 직접 지정
-                        if (issueNumber === 7) { year = 1984; month = 9; }
-                    }
-
-                    if (year && month) {
-                        issueMap[`${year}-${month}`] = {
-                            issueNo: paddedNum,
-                            summary: summaryText,
-                            status: editStatus,
-                            rawNum: issueNumber,
-                            link: pdfLink
-                        };
-                    }
-                });
-
-                renderCalendarMatrix(issueMap, pdfAvailableNums);
+                renderCalendarMatrix(issueMap);
             } catch (error) {
-                console.error("데이터 연동 실패:", error);
+                console.error("구글 시트 연동 실패:", error);
                 document.getElementById('calendar-body').innerHTML = `<tr><td colspan="13" class="loading" style="color:red;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>`;
             }
         }
@@ -397,17 +337,24 @@
             return "";
         }
 
-        function renderCalendarMatrix(issueMap, pdfAvailableNums) {
+        function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
 
             const startYear = 1984;
             const endYear = 2003;
 
+            // 전체 1~180호 중 실데이터에도 없고, 캘린더 매트릭스 빈 셀에도 추정되어 들어가지 않는 '표기 못한 누락 호수' 자동 추출
+            let existingNums = new Set();
+            for (let key in issueMap) {
+                existingNums.add(issueMap[key].rawNum);
+            }
+
             let unmappedMissing = [];
             for (let n = 1; n <= 180; n++) {
-                if (pdfAvailableNums.has(n)) continue; 
+                if (existingNums.has(n)) continue; // 존재하는 번호 스킵
 
+                // 이 번호가 캘린더의 어떤 비어 있는 셀에 매핑될 수 있는지 확인
                 let canBeMapped = false;
                 for (let y = startYear; y <= endYear; y++) {
                     for (let m = 1; m <= 12; m++) {
@@ -425,11 +372,13 @@
                     if (canBeMapped) break;
                 }
 
+                // 캘린더 칸에 들어갈 수 없는 경우에만 '표기 못한 누락 호수'로 분류
                 if (!canBeMapped) {
                     unmappedMissing.push(String(n).padStart(3, '0') + '호');
                 }
             }
 
+            // 상단 안내 영역에 반영
             const noticeTextElem = document.getElementById('unmapped-missing-text');
             if (unmappedMissing.length > 0) {
                 noticeTextElem.textContent = unmappedMissing.join(', ');
@@ -451,11 +400,10 @@
 
                     if (data !== undefined) {
                         const statusClass = data.status === '교정완료' ? '' : 'pending';
-                        const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 연동 대기중'); return false;"`;
                         
                         td.innerHTML = `
                             <div class="cell-content">
-                                <a ${linkAttr} class="cell-block">
+                                <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 연동'); return false;">
                                     <span class="cell-issue">${data.issueNo}</span>
                                 </a>
                                 <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 요약 연동'); return false;">
