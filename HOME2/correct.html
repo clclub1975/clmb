@@ -1,4 +1,4 @@
-<!-- v10.2: 단일 PDF URL 시트(E열 발행년월 통합) 기반 데이터 연동 및 캘린더 매트릭스 렌더링 최적화 완료 -->
+<!-- v10.3: GitHub abstract.md 요약 파일 비동기 연동 및 [요약] 블록 인터랙티브 모달 뷰어 기능 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -74,7 +74,7 @@
             font-weight: 500;
         }
 
-        /* 캘린더 테이블 영역 (PC 가독성 및 폰트 크기 보정) */
+        /* 캘린더 테이블 영역 */
         .table-container { width: 100%; overflow-x: auto; margin-top: 4px; }
         table {
             width: 100%;
@@ -106,7 +106,7 @@
         }
         th:not(:first-child), td:not(:first-child) { width: 7.62%; }
 
-        /* 3분할 독립 블록 셀 구조 스타일 (구분선 포함) */
+        /* 3분할 독립 블록 셀 구조 스타일 */
         .cell-content {
             display: flex;
             flex-direction: column;
@@ -122,6 +122,7 @@
             height: 33.33%;
             text-decoration: none;
             transition: background-color 0.15s ease;
+            cursor: pointer;
         }
         .cell-block:not(:last-child) {
             border-bottom: 1px solid #edf2f7;
@@ -167,6 +168,40 @@
             background-color: #fafafa;
         }
 
+        /* 요약 상세 팝업 모달 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
+        .modal-close {
+            background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
+        }
+        .modal-body { font-size: 0.9rem; color: #334155; line-height: 1.5; white-space: pre-wrap; }
+
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
 
         @media (max-width: 768px) {
@@ -190,7 +225,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v10.2</span>
+                <span class="version">v10.3</span>
             </h1>
         </header>
 
@@ -216,9 +251,22 @@
         </div>
     </div>
 
+    <!-- 요약 내용 표시용 모달 팝업 -->
+    <div class="modal-overlay" id="summary-modal" onclick="closeSummaryModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="modal-issue-title">회보 요약</span>
+                <button class="modal-close" onclick="closeSummaryModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-issue-text">요약 내용을 불러오는 중입니다...</div>
+        </div>
+    </div>
+
     <script>
-        // 통합된 단일 PDF URL 시트 CSV 링크 (E열에 발행년월 포함)
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
+        const abstractMarkdownUrl = '../abstract.md'; // 동일 레포지토리 내 상대 경로
+
+        let summaryMap = {}; // 호수별 요약 내용을 담을 객체
 
         function parseCSV(text) {
             let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
@@ -232,15 +280,39 @@
             return ret;
         }
 
+        // abstract.md 파일을 파싱하여 호수별 요약 데이터 추출
+        async function loadAbstractData() {
+            try {
+                const response = await fetch(abstractMarkdownUrl);
+                if (!response.ok) return;
+                const mdText = await response.text();
+                
+                // 마크다운 내에서 호수별 섹션 파싱 (예: # 001호 또는 ## 01호 등 패턴 대응)
+                const sections = mdText.split(/(?=#+\s*(?:통권)?\s*\d+호?)/);
+                sections.forEach(sec => {
+                    const matchHeader = sec.match(/#+\s*(?:통권)?\s*(\d+)호?/);
+                    if (matchHeader) {
+                        const issueNum = parseInt(matchHeader[1], 10);
+                        const content = sec.replace(/#+\s*(?:통권)?\s*\d+호?/, '').trim();
+                        summaryMap[issueNum] = content;
+                    }
+                });
+            } catch (e) {
+                console.log("abstract.md 로드 실패 또는 파일 없음:", e);
+            }
+        }
+
         async function loadCalendarData() {
             try {
+                // 회보 데이터와 요약 마크다운 동시 로드
+                await loadAbstractData();
+
                 const respPdf = await fetch(pdfCsvUrl);
                 const pdfCsvText = await respPdf.text();
                 const pdfRows = parseCSV(pdfCsvText);
 
                 let issueMap = {}; 
 
-                // PDF URL 시트 행 순회 (파일명: A열(0), URL: C열(2), 발행년월: E열(4))
                 for (let j = 1; j < pdfRows.length; j++) {
                     const pCols = pdfRows[j].map(c => c.trim());
                     if (pCols.length < 3) continue;
@@ -249,7 +321,6 @@
                     const fileUrl = pCols[2];  
                     const colDate = pCols.length > 4 ? pCols[4] : '';
 
-                    // 파일명에서 호수 번호 추출
                     const matches = fileName.match(/(\d+)/g);
                     if (!matches || matches.length === 0) continue;
                     
@@ -261,7 +332,6 @@
 
                     const paddedNum = String(issueNumber).padStart(3, '0');
 
-                    // E열(발행년월) 파싱 (예: "1984년 3월")
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
                     if (!matchDate) continue;
                     
@@ -270,15 +340,17 @@
 
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
 
+                    const hasSummary = summaryMap[issueNumber] !== undefined;
                     const summaryText = "요약";
-                    const editStatus = "교정"; // 필요에 따라 상태 컬럼 연동 확장 가능
+                    const editStatus = "교정";
                     const pdfLink = (fileUrl && fileUrl.startsWith('http')) ? fileUrl : '#';
 
                     issueMap[`${year}-${month}`] = {
                         issueNo: paddedNum,
                         summary: summaryText,
-                        status: editStatus,
+                        hasSummary: hasSummary,
                         rawNum: issueNumber,
+                        status: editStatus,
                         link: pdfLink
                     };
                 }
@@ -290,9 +362,28 @@
             }
         }
 
+        function openSummaryModal(issueNum, year, month) {
+            const modal = document.getElementById('summary-modal');
+            const titleElem = document.getElementById('modal-issue-title');
+            const textElem = document.getElementById('modal-issue-text');
+
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약`;
+            
+            if (summaryMap[issueNum]) {
+                textElem.textContent = summaryMap[issueNum];
+            } else {
+                textElem.textContent = "작성된 요약 내용이 없습니다.";
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summary-modal').style.display = 'none';
+        }
+
         function getEstimatedMissingNumber(year, month, issueMap) {
             const startYear = 1984, startMonth = 3; 
-            
             const targetIndex = (year - startYear) * 12 + (month - 1);
             const baseIndex = (startYear - startYear) * 12 + (startMonth - 1);
             
@@ -414,9 +505,9 @@
                                 <a ${linkAttr} class="cell-block">
                                     <span class="cell-issue">${data.issueNo}</span>
                                 </a>
-                                <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 요약 연동'); return false;">
+                                <div class="cell-block" onclick="openSummaryModal(${data.rawNum}, ${year}, ${month})">
                                     <span class="cell-summary">${data.summary}</span>
-                                </a>
+                                </div>
                                 <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 교정 연동'); return false;">
                                     <span class="cell-status ${statusClass}">${data.status}</span>
                                 </a>
