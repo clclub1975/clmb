@@ -1,4 +1,4 @@
-<!-- v10.4: abstract.md 파일 파싱 정규식 개선 및 요약 모달 연동 완료 -->
+<!-- v10.5: abstract.md 파일 파싱 정규식 오류 수정 및 요약 모달 연동 완료 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -225,7 +225,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v10.4</span>
+                <span class="version">v10.5</span>
             </h1>
         </header>
 
@@ -264,7 +264,7 @@
 
     <script>
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
-        const abstractMarkdownUrl = '../abstract.md';
+        const abstractMarkdownUrl = 'abstract.md'; // 동일 폴더 내 상대 경로
 
         let summaryMap = {}; 
 
@@ -280,24 +280,29 @@
             return ret;
         }
 
-        // abstract.md 파싱 정규식 개선 (대괄호 [ ], 통권 등 다양한 형식 포용)
+        // abstract.md 파싱 정규식 수정 완료 ([001호] 형태 완벽 대응)
         async function loadAbstractData() {
             try {
                 const response = await fetch(abstractMarkdownUrl);
-                if (!response.ok) return;
+                if (!response.ok) {
+                    console.warn("abstract.md 파일을 불러오지 못했습니다.");
+                    return;
+                }
                 const mdText = await response.text();
                 
-                const sections = mdText.split(/(?=#+\s*(?:\[\s*(?:통권)?\s*\vert{}\b(?:통권)?\s*)\d+호?\s*\]?)/);
+                // ### [001호] 형태의 헤더를 기준으로 문서 분할
+                const sections = mdText.split(/(?=#+\s*\[\s*\d+호?\s*\])/);
                 sections.forEach(sec => {
-                    const matchHeader = sec.match(/#+\s*(?:\[\s*(?:통권)?\s*\vert{}\b(?:통권)?\s*)(\d+)호?\s*\]?/);
+                    const matchHeader = sec.match(/#+\s*\[\s*(\d+)호?\s*\]/);
                     if (matchHeader) {
                         const issueNum = parseInt(matchHeader[1], 10);
                         const content = sec.replace(/#+.*[\r\n]+/, '').trim();
                         summaryMap[issueNum] = content;
                     }
                 });
+                console.log("요약 데이터 로드 완료:", Object.keys(summaryMap));
             } catch (e) {
-                console.log("abstract.md 로드 실패 또는 파일 없음:", e);
+                console.error("abstract.md 로드 중 오류 발생:", e);
             }
         }
 
@@ -368,7 +373,7 @@
             if (summaryMap[issueNum]) {
                 textElem.textContent = summaryMap[issueNum];
             } else {
-                textElem.textContent = "작성된 요약 내용이 없습니다.";
+                textElem.textContent = "아직 작성된 요약 내용이 없습니다.";
             }
 
             modal.style.display = 'flex';
