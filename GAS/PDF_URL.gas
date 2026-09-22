@@ -1,0 +1,39 @@
+/**
+ * 구글 드라이브 폴더 내 PDF 파일 정보를 지연 없이 빠르게 일괄 추출하는 최적화된 GAS
+ */
+function getDriveFilesToSheet() {
+  var folderId = "1-ZiZGiKCXYJbOzfDT7nsqKDk5qMy6BRj"; 
+  var folder = DriveApp.getFolderById(folderId);
+  
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  sheet.clear(); // 기존 내용 초기화
+  
+  // 헤더 작성
+  sheet.appendRow(["파일명", "파일 ID", "공유 링크"]);
+  sheet.setColumnWidth(1, 200);
+  sheet.setColumnWidth(2, 250);
+  sheet.setColumnWidth(3, 350);
+  
+  var rowData = [];
+  
+  // getFiles() 대신 searchFiles를 사용하여 PDF 파일만 효율적으로 직접 타겟팅
+  var files = folder.searchFiles('mimeType = "application/pdf"');
+  
+  while (files.hasNext()) {
+    var file = files.next();
+    var fileName = file.getName();
+    var fileId = file.getId();
+    // getUrl 대신 빠르고 안정적인 공유 링크 구조 직접 생성
+    var fileUrl = "https://drive.google.com/file/d/" + fileId + "/view?usp=sharing";
+    
+    rowData.push([fileName, fileId, fileUrl]);
+  }
+  
+  // 데이터가 있는 경우 시트에 한 번에 일괄 입력
+  if (rowData.length > 0) {
+    sheet.getRange(2, 1, rowData.length, rowData[0].length).setValues(rowData);
+    SpreadsheetApp.getUi().alert("총 " + rowData.length + "개의 PDF 파일 정보를 성공적으로 불러왔습니다!");
+  } else {
+    SpreadsheetApp.getUi().alert("지정한 폴더 내에 PDF 파일을 찾지 못했습니다.");
+  }
+}
