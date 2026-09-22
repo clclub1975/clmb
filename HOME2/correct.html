@@ -1,4 +1,4 @@
-<!-- v9.13: 마지막 실데이터(180호) 이후의 빈 셀들에는 누락 번호가 잘못 채워지지 않도록 최대 유효 데이터 시점(2003년 11월) 상한선을 설정하여 오동작 방지 로직 개선 -->
+<!-- v9.14: 2003년 이후의 가짜 번호(181~229호)가 잘못 표기되던 문제를 해결하기 위해, 아카이브의 실제 최대 유효 번호(180호)를 상한선(Max Issue Cap)으로 강제 지정하여 초과 번호 생성 원천 차단 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -187,7 +187,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.13</span>
+                <span class="version">v9.14</span>
             </h1>
         </header>
 
@@ -236,7 +236,6 @@
                 
                 let issueMap = {}; // key: "YYYY-M", value: { issueNo, summary, status, rawNum }
 
-                // 1단계: 실데이터 파싱 및 수집
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].map(c => c.trim());
                     if (cols.length < 2) continue;
@@ -245,6 +244,10 @@
                     const matchNum = colIssue.match(/(\d+)/);
                     if (!matchNum) continue;
                     const issueNumber = parseInt(matchNum[1], 10);
+                    
+                    // 180호를 초과하는 잘못된 번호 데이터(181~229 등)는 아카이브 범위 밖이므로 파싱에서 제외
+                    if (issueNumber > 180) continue;
+
                     const paddedNum = String(issueNumber).padStart(3, '0');
 
                     const colDate = cols[1] || '';
@@ -252,6 +255,9 @@
                     if (!matchDate) continue;
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
+
+                    // 2003년 11월 180호 이후의 날짜 데이터 무시
+                    if (year > 2003 || (year === 2003 && month > 11)) continue;
 
                     const summaryText = "요약";
 
@@ -275,46 +281,30 @@
             }
         }
 
-        // 전체 아카이브 기간 내 빈 셀에 대해 앞뒤 실데이터 흐름을 분석하여 정확한 누락 번호를 동적으로 추정 (마지막 실데이터 이후는 제외)
+        // 전체 아카이브 기간 내 빈 셀에 대해 앞뒤 실데이터 흐름을 분석하여 정확한 누락 번호를 동적으로 추정 (180호 이내 및 2003년 11월 이전만 허용)
         function getEstimatedMissingNumber(year, month, issueMap) {
             const startYear = 1984, startMonth = 3; // 첫 호수 기준점 (1984년 3월 = 1호)
             
-            // 현재 셀의 절대 월 인덱스 계산
             const targetIndex = (year - startYear) * 12 + (month - 1);
             const baseIndex = (startYear - startYear) * 12 + (startMonth - 1);
             
             if (targetIndex < baseIndex) return ""; // 1984년 3월 이전은 대상 아님
 
-            // 마지막 실데이터의 연도/월 및 번호 파악 (예: 2003년 11월 180호)
-            let maxRealYear = 0, maxRealMonth = 0, maxRealNum = 0;
-            for (let key in issueMap) {
-                const [y, m] = key.split('-').map(Number);
-                const num = issueMap[key].rawNum;
-                const absIdx = (y - startYear) * 12 + (m - 1);
-                const maxAbsIdx = (maxRealYear - startYear) * 12 + (maxRealMonth - 1);
-                if (absIdx > maxAbsIdx) {
-                    maxRealYear = y;
-                    maxRealMonth = m;
-                    maxRealNum = num;
-                }
-            }
+            // 2003년 11월 이후(180호 이후) 빈 셀은 절대 누락 번호를 채우지 않음
+            if (year > 2003 || (year === 2003 && month > 11)) return "";
 
-            // 마지막 실데이터 시점보다 이후인 빈 셀에는 누락 번호 부여 안 함 (예: 2003년 12월 이후)
-            const targetAbsIdx = targetIndex;
-            const maxAbsIdx = (maxRealYear - startYear) * 12 + (maxRealMonth - 1);
-            if (targetAbsIdx > maxAbsIdx) return "";
-
-            // 직전과 직후에 존재하는 실데이터 호수 번호와 거리를 추적
             let prevNum = null, prevDist = Infinity;
             let nextNum = null, nextDist = Infinity;
 
             for (let y = 1984; y <= 2003; y++) {
                 for (let m = 1; m <= 12; m++) {
                     if (y === 1984 && m < 3) continue;
+                    if (y === 2003 && m > 11) continue; // 180호 상한선 기준
+                    
                     const idx = (y - startYear) * 12 + (m - 1);
                     const data = issueMap[`${y}-${m}`];
                     
-                    if (data && data.rawNum !== undefined) {
+                    if (data && data.rawNum !== undefined && data.rawNum <= 180) {
                         const dist = idx - targetIndex;
                         if (dist < 0 && Math.abs(dist) < prevDist) {
                             prevDist = Math.abs(dist);
@@ -327,7 +317,6 @@
                 }
             }
 
-            // 앞뒤 데이터 흐름을 바탕으로 추정 번호 산출
             let estimated = null;
             if (prevNum !== null) {
                 estimated = prevNum + prevDist;
@@ -335,8 +324,8 @@
                 estimated = nextNum - nextDist;
             }
 
-            if (estimated !== null && estimated > 0) {
-                // 산출된 번호가 이미 다른 실데이터로 존재하는지 확인 (중복 방지)
+            // 추정된 번호가 180호 이하이고, 아직 다른 실데이터로 존재하지 않으며 유효한 경우에만 표시
+            if (estimated !== null && estimated > 0 && estimated <= 180) {
                 let exists = false;
                 for (let key in issueMap) {
                     if (issueMap[key].rawNum === estimated) {
@@ -388,7 +377,6 @@
                             </div>
                         `;
                     } else {
-                        // 보유 데이터가 없는 비어 있는 셀인 경우, 마지막 실데이터 이전 범위 내에서만 앞뒤 흐름 분석 후 누락 번호 동적 표시
                         const missingNo = getEstimatedMissingNumber(year, month, issueMap);
                         if (missingNo) {
                             td.innerHTML = `<span class="missing-cell-issue">${missingNo}</span>`;
