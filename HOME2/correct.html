@@ -1,4 +1,4 @@
-<!-- v9.15: PC 및 모바일 환경에서 '요약'과 '교정'의 폰트 크기 계층 구조를 정밀 보정하여 가독성 및 시인성 개선 -->
+<!-- v9.16: 상단 안내 영역의 명칭을 '표기 못한 누락 호수'로 변경하고, 캘린더 매트릭스 셀에 자리가 없어 배치할 수 없는 누락 호수들만 정확하게 필터링하여 동적으로 표시하도록 로직 개선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -61,7 +61,7 @@
             margin-left: 4px;
         }
         
-        /* 현재 누락 안내 바 스타일 */
+        /* 표기 못한 누락 호수 안내 바 스타일 */
         .missing-notice {
             background-color: #fff1f2;
             border: 1px solid #fecdd3;
@@ -132,18 +132,18 @@
         
         .cell-issue {
             font-weight: bold;
-            font-size: 0.88rem; /* PC 호수 크기 최적화 */
+            font-size: 0.88rem;
             color: #2563eb;
             line-height: 1;
         }
         .cell-summary {
-            font-size: 0.78rem; /* PC 요약 폰트 크기 상향 대폭 보정 */
+            font-size: 0.78rem;
             color: #475569;
             font-weight: 500;
             line-height: 1;
         }
         .cell-status {
-            font-size: 0.68rem; /* PC 교정 폰트 크기 보정 (요약보다 작게 계층 유지) */
+            font-size: 0.68rem;
             color: #16a34a;
             font-weight: 500;
             line-height: 1;
@@ -167,15 +167,14 @@
 
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
 
-        /* 모바일 화면 최적화 (요약과 교정의 폰트 크기 역전 현상 방지 및 계층 재정립) */
         @media (max-width: 768px) {
             h1 { font-size: 1.1rem; }
             th, td { height: 60px; font-size: 0.7rem; }
             th { font-size: 0.65rem; }
             th:first-child, td:first-child { font-size: 0.65rem; }
             .cell-issue { font-size: 0.65rem; }
-            .cell-summary { font-size: 0.58rem; } /* 스마트폰에서 요약이 교정보다 확실히 크도록 보정 */
-            .cell-status { font-size: 0.48rem; } /* 스마트폰에서 교정이 요약보다 작게 조정 */
+            .cell-summary { font-size: 0.58rem; }
+            .cell-status { font-size: 0.48rem; }
             .missing-cell-issue { font-size: 0.75rem; }
         }
     </style>
@@ -189,13 +188,13 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v9.15</span>
+                <span class="version">v9.16</span>
             </h1>
         </header>
 
-        <!-- 현재 누락 안내 영역 -->
-        <div class="missing-notice">
-            <strong>현재 누락:</strong> 007호, 010호, 011호, 015호, 024호, 047호, 055호, 068호, 080호, 088호, 089호, 090호, 091호, 092호, 093호, 094호, 099호, 101호~120호, 125호, 136호~138호, 140호~145호, 147호, 153호, 155호, 156호, 158호, 159호, 164호~168호, 170호, 173호, 174호
+        <!-- 표기 못한 누락 호수 안내 영역 -->
+        <div class="missing-notice" id="unmapped-missing-container">
+            <strong>표기 못한 누락 호수:</strong> <span id="unmapped-missing-text">데이터를 분석 중입니다...</span>
         </div>
 
         <!-- 캘린더 매트릭스 뷰어 -->
@@ -344,6 +343,48 @@
 
             const startYear = 1984;
             const endYear = 2003;
+
+            // 전체 1~180호 중 실데이터에도 없고, 캘린더 매트릭스 빈 셀에도 추정되어 들어가지 않는 '표기 못한 누락 호수' 자동 추출
+            let existingNums = new Set();
+            for (let key in issueMap) {
+                existingNums.add(issueMap[key].rawNum);
+            }
+
+            let unmappedMissing = [];
+            for (let n = 1; n <= 180; n++) {
+                if (existingNums.has(n)) continue; // 존재하는 번호 스킵
+
+                // 이 번호가 캘린더의 어떤 비어 있는 셀에 매핑될 수 있는지 확인
+                let canBeMapped = false;
+                for (let y = startYear; y <= endYear; y++) {
+                    for (let m = 1; m <= 12; m++) {
+                        if (y === 1984 && m < 3) continue;
+                        if (y === 2003 && m > 11) continue;
+                        const k = `${y}-${m}`;
+                        if (issueMap[k] === undefined) {
+                            const est = getEstimatedMissingNumber(y, m, issueMap);
+                            if (est && parseInt(est, 10) === n) {
+                                canBeMapped = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (canBeMapped) break;
+                }
+
+                // 캘린더 칸에 들어갈 수 없는 경우에만 '표기 못한 누락 호수'로 분류
+                if (!canBeMapped) {
+                    unmappedMissing.push(String(n).padStart(3, '0') + '호');
+                }
+            }
+
+            // 상단 안내 영역에 반영
+            const noticeTextElem = document.getElementById('unmapped-missing-text');
+            if (unmappedMissing.length > 0) {
+                noticeTextElem.textContent = unmappedMissing.join(', ');
+            } else {
+                noticeTextElem.textContent = "없음";
+            }
 
             for (let year = startYear; year <= endYear; year++) {
                 const tr = document.createElement('tr');
