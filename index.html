@@ -1,10 +1,10 @@
-<!-- v4.3: '촛불회 회보 둘러보기' 메뉴명 변경 및 '촛불회 AI 추억 스토리'와의 카드 위치 교체 완료 -->
+<!-- v4.4: 2x2 그리드 레이아웃 고정 및 '촛불회 회보 둘러보기'와 'AI 추억 스토리' 카드 위치 정상 교체 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 50년사 아카이브 v4.3</title>
+    <title>촛불회 50년사 아카이브 v4.4</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -110,9 +110,10 @@
             color: var(--primary-color);
         }
 
+        /* PC 및 태블릿/스마트폰에서도 항상 안정적인 2x2 그리드 레이아웃 고정 */
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
         }
 
@@ -184,8 +185,27 @@
                 margin-top: -20px;
             }
 
+            /* 모바일 화면에서도 2x2 배치가 무너지지 않도록 2열 유지 */
             .menu-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .menu-card {
+                padding: 20px 12px;
+            }
+
+            .menu-card .icon {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            .menu-card h2 {
+                font-size: 1.05rem;
+            }
+
+            .menu-card p {
+                font-size: 0.78rem;
             }
         }
     </style>
@@ -193,13 +213,13 @@
 <body>
 
     <div class="dev-meta-bar">
-        <!-- v4.3: '촛불회 회보 둘러보기' 메뉴명 변경 및 '촛불회 AI 추억 스토리'와의 카드 위치 교체 완료 -->
+        <!-- v4.4: 2x2 그리드 레이아웃 고정 및 '촛불회 회보 둘러보기'와 'AI 추억 스토리' 카드 위치 정상 교체 -->
     </div>
 
     <header>
         <div class="header-title-area">
             <h1><a href="HOME2/process.html" title="작업 프로세스로 이동">🕯️</a> 촛불회 50년사 아카이브</h1>
-            <span class="version-tag">v4.3</span>
+            <span class="version-tag">v4.4</span>
         </div>
         <p>1975년부터 이어온 반세기의 기록과 기억을 담다</p>
     </header>
@@ -211,16 +231,16 @@
         </div>
 
         <div class="menu-grid">
-            <a href="HOME2/correct.html" class="menu-card">
-                <div class="icon">📝</div>
-                <h2>촛불회 회보 둘러보기</h2>
-                <p>원본 회보(PDF)를 확인하고 AI가 요약한 내용의 정확도를 함께 검토합니다.</p>
-            </a>
-
             <a href="HOME2/story.html" class="menu-card">
                 <div class="icon">✨</div>
                 <h2>촛불회 AI 추억 스토리</h2>
                 <p>인공지능과 함께 회보 속 숨겨진 이야기와 추억을 생생하게 되짚어봅니다.</p>
+            </a>
+
+            <a href="HOME2/correct.html" class="menu-card">
+                <div class="icon">📝</div>
+                <h2>촛불회 회보 둘러보기</h2>
+                <p>원본 회보(PDF)를 확인하고 AI가 요약한 내용의 정확도를 함께 검토합니다.</p>
             </a>
 
             <a href="HOME2/articles.html" class="menu-card">
