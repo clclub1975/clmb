@@ -1,10 +1,10 @@
-<!-- v10.6: marked.js 라이브러리 도입을 통한 abstract.md 마크다운 원문 완벽 렌더링 적용 -->
+<!-- v10.7: 타이틀 변경, 요약 하이퍼텍스트 밑줄, 모바일 뒤로가기(history) 모달 제어, 모달 2열 정렬 고정(8번 제외) 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 회보 캘린더 아카이브</title>
+    <title>촛불회 회보 둘러보기</title>
     <!-- 마크다운 렌더링을 위한 marked.js 라이브러리 로드 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -141,11 +141,14 @@
             text-decoration: underline;
             text-underline-offset: 2px;
         }
+        /* '요약' 글자 하이퍼텍스트 밑줄 표시 추가 */
         .cell-summary {
             font-size: 0.78rem;
-            color: #475569;
+            color: #2563eb;
             font-weight: 500;
             line-height: 1;
+            text-decoration: underline;
+            text-underline-offset: 2px;
         }
         .cell-status {
             font-size: 0.68rem;
@@ -202,12 +205,29 @@
         .modal-close {
             background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
         }
-        /* marked.js로 변환된 마크다운 HTML 요소 디자인 서식 */
+
+        /* marked.js 변환 결과 디자인 서식 및 2열 표 형식 정렬 (8번 기고문 제외) */
         .modal-body { font-size: 0.9rem; color: #334155; line-height: 1.5; }
-        .modal-body h4 { margin-top: 12px; margin-bottom: 4px; color: #1e293b; font-size: 1rem; }
-        .modal-body ul { padding-left: 20px; margin-bottom: 8px; }
-        .modal-body li { margin-bottom: 4px; }
-        .modal-body strong { color: #0f172a; }
+        .modal-body h4 { margin-top: 14px; margin-bottom: 4px; color: #1e293b; font-size: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
+        .modal-body ul { padding-left: 0; list-style: none; margin-bottom: 10px; }
+        .modal-body li { display: flex; margin-bottom: 6px; align-items: flex-start; }
+        .modal-body li strong { min-width: 90px; display: inline-block; color: #0f172a; flex-shrink: 0; margin-right: 10px; }
+        .modal-body li span, .modal-body li div { flex-grow: 1; text-align: left; }
+
+        /* 8번 기고문 항목만 기존 포맷(들여쓰기 및 자연스러운 흐름) 유지 */
+        .modal-body h4:nth-of-type(8), 
+        .modal-body h4:nth-of-type(8) ~ ul { 
+            display: block !important; 
+        }
+        .modal-body h4:nth-of-type(8) ~ ul li { 
+            display: list-item !important; 
+            list-style: disc !important; 
+            margin-left: 20px !important; 
+        }
+        .modal-body h4:nth-of-type(8) ~ ul li strong { 
+            min-width: auto !important; 
+            margin-right: 4px !important; 
+        }
 
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
 
@@ -220,6 +240,7 @@
             .cell-summary { font-size: 0.58rem; }
             .cell-status { font-size: 0.48rem; }
             .missing-cell-issue { font-size: 0.75rem; }
+            .modal-body li strong { min-width: 75px; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -231,8 +252,8 @@
         </div>
         <header>
             <h1>
-                <span class="title-wrap">촛불회 회보 캘린더 아카이브</span>
-                <span class="version">v10.6</span>
+                <span class="title-wrap">촛불회 회보 둘러보기</span>
+                <span class="version">v10.7</span>
             </h1>
         </header>
 
@@ -259,7 +280,7 @@
     </div>
 
     <!-- 요약 내용 표시용 모달 팝업 -->
-    <div class="modal-overlay" id="summary-modal" onclick="closeSummaryModal(event)">
+    <div class="modal-overlay" id="summary-modal" onclick="closeSummaryModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <span class="modal-title" id="modal-issue-title">회보 요약</span>
@@ -368,6 +389,7 @@
             }
         }
 
+        // 모달 열기 및 모바일 뒤로가기(<) 연동을 위한 history 상태 추가
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
@@ -376,18 +398,36 @@
             titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약`;
             
             if (summaryMap[issueNum]) {
-                // marked.js를 이용해 마크다운 원문을 HTML 서식으로 변환하여 렌더링
                 textElem.innerHTML = marked.parse(summaryMap[issueNum]);
             } else {
                 textElem.innerHTML = "<p>아직 작성된 요약 내용이 없습니다.</p>";
             }
 
             modal.style.display = 'flex';
+
+            // 모바일 뒤로가기 버튼 지원을 위한 히스토리 상태 푸시
+            history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
+        // 모달 닫기
         function closeSummaryModal() {
-            document.getElementById('summary-modal').style.display = 'none';
+            const modal = document.getElementById('summary-modal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+                // 뒤로가기 히스토리가 남아있는 경우 제자리로 복구
+                if (history.state && history.state.modalOpen) {
+                    history.back();
+                }
+            }
         }
+
+        // 브라우저 뒤로가기 버튼 감지 시 모달 닫기 처리
+        window.addEventListener('popstate', function(event) {
+            const modal = document.getElementById('summary-modal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
+        });
 
         function getEstimatedMissingNumber(year, month, issueMap) {
             const startYear = 1984, startMonth = 3; 
