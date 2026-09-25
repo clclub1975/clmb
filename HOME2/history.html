@@ -11,9 +11,6 @@
         body { font-family: 'Malgun Gothic', sans-serif; }
         .content-box ul { list-style-type: disc; padding-left: 20px; }
         .content-box li { margin-bottom: 8px; line-height: 1.6; }
-        /* 체크박스 계층 구조 들여쓰기 스타일 */
-        .sub-category { margin-left: 24px; margin-top: 4px; margin-bottom: 4px; display: none; }
-        .sub-category.show { display: block; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -28,73 +25,97 @@
 
     <main class="max-w-6xl mx-auto p-6 flex-grow w-full space-y-6">
         
-        <!-- 슬라이드 4번 레이아웃 기반 분류 선택 영역 (상단 배치) -->
+        <!-- 분류 선택 영역 (대/소분류 체크박스 트리 구조) -->
         <section class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
-            <h2 class="font-bold text-gray-700 mb-4 border-b pb-2 text-base">분류 선택 (체크박스 레이아웃)</h2>
+            <h2 class="font-bold text-gray-700 mb-4 border-b pb-2 text-base">분류 선택</h2>
             
-            <div id="filter-container" class="space-y-3 text-sm">
+            <div id="filter-container" class="space-y-4 text-sm">
                 <!-- [전체 보기] 체크박스 -->
                 <div class="flex items-center space-x-2 font-semibold">
                     <input type="checkbox" id="chk-all" onchange="handleAllCheck(this)" class="w-4 h-4 text-amber-700 rounded border-gray-300 focus:ring-amber-600">
                     <label for="chk-all" class="cursor-pointer text-amber-800">[전체 보기]</label>
                 </div>
 
-                <!-- 대분류 및 소분류 항목 리스트 (슬라이드 4번 구상 반영) -->
-                <div class="space-y-2 pl-2 border-l-2 border-gray-100">
+                <div class="space-y-3 pl-2 border-l-2 border-gray-100">
                     
                     <!-- 1. 회보 정보 -->
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chk-info" value="info" onchange="handleCategoryCheck(this)" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label for="chk-info" class="cursor-pointer font-bold text-gray-800">1. 회보 정보</label>
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 font-bold text-gray-800">
+                            <input type="checkbox" id="cat-1" onchange="handleCategoryToggle(this, 'sub-1')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300" data-group="sub-1">
+                            <label for="cat-1" class="cursor-pointer">회보 정보</label>
+                        </div>
+                        <div id="sub-1" class="pl-6 space-y-1 text-xs text-gray-600">
+                            <div><input type="checkbox" value="[001호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>001호</span></div>
+                            <div><input type="checkbox" value="[002호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>002호</span></div>
+                            <div><input type="checkbox" value="[003호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>003호</span></div>
                         </div>
                     </div>
 
                     <!-- 2. 조직 및 체계 변화 -->
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chk-organization" value="organization" onchange="handleCategoryCheck(this)" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label for="chk-organization" class="cursor-pointer font-bold text-gray-800">2. 조직 및 체계 변화</label>
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 font-bold text-gray-800">
+                            <input type="checkbox" id="cat-2" onchange="handleCategoryToggle(this, 'sub-2')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300" data-group="sub-2">
+                            <label for="cat-2" class="cursor-pointer">조직 및 체계 변화</label>
+                        </div>
+                        <div id="sub-2" class="pl-6 space-y-1 text-xs text-gray-600">
+                            <div><input type="checkbox" value="[001호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>001호</span></div>
+                            <div><input type="checkbox" value="[002호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>002호</span></div>
                         </div>
                     </div>
 
                     <!-- 3. 주요 이벤트 및 마일스톤 -->
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chk-events" value="events" onchange="handleCategoryCheck(this)" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label for="chk-events" class="cursor-pointer font-bold text-gray-800">3. 주요 이벤트 및 마일스톤</label>
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 font-bold text-gray-800">
+                            <input type="checkbox" id="cat-3" onchange="handleCategoryToggle(this, 'sub-3')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300" data-group="sub-3">
+                            <label for="cat-3" class="cursor-pointer">주요 이벤트 및 마일스톤</label>
+                        </div>
+                        <div id="sub-3" class="pl-6 space-y-1 text-xs text-gray-600">
+                            <div><input type="checkbox" value="[001호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>001호</span></div>
+                            <div><input type="checkbox" value="[002호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>002호</span></div>
                         </div>
                     </div>
 
                     <!-- 4. 주요 회의 -->
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chk-meetings" value="meetings" onchange="handleCategoryCheck(this)" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label for="chk-meetings" class="cursor-pointer font-bold text-gray-800">4. 주요 회의</label>
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 font-bold text-gray-800">
+                            <input type="checkbox" id="cat-4" onchange="handleCategoryToggle(this, 'sub-4')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300" data-group="sub-4">
+                            <label for="cat-4" class="cursor-pointer">주요 회의</label>
+                        </div>
+                        <div id="sub-4" class="pl-6 space-y-1 text-xs text-gray-600">
+                            <div><input type="checkbox" value="[001호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>001호</span></div>
                         </div>
                     </div>
 
                     <!-- 5. 봉사 활동 -->
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chk-volunteer" value="volunteer" onchange="handleCategoryCheck(this)" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label for="chk-volunteer" class="cursor-pointer font-bold text-gray-800">5. 봉사 활동</label>
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 font-bold text-gray-800">
+                            <input type="checkbox" id="cat-5" onchange="handleCategoryToggle(this, 'sub-5')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300" data-group="sub-5">
+                            <label for="cat-5" class="cursor-pointer">봉사 활동</label>
+                        </div>
+                        <div id="sub-5" class="pl-6 space-y-1 text-xs text-gray-600">
+                            <div><input type="checkbox" value="[001호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>001호</span></div>
                         </div>
                     </div>
 
                     <!-- 6. 소집단 활동 -->
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chk-subgroups" value="subgroups" onchange="handleCategoryCheck(this)" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label for="chk-subgroups" class="cursor-pointer font-bold text-gray-800">6. 소집단 활동</label>
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 font-bold text-gray-800">
+                            <input type="checkbox" id="cat-6" onchange="handleCategoryToggle(this, 'sub-6')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300" data-group="sub-6">
+                            <label for="cat-6" class="cursor-pointer">소집단 활동</label>
+                        </div>
+                        <div id="sub-6" class="pl-6 space-y-1 text-xs text-gray-600">
+                            <div><input type="checkbox" value="[001호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>001호</span></div>
                         </div>
                     </div>
 
                     <!-- 7. 인물 소식 -->
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chk-people" value="people" onchange="handleCategoryCheck(this)" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label for="chk-people" class="cursor-pointer font-bold text-gray-800">7. 인물 소식</label>
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 font-bold text-gray-800">
+                            <input type="checkbox" id="cat-7" onchange="handleCategoryToggle(this, 'sub-7')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300" data-group="sub-7">
+                            <label for="cat-7" class="cursor-pointer">인물 소식</label>
+                        </div>
+                        <div id="sub-7" class="pl-6 space-y-1 text-xs text-gray-600">
+                            <div><input type="checkbox" value="[001호]" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>001호</span></div>
                         </div>
                     </div>
 
@@ -102,10 +123,10 @@
             </div>
         </section>
 
-        <!-- 하단 본문 출력 박스 영역 -->
+        <!-- 하단 본문 출력 박스 영역 (스크롤 적용: max-h-[600px] overflow-y-auto) -->
         <section class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div id="loading" class="text-center py-10 text-gray-500">GitHub에서 history.md 데이터를 불러오는 중입니다...</div>
-            <div id="content-view" class="content-box prose max-w-none text-sm hidden space-y-6"></div>
+            <div id="content-view" class="content-box prose max-w-none text-sm hidden max-h-[600px] overflow-y-auto pr-4 space-y-6"></div>
         </section>
 
     </main>
@@ -118,10 +139,8 @@
     <!-- 자바스크립트 로직 -->
     <script>
         let rawMarkdownText = "";
-        // GitHub에 저장된 history.md Raw 파일 경로
         const historyMdUrl = "https://raw.githubusercontent.com/clclub1975/clmb/main/HOME2/history.md";
 
-        // 페이지 로드 시 history.md 파일 가져오기
         async function loadHistoryData() {
             try {
                 const response = await fetch(historyMdUrl);
@@ -132,85 +151,86 @@
                 const contentView = document.getElementById('content-view');
                 contentView.style.display = 'block';
                 
-                // 초기 상태: 전체 보기 체크 및 렌더링
                 document.getElementById('chk-all').checked = true;
-                renderContent(['all']);
+                renderContent();
             } catch (error) {
                 document.getElementById('loading').innerHTML = "데이터를 불러오는 데 실패했습니다. 파일 경로를 확인해 주세요.";
                 console.error(error);
             }
         }
 
-        // [전체 보기] 체크박스 제어
+        // 전체 보기 체크박스 제어
         function handleAllCheck(masterChk) {
-            const catChks = document.querySelectorAll('.cat-chk');
-            if (masterChk.checked) {
-                catChks.forEach(chk => chk.checked = false);
-                renderContent(['all']);
-            } else {
-                // 전체가 해제되었을 때 아무것도 선택 안 된 경우 처리
-                contentViewClear();
-            }
+            const allChks = document.querySelectorAll('input[type="checkbox"]:not(#chk-all)');
+            allChks.forEach(chk => chk.checked = false);
+            renderContent();
         }
 
-        // 개별 카테고리 체크박스 제어
-        function handleCategoryCheck(changedChk) {
-            const masterChk = document.getElementById('chk-all');
-            const catChks = document.querySelectorAll('.cat-chk');
+        // 대분류 체크 시 하위 소분류 일괄 체크/해제
+        function handleCategoryToggle(catChk, subContainerId) {
+            document.getElementById('chk-all').checked = false;
+            const subContainer = document.getElementById(subContainerId);
+            const subChks = subContainer.querySelectorAll('.sub-chk');
             
-            // 개별 항목이 체크되면 전체 보기 체크 해제
-            if (changedChk.checked) {
-                masterChk.checked = false;
-            }
-
-            // 체크된 항목들의 값 수집
-            const selectedValues = Array.from(catChks)
-                .filter(chk => chk.checked)
-                .map(chk => chk.value);
-
-            if (selectedValues.length === 0) {
-                masterChk.checked = true;
-                renderContent(['all']);
-            } else {
-                renderContent(selectedValues);
-            }
+            subChks.forEach(chk => {
+                chk.checked = catChk.checked;
+            });
+            renderContent();
         }
 
-        // 선택된 카테고리들에 해당하는 섹션만 필터링하여 렌더링
-        function renderContent(selectedIds) {
-            const contentView = document.getElementById('content-view');
+        // 소분류 체크 변경 시
+        function handleSubCheck() {
+            document.getElementById('chk-all').checked = false;
+            renderContent();
+        }
 
-            if (selectedIds.includes('all')) {
+        // 체크된 조건에 맞춰 history.md에서 필터링 후 렌더링
+        function renderContent() {
+            const contentView = document.getElementById('content-view');
+            const isAllChecked = document.getElementById('chk-all').checked;
+
+            if (isAllChecked || !rawMarkdownText) {
                 contentView.innerHTML = marked.parse(rawMarkdownText);
                 return;
             }
 
-            // history.md 내용을 '## ' 기준으로 섹션 분리
-            const sections = rawMarkdownText.split('## ');
-            let combinedHtml = "";
+            // 체크된 소분류들의 값(예: "[001호]") 수집
+            const checkedSubChks = document.querySelectorAll('.sub-chk:checked');
+            if (checkedSubChks.length === 0) {
+                contentView.innerHTML = "<p class='text-gray-500'>선택된 항목이 없습니다.</p>";
+                return;
+            }
 
-            selectedIds.forEach(id => {
-                for (let sec of sections) {
-                    // 앵커 ID나 대분류 번호 매칭 확인
-                    if (sec.includes(`id="${id}"`) || sec.trim().startsWith(id.charAt(0))) {
-                        combinedHtml += "## " + sec + "\n\n";
+            const targetKeywords = Array.from(checkedSubChks).map(chk => chk.value);
+
+            // history.md 라인별로 분석하여 체크된 호수가 포함된 항목만 필터링
+            const lines = rawMarkdownText.split('\n');
+            let filteredLines = [];
+            let currentHeading = "";
+
+            lines.forEach(line => {
+                if (line.startsWith('#')) {
+                    currentHeading = line;
+                }
+                // 소분류 항목 라인에 체크된 호수 키워드가 포함되어 있는지 확인
+                for (let keyword of targetKeywords) {
+                    if (line.includes(keyword)) {
+                        filteredLines.push(currentHeading);
+                        filteredLines.push(line);
                         break;
                     }
                 }
             });
 
-            if (combinedHtml.trim() !== "") {
-                contentView.innerHTML = marked.parse(combinedHtml);
+            if (filteredLines.length > 0) {
+                // 중복 헤딩 제거 및 자연스러운 마크다운 결합
+                const uniqueContent = Array.from(new Set(filteredLines)).join('\n');
+                contentView.innerHTML = marked.parse(uniqueContent);
             } else {
-                contentView.innerHTML = "<p class='text-gray-500'>선택한 항목의 내용을 찾을 수 없습니다.</p>";
+                contentView.innerHTML = "<p class='text-gray-500'>해당하는 내용을 찾을 수 없습니다.</p>";
             }
         }
 
-        function contentViewClear() {
-            document.getElementById('content-view').innerHTML = "<p class='text-gray-500'>항목을 선택해 주세요.</p>";
-        }
-
-        // 실행
         loadHistoryData();
     </script>
 </body>
