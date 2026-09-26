@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.21: 선택 항목 바 우측 끝에 '내용 복사' 버튼 배치 및 버전 v1.21 갱신 -->
+    <!-- v2.1: AI 분석 대상을 history.md 연혁 본문으로 전환, 미선택 시 질의 차단 및 버전 v2.1 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.21</title>
+    <title>촛불회 연혁 살펴보기 v2.1</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -329,7 +329,7 @@
             gap: 6px;
         }
 
-        /* 📌 [v1.21] 선택된 항목 목록 표시 바 + 우측 복사 버튼 배치 */
+        /* 선택된 항목 목록 표시 바 + 우측 복사 버튼 */
         .selected-summary-bar {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
@@ -361,7 +361,6 @@
             color: var(--primary-color);
         }
 
-        /* 복사 버튼 공통 스타일 (초록색 테마) */
         .copy-btn {
             background-color: #27ae60;
             color: white;
@@ -708,7 +707,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.21</span>
+    <span class="version">v2.1</span>
 </div>
 
 <div class="chat-container">
@@ -770,7 +769,7 @@
             <h3>📖 촛불회 연혁 내용 보기</h3>
         </div>
 
-        <!-- 📌 [v1.21] 선택된 항목 목록 표시 바 + 우측 '내용 복사' 버튼 배치 -->
+        <!-- 선택된 항목 실시간 나열 바 (세로 바 ' | ' 구분자) -->
         <div class="selected-summary-bar">
             <div class="summary-content-wrapper">
                 <span class="summary-label">선택 항목:</span>
@@ -821,13 +820,9 @@
     const HTML_DIVIDER = `<div class="result-divider">--------------------------------------------------------------------------------</div>`;
     const renderQnA = (q, content) => `<div class="result-question">${q}</div>${HTML_DIVIDER}<div class="result-content">${content}</div>`;
 
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
     const HISTORY_MD_URL = "https://raw.githubusercontent.com/clclub1975/clmb/main/HOME2/history.md";
-    
     const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
 
-    let globalSheetData = [];
-    let globalHeaders = [];
     let rawHistoryMarkdown = "";
     let currentController = null;
     let activeTaskType = null;
@@ -840,21 +835,21 @@
 
     // 15개 소분류 정의 및 history.md 고유 앵커 ID 매핑
     const CUSTOM_MENU_MAPPING = [
-        { label: "한 줄 요약", anchorId: "sub-1-3", cols: ["한 줄 요약"] },
-        { label: "임원진", anchorId: "sub-2-1", cols: ["임원진"] },
-        { label: "체계 변화", anchorId: "sub-2-2", cols: ["체계 변화"] },
-        { label: "주요 이벤트", anchorId: "sub-3-1", cols: ["주요 이벤트", "이벤트"] },
-        { label: "역사적 사실", anchorId: "sub-3-2", cols: ["역사적 사실"] },
-        { label: "애로 사항", anchorId: "sub-3-3", cols: ["애로 사항"] },
-        { label: "회의 종류", anchorId: "sub-4-1", cols: ["회의 종류"] },
-        { label: "의결 사항", anchorId: "sub-4-2", cols: ["의결 사항"] },
-        { label: "정기 봉사", anchorId: "sub-5-1", cols: ["정기 봉사"] },
-        { label: "기타 봉사", anchorId: "sub-5-2", cols: ["기타 봉사"] },
-        { label: "학술/문화 활동", anchorId: "sub-6-1", cols: ["학술/문화 활동", "학술/문화"] },
-        { label: "친목/기타 활동", anchorId: "sub-6-2", cols: ["친목/기타 활동", "친목/기타"] },
-        { label: "인물 인터뷰", anchorId: "sub-7-1", cols: ["인물 인터뷰", "인터뷰 및 탐방", "인터뷰"] },
-        { label: "회원 동정", anchorId: "sub-7-2", cols: ["회원 동정", "인물 동향", "개별 동정"] },
-        { label: "경조사", anchorId: "sub-7-3", cols: ["경조사", "경조사 및 소식"] }
+        { label: "한 줄 요약", anchorId: "sub-1-3" },
+        { label: "임원진", anchorId: "sub-2-1" },
+        { label: "체계 변화", anchorId: "sub-2-2" },
+        { label: "주요 이벤트", anchorId: "sub-3-1" },
+        { label: "역사적 사실", anchorId: "sub-3-2" },
+        { label: "애로 사항", anchorId: "sub-3-3" },
+        { label: "회의 종류", anchorId: "sub-4-1" },
+        { label: "의결 사항", anchorId: "sub-4-2" },
+        { label: "정기 봉사", anchorId: "sub-5-1" },
+        { label: "기타 봉사", anchorId: "sub-5-2" },
+        { label: "학술/문화 활동", anchorId: "sub-6-1" },
+        { label: "친목/기타 활동", anchorId: "sub-6-2" },
+        { label: "인물 인터뷰", anchorId: "sub-7-1" },
+        { label: "회원 동정", anchorId: "sub-7-2" },
+        { label: "경조사", anchorId: "sub-7-3" }
     ];
 
     window.onload = async () => {
@@ -875,22 +870,11 @@
             }
         };
 
-        // 1. 구글 스프레드시트 CSV 로드 (AI 질의용)
-        fetch(CSV_URL)
-            .then(res => res.text())
-            .then(csvText => {
-                const parsed = parseCSVStrictWithHeaders(csvText);
-                globalSheetData = parsed.data;
-                globalHeaders = parsed.headers;
-            })
-            .catch(err => console.error("CSV 로드 실패:", err));
-
-        // 2. history.md 로드 (초기 상태: 전체 체크 해제 유지 및 안내 문구 출력)
+        // history.md 로드 (초기 상태: 전체 체크 해제 유지 및 안내 문구 출력)
         try {
             const mdRes = await fetch(HISTORY_MD_URL);
             if (!mdRes.ok) throw new Error("history.md 네트워크 응답 에러");
             rawHistoryMarkdown = await mdRes.text();
-            
             renderFilteredHistory();
         } catch (error) {
             $("historyContentBox").innerHTML = `<span style="color:red;">[history.md 로딩 에러] 파일을 불러오지 못했습니다.<br>${error.message}</span>`;
@@ -1182,6 +1166,7 @@
         btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
 
+    // 📌 [v2.1 핵심 변경] 연혁 본문 기반 AI 질의 및 미선택 차단 로직
     async function askAI(isSequential) {
         const targetType = isSequential ? "sequential" : "new";
         if (currentController) {
@@ -1191,6 +1176,17 @@
             }
             currentController.abort();
             currentController = null;
+        }
+
+        const isAll = $("selectAllCheckbox").checked;
+        const checkedLabels = Array.from(document.querySelectorAll('input[name="targetMenu"]:checked')).map(cb => cb.value);
+
+        // 📌 1. 아무것도 선택되지 않았을 때 AI 분석 차단
+        if (!isAll && checkedLabels.length === 0) {
+            alert("선택된 연혁 항목이 없습니다.\n상단 '검색항목'에서 1개 이상의 항목을 선택한 후 질문해 주세요.");
+            $("aiResult").innerHTML = `<strong style="color:#d35400;">[안내] 선택된 연혁 항목이 없습니다. 상단 '검색항목'에서 항목을 체크해 주세요.</strong>`;
+            updateEnterModeFocus();
+            return;
         }
 
         const apiKey = localStorage.getItem("GEMINI_USER_API_KEY");
@@ -1219,27 +1215,35 @@
             $("cumulativeSection").style.display = "block";
         }
 
-        const selectedMenus = Array.from(document.querySelectorAll('input[name="targetMenu"]:checked')).map(cb => cb.value);
-        let resolvedCols = [];
-        selectedMenus.forEach(menu => {
-            const found = CUSTOM_MENU_MAPPING.find(m => m.label === menu);
-            if (found) {
-                found.cols.forEach(c => {
-                    if (!resolvedCols.includes(c)) resolvedCols.push(c);
-                });
-            }
-        });
+        // 📌 2. 참조 대상 연혁 데이터 추출 (history.md 기반)
+        let targetHistoryText = "";
+        let targetSummaryTitle = "";
 
-        const isFullData = selectedMenus.length === 0 || selectedMenus.length === CUSTOM_MENU_MAPPING.length;
-        const filteredSheetData = isFullData ? globalSheetData : globalSheetData.map(row => {
-            let fr = { "통권 호수": row["통권 호수"] || row["통권호수"] || "", "발행월": row["발행월"] || row["발행 일자"] || "" };
-            resolvedCols.forEach(col => {
-                if (row[col] !== undefined) fr[col] = row[col];
+        if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
+            targetHistoryText = rawHistoryMarkdown;
+            targetSummaryTitle = "전체 연혁";
+        } else {
+            const sections = rawHistoryMarkdown.split(/(?=<h3\s+id\s*=\s*["']sub-)/i);
+            const sectionMap = {};
+            sections.forEach(sec => {
+                const trimmed = sec.trim();
+                const idMatch = trimmed.match(/<h3\s+id\s*=\s*["']([^"']+)["']/i);
+                if (idMatch && idMatch[1]) {
+                    let cleanSec = trimmed;
+                    const dividerIdx = cleanSec.indexOf('---');
+                    if (dividerIdx !== -1) cleanSec = cleanSec.substring(0, dividerIdx).trim();
+                    sectionMap[idMatch[1]] = cleanSec;
+                }
             });
-            return fr;
-        });
 
-        const targetColumnsText = isFullData ? "전체 항목" : resolvedCols.join(", ");
+            let matchedSections = [];
+            selectedHistoryOrder.forEach(item => {
+                if (sectionMap[item.anchorId]) matchedSections.push(sectionMap[item.anchorId]);
+            });
+            targetHistoryText = matchedSections.join("\n\n---\n\n");
+            targetSummaryTitle = selectedHistoryOrder.map(item => item.label).join(" | ");
+        }
+
         const qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
 
         activeTaskType = targetType;
@@ -1250,13 +1254,29 @@
         btnText.innerText = "생성 중단";
         btn.classList.add("stop-btn");
         $("copyBtn").style.display = "none";
-        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[검색항목: ${isFullData ? "전체" : selectedMenus.join(", ")}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`);
+        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[참조 연혁: ${targetSummaryTitle}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`);
         $("aiResult").scrollTop = 0;
         $("aiResult").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         try {
-            let contextPrompt = isSequential && conversationHistory.length > 0 ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 기반으로 확장하거나 심층 분석해 주세요.` : "";
-            const promptText = ` 당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다: ${JSON.stringify(filteredSheetData)} [검색 조건 및 엄격한 제약 사항] - 집중 참고 항목 (열 기준): ${targetColumnsText} - **핵심 규칙**: 위에서 지정된 [집중 참고 항목]에 포함되지 않은 데이터는 존재하지 않습니다. 질문 내용이 참고 범위 내에 없다면 유추하지 말고 명확히 안내해 주세요. ${contextPrompt} [사용자 질문] "${query}" 위 조건을 대조하여 답변을 작성해 주세요.`;
+            let contextPrompt = isSequential && conversationHistory.length > 0 
+                ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 바탕으로 심층 분석해 주세요.` 
+                : "";
+                
+            const promptText = `당신은 촛불회 50년 역사를 잘 알고 있는 친절하고 정확한 역사 안내자입니다.
+아래에 제공된 [촛불회 공식 연혁 기록]만을 엄격한 사실 근거로 삼아 사용자의 질문에 답해 주세요.
+
+[촛불회 공식 연혁 기록]
+${targetHistoryText}
+
+[엄격한 제약 사항 및 분석 지침]
+1. 반드시 위에 제시된 [촛불회 공식 연혁 기록]에 기술된 사실만을 바탕으로 답변하세요.
+2. 기록에 명시되지 않은 사항은 상상하거나 외부 지식으로 유추하지 마시고, "제공된 연혁 기록에는 해당 내용이 기록되어 있지 않습니다"라고 명확히 밝혀주세요.
+3. 통권 호수나 연월 표기([001호] 1984년 등)가 기록에 있다면 이를 인용하여 구체적으로 설명하세요.
+${contextPrompt}
+
+[사용자 질문]
+"${query}"`;
 
             const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
                 method: 'POST',
@@ -1300,37 +1320,7 @@
         box.innerHTML = conversationHistory.map((item, idx) => (idx > 0 ? `<br><div class="cumulative-separator">================================================================================</div><br>` : '') + `<div class="cumulative-item">${renderQnA(item.q, item.a.replace(/\n/g, "<br>"))}</div>`).join('');
         box.scrollTop = box.scrollHeight;
     }
-
-    function parseCSVStrictWithHeaders(text) {
-        let rows = [], currentRow = [], currentField = "", inQuotes = false;
-        for (let i = 0; i < text.length; i++) {
-            let c = text[i], nextC = text[i + 1];
-            if (inQuotes) {
-                if (c === '"') {
-                    if (nextC === '"') { currentField += '"'; i++; } else inQuotes = false;
-                } else currentField += c;
-            } else {
-                if (c === '"') inQuotes = true;
-                else if (c === ',') { currentRow.push(currentField.trim()); currentField = ""; }
-                else if (c === '\r' && nextC === '\n') { currentRow.push(currentField.trim()); rows.push(currentRow); currentRow = []; currentField = ""; i++; }
-                else if (c === '\n') { currentRow.push(currentField.trim()); rows.push(currentRow); currentRow = []; currentField = ""; }
-                else currentField += c;
-            }
-        }
-        if (currentField !== "" || currentRow.length > 0) { currentRow.push(currentField.trim()); rows.push(currentRow); }
-        if (rows.length === 0) return { headers: [], data: [] };
-        let headers = rows[0].map(h => h.trim()), result = [];
-        for (let i = 1; i < rows.length; i++) {
-            let cols = rows[i];
-            if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
-            let obj = {};
-            for (let j = 0; j < headers.length; j++) obj[headers[j]] = cols[j] ? cols[j].trim() : "";
-            result.push(obj);
-        }
-        return { headers, data: result };
-    }
 </script>
 
 </body>
 </html>
- 
