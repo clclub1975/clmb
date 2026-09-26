@@ -1,4 +1,4 @@
-<!-- v11.1: 버전 표기 v11.1로 업데이트 -->
+<!-- v11.3: 새 구글 시트('교정본' 탭) 구조(B열 통권 호수)에 맞춘 데이터 파싱 및 버전 v11.3 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -249,7 +249,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v11.1</span>
+                <span class="version">v11.3</span>
             </h1>
         </header>
 
@@ -288,7 +288,6 @@
 
     <script>
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
-        // 새로 추가된 '교정본' 구글 시트 CSV 링크
         const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
         const abstractMarkdownUrl = 'abstract.md';
 
@@ -328,7 +327,7 @@
             }
         }
 
-        // 새로 추가된 '교정본' 구글 시트 데이터 로드
+        // 새로 추가된 '교정본' 구글 시트 데이터 로드 (B열에서 통권 호수 번호 추출)
         async function loadCorrectSheetData() {
             try {
                 const response = await fetch(correctCsvUrl);
@@ -338,14 +337,23 @@
 
                 for (let j = 1; j < rows.length; j++) {
                     const cols = rows[j].map(c => c.trim());
-                    if (cols.length < 2) continue;
+                    if (cols.length < 3) continue;
 
-                    const matches = cols[0].match(/(\d+)/g);
-                    if (!matches) continue;
+                    // B열(인덱스 1)에서 통권 호수 번호 추출
+                    const matches = cols[1].match(/(\d+)/g);
+                    if (!matches || matches.length === 0) continue;
+                    
                     const issueNum = parseInt(matches[0], 10);
 
-                    let content = cols.slice(1).find(val => val.length > 0) || "";
-                    content = content.replace(/\\n/g, '\n');
+                    // C열 이후의 유효한 메타데이터 텍스트들을 조합하여 내용 구성
+                    let contentLines = [];
+                    for (let c = 2; c < cols.length; c++) {
+                        if (cols[c] && cols[c].length > 0) {
+                            contentLines.push(cols[c]);
+                        }
+                    }
+                    
+                    let content = contentLines.join('\n\n').replace(/\\n/g, '\n');
 
                     if (issueNum && content) {
                         correctMap[issueNum] = content;
