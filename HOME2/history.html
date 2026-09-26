@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.11: 검색 기간 줄 제거, 검색 항목 및 15개 소분류 교체, 버전 v1.11 갱신 -->
+    <!-- v1.12: 안내 문구 삭제, 6개 소분류 용어 변경 및 버전 v1.12 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.11</title>
+    <title>촛불회 연혁 살펴보기 v1.12</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -320,7 +320,7 @@
             display: flex;
             align-items: center;
         }
-        /* 📌 PC 기본 높이 유지 (v14.5 원래 크기) */
+        /* 📌 PC 기본 높이 유지 */
         .input-wrapper textarea {
             width: 100%;
             padding: 12px;
@@ -575,7 +575,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.11</span>
+    <span class="version">v1.12</span>
 </div>
 
 <div class="chat-container">
@@ -626,7 +626,6 @@
         <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 검색할 목록 열기 ▼</button>
     </div>
     <div id="checkboxPanel" class="checkbox-panel">
-        <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">▶ 항목을 선택하면 AI가 더 신속하고 정확하게 답변합니다. 선택하지 않으면 전체를 참고합니다.</div>
         <div id="checkboxContainer" class="checkbox-grid">
             <span style="color:#888; font-style:italic;">데이터 로딩 중...</span>
         </div>
@@ -635,7 +634,7 @@
     <!-- 질문 입력창 -->
     <div class="input-group">
         <div class="input-wrapper">
-            <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '봉사 활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
+            <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '정기 봉사' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
             <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
         </div>
     </div>
@@ -682,23 +681,23 @@
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 15개의 순수 소분류 항목 정의 (대분류 이름 제외)
+    // 15개 소분류 항목 정의 (지정된 용어 변경 적용)
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", type: "single", cols: ["한 줄 요약"] },
         { label: "임원진", type: "single", cols: ["임원진"] },
         { label: "체계 변화", type: "single", cols: ["체계 변화"] },
-        { label: "이벤트", type: "single", cols: ["이벤트"] },
+        { label: "주요 이벤트", type: "single", cols: ["주요 이벤트", "이벤트"] },
         { label: "역사적 사실", type: "single", cols: ["역사적 사실"] },
         { label: "애로 사항", type: "single", cols: ["애로 사항"] },
         { label: "회의 종류", type: "single", cols: ["회의 종류"] },
         { label: "의결 사항", type: "single", cols: ["의결 사항"] },
         { label: "정기 봉사", type: "single", cols: ["정기 봉사"] },
         { label: "기타 봉사", type: "single", cols: ["기타 봉사"] },
-        { label: "학술/문화", type: "single", cols: ["학술/문화"] },
-        { label: "친목/기타", type: "single", cols: ["친목/기타"] },
-        { label: "인물 동향", type: "single", cols: ["인물 동향"] },
-        { label: "경조사 및 소식", type: "single", cols: ["경조사 및 소식"] },
-        { label: "인터뷰 및 탐방", type: "single", cols: ["인터뷰 및 탐방"] }
+        { label: "학술/문화 활동", type: "single", cols: ["학술/문화 활동", "학술/문화"] },
+        { label: "친목/기타 활동", type: "single", cols: ["친목/기타 활동", "친목/기타"] },
+        { label: "회원 동정", type: "single", cols: ["회원 동정", "인물 동향", "개별 동정"] },
+        { label: "경조사", type: "single", cols: ["경조사", "경조사 및 소식"] },
+        { label: "인물 인터뷰", type: "single", cols: ["인물 인터뷰", "인터뷰 및 탐방", "인터뷰"] }
     ];
 
     window.onload = async () => {
@@ -972,7 +971,11 @@
         let resolvedCols = [];
         selectedMenus.forEach(menu => {
             const found = CUSTOM_MENU_MAPPING.find(m => m.label === menu);
-            if (found) resolvedCols.push(...found.cols.filter(c => !resolvedCols.includes(c)));
+            if (found) {
+                found.cols.forEach(c => {
+                    if (!resolvedCols.includes(c)) resolvedCols.push(c);
+                });
+            }
         });
 
         const isFullData = selectedMenus.length === 0 || selectedMenus.length === CUSTOM_MENU_MAPPING.length;
