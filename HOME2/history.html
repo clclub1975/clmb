@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.19: 선택 항목 실시간 표시 바(선택 순서 나열 및 전체 선택 표기) 추가 및 버전 v1.19 갱신 -->
+    <!-- v1.20: 선택 항목 구분자를 세로 바(' | ')로 변경 및 버전 v1.20 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.19</title>
+    <title>촛불회 연혁 살펴보기 v1.20</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -332,7 +332,7 @@
             gap: 6px;
         }
 
-        /* 📌 [v1.19 신규] 선택된 항목 목록 표시 바 */
+        /* 선택된 항목 목록 표시 바 */
         .selected-summary-bar {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
@@ -698,7 +698,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.19</span>
+    <span class="version">v1.20</span>
 </div>
 
 <div class="chat-container">
@@ -761,7 +761,7 @@
             <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 연혁 복사하기</button>
         </div>
 
-        <!-- 📌 [v1.19 신규] 선택된 항목 실시간 나열 바 -->
+        <!-- 선택된 항목 실시간 나열 바 (세로 바 ' | ' 구분자 적용) -->
         <div class="selected-summary-bar">
             <span class="summary-label">선택 항목:</span>
             <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
@@ -823,7 +823,7 @@
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 📌 사용자가 체크박스를 누른 순서를 기록하는 배열 (최신 체크 항목이 맨 앞 [0]에 위치)
+    // 사용자가 체크박스를 누른 순서를 기록하는 배열 (최신 체크 항목이 맨 앞 [0]에 위치)
     let selectedHistoryOrder = [];
 
     // 15개 소분류 정의 및 history.md 고유 앵커 ID 매핑
@@ -885,7 +885,7 @@
         }
     };
 
-    // 📌 [선택 이력 순서 기반 렌더링 및 선택 요약 바 갱신]
+    // 📌 [선택 이력 순서 기반 렌더링 및 ' | ' 구분자 표기]
     function renderFilteredHistory() {
         const box = $("historyContentBox");
         const summaryText = $("selectedSummaryText");
@@ -893,11 +893,11 @@
 
         const isAll = $("selectAllCheckbox").checked;
 
-        // 1. 상단 선택 요약 바 텍스트 업데이트
+        // 1. 상단 선택 요약 바 텍스트 업데이트 (구분자: ' | ')
         if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
             summaryText.innerText = "전체 선택";
         } else if (selectedHistoryOrder.length > 0) {
-            summaryText.innerText = selectedHistoryOrder.map(item => item.label).join(" / ");
+            summaryText.innerText = selectedHistoryOrder.map(item => item.label).join(" | ");
         } else {
             summaryText.innerText = "선택된 항목 없음";
         }
@@ -957,7 +957,7 @@
         });
     }
 
-    // 📌 개별 체크박스 클릭 핸들러 (체크 시 배열 맨 앞에 unshift, 해제 시 배열에서 제거)
+    // 개별 체크박스 클릭 핸들러 (체크 시 배열 맨 앞에 unshift, 해제 시 배열에서 제거)
     function handleItemCheckboxChange(cb, anchorId) {
         const label = cb.value;
         if (cb.checked) {
