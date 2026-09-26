@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.20: 선택 항목 구분자를 세로 바(' | ')로 변경 및 버전 v1.20 갱신 -->
+    <!-- v1.21: 선택 항목 바 우측 끝에 '내용 복사' 버튼 배치 및 버전 v1.21 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.20</title>
+    <title>촛불회 연혁 살펴보기 v1.21</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -318,9 +318,6 @@
             padding-top: 18px;
         }
         .history-viewer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 8px;
         }
         .history-viewer-header h3 {
@@ -332,20 +329,27 @@
             gap: 6px;
         }
 
-        /* 선택된 항목 목록 표시 바 */
+        /* 📌 [v1.21] 선택된 항목 목록 표시 바 + 우측 복사 버튼 배치 */
         .selected-summary-bar {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 8px 14px;
+            padding: 6px 12px;
             font-size: 13.5px;
             color: #334155;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .summary-content-wrapper {
             display: flex;
             align-items: center;
             gap: 6px;
             overflow-x: auto;
             white-space: nowrap;
+            flex: 1;
         }
         .selected-summary-bar .summary-label {
             font-weight: bold;
@@ -355,6 +359,23 @@
         .selected-summary-bar .summary-content {
             font-weight: 600;
             color: var(--primary-color);
+        }
+
+        /* 복사 버튼 공통 스타일 (초록색 테마) */
+        .copy-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.15s;
+            flex-shrink: 0;
+        }
+        .copy-btn:hover {
+            background-color: #219653;
         }
 
         .history-box {
@@ -527,21 +548,6 @@
             margin: 0;
             color: var(--text-main);
         }
-        .copy-btn {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            font-size: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            display: none;
-            transition: background-color 0.15s;
-        }
-        .copy-btn:hover {
-            background-color: #219653;
-        }
         .result-box {
             margin-top: 10px;
             padding: 15px 18px;
@@ -671,7 +677,11 @@
             }
             .selected-summary-bar {
                 font-size: 12.5px;
-                padding: 6px 10px;
+                padding: 6px 8px;
+            }
+            .copy-btn {
+                padding: 5px 10px;
+                font-size: 12px;
             }
             .history-box {
                 max-height: 380px;
@@ -698,7 +708,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.20</span>
+    <span class="version">v1.21</span>
 </div>
 
 <div class="chat-container">
@@ -758,13 +768,15 @@
     <div class="history-viewer-section">
         <div class="history-viewer-header">
             <h3>📖 촛불회 연혁 내용 보기</h3>
-            <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 연혁 복사하기</button>
         </div>
 
-        <!-- 선택된 항목 실시간 나열 바 (세로 바 ' | ' 구분자 적용) -->
+        <!-- 📌 [v1.21] 선택된 항목 목록 표시 바 + 우측 '내용 복사' 버튼 배치 -->
         <div class="selected-summary-bar">
-            <span class="summary-label">선택 항목:</span>
-            <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
+            <div class="summary-content-wrapper">
+                <span class="summary-label">선택 항목:</span>
+                <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
+            </div>
+            <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 내용 복사</button>
         </div>
 
         <div id="historyContentBox" class="history-box">
@@ -1321,4 +1333,3 @@
 
 </body>
 </html>
- 
