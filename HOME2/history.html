@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.17: history.md 고유 앵커 ID(sub-X-X) 기반 정밀 파싱 엔진 적용 및 버전 v1.17 갱신 -->
+    <!-- v1.18: 선택 이력 순서 기억 알고리즘(새로 체크한 항목 최상단 노출 및 자동 상단 스크롤) 적용 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.17</title>
+    <title>촛불회 연혁 살펴보기 v1.18</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -342,6 +342,7 @@
             font-size: 14px;
             color: #334155;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+            scroll-behavior: smooth;
         }
         .history-box h2 {
             font-size: 1.15rem;
@@ -667,7 +668,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.17</span>
+    <span class="version">v1.18</span>
 </div>
 
 <div class="chat-container">
@@ -785,7 +786,10 @@
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 📌 [핵심] history.md의 실제 고유 HTML 앵커 ID(sub-X-X) 1:1 매핑
+    // 📌 사용자가 체크박스를 누른 순서를 기록하는 배열 (최신 체크 항목이 맨 앞 [0]에 위치)
+    let selectedHistoryOrder = [];
+
+    // 15개 소분류 정의 및 history.md 고유 앵커 ID 매핑
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", anchorId: "sub-1-3", cols: ["한 줄 요약"] },
         { label: "임원진", anchorId: "sub-2-1", cols: ["임원진"] },
@@ -838,68 +842,103 @@
             if (!mdRes.ok) throw new Error("history.md 네트워크 응답 에러");
             rawHistoryMarkdown = await mdRes.text();
             
-            // 디폴트로 체크박스를 체크하지 않고 안내 표시
             renderFilteredHistory();
         } catch (error) {
             $("historyContentBox").innerHTML = `<span style="color:red;">[history.md 로딩 에러] 파일을 불러오지 못했습니다.<br>${error.message}</span>`;
         }
     };
 
-    // 📌 [정밀 파싱 엔진] history.md의 <h3 id="sub-X-X"> 앵커 태그 기반 완벽 추출 함수
+    // 📌 [선택 이력 순서 기반 렌더링] 최근에 누른 항목을 최상단에 먼저 조립하여 출력
     function renderFilteredHistory() {
         const box = $("historyContentBox");
         if (!rawHistoryMarkdown) return;
 
         const isAll = $("selectAllCheckbox").checked;
-        const checkedLabels = Array.from(document.querySelectorAll('input[name="targetMenu"]:checked')).map(cb => cb.value);
 
         // 아무것도 선택되지 않았을 때 (디폴트 상태)
-        if (!isAll && checkedLabels.length === 0) {
+        if (!isAll && selectedHistoryOrder.length === 0) {
             box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">상단 '검색항목'에서 원하는 항목을 체크하면 해당 연혁 본문이 이곳에 표시됩니다.</div>`;
             return;
         }
 
         // 전체 선택인 경우 전체 마크다운 즉시 출력
-        if (isAll || checkedLabels.length === CUSTOM_MENU_MAPPING.length) {
+        if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
             box.innerHTML = marked.parse(rawHistoryMarkdown);
+            box.scrollTop = 0;
             return;
         }
 
-        // 선택된 항목들의 anchorId 목록 수집
-        const activeAnchorIds = checkedLabels.map(lbl => {
-            const item = CUSTOM_MENU_MAPPING.find(m => m.label === lbl);
-            return item ? item.anchorId : null;
-        }).filter(Boolean);
-
         // <h3 id="sub- 문구를 기점으로 섹션들을 엄밀하게 분할
-        // 각 블록의 앞부분에 들어갈 앵커 id를 안전하게 파악하기 위해 정규식 분할 사용
         const sections = rawHistoryMarkdown.split(/(?=<h3\s+id\s*=\s*["']sub-)/i);
-        let matchedMarkdownParts = [];
+        const sectionMap = {};
 
         sections.forEach(sec => {
             const trimmed = sec.trim();
-            // 해당 섹션의 id 속성 값 추출
             const idMatch = trimmed.match(/<h3\s+id\s*=\s*["']([^"']+)["']/i);
             if (idMatch && idMatch[1]) {
                 const secId = idMatch[1];
-                if (activeAnchorIds.includes(secId)) {
-                    // 다음 구분선(---)이나 다음 대분류 제목 전까지를 깔끔하게 유지
-                    let cleanSec = trimmed;
-                    const dividerIdx = cleanSec.indexOf('---');
-                    if (dividerIdx !== -1) {
-                        cleanSec = cleanSec.substring(0, dividerIdx).trim();
-                    }
-                    matchedMarkdownParts.push(cleanSec);
+                let cleanSec = trimmed;
+                const dividerIdx = cleanSec.indexOf('---');
+                if (dividerIdx !== -1) {
+                    cleanSec = cleanSec.substring(0, dividerIdx).trim();
                 }
+                sectionMap[secId] = cleanSec;
+            }
+        });
+
+        // 📌 사용자가 누른 순서(selectedHistoryOrder)대로 섹션을 조립 (맨 앞 요소가 최상단에 위치)
+        let matchedMarkdownParts = [];
+        selectedHistoryOrder.forEach(item => {
+            if (sectionMap[item.anchorId]) {
+                matchedMarkdownParts.push(sectionMap[item.anchorId]);
             }
         });
 
         if (matchedMarkdownParts.length > 0) {
             box.innerHTML = marked.parse(matchedMarkdownParts.join("\n\n<hr style='border:0; border-top:1px dashed #cbd5e1; margin:20px 0;'>\n\n"));
+            // 📌 새로 추가된 최신 항목이 바로 보이도록 스크롤을 맨 위로 이동
+            box.scrollTop = 0;
         } else {
             box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">선택하신 항목에 해당하는 연혁 내용이 존재하지 않습니다.</div>`;
         }
     }
+
+    function renderCheckboxes() {
+        const container = $("checkboxContainer");
+        container.innerHTML = `<label class="checkbox-item select-all"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"> [ 전체 선택 ]</label>`;
+        CUSTOM_MENU_MAPPING.forEach(item => {
+            container.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" onchange="handleItemCheckboxChange(this, '${item.anchorId}')"> ${item.label}</label>`;
+        });
+    }
+
+    // 📌 개별 체크박스 클릭 핸들러 (체크 시 배열 맨 앞에 unshift, 해제 시 배열에서 제거)
+    function handleItemCheckboxChange(cb, anchorId) {
+        const label = cb.value;
+        if (cb.checked) {
+            // 이미 존재할 경우 먼저 제거 후 맨 앞에 재삽입 (최신화)
+            selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
+            selectedHistoryOrder.unshift({ label: label, anchorId: anchorId });
+        } else {
+            selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
+        }
+
+        const allChecked = Array.from(document.querySelectorAll('input[name="targetMenu"]')).every(c => c.checked);
+        $("selectAllCheckbox").checked = allChecked;
+
+        renderFilteredHistory();
+    }
+
+    // 전체 선택 토글 핸들러
+    const toggleSelectAll = (selectAllCb) => {
+        const isChecked = selectAllCb.checked;
+        document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = isChecked);
+        if (isChecked) {
+            selectedHistoryOrder = [...CUSTOM_MENU_MAPPING];
+        } else {
+            selectedHistoryOrder = [];
+        }
+        renderFilteredHistory();
+    };
 
     function handleKeyDown(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
@@ -1078,25 +1117,6 @@
             setTimeout(() => btn.innerText = originalText, 2000);
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
-
-    function renderCheckboxes() {
-        const container = $("checkboxContainer");
-        container.innerHTML = `<label class="checkbox-item select-all"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"> [ 전체 선택 ]</label>`;
-        CUSTOM_MENU_MAPPING.forEach(item => {
-            container.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" onchange="checkIndividualCheckbox()"> ${item.label}</label>`;
-        });
-    }
-
-    const toggleSelectAll = (selectAllCb) => {
-        document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = selectAllCb.checked);
-        renderFilteredHistory();
-    };
-
-    const checkIndividualCheckbox = () => {
-        const allChecked = Array.from(document.querySelectorAll('input[name="targetMenu"]')).every(cb => cb.checked);
-        $("selectAllCheckbox").checked = allChecked;
-        renderFilteredHistory();
-    };
 
     const toggleCheckboxPanel = () => {
         const panel = $("checkboxPanel"), btn = $("toggleBtn");
