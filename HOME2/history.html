@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.18: 선택 이력 순서 기억 알고리즘(새로 체크한 항목 최상단 노출 및 자동 상단 스크롤) 적용 -->
+    <!-- v1.19: 선택 항목 실시간 표시 바(선택 순서 나열 및 전체 선택 표기) 추가 및 버전 v1.19 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.18</title>
+    <title>촛불회 연혁 살펴보기 v1.19</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -321,7 +321,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .history-viewer-header h3 {
             margin: 0;
@@ -331,6 +331,32 @@
             align-items: center;
             gap: 6px;
         }
+
+        /* 📌 [v1.19 신규] 선택된 항목 목록 표시 바 */
+        .selected-summary-bar {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 13.5px;
+            color: #334155;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .selected-summary-bar .summary-label {
+            font-weight: bold;
+            color: #475569;
+            flex-shrink: 0;
+        }
+        .selected-summary-bar .summary-content {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
         .history-box {
             background: #ffffff;
             border: 1px solid var(--border-color);
@@ -643,6 +669,10 @@
             .checkbox-item input[type="checkbox"] {
                 transform: scale(0.9);
             }
+            .selected-summary-bar {
+                font-size: 12.5px;
+                padding: 6px 10px;
+            }
             .history-box {
                 max-height: 380px;
                 padding: 12px 14px;
@@ -668,7 +698,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.18</span>
+    <span class="version">v1.19</span>
 </div>
 
 <div class="chat-container">
@@ -730,6 +760,13 @@
             <h3>📖 촛불회 연혁 내용 보기</h3>
             <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 연혁 복사하기</button>
         </div>
+
+        <!-- 📌 [v1.19 신규] 선택된 항목 실시간 나열 바 -->
+        <div class="selected-summary-bar">
+            <span class="summary-label">선택 항목:</span>
+            <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
+        </div>
+
         <div id="historyContentBox" class="history-box">
             <div style="color: #64748b; font-style: italic;">GitHub에서 history.md 연혁 원문을 불러오는 중입니다...</div>
         </div>
@@ -848,27 +885,37 @@
         }
     };
 
-    // 📌 [선택 이력 순서 기반 렌더링] 최근에 누른 항목을 최상단에 먼저 조립하여 출력
+    // 📌 [선택 이력 순서 기반 렌더링 및 선택 요약 바 갱신]
     function renderFilteredHistory() {
         const box = $("historyContentBox");
+        const summaryText = $("selectedSummaryText");
         if (!rawHistoryMarkdown) return;
 
         const isAll = $("selectAllCheckbox").checked;
 
-        // 아무것도 선택되지 않았을 때 (디폴트 상태)
+        // 1. 상단 선택 요약 바 텍스트 업데이트
+        if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
+            summaryText.innerText = "전체 선택";
+        } else if (selectedHistoryOrder.length > 0) {
+            summaryText.innerText = selectedHistoryOrder.map(item => item.label).join(" / ");
+        } else {
+            summaryText.innerText = "선택된 항목 없음";
+        }
+
+        // 2. 아무것도 선택되지 않았을 때 (디폴트 상태)
         if (!isAll && selectedHistoryOrder.length === 0) {
             box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">상단 '검색항목'에서 원하는 항목을 체크하면 해당 연혁 본문이 이곳에 표시됩니다.</div>`;
             return;
         }
 
-        // 전체 선택인 경우 전체 마크다운 즉시 출력
+        // 3. 전체 선택인 경우 전체 마크다운 즉시 출력
         if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
             box.innerHTML = marked.parse(rawHistoryMarkdown);
             box.scrollTop = 0;
             return;
         }
 
-        // <h3 id="sub- 문구를 기점으로 섹션들을 엄밀하게 분할
+        // 4. <h3 id="sub- 문구를 기점으로 섹션들을 분할
         const sections = rawHistoryMarkdown.split(/(?=<h3\s+id\s*=\s*["']sub-)/i);
         const sectionMap = {};
 
@@ -886,7 +933,7 @@
             }
         });
 
-        // 📌 사용자가 누른 순서(selectedHistoryOrder)대로 섹션을 조립 (맨 앞 요소가 최상단에 위치)
+        // 사용자가 누른 순서(selectedHistoryOrder)대로 섹션을 조립 (맨 앞 요소가 최상단에 위치)
         let matchedMarkdownParts = [];
         selectedHistoryOrder.forEach(item => {
             if (sectionMap[item.anchorId]) {
@@ -896,7 +943,6 @@
 
         if (matchedMarkdownParts.length > 0) {
             box.innerHTML = marked.parse(matchedMarkdownParts.join("\n\n<hr style='border:0; border-top:1px dashed #cbd5e1; margin:20px 0;'>\n\n"));
-            // 📌 새로 추가된 최신 항목이 바로 보이도록 스크롤을 맨 위로 이동
             box.scrollTop = 0;
         } else {
             box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">선택하신 항목에 해당하는 연혁 내용이 존재하지 않습니다.</div>`;
@@ -915,7 +961,6 @@
     function handleItemCheckboxChange(cb, anchorId) {
         const label = cb.value;
         if (cb.checked) {
-            // 이미 존재할 경우 먼저 제거 후 맨 앞에 재삽입 (최신화)
             selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
             selectedHistoryOrder.unshift({ label: label, anchorId: anchorId });
         } else {
