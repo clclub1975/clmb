@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.16: 체크박스 디폴트 전체 해제, history.md 섹션 파싱 로직 정밀 수정 및 버전 v1.16 갱신 -->
+    <!-- v1.17: history.md 고유 앵커 ID(sub-X-X) 기반 정밀 파싱 엔진 적용 및 버전 v1.17 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.16</title>
+    <title>촛불회 연혁 살펴보기 v1.17</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -311,7 +311,7 @@
             margin-bottom: 4px;
         }
 
-        /* 연혁 본문 마크다운 서식 뷰어 박스 */
+        /* 📖 연혁 본문 서식 뷰어 스타일 */
         .history-viewer-section {
             margin-bottom: 25px;
             border-top: 1px solid #e2e8f0;
@@ -343,14 +343,25 @@
             color: #334155;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
         }
-        .history-box h2, .history-box h3 {
-            font-size: 1.1rem;
+        .history-box h2 {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #1e293b;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 4px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        .history-box h3 {
+            font-size: 1.05rem;
             font-weight: bold;
             color: var(--primary-color);
-            border-bottom: 2px solid #fee2e2;
-            padding-bottom: 4px;
-            margin-top: 20px;
+            background: #fff5f5;
+            border-left: 4px solid var(--primary-color);
+            padding: 6px 12px;
+            margin-top: 18px;
             margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
         }
         .history-box h2:first-child, .history-box h3:first-child {
             margin-top: 0;
@@ -358,7 +369,7 @@
         .history-box ul {
             list-style-type: disc;
             padding-left: 20px;
-            margin: 6px 0 14px 0;
+            margin: 6px 0 16px 0;
         }
         .history-box li {
             margin-bottom: 6px;
@@ -498,6 +509,7 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            display: none;
             transition: background-color 0.15s;
         }
         .copy-btn:hover {
@@ -586,7 +598,7 @@
             line-height: 1;
         }
 
-        /* 📱 모바일 최적화 */
+        /* 📱 모바일 최적화 (한 줄 정렬 및 3열 그리드) */
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
@@ -655,7 +667,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.16</span>
+    <span class="version">v1.17</span>
 </div>
 
 <div class="chat-container">
@@ -711,7 +723,7 @@
         </div>
     </div>
 
-    <!-- 연혁 본문 마크다운 서식 뷰어 영역 -->
+    <!-- 📖 연혁 본문 마크다운 서식 뷰어 영역 -->
     <div class="history-viewer-section">
         <div class="history-viewer-header">
             <h3>📖 촛불회 연혁 내용 보기</h3>
@@ -773,23 +785,23 @@
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 15개 소분류 정의 및 history.md 헤더 매칭 키워드
+    // 📌 [핵심] history.md의 실제 고유 HTML 앵커 ID(sub-X-X) 1:1 매핑
     const CUSTOM_MENU_MAPPING = [
-        { label: "한 줄 요약", type: "single", cols: ["한 줄 요약"], matchKeywords: ["한 줄 요약"] },
-        { label: "임원진", type: "single", cols: ["임원진"], matchKeywords: ["임원진"] },
-        { label: "체계 변화", type: "single", cols: ["체계 변화"], matchKeywords: ["체계 변화"] },
-        { label: "주요 이벤트", type: "single", cols: ["주요 이벤트", "이벤트"], matchKeywords: ["주요 이벤트", "이벤트"] },
-        { label: "역사적 사실", type: "single", cols: ["역사적 사실"], matchKeywords: ["역사적 사실"] },
-        { label: "애로 사항", type: "single", cols: ["애로 사항"], matchKeywords: ["애로 사항"] },
-        { label: "회의 종류", type: "single", cols: ["회의 종류"], matchKeywords: ["회의 종류"] },
-        { label: "의결 사항", type: "single", cols: ["의결 사항"], matchKeywords: ["의결 사항"] },
-        { label: "정기 봉사", type: "single", cols: ["정기 봉사"], matchKeywords: ["정기 봉사"] },
-        { label: "기타 봉사", type: "single", cols: ["기타 봉사"], matchKeywords: ["기타 봉사"] },
-        { label: "학술/문화 활동", type: "single", cols: ["학술/문화 활동", "학술/문화"], matchKeywords: ["학술/문화"] },
-        { label: "친목/기타 활동", type: "single", cols: ["친목/기타 활동", "친목/기타"], matchKeywords: ["친목/기타"] },
-        { label: "인물 인터뷰", type: "single", cols: ["인물 인터뷰", "인터뷰 및 탐방", "인터뷰"], matchKeywords: ["인터뷰"] },
-        { label: "회원 동정", type: "single", cols: ["회원 동정", "인물 동향", "개별 동정"], matchKeywords: ["인물 동향", "회원 동정"] },
-        { label: "경조사", type: "single", cols: ["경조사", "경조사 및 소식"], matchKeywords: ["경조사"] }
+        { label: "한 줄 요약", anchorId: "sub-1-3", cols: ["한 줄 요약"] },
+        { label: "임원진", anchorId: "sub-2-1", cols: ["임원진"] },
+        { label: "체계 변화", anchorId: "sub-2-2", cols: ["체계 변화"] },
+        { label: "주요 이벤트", anchorId: "sub-3-1", cols: ["주요 이벤트", "이벤트"] },
+        { label: "역사적 사실", anchorId: "sub-3-2", cols: ["역사적 사실"] },
+        { label: "애로 사항", anchorId: "sub-3-3", cols: ["애로 사항"] },
+        { label: "회의 종류", anchorId: "sub-4-1", cols: ["회의 종류"] },
+        { label: "의결 사항", anchorId: "sub-4-2", cols: ["의결 사항"] },
+        { label: "정기 봉사", anchorId: "sub-5-1", cols: ["정기 봉사"] },
+        { label: "기타 봉사", anchorId: "sub-5-2", cols: ["기타 봉사"] },
+        { label: "학술/문화 활동", anchorId: "sub-6-1", cols: ["학술/문화 활동", "학술/문화"] },
+        { label: "친목/기타 활동", anchorId: "sub-6-2", cols: ["친목/기타 활동", "친목/기타"] },
+        { label: "인물 인터뷰", anchorId: "sub-7-1", cols: ["인물 인터뷰", "인터뷰 및 탐방", "인터뷰"] },
+        { label: "회원 동정", anchorId: "sub-7-2", cols: ["회원 동정", "인물 동향", "개별 동정"] },
+        { label: "경조사", anchorId: "sub-7-3", cols: ["경조사", "경조사 및 소식"] }
     ];
 
     window.onload = async () => {
@@ -833,7 +845,7 @@
         }
     };
 
-    // 📌 history.md의 소분류 단위(### ) 섹션별 온전한 본문 추출 파싱 함수
+    // 📌 [정밀 파싱 엔진] history.md의 <h3 id="sub-X-X"> 앵커 태그 기반 완벽 추출 함수
     function renderFilteredHistory() {
         const box = $("historyContentBox");
         if (!rawHistoryMarkdown) return;
@@ -853,32 +865,37 @@
             return;
         }
 
-        // 선택된 항목들의 매칭 키워드 구성
-        let activeKeywords = [];
-        checkedLabels.forEach(label => {
-            const item = CUSTOM_MENU_MAPPING.find(m => m.label === label);
-            if (item && item.matchKeywords) activeKeywords.push(...item.matchKeywords);
-        });
+        // 선택된 항목들의 anchorId 목록 수집
+        const activeAnchorIds = checkedLabels.map(lbl => {
+            const item = CUSTOM_MENU_MAPPING.find(m => m.label === lbl);
+            return item ? item.anchorId : null;
+        }).filter(Boolean);
 
-        // '### ' (소분류 섹션 헤더) 기준으로 텍스트를 정확하게 분할
-        const rawSections = rawHistoryMarkdown.split(/\n(?=### )/);
+        // <h3 id="sub- 문구를 기점으로 섹션들을 엄밀하게 분할
+        // 각 블록의 앞부분에 들어갈 앵커 id를 안전하게 파악하기 위해 정규식 분할 사용
+        const sections = rawHistoryMarkdown.split(/(?=<h3\s+id\s*=\s*["']sub-)/i);
         let matchedMarkdownParts = [];
 
-        rawSections.forEach(sec => {
-            const trimmedSec = sec.trim();
-            if (!trimmedSec.startsWith("### ")) return;
-
-            // 섹션 첫 줄(헤더)에 선택된 키워드가 포함되어 있는지 검사
-            const firstLine = trimmedSec.split('\n')[0];
-            const isMatch = activeKeywords.some(kw => firstLine.includes(kw));
-
-            if (isMatch) {
-                matchedMarkdownParts.push(trimmedSec);
+        sections.forEach(sec => {
+            const trimmed = sec.trim();
+            // 해당 섹션의 id 속성 값 추출
+            const idMatch = trimmed.match(/<h3\s+id\s*=\s*["']([^"']+)["']/i);
+            if (idMatch && idMatch[1]) {
+                const secId = idMatch[1];
+                if (activeAnchorIds.includes(secId)) {
+                    // 다음 구분선(---)이나 다음 대분류 제목 전까지를 깔끔하게 유지
+                    let cleanSec = trimmed;
+                    const dividerIdx = cleanSec.indexOf('---');
+                    if (dividerIdx !== -1) {
+                        cleanSec = cleanSec.substring(0, dividerIdx).trim();
+                    }
+                    matchedMarkdownParts.push(cleanSec);
+                }
             }
         });
 
         if (matchedMarkdownParts.length > 0) {
-            box.innerHTML = marked.parse(matchedMarkdownParts.join("\n\n"));
+            box.innerHTML = marked.parse(matchedMarkdownParts.join("\n\n<hr style='border:0; border-top:1px dashed #cbd5e1; margin:20px 0;'>\n\n"));
         } else {
             box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">선택하신 항목에 해당하는 연혁 내용이 존재하지 않습니다.</div>`;
         }
