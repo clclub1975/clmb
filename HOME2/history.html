@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.1: 추억 스토리 생성기 상단 UI 및 검색 항목 4X4 그리드 디자인 융합 -->
+    <!-- v1.2: 추억 스토리 생성기 스타일의 상단 네비게이션 및 검색 항목 UI 완벽 일치화 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.1</title>
+    <title>촛불회 연혁 살펴보기 v1.2</title>
     <!-- Tailwind CSS 적용 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 마크다운 파싱을 위한 marked.js -->
@@ -12,6 +12,8 @@
     <style>
         :root {
             --primary-color: #8b0000;
+            --primary-hover: #6d0000;
+            --accent-color: #f57c00;
             --text-main: #2c3e50;
             --text-muted: #64748b;
             --bg-color: #f8f9fa;
@@ -69,6 +71,15 @@
             background: var(--card-bg); 
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04); 
         }
+        .control-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin-bottom: 18px; 
+            flex-wrap: wrap; 
+            justify-content: space-between;
+        }
+        label { font-weight: bold; min-width: 80px; color: var(--text-main); }
         .toggle-btn { 
             background: #ffffff; 
             border: 1px solid var(--border-color); 
@@ -82,6 +93,7 @@
         }
         .toggle-btn:hover { background: #f5eef0; }
         .checkbox-panel { 
+            display: block; 
             background: #ffffff; 
             border: 1px solid var(--border-color); 
             border-radius: 8px; 
@@ -92,13 +104,13 @@
         .checkbox-grid { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 10px; 
+            gap: 12px; 
         }
         .checkbox-item { 
             display: flex; 
             align-items: center; 
-            gap: 6px; 
-            font-size: 13px; 
+            gap: 8px; 
+            font-size: 13.5px; 
             cursor: pointer; 
             padding: 6px 8px;
             border: 1px solid #f1f5f9;
@@ -113,12 +125,29 @@
             background: #fff8e1;
             border-color: #ffe0b2;
         }
-        .control-row { 
+        .result-header-row { 
             display: flex; 
-            justify-content: space-between;
+            justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 15px; 
+            margin-top: 25px; 
+            margin-bottom: 10px; 
+            flex-wrap: wrap; 
+            gap: 10px; 
         }
+        .result-header-row h3 { margin: 0; color: var(--text-main); font-size: 1.15rem; }
+        .copy-btn { 
+            background-color: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 6px 14px; 
+            font-size: 13px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            display: none; 
+            transition: background-color 0.15s; 
+        }
+        .copy-btn:hover { background-color: #219653; }
         .content-box { 
             margin-top: 10px; 
             padding: 18px; 
@@ -144,7 +173,7 @@
 </head>
 <body>
 
-    <!-- 상단 네비게이션 (스토리 생성기 스타일 적용) -->
+    <!-- 상단 네비게이션 (추억 스토리 생성기 스타일 동일 적용) -->
     <div class="home-btn-container">
         <a href="index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
@@ -152,29 +181,29 @@
     <!-- 타이틀 영역 -->
     <div class="title-wrapper">
         <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-        <span class="version">v1.1</span>
+        <span class="version">v1.2</span>
     </div>
 
     <div class="chat-container">
         
-        <!-- 검색 항목 패널 제어 헤더 -->
+        <!-- 검색 항목 제어 헤더 -->
         <div class="control-row">
-            <span style="font-weight: bold; font-size: 15px; color: var(--text-main);">검색 항목</span>
+            <label style="margin: 0; font-size: 15px;">검색항목:</label>
             <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 검색할 목록 닫기 ▲</button>
         </div>
 
         <!-- 4X4 그리드 검색 항목 패널 (디폴트 열림) -->
         <div id="checkboxPanel" class="checkbox-panel">
-            <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">▶ 원하는 소분류 항목을 선택하면 해당 연혁 내용만 필터링되어 하단에 출력됩니다.</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">▶ 원하는 소분류 항목을 선택하면 해당 연혁 내용만 필터링되어 하단에 출력됩니다.</div>
             <div id="checkboxContainer" class="checkbox-grid">
                 <!-- JS 동적 렌더링 -->
             </div>
         </div>
 
         <!-- 하단 본문 출력 박스 영역 -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <h3 style="margin: 0; font-size: 16px;">연혁 내용 보기</h3>
-            <button type="button" id="copyBtn" onclick="copyResult()" style="background-color: #27ae60; color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; display: none;">📋 내용 복사하기</button>
+        <div class="result-header-row">
+            <h3>연혁 내용 보기</h3>
+            <button type="button" id="copyBtn" class="copy-btn" onclick="copyResult()">📋 내용 복사하기</button>
         </div>
         
         <div id="loading" class="text-center py-10 text-gray-500" style="font-style: italic;">GitHub에서 history.md 데이터를 불러오는 중입니다...</div>
@@ -305,9 +334,9 @@
         function copyResult() {
             navigator.clipboard.writeText(document.getElementById('content-view').innerText).then(() => {
                 const btn = document.getElementById('copyBtn');
-                const orig = btn.innerText;
+                const originalText = btn.innerText;
                 btn.innerText = "✅ 복사완료!";
-                setTimeout(() => btn.innerText = orig, 2000);
+                setTimeout(() => btn.innerText = originalText, 2000);
             }).catch(() => alert("클립보드 복사에 실패했습니다."));
         }
     </script>
