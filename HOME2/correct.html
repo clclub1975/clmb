@@ -1,4 +1,4 @@
-<!-- v11.4: 구글 시트('교정본') 데이터를 항목별 소제목과 리스트 형태로 가독성 좋게 모달 렌더링 및 버전 v11.4 적용 -->
+<!-- v11.5: 구글 시트('교정본') 데이터를 abstract.md 8대 핵심 항목 포맷과 동일한 구조로 모달 렌더링 및 버전 v11.5 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -249,7 +249,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v11.4</span>
+                <span class="version">v11.5</span>
             </h1>
         </header>
 
@@ -292,7 +292,7 @@
         const abstractMarkdownUrl = 'abstract.md';
 
         let summaryMap = {};    // 기존 md 요약 데이터
-        let correctMap = {};    // 새로 추가된 구글 시트 교정본 구조화 데이터
+        let correctMap = {};    // 새로 추가된 구글 시트 교정본 8대 항목 구조화 데이터
         let globalPdfMap = {};  // 모든 호수의 PDF 링크 정보를 담을 객체
 
         function parseCSV(text) {
@@ -327,7 +327,7 @@
             }
         }
 
-        // 새로 추가된 '교정본' 구글 시트 데이터 로드 (각 열별 항목 구조화)
+        // 구글 시트('교정본') 데이터를 abstract.md 8대 항목 포맷에 맞춰 구조화 렌더링
         async function loadCorrectSheetData() {
             try {
                 const response = await fetch(correctCsvUrl);
@@ -335,7 +335,7 @@
                 const csvText = await response.text();
                 const rows = parseCSV(csvText);
 
-                // 첫 번째 행은 헤더(제목 행)로 가정하고 필드명 추출
+                // 시트의 첫 번째 행(헤더)을 기반으로 컬럼 매핑 파악
                 const headers = rows.length > 0 ? rows[0].map(h => h.trim()) : [];
 
                 for (let j = 1; j < rows.length; j++) {
@@ -348,48 +348,80 @@
                     
                     const issueNum = parseInt(matches[0], 10);
 
-                    // 각 열의 데이터를 항목별 HTML 구조로 예쁘게 조립
+                    // abstract.md의 8대 핵심 항목 구조에 대응하는 HTML 빌더 구성
                     let htmlBuilder = '';
 
-                    // C열: 발행년월
-                    if (cols[2] && cols[2].length > 0) {
-                        htmlBuilder += `<h4>발행 정보</h4><ul><li><strong>발행년월:</strong> ${cols[2]}</li>`;
-                        if (cols[3] && cols[3].length > 0) {
-                            htmlBuilder += `<li><strong>한 줄 요약:</strong> ${cols[3]}</li>`;
-                        }
+                    // 1. 회보 정보 (통권 호수 및 발행년월, 한줄 요약)
+                    let pubDate = cols[2] || '';
+                    let oneLineSummary = cols[3] || '';
+                    if (pubDate || oneLineSummary) {
+                        htmlBuilder += `<h4>회보 정보</h4><ul>`;
+                        if (pubDate) htmlBuilder += `<li><strong>발행년월:</strong> ${pubDate}</li>`;
+                        if (oneLineSummary) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${oneLineSummary}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
-                    // D열 이후 메타데이터 항목들 동적 매핑 (헤더가 있는 경우 헤더 이름 활용)
-                    let otherItems = [];
-                    for (let c = 4; c < cols.length; c++) {
+                    // 2. 조직 및 체계 변화 (임원진, 체계 변화 등)
+                    let executives = cols[4] || '';
+                    let systemChange = cols[5] || '';
+                    if (executives || systemChange) {
+                        htmlBuilder += `<h4>조직 및 체계 변화</h4><ul>`;
+                        if (executives) htmlBuilder += `<li><strong>임원진:</strong> ${executives}</li>`;
+                        if (systemChange) htmlBuilder += `<li><strong>체계 변화:</strong> ${systemChange}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    // 3. 주요 이벤트 및 마일스톤
+                    let events = cols[6] || '';
+                    if (events) {
+                        htmlBuilder += `<h4>주요 이벤트 및 마일스톤</h4><ul><li>${events.replace(/\\n/g, '<br>')}</li></ul>`;
+                    }
+
+                    // 4. 주요 회의
+                    let meetings = cols[7] || '';
+                    if (meetings) {
+                        htmlBuilder += `<h4>주요 회의</h4><ul><li>${meetings.replace(/\\n/g, '<br>')}</li></ul>`;
+                    }
+
+                    // 5. 봉사 활동
+                    let volunteer = cols[8] || '';
+                    if (volunteer) {
+                        htmlBuilder += `<h4>봉사 활동</h4><ul><li>${volunteer.replace(/\\n/g, '<br>')}</li></ul>`;
+                    }
+
+                    // 6. 소집단 활동
+                    let subGroup = cols[9] || '';
+                    if (subGroup) {
+                        htmlBuilder += `<h4>소집단 활동</h4><ul><li>${subGroup.replace(/\\n/g, '<br>')}</li></ul>`;
+                    }
+
+                    // 7. 인물 소식
+                    let peopleNews = cols[10] || '';
+                    if (peopleNews) {
+                        htmlBuilder += `<h4>인물 소식</h4><ul><li>${peopleNews.replace(/\\n/g, '<br>')}</li></ul>`;
+                    }
+
+                    // 8. 기고문
+                    let articles = cols[11] || '';
+                    if (articles) {
+                        htmlBuilder += `<h4>기고문</h4><ul><li>${articles.replace(/\\n/g, '<br>')}</li></ul>`;
+                    }
+
+                    // 만약 특정 열 인덱스 외에 추가 데이터가 있다면 하단에 동적으로 추가
+                    let extraContent = [];
+                    for (let c = 12; c < cols.length; c++) {
                         if (cols[c] && cols[c].length > 0) {
-                            const headerName = (headers[c] && headers[c].length > 0) ? headers[c] : `상세 항목 ${c}`;
-                            otherItems.append ? otherItems.push(`<li><strong>${headerName}:</strong> ${cols[c]}</li>`) : otherItems.push(`<li><strong>${headerName}:</strong> ${cols[c]}</li>`);
+                            const headerName = headers[c] ? headers[c] : `기타 항목 ${c}`;
+                            extraContent.push(`<li><strong>${headerName}:</strong> ${cols[c]}</li>`);
                         }
                     }
-
-                    // 만약 D열(인덱스 4) 등 주요 항목이 있다면 별도 소제목으로 묶어줌
-                    if (cols[4] && cols[4].length > 0) {
-                        htmlBuilder += `<h4>주요 내용 및 세부 사항</h4><ul>`;
-                        for (let c = 4; c < cols.length; c++) {
-                            if (cols[c] && cols[c].length > 0) {
-                                const headerName = (headers[c] && headers[c].length > 0) ? headers[c] : `항목 ${c}`;
-                                htmlBuilder += `<li><strong>${headerName}:</strong> ${cols[c]}</li>`;
-                            }
-                        }
-                        htmlBuilder += `</ul>`;
+                    if (extraContent.length > 0) {
+                        htmlBuilder += `<h4>추가 상세 내용</h4><ul>${extraContent.join('')}</ul>`;
                     }
 
-                    // 만약 구조화된 내용이 부족하면 기존 방식대로 빈 내용 채우기
+                    // 만약 파싱된 내용이 전무하다면 기본 텍스트 표시
                     if (!htmlBuilder) {
-                        let contentLines = [];
-                        for (let c = 2; c < cols.length; c++) {
-                            if (cols[c] && cols[c].length > 0) {
-                                contentLines.push(cols[c]);
-                            }
-                        }
-                        htmlBuilder = `<p>${contentLines.join('<br><br>').replace(/\\n/g, '<br>')}</p>`;
+                        htmlBuilder = `<p>등록된 교정 내용이 없습니다.</p>`;
                     }
 
                     if (issueNum) {
@@ -481,7 +513,7 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 클릭 시 새 구글 시트('교정본') 구조화 내용 표시
+        // [교정] 클릭 시 새 구글 시트('교정본') 8대 항목 구조화 내용 표시
         function openCorrectModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
