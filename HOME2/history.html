@@ -1,10 +1,10 @@
-<!-- v1.10: story.html 레이아웃 기반 상단 타이틀 구조 적용 및 연혁 살펴보기 v1.10 버전 명시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- v1.11: 검색 기간 줄 제거, 검색 항목 및 15개 소분류 교체, 버전 v1.11 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.10</title>
+    <title>촛불회 연혁 살펴보기 v1.11</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -529,10 +529,6 @@
             line-height: 1;
         }
 
-        .period-controls-wrapper {
-            display: contents;
-        }
-
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
@@ -552,38 +548,6 @@
                 min-width: auto;
                 margin-bottom: 0;
             }
-            .period-controls-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                width: 100%;
-            }
-            .period-controls-wrapper select {
-                flex: 1;
-                width: auto;
-                padding: 8px 4px;
-                font-size: 13.5px;
-                text-overflow: ellipsis;
-            }
-            .period-range-group {
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                flex: 2;
-            }
-            .period-range-group select {
-                flex: 1;
-                width: auto;
-                padding: 8px 4px;
-                font-size: 13.5px;
-            }
-            .period-range-group span {
-                text-align: center;
-                font-weight: bold;
-                color: var(--text-muted);
-                padding: 0 1px;
-                flex-shrink: 0;
-            }
             .toggle-btn {
                 width: 100%;
                 text-align: center;
@@ -597,7 +561,6 @@
             .submit-btn, .sequential-btn, .reset-all-btn {
                 width: 100%;
             }
-            /* 📌 스마트폰 화면에서만 질문 입력창 세로폭(min-height)을 확장하여 예시문 잘림 방지 */
             .input-wrapper textarea {
                 min-height: 72px;
             }
@@ -612,7 +575,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.10</span>
+    <span class="version">v1.11</span>
 </div>
 
 <div class="chat-container">
@@ -657,26 +620,10 @@
         </div>
     </div>
 
-    <!-- 1. 검색 기간 설정 -->
+    <!-- 검색 항목 선택 -->
     <div class="control-row">
-        <label>검색기간:</label>
-        <div class="period-controls-wrapper">
-            <select id="criteriaType" onchange="initPeriodOptions()">
-                <option value="volume">통권기준</option>
-                <option value="year">년도기준</option>
-            </select>
-            <div class="period-range-group">
-                <select id="startPeriod" onchange="updateEndPeriodOptions()"></select>
-                <span>~</span>
-                <select id="endPeriod"></select>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. 참고항목 선택 -->
-    <div class="control-row">
-        <label>참고항목:</label>
-        <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 참고할 목록 열기 ▼</button>
+        <label>검색항목:</label>
+        <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📁 검색할 목록 열기 ▼</button>
     </div>
     <div id="checkboxPanel" class="checkbox-panel">
         <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">▶ 항목을 선택하면 AI가 더 신속하고 정확하게 답변합니다. 선택하지 않으면 전체를 참고합니다.</div>
@@ -685,7 +632,7 @@
         </div>
     </div>
 
-    <!-- 3. 질문 입력창 -->
+    <!-- 질문 입력창 -->
     <div class="input-group">
         <div class="input-wrapper">
             <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '봉사 활동' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
@@ -735,18 +682,23 @@
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
+    // 15개의 순수 소분류 항목 정의 (대분류 이름 제외)
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", type: "single", cols: ["한 줄 요약"] },
         { label: "임원진", type: "single", cols: ["임원진"] },
-        { label: "주요 이벤트", type: "single", cols: ["주요 이벤트"] },
-        { label: "기고문", type: "group", cols: ["기고문 개수", "기고자 전체 명단", "주요 기고문"] },
-        { label: "회원 동정", type: "single", cols: ["회원 동정"] },
-        { label: "봉사 활동", type: "single", cols: ["봉사 활동"] },
-        { label: "소집단 활동", type: "single", cols: ["소집단 활동"] },
-        { label: "동아리 애로 사항", type: "single", cols: ["동아리 애로 사항"] },
-        { label: "결혼 소식", type: "single", cols: ["결혼 소식"] },
-        { label: "부고 소식", type: "single", cols: ["부고 소식"] },
-        { label: "행사들", type: "group", cols: ["행사들", "행사1 행사명", "행사1 참석자 수", "행사1 일시", "행사1 장소", "행사1 참석 명단", "행사2 행사명", "행사2 참석자 수", "행사2 일시", "행사2 장소", "행사2 참석 명단"] }
+        { label: "체계 변화", type: "single", cols: ["체계 변화"] },
+        { label: "이벤트", type: "single", cols: ["이벤트"] },
+        { label: "역사적 사실", type: "single", cols: ["역사적 사실"] },
+        { label: "애로 사항", type: "single", cols: ["애로 사항"] },
+        { label: "회의 종류", type: "single", cols: ["회의 종류"] },
+        { label: "의결 사항", type: "single", cols: ["의결 사항"] },
+        { label: "정기 봉사", type: "single", cols: ["정기 봉사"] },
+        { label: "기타 봉사", type: "single", cols: ["기타 봉사"] },
+        { label: "학술/문화", type: "single", cols: ["학술/문화"] },
+        { label: "친목/기타", type: "single", cols: ["친목/기타"] },
+        { label: "인물 동향", type: "single", cols: ["인물 동향"] },
+        { label: "경조사 및 소식", type: "single", cols: ["경조사 및 소식"] },
+        { label: "인터뷰 및 탐방", type: "single", cols: ["인터뷰 및 탐방"] }
     ];
 
     window.onload = async () => {
@@ -772,7 +724,6 @@
             globalSheetData = parsed.data;
             globalHeaders = parsed.headers;
             renderCheckboxes();
-            initPeriodOptions();
             $("aiResult").innerHTML = "조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.";
             updateEnterModeFocus();
         } catch (error) {
@@ -977,42 +928,8 @@
         const panel = $("checkboxPanel"), btn = $("toggleBtn");
         const isBlock = panel.style.display === "block";
         panel.style.display = isBlock ? "none" : "block";
-        btn.innerHTML = isBlock ? "📁 참고할 목록 열기 ▼" : "📂 참고할 목록 닫기 ▲";
+        btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
-
-    function initPeriodOptions() {
-        const type = $("criteriaType").value;
-        const startSelect = $("startPeriod");
-        startSelect.innerHTML = `<option value="전체">전체</option>`;
-        if (type === "volume") {
-            let nums = globalSheetData.map(row => parseInt((row["통권 호수"] || row["통권호수"] || "").replace(/[^0-9]/g, ''))).filter(n => !isNaN(n));
-            if (nums.length) {
-                for (let i = Math.min(...nums); i <= Math.max(...nums); i++) {
-                    startSelect.add(new Option(String(i).padStart(3, '0') + "호", String(i).padStart(3, '0') + "호"));
-                }
-            }
-        } else {
-            let years = globalSheetData.map(row => row["발행월"] || row["발행 일자"] || "").join(" ").match(/19[8-9][0-9]|20[0-9][0-9]/g) || [];
-            let yNums = years.map(Number);
-            let minYear = yNums.length ? Math.min(...yNums) : 1984;
-            let maxYear = yNums.length ? Math.max(...yNums) : new Date().getFullYear();
-            for (let y = minYear; y <= maxYear; y++) {
-                startSelect.add(new Option(y + "년", y + "년"));
-            }
-        }
-        updateEndPeriodOptions();
-    }
-
-    function updateEndPeriodOptions() {
-        const startSelect = $("startPeriod"), endSelect = $("endPeriod");
-        endSelect.innerHTML = "";
-        if (startSelect.value === "전체") {
-            endSelect.add(new Option("전체", "전체"));
-        } else {
-            Array.from(startSelect.options).slice(startSelect.selectedIndex).forEach(opt => endSelect.add(new Option(opt.value, opt.value)));
-            endSelect.selectedIndex = endSelect.options.length - 1;
-        }
-    }
 
     async function askAI(isSequential) {
         const targetType = isSequential ? "sequential" : "new";
@@ -1068,8 +985,6 @@
         });
 
         const targetColumnsText = isFullData ? "전체 항목" : resolvedCols.join(", ");
-        const criteria = $("criteriaType").value === "volume" ? "통권기준" : "년도기준";
-        const periodText = $("startPeriod").value === "전체" ? "전체 기간" : `${$("startPeriod").value} ~ ${$("endPeriod").value}`;
         const qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
 
         activeTaskType = targetType;
@@ -1080,13 +995,13 @@
         btnText.innerText = "생성 중단";
         btn.classList.add("stop-btn");
         $("copyBtn").style.display = "none";
-        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[${criteria}: ${periodText}] 및 [참고항목: ${isFullData ? "전체" : selectedMenus.join(", ")}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`);
+        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[검색항목: ${isFullData ? "전체" : selectedMenus.join(", ")}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`);
         $("aiResult").scrollTop = 0;
         $("aiResult").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         try {
             let contextPrompt = isSequential && conversationHistory.length > 0 ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 기반으로 확장하거나 심층 분석해 주세요.` : "";
-            const promptText = ` 당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다: ${JSON.stringify(filteredSheetData)} [검색 조건 및 엄격한 제약 사항] - 기간 기준: ${criteria} (${periodText}) - 집중 참고 항목 (열 기준): ${targetColumnsText} - **핵심 규칙**: 위에서 지정된 [집중 참고 항목]에 포함되지 않은 데이터는 존재하지 않습니다. 질문 내용이 참고 범위 내에 없다면 유추하지 말고 명확히 안내해 주세요. ${contextPrompt} [사용자 질문] "${query}" 위 조건을 대조하여 답변을 작성해 주세요.`;
+            const promptText = ` 당신은 촛불회보의 역사를 잘 알고 있는 친절한 안내자입니다. 다음은 촛불회보의 요약 데이터베이스(JSON 형식)입니다: ${JSON.stringify(filteredSheetData)} [검색 조건 및 엄격한 제약 사항] - 집중 참고 항목 (열 기준): ${targetColumnsText} - **핵심 규칙**: 위에서 지정된 [집중 참고 항목]에 포함되지 않은 데이터는 존재하지 않습니다. 질문 내용이 참고 범위 내에 없다면 유추하지 말고 명확히 안내해 주세요. ${contextPrompt} [사용자 질문] "${query}" 위 조건을 대조하여 답변을 작성해 주세요.`;
 
             const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
                 method: 'POST',
