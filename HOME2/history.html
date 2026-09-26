@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.6: 촛불회 연혁 살펴보기 v1.6 상단 타이틀 영역 스타일 적용 -->
+    <!-- v1.7: story.html과 동일한 title-wrapper 및 h1, 알약형 버전 배지 구조 적용 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.6</title>
+    <title>촛불회 연혁 살펴보기 v1.7</title>
     <!-- Tailwind CSS 적용 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -24,7 +24,9 @@
             line-height: 1.6; 
             word-break: keep-all; 
         }
-        .home-btn-container { margin-bottom: 25px; }
+        .home-btn-container { 
+            margin-bottom: 25px; 
+        }
         .home-btn { 
             display: inline-block; 
             padding: 8px 16px; 
@@ -38,20 +40,23 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
             transition: all 0.2s ease; 
         }
-        .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
-        
-        /* '추억 스토리 생성기'와 완벽히 동일한 h1 타이틀 및 알약형 버전 배지 정렬 스타일 */
-        h1 { 
+        .home-btn:hover { 
+            background-color: #f1f5f9; 
+            border-color: #94a3b8; 
+        }
+        .title-wrapper { 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             gap: 12px; 
             flex-wrap: wrap; 
+            margin-bottom: 25px; 
+        }
+        h1 { 
             color: var(--text-main); 
             font-size: 2rem; 
-            margin: 0 0 25px 0; 
+            margin: 0; 
             font-weight: 700; 
-            text-align: center;
         }
         .version { 
             font-size: 0.85rem; 
@@ -66,13 +71,12 @@
 </head>
 <body>
 
-    <!-- 상단 네비게이션 -->
     <div class="home-btn-container">
         <a href="index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <!-- 타이틀 영역 (v1.6 적용) -->
-    <h1>
-        <span>🕯️ 촛불회 연혁 살펴보기</span>
-        <span class="version">v1.6</span>
-    </h1>
+    <!-- 타이틀 영역 (v1.7 적용) -->
+    <div class="title-wrapper">
+        <h1>🕯️ 촛불회 연혁 살펴보기</h1>
+        <span class="version">v1.7</span>
+    </div>
