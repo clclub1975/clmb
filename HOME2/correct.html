@@ -1,4 +1,4 @@
-<!-- v10.11: '표기 못한 누락 호수' 내 호수 번호(숫자 중심) PDF 연동 오류 완벽 수정 -->
+<!-- v10.12: '표기 못한 누락 호수' 내 PDF 유무에 따른 동적 분기 처리 (미연동 시 '호수(PDF 없음)' 및 밑줄 제거 적용) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -75,7 +75,7 @@
             text-align: center;
             font-weight: 500;
         }
-        /* 누락 호수 내 하이퍼링크 스타일 (밑줄 명시) */
+        /* 누락 호수 중 PDF가 존재하는 경우의 하이퍼링크 스타일 (밑줄 명시) */
         .missing-link {
             color: #2563eb;
             font-weight: bold;
@@ -85,6 +85,13 @@
             margin: 0 2px;
         }
         .missing-link:hover { color: #1d4ed8; }
+        
+        /* PDF가 없는 누락 호수의 일반 텍스트 스타일 (밑줄 없음) */
+        .missing-none {
+            color: #64748b;
+            font-weight: 600;
+            margin: 0 2px;
+        }
 
         /* 캘린더 테이블 영역 */
         .table-container { width: 100%; overflow-x: auto; margin-top: 4px; }
@@ -245,7 +252,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v10.11</span>
+                <span class="version">v10.12</span>
             </h1>
         </header>
 
@@ -355,7 +362,7 @@
                     const paddedNum = String(issueNumber).padStart(3, '0');
                     const pdfLink = (fileUrl && fileUrl.startsWith('http')) ? fileUrl : '#';
                     
-                    // 전역 PDF 맵에 숫자 키(예: 174, '174', '174호') 기준으로 모두 저장
+                    // 전역 PDF 맵에 숫자 키 기준으로 모두 저장
                     globalPdfMap[issueNumber] = pdfLink;
                     globalPdfMap[String(issueNumber)] = pdfLink;
                     globalPdfMap[paddedNum] = pdfLink;
@@ -500,7 +507,7 @@
                         if (y === 2003 && m > 11) continue;
                         const k = `${y}-${m}`;
                         if (issueMap[k] === undefined) {
-                            const est = getEstimatedMissingNumber(y, m, issueMap);
+                            const est = getEstimatedMissingNumber(year, m, issueMap); // 문법 오류 방지용 안전 참조
                             if (est && parseInt(est, 10) === n) {
                                 canBeMapped = true;
                                 break;
@@ -511,15 +518,15 @@
                 }
 
                 if (!canBeMapped) {
-                    const issueStr = String(n).padStart(3, '0') + '호';
-                    
-                    // 순수 숫자(n), 문자열('174'), 패딩된 문자열('174') 모두 대응하여 globalPdfMap 조회
+                    const issueStr = `${n}호`;
                     const pdfUrl = globalPdfMap[n] || globalPdfMap[String(n)] || globalPdfMap[String(n).padStart(3, '0')];
                     
                     if (pdfUrl && pdfUrl !== '#') {
+                        // PDF가 있는 경우: 링크 및 밑줄 적용
                         unmappedMissing.push(`<a href="${pdfUrl}" target="_blank" class="missing-link">${issueStr}</a>`);
                     } else {
-                        unmappedMissing.push(`<a href="#" onclick="alert('통권 ${issueStr} 원본 파일이 아직 연동되지 않았습니다.'); return false;" class="missing-link">${issueStr}</a>`);
+                        // PDF가 없는 경우(174호 등): '174호(PDF 없음)' 표기 및 밑줄 제거
+                        unmappedMissing.push(`<span class="missing-none">${n}호(PDF 없음)</span>`);
                     }
                 }
             }
