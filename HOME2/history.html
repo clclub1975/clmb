@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- v1.0: 4X4 그리드 검색 항목 레이아웃 적용, 검색할 목록 토글 및 v1.0 버전 명시 -->
     <meta charset="UTF-8">
-    <title>촛불회 회보 연혁 (History Viewer)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>촛불회 연혁 살펴보기 (History Viewer)</title>
     <!-- Tailwind CSS 적용 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 마크다운 파싱을 위한 marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.js"></script>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; }
+        body { font-family: 'Malgun Gothic', sans-serif; word-break: keep-all; }
         .content-box ul { list-style-type: disc; padding-left: 20px; }
         .content-box li { margin-bottom: 8px; line-height: 1.6; }
     </style>
@@ -18,123 +20,124 @@
     <!-- 상단 헤더 -->
     <header class="bg-amber-700 text-white p-4 shadow-md">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">촛불회 회보 연혁 (History Viewer)</h1>
-            <span class="text-xs bg-amber-800 px-3 py-1 rounded-full">history.md 연동</span>
+            <div class="flex items-center space-x-3">
+                <h1 class="text-xl font-bold">🕯️ 촛불회 연혁 살펴보기</h1>
+                <span class="text-xs bg-amber-900 text-amber-200 px-2.5 py-0.5 rounded-full font-semibold">v1.0</span>
+            </div>
+            <a href="index.html" class="text-xs bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-md transition font-medium">HOME으로 가기</a>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto p-6 flex-grow w-full space-y-6">
+    <main class="max-w-6xl mx-auto p-4 md:p-6 flex-grow w-full space-y-6">
         
-        <!-- 분류 선택 영역 (실제 대/소분류 트리 구조) -->
+        <!-- 검색 항목 패널 (디폴트 열림, 4X4 그리드 레이아웃) -->
         <section class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
-            <h2 class="font-bold text-gray-700 mb-4 border-b pb-2 text-base">분류 선택</h2>
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h2 class="font-bold text-gray-700 text-base">검색 항목</h2>
+                <button onclick="toggleFilterPanel()" id="toggle-btn" class="text-xs text-amber-700 font-semibold hover:underline">
+                    검색할 목록 닫기 ▲
+                </button>
+            </div>
             
-            <div id="filter-container" class="space-y-4 text-sm">
-                <!-- [전체 보기] 체크박스 -->
-                <div class="flex items-center space-x-2 font-semibold">
+            <!-- 4X4 그리드 컨테이너 (총 16개 항목: 전체선택 + 15개 소분류) -->
+            <div id="filter-panel" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                
+                <!-- 1. [전체 선택] (첫 번째 소분류 항목처럼 취급) -->
+                <label class="flex items-center space-x-2 p-2 rounded bg-amber-50 border border-amber-200 cursor-pointer hover:bg-amber-100 transition">
                     <input type="checkbox" id="chk-all" onchange="handleAllCheck(this)" class="w-4 h-4 text-amber-700 rounded border-gray-300 focus:ring-amber-600">
-                    <label for="chk-all" class="cursor-pointer text-amber-800">[전체 보기]</label>
-                </div>
+                    <span class="font-bold text-amber-900">[전체 선택]</span>
+                </label>
 
-                <div class="space-y-3 pl-2 border-l-2 border-gray-100" id="category-tree">
-                    
-                    <!-- 1. 회보 정보 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-1')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">회보 정보</label>
-                        </div>
-                        <div id="sub-1" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="회보 정보 - 한 줄 요약" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>회보 정보 - 한 줄 요약</span></div>
-                        </div>
-                    </div>
+                <!-- 2. 회보 정보 - 한 줄 요약 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="회보 정보 - 한 줄 요약" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">회보 정보 (한 줄 요약)</span>
+                </label>
 
-                    <!-- 2. 조직 및 체계 변화 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-2')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">조직 및 체계 변화</label>
-                        </div>
-                        <div id="sub-2" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="조직 및 체계 변화 - 임원진" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>임원진</span></div>
-                            <div><input type="checkbox" value="조직 및 체계 변화 - 체계 변화" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>체계 변화</span></div>
-                        </div>
-                    </div>
+                <!-- 3. 조직 및 체계 변화 - 임원진 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="조직 및 체계 변화 - 임원진" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">조직 및 체계 (임원진)</span>
+                </label>
 
-                    <!-- 3. 주요 이벤트 및 마일스톤 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-3')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">주요 이벤트 및 마일스톤</label>
-                        </div>
-                        <div id="sub-3" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="주요 이벤트 및 마일스톤 - 이벤트" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>이벤트</span></div>
-                            <div><input type="checkbox" value="주요 이벤트 및 마일스톤 - 역사적 사실" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>역사적 사실</span></div>
-                            <div><input type="checkbox" value="주요 이벤트 및 마일스톤 - 애로 사항" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>애로 사항</span></div>
-                        </div>
-                    </div>
+                <!-- 4. 조직 및 체계 변화 - 체계 변화 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="조직 및 체계 변화 - 체계 변화" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">조직 및 체계 (체계변화)</span>
+                </label>
 
-                    <!-- 4. 주요 회의 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-4')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">주요 회의</label>
-                        </div>
-                        <div id="sub-4" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="주요 회의 - 회의 종류" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>회의 종류</span></div>
-                            <div><input type="checkbox" value="주요 회의 - 의결 사항" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>의결 사항</span></div>
-                        </div>
-                    </div>
+                <!-- 5. 주요 이벤트 및 마일스톤 - 이벤트 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="주요 이벤트 및 마일스톤 - 이벤트" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">이벤트 및 마일스톤 (이벤트)</span>
+                </label>
 
-                    <!-- 5. 봉사 활동 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-5')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">봉사 활동</label>
-                        </div>
-                        <div id="sub-5" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="봉사 활동 - 정기 봉사" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>정기 봉사</span></div>
-                            <div><input type="checkbox" value="봉사 활동 - 기타 봉사" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>기타 봉사</span></div>
-                        </div>
-                    </div>
+                <!-- 6. 주요 이벤트 및 마일스톤 - 역사적 사실 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="주요 이벤트 및 마일스톤 - 역사적 사실" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">이벤트 (역사적 사실)</span>
+                </label>
 
-                    <!-- 6. 소집단 활동 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-6')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">소집단 활동</label>
-                        </div>
-                        <div id="sub-6" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="소집단 활동 - 학술/문화" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>학술/문화</span></div>
-                            <div><input type="checkbox" value="소집단 활동 - 친목/기타" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>친목/기타</span></div>
-                        </div>
-                    </div>
+                <!-- 7. 주요 이벤트 및 마일스톤 - 애로 사항 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="주요 이벤트 및 마일스톤 - 애로 사항" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">이벤트 (애로 사항)</span>
+                </label>
 
-                    <!-- 7. 인물 소식 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-7')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">인물 소식</label>
-                        </div>
-                        <div id="sub-7" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="인물 소식 - 인물 동향" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>인물 동향</span></div>
-                            <div><input type="checkbox" value="인물 소식 - 경조사 및 소식" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>경조사 및 소식</span></div>
-                            <div><input type="checkbox" value="인물 소식 - 인터뷰 및 탐방" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>인터뷰 및 탐방</span></div>
-                        </div>
-                    </div>
+                <!-- 8. 주요 회의 - 회의 종류 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="주요 회의 - 회의 종류" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">주요 회의 (회의 종류)</span>
+                </label>
 
-                    <!-- 8. 기고문 -->
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2 font-bold text-gray-800">
-                            <input type="checkbox" onchange="handleCategoryToggle(this, 'sub-8')" class="cat-chk w-4 h-4 text-amber-700 rounded border-gray-300">
-                            <label class="cursor-pointer">기고문</label>
-                        </div>
-                        <div id="sub-8" class="pl-6 space-y-1 text-xs text-gray-600">
-                            <div><input type="checkbox" value="기고문 - 회원 기고문" onchange="handleSubCheck()" class="sub-chk w-3 h-3 text-amber-600 rounded border-gray-300"> <span>회원 기고문</span></div>
-                        </div>
-                    </div>
+                <!-- 9. 주요 회의 - 의결 사항 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="주요 회의 - 의결 사항" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">주요 회의 (의결 사항)</span>
+                </label>
 
-                </div>
+                <!-- 10. 봉사 활동 - 정기 봉사 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="봉사 활동 - 정기 봉사" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">봉사 활동 (정기 봉사)</span>
+                </label>
+
+                <!-- 11. 봉사 활동 - 기타 봉사 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="봉사 활동 - 기타 봉사" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">봉사 활동 (기타 봉사)</span>
+                </label>
+
+                <!-- 12. 소집단 활동 - 학술/문화 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="소집단 활동 - 학술/문화" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">소집단 활동 (학술/문화)</span>
+                </label>
+
+                <!-- 13. 소집단 활동 - 친목/기타 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="소집단 활동 - 친목/기타" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">소집단 활동 (친목/기타)</span>
+                </label>
+
+                <!-- 14. 인물 소식 - 인물 동향 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="인물 소식 - 인물 동향" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">인물 소식 (인물 동향)</span>
+                </label>
+
+                <!-- 15. 인물 소식 - 경조사 및 소식 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="인물 소식 - 경조사 및 소식" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">인물 소식 (경조사)</span>
+                </label>
+
+                <!-- 16. 인물 소식 - 인터뷰 및 탐방 -->
+                <label class="flex items-center space-x-2 p-2 rounded border border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" value="인물 소식 - 인터뷰 및 탐방" onchange="handleSubCheck()" class="sub-chk w-4 h-4 text-amber-600 rounded border-gray-300">
+                    <span class="text-gray-700 text-xs font-medium">인물 소식 (인터뷰/탐방)</span>
+                </label>
+
             </div>
         </section>
 
@@ -166,6 +169,7 @@
                 const contentView = document.getElementById('content-view');
                 contentView.style.display = 'block';
                 
+                // 초기 상태: 전체 선택 체크
                 document.getElementById('chk-all').checked = true;
                 renderContent();
             } catch (error) {
@@ -174,22 +178,23 @@
             }
         }
 
-        // 전체 보기 체크박스 제어
-        function handleAllCheck(masterChk) {
-            const allChks = document.querySelectorAll('input[type="checkbox"]:not(#chk-all)');
-            allChks.forEach(chk => chk.checked = false);
-            renderContent();
+        // 검색할 목록 패널 토글 함수
+        function toggleFilterPanel() {
+            const panel = document.getElementById('filter-panel');
+            const btn = document.getElementById('toggle-btn');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'grid';
+                btn.innerText = '검색할 목록 닫기 ▲';
+            } else {
+                panel.style.display = 'none';
+                btn.innerText = '검색할 목록 열기 ▼';
+            }
         }
 
-        // 대분류 체크 시 하위 소분류 일괄 체크/해제
-        function handleCategoryToggle(catChk, subContainerId) {
-            document.getElementById('chk-all').checked = false;
-            const subContainer = document.getElementById(subContainerId);
-            const subChks = subContainer.querySelectorAll('.sub-chk');
-            
-            subChks.forEach(chk => {
-                chk.checked = catChk.checked;
-            });
+        // [전체 선택] 체크박스 제어
+        function handleAllCheck(masterChk) {
+            const subChks = document.querySelectorAll('.sub-chk');
+            subChks.forEach(chk => chk.checked = false);
             renderContent();
         }
 
@@ -217,12 +222,11 @@
 
             const targetSubTitles = Array.from(checkedSubChks).map(chk => chk.value);
 
-            // history.md 내용을 '## ' 기준으로 섹션 단위로 쪼갬
+            // history.md 내용을 '## ' 기준으로 섹션 단위로 분할
             const sections = rawMarkdownText.split('## ');
             let filteredHtml = "";
 
             sections.forEach(sec => {
-                // 각 섹션의 헤딩(예: "2.1 조직 및 체계 변화 - 임원진")이 체크된 소분류 이름과 일치하는지 확인
                 for (let subTitle of targetSubTitles) {
                     if (sec.includes(subTitle)) {
                         filteredHtml += "## " + sec + "\n\n";
