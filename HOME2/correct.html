@@ -1,4 +1,4 @@
-<!-- v10.13: 누락 호수 계산 반복문 내 변수 참조 오류(ReferenceError) 수정 완료 -->
+<!-- v11.0: [요약]은 기존 abstract.md, [교정]은 새 구글 시트('교정본') 데이터 연동 및 비교 테스트 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -75,7 +75,6 @@
             text-align: center;
             font-weight: 500;
         }
-        /* 누락 호수 중 PDF가 존재하는 경우의 하이퍼링크 스타일 (밑줄 명시) */
         .missing-link {
             color: #2563eb;
             font-weight: bold;
@@ -85,8 +84,6 @@
             margin: 0 2px;
         }
         .missing-link:hover { color: #1d4ed8; }
-        
-        /* PDF가 없는 누락 호수의 일반 텍스트 스타일 (밑줄 없음) */
         .missing-none {
             color: #64748b;
             font-weight: 600;
@@ -171,12 +168,13 @@
             color: #16a34a;
             font-weight: 500;
             line-height: 1;
+            text-decoration: underline;
+            text-underline-offset: 2px;
         }
         .cell-status.pending {
             color: #dc2626;
         }
         
-        /* 비어 있는 셀 내 누락 호수 번호 스타일 */
         .missing-cell-issue {
             display: flex;
             align-items: center;
@@ -222,7 +220,6 @@
             background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
         }
 
-        /* marked.js 변환 결과 디자인 서식 및 안정적인 레이아웃 적용 */
         .modal-body { font-size: 0.9rem; color: #334155; line-height: 1.5; text-align: left; }
         .modal-body h4 { margin-top: 14px; margin-bottom: 4px; color: #1e293b; font-size: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
         .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
@@ -252,7 +249,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v10.13</span>
+                <span class="version">v11.0</span>
             </h1>
         </header>
 
@@ -282,20 +279,22 @@
     <div class="modal-overlay" id="summary-modal" onclick="closeSummaryModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <span class="modal-title" id="modal-issue-title">회보 요약</span>
+                <span class="modal-title" id="modal-issue-title">회보 내용</span>
                 <button class="modal-close" onclick="closeSummaryModal()">&times;</button>
             </div>
-            <!-- marked.js 변환 결과가 HTML로 삽입되는 영역 -->
-            <div class="modal-body" id="modal-issue-text">요약 내용을 불러오는 중입니다...</div>
+            <div class="modal-body" id="modal-issue-text">데이터를 불러오는 중입니다...</div>
         </div>
     </div>
 
     <script>
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
+        // 새로 추가된 '교정본' 구글 시트 CSV 링크
+        const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
         const abstractMarkdownUrl = 'abstract.md';
 
-        let summaryMap = {}; 
-        let globalPdfMap = {}; // 모든 호수의 PDF 링크 정보를 담을 객체
+        let summaryMap = {};    // 기존 md 요약 데이터
+        let correctMap = {};    // 새로 추가된 구글 시트 교정본 데이터
+        let globalPdfMap = {};  // 모든 호수의 PDF 링크 정보를 담을 객체
 
         function parseCSV(text) {
             let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
@@ -309,15 +308,12 @@
             return ret;
         }
 
+        // 기존 abstract.md 로드
         async function loadAbstractData() {
             try {
                 const response = await fetch(abstractMarkdownUrl);
-                if (!response.ok) {
-                    console.warn("abstract.md 파일을 불러오지 못했습니다.");
-                    return;
-                }
+                if (!response.ok) return;
                 const mdText = await response.text();
-                
                 const sections = mdText.split(/(?=#+\s*\[\s*\d+호?\s*\])/);
                 sections.forEach(sec => {
                     const matchHeader = sec.match(/#+\s*\[\s*(\d+)호?\s*\]/);
@@ -328,13 +324,42 @@
                     }
                 });
             } catch (e) {
-                console.error("abstract.md 로드 중 오류 발생:", e);
+                console.error("abstract.md 로드 오류:", e);
+            }
+        }
+
+        // 새로 추가된 '교정본' 구글 시트 데이터 로드
+        async function loadCorrectSheetData() {
+            try {
+                const response = await fetch(correctCsvUrl);
+                if (!response.ok) return;
+                const csvText = await response.text();
+                const rows = parseCSV(csvText);
+
+                for (let j = 1; j < rows.length; j++) {
+                    const cols = rows[j].map(c => c.trim());
+                    if (cols.length < 2) continue;
+
+                    const matches = cols[0].match(/(\d+)/g);
+                    if (!matches) continue;
+                    const issueNum = parseInt(matches[0], 10);
+
+                    let content = cols.slice(1).find(val => val.length > 0) || "";
+                    content = content.replace(/\\n/g, '\n');
+
+                    if (issueNum && content) {
+                        correctMap[issueNum] = content;
+                    }
+                }
+            } catch (e) {
+                console.error("교정본 시트 로드 오류:", e);
             }
         }
 
         async function loadCalendarData() {
             try {
                 await loadAbstractData();
+                await loadCorrectSheetData();
 
                 const respPdf = await fetch(pdfCsvUrl);
                 const pdfCsvText = await respPdf.text();
@@ -362,7 +387,6 @@
                     const paddedNum = String(issueNumber).padStart(3, '0');
                     const pdfLink = (fileUrl && fileUrl.startsWith('http')) ? fileUrl : '#';
                     
-                    // 전역 PDF 맵에 숫자 키 기준으로 모두 저장
                     globalPdfMap[issueNumber] = pdfLink;
                     globalPdfMap[String(issueNumber)] = pdfLink;
                     globalPdfMap[paddedNum] = pdfLink;
@@ -394,18 +418,36 @@
             }
         }
 
-        // 모달 열기 및 모바일 뒤로가기(<) 연동을 위한 history 상태 추가
+        // [요약] 클릭 시 기존 abstract.md 내용 표시
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
 
-            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약`;
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 (abstract.md)`;
             
             if (summaryMap[issueNum]) {
                 textElem.innerHTML = marked.parse(summaryMap[issueNum]);
             } else {
                 textElem.innerHTML = "<p>아직 작성된 요약 내용이 없습니다.</p>";
+            }
+
+            modal.style.display = 'flex';
+            history.pushState({ modalOpen: true }, '', window.location.href);
+        }
+
+        // [교정] 클릭 시 새 구글 시트('교정본') 내용 표시
+        function openCorrectModal(issueNum, year, month) {
+            const modal = document.getElementById('summary-modal');
+            const titleElem = document.getElementById('modal-issue-title');
+            const textElem = document.getElementById('modal-issue-text');
+
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트)`;
+            
+            if (correctMap[issueNum]) {
+                textElem.innerHTML = marked.parse(correctMap[issueNum]);
+            } else {
+                textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 구글 시트 교정 데이터가 아직 없습니다.</p>`;
             }
 
             modal.style.display = 'flex';
@@ -562,9 +604,9 @@
                                 <div class="cell-block" onclick="openSummaryModal(${data.rawNum}, ${year}, ${month})">
                                     <span class="cell-summary">${data.summary}</span>
                                 </div>
-                                <a href="#" class="cell-block" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 교정 연동'); return false;">
+                                <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${year}, ${month})">
                                     <span class="cell-status ${statusClass}">${data.status}</span>
-                                </a>
+                                </div>
                             </div>
                         `;
                     } else {
@@ -586,4 +628,3 @@
     </script>
 </body>
 </html>
- 
