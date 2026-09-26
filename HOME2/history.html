@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.4: 촛불회 연혁 살펴보기 v1.4 타이틀 버전 갱신 -->
+    <!-- v1.5: 추억 스토리 생성기 스타일의 상단 타이틀 폰트 및 UI/UX 완벽 일치화 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.4</title>
+    <title>촛불회 연혁 살펴보기 v1.5</title>
     <!-- Tailwind CSS 적용 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 마크다운 파싱을 위한 marked.js -->
@@ -45,7 +45,7 @@
         }
         .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
         
-        /* 추억 스토리 생성기와 동일한 h1 및 알약형 버전 배지 정렬 스타일 */
+        /* 추억 스토리 생성기와 100% 동일한 h1 타이틀 및 알약형 버전 배지 정렬 스타일 */
         h1 { 
             display: flex; 
             align-items: center; 
@@ -67,17 +67,282 @@
             vertical-align: middle; 
             font-weight: 600; 
         }
+
+        .chat-container { 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            padding: 25px; 
+            background: var(--card-bg); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04); 
+        }
+        .control-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin-bottom: 18px; 
+            flex-wrap: wrap; 
+            justify-content: space-between;
+        }
+        label { font-weight: bold; min-width: 80px; color: var(--text-main); }
+        .toggle-btn { 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            padding: 8px 14px; 
+            font-size: 13.5px; 
+            cursor: pointer; 
+            color: #5d4037; 
+            font-weight: bold; 
+            transition: background-color 0.15s; 
+        }
+        .toggle-btn:hover { background: #f5eef0; }
+        .checkbox-panel { 
+            display: block; 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 18px; 
+            margin-bottom: 25px; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); 
+        }
+        .checkbox-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px; 
+        }
+        .checkbox-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 13.5px; 
+            cursor: pointer; 
+            padding: 6px 8px;
+            border: 1px solid #f1f5f9;
+            border-radius: 6px;
+            background: #f8f9fa;
+            transition: background 0.15s;
+        }
+        .checkbox-item:hover { background: #f1f5f9; }
+        .checkbox-item.select-all { 
+            font-weight: bold; 
+            color: var(--primary-color); 
+            background: #fff8e1;
+            border-color: #ffe0b2;
+        }
+        .result-header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-top: 25px; 
+            margin-bottom: 10px; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+        }
+        .result-header-row h3 { margin: 0; color: var(--text-main); font-size: 1.15rem; font-weight: bold; }
+        .copy-btn { 
+            background-color: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 6px 14px; 
+            font-size: 13px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            display: none; 
+            transition: background-color 0.15s; 
+        }
+        .copy-btn:hover { background-color: #219653; }
+        .content-box { 
+            margin-top: 10px; 
+            padding: 18px; 
+            background: white; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            max-height: 600px; 
+            overflow-y: auto; 
+            line-height: 1.6;
+        }
+        .content-box ul { list-style-type: disc; padding-left: 20px; }
+        .content-box li { margin-bottom: 8px; }
+        @media (max-width: 768px) {
+            body { padding: 15px 10px; }
+            h1 { font-size: 1.5rem; }
+            .checkbox-grid { grid-template-columns: repeat(2, 1fr); }
+            .chat-container { padding: 15px; }
+        }
+        @media (max-width: 480px) {
+            .checkbox-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
     <!-- 상단 네비게이션 -->
     <div class="home-btn-container">
-        <a href="index.html" class="home-btn">← 메인으로 돌아가기</a>
+        <a href="[메인으로 돌아가기](https://clclub1975.github.io/clmb/HOME2/story.html)" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <!-- 타이틀 영역 (v1.4 반영) -->
+    <!-- 타이틀 영역 (v1.5 적용) -->
     <h1>
         <span>🕯️ 촛불회 연혁 살펴보기</span>
-        <span class="version">v1.4</span>
+        <span class="version">v1.5</span>
     </h1>
+
+    <div class="chat-container">
+        
+        <!-- 검색 항목 제어 헤더 -->
+        <div class="control-row">
+            <label style="margin: 0; font-size: 15px;">검색항목:</label>
+            <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 검색할 목록 닫기 ▲</button>
+        </div>
+
+        <!-- 4X4 그리드 검색 항목 패널 (디폴트 열림) -->
+        <div id="checkboxPanel" class="checkbox-panel">
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">▶ 원하는 소분류 항목을 선택하면 해당 연혁 내용만 필터링되어 하단에 출력됩니다.</div>
+            <div id="checkboxContainer" class="checkbox-grid">
+                <!-- JS 동적 렌더링 -->
+            </div>
+        </div>
+
+        <!-- 하단 본문 출력 박스 영역 -->
+        <div class="result-header-row">
+            <h3>연혁 내용 보기</h3>
+            <button type="button" id="copyBtn" class="copy-btn" onclick="copyResult()">📋 내용 복사하기</button>
+        </div>
+        
+        <div id="loading" class="text-center py-10 text-gray-500" style="font-style: italic;">GitHub에서 history.md 데이터를 불러오는 중입니다...</div>
+        <div id="content-view" class="content-box prose max-w-none text-sm hidden"></div>
+
+    </div>
+
+    <!-- 푸터 -->
+    <footer style="text-align: center; padding: 25px 0 10px 0; font-size: 12px; color: var(--text-muted);">
+        촛불회 회보 아카이브 시스템 &copy; 2026
+    </footer>
+
+    <!-- 자바스크립트 로직 -->
+    <script>
+        let rawMarkdownText = "";
+        const historyMdUrl = "https://raw.githubusercontent.com/clclub1975/clmb/main/HOME2/history.md";
+
+        // 소분류 15개 정의
+        const SUB_CATEGORIES = [
+            "회보 정보 - 한 줄 요약",
+            "조직 및 체계 변화 - 임원진",
+            "조직 및 체계 변화 - 체계 변화",
+            "주요 이벤트 및 마일스톤 - 이벤트",
+            "주요 이벤트 및 마일스톤 - 역사적 사실",
+            "주요 이벤트 및 마일스톤 - 애로 사항",
+            "주요 회의 - 회의 종류",
+            "주요 회의 - 의결 사항",
+            "봉사 활동 - 정기 봉사",
+            "봉사 활동 - 기타 봉사",
+            "소집단 활동 - 학술/문화",
+            "소집단 활동 - 친목/기타",
+            "인물 소식 - 인물 동향",
+            "인물 소식 - 경조사 및 소식",
+            "인물 소식 - 인터뷰 및 탐방"
+        ];
+
+        window.onload = async () => {
+            renderCheckboxes();
+            try {
+                const response = await fetch(historyMdUrl);
+                if (!response.ok) throw new Error("네트워크 응답 오류");
+                rawMarkdownText = await response.text();
+                
+                document.getElementById('loading').style.display = 'none';
+                const contentView = document.getElementById('content-view');
+                contentView.style.display = 'block';
+                
+                // 초기 상태: 전체 선택 체크
+                document.getElementById('selectAllCheckbox').checked = true;
+                renderContent();
+            } catch (error) {
+                document.getElementById('loading').innerHTML = "<span style='color:red;'>데이터를 불러오는 데 실패했습니다. 파일 경로를 확인해 주세요.</span>";
+                console.error(error);
+            }
+        };
+
+        // 4X4 그리드 체크박스 렌더링 ([전체 선택]을 첫 번째 요소로 포함하여 총 16개)
+        function renderCheckboxes() {
+            const container = document.getElementById('checkboxContainer');
+            let html = `<label class="checkbox-item select-all"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"> [ 전체 선택 ]</label>`;
+            
+            SUB_CATEGORIES.forEach(sub => {
+                html += `<label class="checkbox-item"><input type="checkbox" name="targetSub" value="${sub}" onchange="checkIndividualCheckbox()"> ${sub}</label>`;
+            });
+            container.innerHTML = html;
+        }
+
+        const toggleSelectAll = (selectAllCb) => {
+            document.querySelectorAll('input[name="targetSub"]').forEach(cb => cb.checked = selectAllCb.checked);
+            renderContent();
+        };
+
+        const checkIndividualCheckbox = () => {
+            const allChecked = Array.from(document.querySelectorAll('input[name="targetSub"]')).every(cb => cb.checked);
+            document.getElementById('selectAllCheckbox').checked = allChecked;
+            renderContent();
+        };
+
+        // 검색할 목록 패널 토글
+        function toggleCheckboxPanel() {
+            const panel = document.getElementById('checkboxPanel');
+            const btn = document.getElementById('toggleBtn');
+            const isBlock = panel.style.display !== "none";
+            panel.style.display = isBlock ? "none" : "block";
+            btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
+        }
+
+        // 체크된 조건에 따라 history.md 필터링 및 렌더링
+        function renderContent() {
+            const contentView = document.getElementById('content-view');
+            const isAllChecked = document.getElementById('selectAllCheckbox').checked;
+
+            if (isAllChecked || !rawMarkdownText) {
+                contentView.innerHTML = marked.parse(rawMarkdownText);
+                document.getElementById('copyBtn').style.display = "inline-block";
+                return;
+            }
+
+            const checkedSubs = Array.from(document.querySelectorAll('input[name="targetSub"]:checked')).map(cb => cb.value);
+            if (checkedSubs.length === 0) {
+                contentView.innerHTML = "<p style='color: var(--text-muted); font-style: italic;'>선택된 항목이 없습니다. 검색 항목에서 항목을 선택해 주세요.</p>";
+                document.getElementById('copyBtn').style.display = "none";
+                return;
+            }
+
+            const sections = rawMarkdownText.split('## ');
+            let filteredHtml = "";
+
+            sections.forEach(sec => {
+                for (let sub of checkedSubs) {
+                    if (sec.includes(sub)) {
+                        filteredHtml += "## " + sec + "\n\n";
+                        break;
+                    }
+                }
+            });
+
+            if (filteredHtml.trim() !== "") {
+                contentView.innerHTML = marked.parse(filteredHtml);
+                document.getElementById('copyBtn').style.display = "inline-block";
+            } else {
+                contentView.innerHTML = "<p style='color: var(--text-muted);'>해당하는 내용을 찾을 수 없습니다.</p>";
+                document.getElementById('copyBtn').style.display = "none";
+            }
+        }
+
+        // 클립보드 복사 기능
+        function copyResult() {
+            navigator.clipboard.writeText(document.getElementById('content-view').innerText).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.innerText;
+                btn.innerText = "✅ 복사완료!";
+                setTimeout(() => btn.innerText = originalText, 2000);
+            }).catch(() => alert("클립보드 복사에 실패했습니다."));
+        }
+    </script>
+</body>
+</html>
