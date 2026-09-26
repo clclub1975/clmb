@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.2: 추억 스토리 생성기 스타일의 상단 네비게이션 및 검색 항목 UI 완벽 일치화 -->
+    <!-- v1.3: 추억 스토리 생성기와 동일한 <h1> 타이틀, 알약형 버전 배지 및 컨테이너 레이아웃 적용 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.2</title>
+    <title>촛불회 연혁 살펴보기 v1.3</title>
     <!-- Tailwind CSS 적용 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 마크다운 파싱을 위한 marked.js -->
@@ -12,8 +12,6 @@
     <style>
         :root {
             --primary-color: #8b0000;
-            --primary-hover: #6d0000;
-            --accent-color: #f57c00;
             --text-main: #2c3e50;
             --text-muted: #64748b;
             --bg-color: #f8f9fa;
@@ -46,15 +44,20 @@
             transition: all 0.2s ease; 
         }
         .home-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
-        .title-wrapper { 
+        
+        /* 추억 스토리 생성기와 동일한 h1 및 알약형 버전 배지 정렬 스타일 */
+        h1 { 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             gap: 12px; 
             flex-wrap: wrap; 
-            margin-bottom: 25px; 
+            color: var(--text-main); 
+            font-size: 2rem; 
+            margin: 0 0 25px 0; 
+            font-weight: 700; 
+            text-align: center;
         }
-        h1 { color: var(--text-main); font-size: 2rem; margin: 0; font-weight: 700; }
         .version { 
             font-size: 0.85rem; 
             color: white; 
@@ -64,6 +67,7 @@
             vertical-align: middle; 
             font-weight: 600; 
         }
+
         .chat-container { 
             border: 1px solid var(--border-color); 
             border-radius: 12px; 
@@ -134,7 +138,7 @@
             flex-wrap: wrap; 
             gap: 10px; 
         }
-        .result-header-row h3 { margin: 0; color: var(--text-main); font-size: 1.15rem; }
+        .result-header-row h3 { margin: 0; color: var(--text-main); font-size: 1.15rem; font-weight: bold; }
         .copy-btn { 
             background-color: #27ae60; 
             color: white; 
@@ -173,16 +177,16 @@
 </head>
 <body>
 
-    <!-- 상단 네비게이션 (추억 스토리 생성기 스타일 동일 적용) -->
+    <!-- 상단 네비게이션 -->
     <div class="home-btn-container">
         <a href="index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <!-- 타이틀 영역 -->
-    <div class="title-wrapper">
-        <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-        <span class="version">v1.2</span>
-    </div>
+    <!-- 타이틀 영역 (story.html과 동일한 h1 및 알약형 버전 구조) -->
+    <h1>
+        <span>🕯️ 촛불회 연혁 살펴보기</span>
+        <span class="version">v1.3</span>
+    </h1>
 
     <div class="chat-container">
         
