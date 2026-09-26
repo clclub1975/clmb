@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v1.15: 검색항목과 질문창 사이에 history.md 서식 뷰어 박스 추가 및 버전 v1.15 갱신 -->
+    <!-- v1.16: 체크박스 디폴트 전체 해제, history.md 섹션 파싱 로직 정밀 수정 및 버전 v1.16 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v1.15</title>
+    <title>촛불회 연혁 살펴보기 v1.16</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -311,7 +311,7 @@
             margin-bottom: 4px;
         }
 
-        /* 📌 [방법 2] 연혁 본문 마크다운 서식 뷰어 박스 */
+        /* 연혁 본문 마크다운 서식 뷰어 박스 */
         .history-viewer-section {
             margin-bottom: 25px;
             border-top: 1px solid #e2e8f0;
@@ -343,32 +343,25 @@
             color: #334155;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
         }
-        .history-box h2 {
-            font-size: 1.15rem;
+        .history-box h2, .history-box h3 {
+            font-size: 1.1rem;
             font-weight: bold;
             color: var(--primary-color);
             border-bottom: 2px solid #fee2e2;
             padding-bottom: 4px;
-            margin-top: 18px;
-            margin-bottom: 8px;
+            margin-top: 20px;
+            margin-bottom: 10px;
         }
-        .history-box h2:first-child {
+        .history-box h2:first-child, .history-box h3:first-child {
             margin-top: 0;
-        }
-        .history-box h3 {
-            font-size: 1rem;
-            font-weight: bold;
-            color: #1e293b;
-            margin-top: 12px;
-            margin-bottom: 4px;
         }
         .history-box ul {
             list-style-type: disc;
             padding-left: 20px;
-            margin: 4px 0 10px 0;
+            margin: 6px 0 14px 0;
         }
         .history-box li {
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .history-box strong {
             color: #0f172a;
@@ -662,7 +655,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v1.15</span>
+    <span class="version">v1.16</span>
 </div>
 
 <div class="chat-container">
@@ -718,7 +711,7 @@
         </div>
     </div>
 
-    <!-- 📌 [신규 추가] 연혁 본문 마크다운 서식 뷰어 영역 (체크박스 패널과 질문창 사이) -->
+    <!-- 연혁 본문 마크다운 서식 뷰어 영역 -->
     <div class="history-viewer-section">
         <div class="history-viewer-header">
             <h3>📖 촛불회 연혁 내용 보기</h3>
@@ -769,19 +762,18 @@
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1769103197&single=true&output=csv";
     const HISTORY_MD_URL = "https://raw.githubusercontent.com/clclub1975/clmb/main/HOME2/history.md";
     
-    // 📌 GitHub Actions 빌드 시 SHARED_GEMINI_API_KEY 시크릿 값으로 자동 치환되는 마커
     const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
 
     let globalSheetData = [];
     let globalHeaders = [];
-    let rawHistoryMarkdown = ""; // 1회 다운로드 캐싱
+    let rawHistoryMarkdown = "";
     let currentController = null;
     let activeTaskType = null;
     let conversationHistory = [];
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 15개 소분류 항목 정의
+    // 15개 소분류 정의 및 history.md 헤더 매칭 키워드
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", type: "single", cols: ["한 줄 요약"], matchKeywords: ["한 줄 요약"] },
         { label: "임원진", type: "single", cols: ["임원진"], matchKeywords: ["임원진"] },
@@ -796,7 +788,7 @@
         { label: "학술/문화 활동", type: "single", cols: ["학술/문화 활동", "학술/문화"], matchKeywords: ["학술/문화"] },
         { label: "친목/기타 활동", type: "single", cols: ["친목/기타 활동", "친목/기타"], matchKeywords: ["친목/기타"] },
         { label: "인물 인터뷰", type: "single", cols: ["인물 인터뷰", "인터뷰 및 탐방", "인터뷰"], matchKeywords: ["인터뷰"] },
-        { label: "회원 동정", type: "single", cols: ["회원 동정", "인물 동향", "개별 동정"], matchKeywords: ["회원 동정", "인물 동향"] },
+        { label: "회원 동정", type: "single", cols: ["회원 동정", "인물 동향", "개별 동정"], matchKeywords: ["인물 동향", "회원 동정"] },
         { label: "경조사", type: "single", cols: ["경조사", "경조사 및 소식"], matchKeywords: ["경조사"] }
     ];
 
@@ -828,21 +820,20 @@
             })
             .catch(err => console.error("CSV 로드 실패:", err));
 
-        // 2. history.md 로드 및 초기 뷰어 렌더링 (방법 2)
+        // 2. history.md 로드 (초기 상태: 전체 체크 해제 유지 및 안내 문구 출력)
         try {
             const mdRes = await fetch(HISTORY_MD_URL);
             if (!mdRes.ok) throw new Error("history.md 네트워크 응답 에러");
             rawHistoryMarkdown = await mdRes.text();
             
-            // 초기 상태: 전체 선택 적용 및 렌더링
-            $("selectAllCheckbox").checked = true;
-            toggleSelectAll($("selectAllCheckbox"));
+            // 디폴트로 체크박스를 체크하지 않고 안내 표시
+            renderFilteredHistory();
         } catch (error) {
             $("historyContentBox").innerHTML = `<span style="color:red;">[history.md 로딩 에러] 파일을 불러오지 못했습니다.<br>${error.message}</span>`;
         }
     };
 
-    // 📌 [방법 2] 체크박스 선택 상태에 따라 history.md 필터링 후 마크다운 서식 렌더링
+    // 📌 history.md의 소분류 단위(### ) 섹션별 온전한 본문 추출 파싱 함수
     function renderFilteredHistory() {
         const box = $("historyContentBox");
         if (!rawHistoryMarkdown) return;
@@ -850,52 +841,46 @@
         const isAll = $("selectAllCheckbox").checked;
         const checkedLabels = Array.from(document.querySelectorAll('input[name="targetMenu"]:checked')).map(cb => cb.value);
 
+        // 아무것도 선택되지 않았을 때 (디폴트 상태)
         if (!isAll && checkedLabels.length === 0) {
-            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 20px;">상단 검색항목에서 원하는 항목을 체크하면 해당 연혁이 여기에 표시됩니다.</div>`;
+            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">상단 '검색항목'에서 원하는 항목을 체크하면 해당 연혁 본문이 이곳에 표시됩니다.</div>`;
             return;
         }
 
-        // 전체 선택인 경우 전체 마크다운 즉시 파싱 출력
+        // 전체 선택인 경우 전체 마크다운 즉시 출력
         if (isAll || checkedLabels.length === CUSTOM_MENU_MAPPING.length) {
             box.innerHTML = marked.parse(rawHistoryMarkdown);
             return;
         }
 
-        // 선택된 항목들의 매칭 키워드 수집
+        // 선택된 항목들의 매칭 키워드 구성
         let activeKeywords = [];
         checkedLabels.forEach(label => {
             const item = CUSTOM_MENU_MAPPING.find(m => m.label === label);
             if (item && item.matchKeywords) activeKeywords.push(...item.matchKeywords);
         });
 
-        // '## ' (통권/일자별 섹션) 단위로 분할하여 매칭 항목만 추출
-        const sections = rawHistoryMarkdown.split(/\n(?=## )/);
-        let filteredMarkdown = "";
+        // '### ' (소분류 섹션 헤더) 기준으로 텍스트를 정확하게 분할
+        const rawSections = rawHistoryMarkdown.split(/\n(?=### )/);
+        let matchedMarkdownParts = [];
 
-        sections.forEach(sec => {
-            const lines = sec.split('\n');
-            const header = lines[0]; // ## 제목행
-            let matchedLines = [];
+        rawSections.forEach(sec => {
+            const trimmedSec = sec.trim();
+            if (!trimmedSec.startsWith("### ")) return;
 
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                for (let kw of activeKeywords) {
-                    if (line.includes(kw)) {
-                        matchedLines.push(line);
-                        break;
-                    }
-                }
-            }
+            // 섹션 첫 줄(헤더)에 선택된 키워드가 포함되어 있는지 검사
+            const firstLine = trimmedSec.split('\n')[0];
+            const isMatch = activeKeywords.some(kw => firstLine.includes(kw));
 
-            if (matchedLines.length > 0) {
-                filteredMarkdown += `${header}\n${matchedLines.join('\n')}\n\n`;
+            if (isMatch) {
+                matchedMarkdownParts.push(trimmedSec);
             }
         });
 
-        if (filteredMarkdown.trim()) {
-            box.innerHTML = marked.parse(filteredMarkdown);
+        if (matchedMarkdownParts.length > 0) {
+            box.innerHTML = marked.parse(matchedMarkdownParts.join("\n\n"));
         } else {
-            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 20px;">선택하신 항목에 해당하는 연혁 내용이 존재하지 않습니다.</div>`;
+            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">선택하신 항목에 해당하는 연혁 내용이 존재하지 않습니다.</div>`;
         }
     }
 
