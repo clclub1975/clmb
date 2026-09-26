@@ -1,4 +1,4 @@
-<!-- v10.9: '표기 못한 누락 호수' 안내 바 내 호수 번호 클릭 시 PDF 원본 연동 기능 추가 -->
+<!-- v10.10: '표기 못한 누락 호수' 내 하이퍼링크 및 PDF 연동 누락 오류 수정, 밑줄 스타일 명확화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -75,16 +75,16 @@
             text-align: center;
             font-weight: 500;
         }
-        /* 누락 호수 내 링크 스타일 */
+        /* 누락 호수 내 하이퍼링크 스타일 (밑줄 명시) */
         .missing-link {
-            color: #be123c;
+            color: #2563eb;
             font-weight: bold;
             text-decoration: underline;
             text-underline-offset: 2px;
             cursor: pointer;
             margin: 0 2px;
         }
-        .missing-link:hover { color: #9f1239; }
+        .missing-link:hover { color: #1d4ed8; }
 
         /* 캘린더 테이블 영역 */
         .table-container { width: 100%; overflow-x: auto; margin-top: 4px; }
@@ -245,7 +245,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v10.9</span>
+                <span class="version">v10.10</span>
             </h1>
         </header>
 
@@ -254,7 +254,7 @@
             <strong>표기 못한 누락 호수:</strong> <span id="unmapped-missing-text">데이터를 분석 중입니다...</span>
         </div>
 
-        <!-- 캘린더 매트릭스 뷰어 -->
+        <!-- 캘린더 테이블 영역 -->
         <div class="table-container">
             <table id="calendar-table">
                 <thead>
@@ -355,8 +355,9 @@
                     const paddedNum = String(issueNumber).padStart(3, '0');
                     const pdfLink = (fileUrl && fileUrl.startsWith('http')) ? fileUrl : '#';
                     
-                    // 전역 PDF 맵에 저장 (누락 호수 안내 바 등에서 활용)
+                    // 전역 PDF 맵에 저장 (누락 호수 안내 바 등에서 활용, 정수 키와 문자열 키 모두 대응)
                     globalPdfMap[issueNumber] = pdfLink;
+                    globalPdfMap[paddedNum] = pdfLink;
 
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
                     if (!matchDate) continue;
@@ -510,21 +511,20 @@
 
                 if (!canBeMapped) {
                     const issueStr = String(n).padStart(3, '0') + '호';
-                    const pdfUrl = globalPdfMap[n];
+                    // globalPdfMap에서 정수 및 문자열 키 모두 안전하게 조회
+                    const pdfUrl = globalPdfMap[n] || globalPdfMap[String(n)] || globalPdfMap[String(n).padStart(3, '0')];
                     
                     if (pdfUrl && pdfUrl !== '#') {
-                        // PDF 링크가 존재하는 경우 클릭 가능한 하이퍼링크로 생성
                         unmappedMissing.push(`<a href="${pdfUrl}" target="_blank" class="missing-link">${issueStr}</a>`);
                     } else {
-                        // 링크가 없는 경우 일반 텍스트
-                        unmappedMissing.push(issueStr);
+                        // 만약 링크가 없더라도 클릭 시 안내 얼럿이 뜨도록 하이퍼링크 처리 및 밑줄 부여
+                        unmappedMissing.push(`<a href="#" onclick="alert('통권 ${issueStr} 원본 파일이 아직 연동되지 않았습니다.'); return false;" class="missing-link">${issueStr}</a>`);
                     }
                 }
             }
 
             const noticeContainer = document.getElementById('unmapped-missing-container');
             if (unmappedMissing.length > 0) {
-                // innerHTML을 사용하여 생성된 하이퍼링크 태그 반영
                 noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> ${unmappedMissing.join(', ')}`;
             } else {
                 noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> 없음`;
