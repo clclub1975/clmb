@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v2.2: 연혁 보기 제목을 최상단으로 이동, 'AI를 이용한 연혁 분석' 신설 및 API 키 박스 재배치, 버전 v2.2 갱신 -->
+    <!-- v2.3: API 키 설치 상태 시 안내창 디폴트 숨김(접힘) 처리 및 버전 v2.3 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v2.2</title>
+    <title>촛불회 연혁 살펴보기 v2.3</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -709,16 +709,16 @@
 <body>
 
 <div class="home-btn-container">
-    <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
+    <a href="https://clclub1975.github.io/clmb/index.html" class="home-btn">← 메인으로 돌아가기</a>
 </div>
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v2.2</span>
+    <span class="version">v2.3</span>
 </div>
 
 <div class="chat-container">
-    <!-- 📌 [v2.2 이동] 1. 연혁 내용 보기 제목 (최상단 배치) -->
+    <!-- 1. 연혁 내용 보기 제목 (최상단) -->
     <div class="section-header">
         <h3>📖 촛불회 연혁 내용 보기</h3>
     </div>
@@ -748,13 +748,13 @@
         <div style="color: #64748b; font-style: italic;">GitHub에서 history.md 연혁 원문을 불러오는 중입니다...</div>
     </div>
 
-    <!-- 📌 [v2.2 신규] 5. AI를 이용한 연혁 분석 섹션 시작 -->
+    <!-- 5. AI를 이용한 연혁 분석 섹션 시작 -->
     <div class="ai-analysis-section">
         <div class="section-header">
             <h3>🤖 AI를 이용한 연혁 분석</h3>
         </div>
 
-        <!-- 📌 [v2.2 이동] API Key 가이드 박스 (AI 분석 제목 바로 아래로 이동) -->
+        <!-- 📌 [v2.3] API Key 가이드 박스: 키 설치 시 초기 숨김 상태 적용 -->
         <div id="apiBox" class="api-box">
             <div class="api-box-header">
                 <span id="apiStatusBadge" class="api-status-badge">🟢 공용 키 사용 중</span>
@@ -1021,10 +1021,15 @@
         $("apiToggleBoxBtn").innerText = isHidden ? "안내 숨기기 ▲" : "안내 펼치기 ▼";
     };
 
+    // 📌 [v2.3] API 키 상태 검사 및 키 설치 시 안내창 자동 숨김(접힘) 로직
     function checkApiKeyStatus() {
         const savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
         const keyType = localStorage.getItem("GEMINI_KEY_TYPE");
         const badge = $("apiStatusBadge");
+        const apiBox = $("apiBox");
+        const apiContent = $("apiBoxContent");
+        const toggleBtn = $("apiToggleBoxBtn");
+
         if (savedKey) {
             isPersonalWaitState = false;
             $("apiKeyInput").value = savedKey;
@@ -1033,6 +1038,12 @@
             $("apiCancelBtn").style.display = "none";
             $("dropdownArrow").style.display = "none";
             $("apiSaveBtn").disabled = true;
+
+            // 📌 키가 이미 설치되어 있으므로 안내창을 기본적으로 숨김 처리
+            apiContent.style.display = "none";
+            apiBox.classList.add("collapsed");
+            toggleBtn.innerText = "안내 펼치기 ▼";
+
             if (keyType === "personal") {
                 $("apiSaveBtnText").innerText = "개인 키 설치완료";
                 badge.innerText = "🔒 개인 키 사용 중";
@@ -1049,6 +1060,12 @@
             $("apiSaveBtn").classList.remove("api-wait-btn");
             badge.innerText = "⚠️ 키 미설정 상태";
             Object.assign(badge.style, { color: "#c0392b", background: "#fadbd8" });
+
+            // 📌 키가 없으면 안내를 볼 수 있도록 펼쳐둠
+            apiContent.style.display = "block";
+            apiBox.classList.remove("collapsed");
+            toggleBtn.innerText = "안내 숨기기 ▲";
+
             if (isPersonalWaitState) {
                 $("apiSaveBtnText").innerText = "개인 키 설치대기";
                 $("dropdownArrow").style.display = "none";
@@ -1080,7 +1097,6 @@
             localStorage.setItem("GEMINI_KEY_TYPE", "personal");
             isPersonalWaitState = false;
             checkApiKeyStatus();
-            if ($("apiBoxContent").style.display !== "none") toggleApiBox();
         } else {
             $("apiDropdownMenu").classList.toggle("show");
         }
@@ -1094,7 +1110,6 @@
                 localStorage.setItem("GEMINI_KEY_TYPE", "shared");
                 isPersonalWaitState = false;
                 checkApiKeyStatus();
-                if ($("apiBoxContent").style.display !== "none") toggleApiBox();
             } else alert("공용 키를 불러올 수 없습니다. 시스템 설정을 확인해주세요.");
         } else if (type === 'personal') {
             const keyVal = $("apiKeyInput").value.trim();
@@ -1103,10 +1118,13 @@
                 localStorage.setItem("GEMINI_KEY_TYPE", "personal");
                 isPersonalWaitState = false;
                 checkApiKeyStatus();
-                if ($("apiBoxContent").style.display !== "none") toggleApiBox();
             } else {
                 isPersonalWaitState = true;
                 checkApiKeyStatus();
+                // 개인키 입력 대기 시에는 입력창을 볼 수 있도록 펼쳐줌
+                $("apiBoxContent").style.display = "block";
+                $("apiBox").classList.remove("collapsed");
+                $("apiToggleBoxBtn").innerText = "안내 숨기기 ▲";
                 $("apiKeyInput").focus();
             }
         }
@@ -1124,7 +1142,6 @@
             localStorage.removeItem("GEMINI_KEY_TYPE");
             isPersonalWaitState = false;
             checkApiKeyStatus();
-            if ($("apiBoxContent").style.display === "none") toggleApiBox();
             $("apiKeyInput").focus();
         }
     }
