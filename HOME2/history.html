@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v2.1: AI 분석 대상을 history.md 연혁 본문으로 전환, 미선택 시 질의 차단 및 버전 v2.1 갱신 -->
+    <!-- v2.2: 연혁 보기 제목을 최상단으로 이동, 'AI를 이용한 연혁 분석' 신설 및 API 키 박스 재배치, 버전 v2.2 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v2.1</title>
+    <title>촛불회 연혁 살펴보기 v2.2</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -79,12 +79,196 @@
             background: var(--card-bg);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
         }
+
+        /* 📖 섹션 공통 헤더 스타일 */
+        .section-header {
+            margin-bottom: 12px;
+        }
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        label {
+            font-weight: bold;
+            min-width: 80px;
+            color: var(--text-main);
+        }
+        select, input[type="text"], input[type="password"] {
+            padding: 10px 12px;
+            font-size: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #fff;
+            color: var(--text-main);
+        }
+        .toggle-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #334155;
+            font-weight: bold;
+            transition: background-color 0.15s;
+        }
+        .toggle-btn:hover {
+            background: #e2e8f0;
+        }
+        .checkbox-panel {
+            display: block;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+        }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .checkbox-item.select-all {
+            font-weight: bold;
+            color: #2980b9;
+            grid-column: 1 / -1;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        /* 선택된 항목 목록 표시 바 + 우측 복사 버튼 */
+        .selected-summary-bar {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 13.5px;
+            color: #334155;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .summary-content-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .selected-summary-bar .summary-label {
+            font-weight: bold;
+            color: #475569;
+            flex-shrink: 0;
+        }
+        .selected-summary-bar .summary-content {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .copy-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.15s;
+            flex-shrink: 0;
+        }
+        .copy-btn:hover {
+            background-color: #219653;
+        }
+
+        /* 📖 연혁 본문 서식 뷰어 박스 */
+        .history-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px 22px;
+            max-height: 480px;
+            overflow-y: auto;
+            line-height: 1.7;
+            font-size: 14px;
+            color: #334155;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+            scroll-behavior: smooth;
+            margin-bottom: 30px;
+        }
+        .history-box h2 {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #1e293b;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 4px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        .history-box h3 {
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #fff5f5;
+            border-left: 4px solid var(--primary-color);
+            padding: 6px 12px;
+            margin-top: 18px;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        .history-box h2:first-child, .history-box h3:first-child {
+            margin-top: 0;
+        }
+        .history-box ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 6px 0 16px 0;
+        }
+        .history-box li {
+            margin-bottom: 6px;
+        }
+        .history-box strong {
+            color: #0f172a;
+        }
+
+        /* 🤖 AI 분석 영역 구분선 및 헤더 */
+        .ai-analysis-section {
+            border-top: 2px solid #e2e8f0;
+            padding-top: 24px;
+        }
+
+        /* API Key 가이드 박스 */
         .api-box {
             background: #fff8e1;
             border: 1px solid #ffe0b2;
             padding: 20px;
             border-radius: 8px;
-            margin-bottom: 25px;
+            margin-top: 14px;
+            margin-bottom: 22px;
             transition: all 0.2s ease;
         }
         .api-box-header {
@@ -247,188 +431,11 @@
             color: #5d4037;
             line-height: 1.5;
         }
-        .control-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-        }
-        label {
-            font-weight: bold;
-            min-width: 80px;
-            color: var(--text-main);
-        }
-        select, input[type="text"], input[type="password"] {
-            padding: 10px 12px;
-            font-size: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background-color: #fff;
-            color: var(--text-main);
-        }
-        .toggle-btn {
-            background: #f1f5f9;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            color: #334155;
-            font-weight: bold;
-            transition: background-color 0.15s;
-        }
-        .toggle-btn:hover {
-            background: #e2e8f0;
-        }
-        .checkbox-panel {
-            display: block;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 18px;
-            margin-bottom: 22px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
-        }
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 12px;
-        }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .checkbox-item.select-all {
-            font-weight: bold;
-            color: #2980b9;
-            grid-column: 1 / -1;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 8px;
-            margin-bottom: 4px;
-        }
-
-        /* 📖 연혁 본문 서식 뷰어 스타일 */
-        .history-viewer-section {
-            margin-bottom: 25px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 18px;
-        }
-        .history-viewer-header {
-            margin-bottom: 8px;
-        }
-        .history-viewer-header h3 {
-            margin: 0;
-            font-size: 1.05rem;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* 선택된 항목 목록 표시 바 + 우측 복사 버튼 */
-        .selected-summary-bar {
-            background: #f1f5f9;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 13.5px;
-            color: #334155;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-        .summary-content-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            overflow-x: auto;
-            white-space: nowrap;
-            flex: 1;
-        }
-        .selected-summary-bar .summary-label {
-            font-weight: bold;
-            color: #475569;
-            flex-shrink: 0;
-        }
-        .selected-summary-bar .summary-content {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .copy-btn {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            font-size: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.15s;
-            flex-shrink: 0;
-        }
-        .copy-btn:hover {
-            background-color: #219653;
-        }
-
-        .history-box {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 18px 22px;
-            max-height: 480px;
-            overflow-y: auto;
-            line-height: 1.7;
-            font-size: 14px;
-            color: #334155;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
-            scroll-behavior: smooth;
-        }
-        .history-box h2 {
-            font-size: 1.15rem;
-            font-weight: bold;
-            color: #1e293b;
-            border-bottom: 2px solid #cbd5e1;
-            padding-bottom: 4px;
-            margin-top: 24px;
-            margin-bottom: 12px;
-        }
-        .history-box h3 {
-            font-size: 1.05rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            background: #fff5f5;
-            border-left: 4px solid var(--primary-color);
-            padding: 6px 12px;
-            margin-top: 18px;
-            margin-bottom: 10px;
-            border-radius: 0 4px 4px 0;
-        }
-        .history-box h2:first-child, .history-box h3:first-child {
-            margin-top: 0;
-        }
-        .history-box ul {
-            list-style-type: disc;
-            padding-left: 20px;
-            margin: 6px 0 16px 0;
-        }
-        .history-box li {
-            margin-bottom: 6px;
-        }
-        .history-box strong {
-            color: #0f172a;
-        }
 
         .input-group {
             display: flex;
             gap: 8px;
-            margin-top: 18px;
+            margin-top: 10px;
             align-items: flex-end;
         }
         .input-wrapper {
@@ -707,52 +714,16 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v2.1</span>
+    <span class="version">v2.2</span>
 </div>
 
 <div class="chat-container">
-    <!-- API Key 가이드 박스 -->
-    <div id="apiBox" class="api-box">
-        <div class="api-box-header">
-            <span id="apiStatusBadge" class="api-status-badge">🟢 공용 키 사용 중</span>
-            <button type="button" id="apiToggleBoxBtn" class="api-toggle-box-btn" onclick="toggleApiBox()">안내 숨기기 ▲</button>
-        </div>
-        <div id="apiBoxContent" class="api-box-content">
-            <p class="guide-text">
-                📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
-                AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 촛불회 공용 키를 사용할 수 있습니다만, 공용 키를 다수가 사용할 경우 한도 초과로 제한될 수 있습니다. 개인 무료 API Key 사용을 권장합니다.<br><br>
-                💡 <b>개인 (무료)키 발급 및 설치 방법:</b><br>
-                1. 만약 공용 키가 설치되어 있는 상태라면, 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
-                2. 파란색 글씨의 <a href="https://aistudio.google.com/" target="_blank">[여기(Google AI Studio)]</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
-                3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
-                4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
-                5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
-                6. 생성된 키의 복사 버튼(📋)을 누른 뒤, 이 페이지로 돌아와 아래 빈 입력창에 붙여넣습니다.<br>
-                7. 저장 버튼을 누르면 곧바로 저장이 완료됩니다.<br>
-                8. 최초 1회만 해두면 기기가 기억합니다.
-            </p>
-            <div class="api-row">
-                <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요" oninput="checkKeyInputState()">
-                <div class="api-btn-group">
-                    <div class="dropdown" id="apiDropdownContainer">
-                        <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
-                            <span id="apiSaveBtnText">키 설치하기</span>
-                            <span id="dropdownArrow">▼</span>
-                        </button>
-                        <div id="apiDropdownMenu" class="dropdown-content">
-                            <button type="button" onclick="selectKeyChoice('shared')">공용 키 설치하기</button>
-                            <button type="button" onclick="selectKeyChoice('personal')">개인 키 설치하기</button>
-                        </div>
-                    </div>
-                    <button type="button" id="apiCancelBtn" class="api-cancel-btn" onclick="cancelKeyInput()">취소</button>
-                </div>
-                <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: inline-block;">키 삭제하기</button>
-            </div>
-            <p class="security-alert">⚠️ <b>[주의]</b> 공용 PC에서 본 화면을 통하여 API 키를 저장하셨다면, 사용 후 반드시 키를 삭제해 주세요.</p>
-        </div>
+    <!-- 📌 [v2.2 이동] 1. 연혁 내용 보기 제목 (최상단 배치) -->
+    <div class="section-header">
+        <h3>📖 촛불회 연혁 내용 보기</h3>
     </div>
 
-    <!-- 검색 항목 선택: 디폴트 열림 상태 (닫기 버튼) -->
+    <!-- 2. 검색 항목 선택: 디폴트 열림 상태 (닫기 버튼) -->
     <div class="control-row">
         <label>검색항목:</label>
         <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 검색할 목록 닫기 ▲</button>
@@ -763,55 +734,97 @@
         </div>
     </div>
 
-    <!-- 📖 연혁 본문 마크다운 서식 뷰어 영역 -->
-    <div class="history-viewer-section">
-        <div class="history-viewer-header">
-            <h3>📖 촛불회 연혁 내용 보기</h3>
+    <!-- 3. 선택된 항목 실시간 나열 바 (세로 바 ' | ' 구분자 + 우측 복사 버튼) -->
+    <div class="selected-summary-bar">
+        <div class="summary-content-wrapper">
+            <span class="summary-label">선택 항목:</span>
+            <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
+        </div>
+        <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 내용 복사</button>
+    </div>
+
+    <!-- 4. 연혁 본문 서식 뷰어 박스 -->
+    <div id="historyContentBox" class="history-box">
+        <div style="color: #64748b; font-style: italic;">GitHub에서 history.md 연혁 원문을 불러오는 중입니다...</div>
+    </div>
+
+    <!-- 📌 [v2.2 신규] 5. AI를 이용한 연혁 분석 섹션 시작 -->
+    <div class="ai-analysis-section">
+        <div class="section-header">
+            <h3>🤖 AI를 이용한 연혁 분석</h3>
         </div>
 
-        <!-- 선택된 항목 실시간 나열 바 (세로 바 ' | ' 구분자) -->
-        <div class="selected-summary-bar">
-            <div class="summary-content-wrapper">
-                <span class="summary-label">선택 항목:</span>
-                <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
+        <!-- 📌 [v2.2 이동] API Key 가이드 박스 (AI 분석 제목 바로 아래로 이동) -->
+        <div id="apiBox" class="api-box">
+            <div class="api-box-header">
+                <span id="apiStatusBadge" class="api-status-badge">🟢 공용 키 사용 중</span>
+                <button type="button" id="apiToggleBoxBtn" class="api-toggle-box-btn" onclick="toggleApiBox()">안내 숨기기 ▲</button>
             </div>
-            <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 내용 복사</button>
+            <div id="apiBoxContent" class="api-box-content">
+                <p class="guide-text">
+                    📌 <b>처음 오셨나요? (AI 사용을 위한 준비)</b><br>
+                    AI 이용을 위해서는 구글 AI 키(API Key)가 필요합니다. 임시로 촛불회 공용 키를 사용할 수 있습니다만, 공용 키를 다수가 사용할 경우 한도 초과로 제한될 수 있습니다. 개인 무료 API Key 사용을 권장합니다.<br><br>
+                    💡 <b>개인 (무료)키 발급 및 설치 방법:</b><br>
+                    1. 만약 공용 키가 설치되어 있는 상태라면, 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
+                    2. 파란색 글씨의 <a href="https://aistudio.google.com/" target="_blank">[여기(Google AI Studio)]</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
+                    3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
+                    4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
+                    5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
+                    6. 생성된 키의 복사 버튼(📋)을 누른 뒤, 이 페이지로 돌아와 아래 빈 입력창에 붙여넣습니다.<br>
+                    7. 저장 버튼을 누르면 곧바로 저장이 완료됩니다.<br>
+                    8. 최초 1회만 해두면 기기가 기억합니다.
+                </p>
+                <div class="api-row">
+                    <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요" oninput="checkKeyInputState()">
+                    <div class="api-btn-group">
+                        <div class="dropdown" id="apiDropdownContainer">
+                            <button type="button" id="apiSaveBtn" class="api-save-btn" onclick="handleSaveButtonClick()">
+                                <span id="apiSaveBtnText">키 설치하기</span>
+                                <span id="dropdownArrow">▼</span>
+                            </button>
+                            <div id="apiDropdownMenu" class="dropdown-content">
+                                <button type="button" onclick="selectKeyChoice('shared')">공용 키 설치하기</button>
+                                <button type="button" onclick="selectKeyChoice('personal')">개인 키 설치하기</button>
+                            </div>
+                        </div>
+                        <button type="button" id="apiCancelBtn" class="api-cancel-btn" onclick="cancelKeyInput()">취소</button>
+                    </div>
+                    <button type="button" id="apiDelBtn" class="api-del-btn" onclick="deleteApiKey()" style="display: inline-block;">키 삭제하기</button>
+                </div>
+                <p class="security-alert">⚠️ <b>[주의]</b> 공용 PC에서 본 화면을 통하여 API 키를 저장하셨다면, 사용 후 반드시 키를 삭제해 주세요.</p>
+            </div>
         </div>
 
-        <div id="historyContentBox" class="history-box">
-            <div style="color: #64748b; font-style: italic;">GitHub에서 history.md 연혁 원문을 불러오는 중입니다...</div>
+        <!-- 질문 입력창 -->
+        <div class="input-group">
+            <div class="input-wrapper">
+                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '정기 봉사' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
+                <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
+            </div>
         </div>
-    </div>
 
-    <!-- 질문 입력창 -->
-    <div class="input-group">
-        <div class="input-wrapper">
-            <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '정기 봉사' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
-            <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
+        <!-- 버튼 그룹 -->
+        <div class="action-btn-group">
+            <button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)"><span id="submitBtnText">새로 질문하기</span></button>
+            <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)"><span id="sequentialBtnText">이어서 질문하기</span></button>
+            <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
         </div>
-    </div>
 
-    <!-- 버튼 그룹 -->
-    <div class="action-btn-group">
-        <button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)"><span id="submitBtnText">새로 질문하기</span></button>
-        <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)"><span id="sequentialBtnText">이어서 질문하기</span></button>
-        <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
-    </div>
-
-    <!-- 최근 AI 답변 -->
-    <div class="result-header-row">
-        <h3>최근 AI 답변 결과</h3>
-        <button type="button" id="copyBtn" class="copy-btn" onclick="copyResult('aiResult', 'copyBtn')">📋 최근 답변 복사하기</button>
-    </div>
-    <div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
-
-    <!-- 누적 대화 아카이브 -->
-    <div id="cumulativeSection" class="cumulative-section">
-        <div class="cumulative-header-row">
-            <h3>📁 연속 대화 누적 기록 (전체 아카이브)</h3>
-            <button type="button" id="cumulativeCopyBtn" class="copy-btn" style="display: inline-block; background-color: #8e44ad;" onclick="copyResult('cumulativeResultBox', 'cumulativeCopyBtn')">📋 전체 누적 기록 복사하기</button>
+        <!-- 최근 AI 답변 -->
+        <div class="result-header-row">
+            <h3>최근 AI 답변 결과</h3>
+            <button type="button" id="copyBtn" class="copy-btn" onclick="copyResult('aiResult', 'copyBtn')">📋 최근 답변 복사하기</button>
         </div>
-        <div id="cumulativeResultBox" class="cumulative-box"></div>
+        <div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
+
+        <!-- 누적 대화 아카이브 -->
+        <div id="cumulativeSection" class="cumulative-section">
+            <div class="cumulative-header-row">
+                <h3>📁 연속 대화 누적 기록 (전체 아카이브)</h3>
+                <button type="button" id="cumulativeCopyBtn" class="copy-btn" style="display: inline-block; background-color: #8e44ad;" onclick="copyResult('cumulativeResultBox', 'cumulativeCopyBtn')">📋 전체 누적 기록 복사하기</button>
+            </div>
+            <div id="cumulativeResultBox" class="cumulative-box"></div>
+        </div>
     </div>
 </div>
 
@@ -1166,7 +1179,7 @@
         btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
 
-    // 📌 [v2.1 핵심 변경] 연혁 본문 기반 AI 질의 및 미선택 차단 로직
+    // 연혁 본문 기반 AI 질의 및 미선택 차단 로직
     async function askAI(isSequential) {
         const targetType = isSequential ? "sequential" : "new";
         if (currentController) {
@@ -1181,7 +1194,7 @@
         const isAll = $("selectAllCheckbox").checked;
         const checkedLabels = Array.from(document.querySelectorAll('input[name="targetMenu"]:checked')).map(cb => cb.value);
 
-        // 📌 1. 아무것도 선택되지 않았을 때 AI 분석 차단
+        // 1. 아무것도 선택되지 않았을 때 AI 분석 차단
         if (!isAll && checkedLabels.length === 0) {
             alert("선택된 연혁 항목이 없습니다.\n상단 '검색항목'에서 1개 이상의 항목을 선택한 후 질문해 주세요.");
             $("aiResult").innerHTML = `<strong style="color:#d35400;">[안내] 선택된 연혁 항목이 없습니다. 상단 '검색항목'에서 항목을 체크해 주세요.</strong>`;
@@ -1215,7 +1228,7 @@
             $("cumulativeSection").style.display = "block";
         }
 
-        // 📌 2. 참조 대상 연혁 데이터 추출 (history.md 기반)
+        // 2. 참조 대상 연혁 데이터 추출 (history.md 기반)
         let targetHistoryText = "";
         let targetSummaryTitle = "";
 
