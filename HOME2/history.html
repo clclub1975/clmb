@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.11: 새 항목 선택 시 내용보기 창 상단 정확한 첫 줄 즉시 정렬(requestAnimationFrame) 적용, 버전 v3.11 갱신 -->
+    <!-- v3.12: 선택 항목 바와 '결과 복사' 버튼 분리 배치 및 버튼 문구 변경, 버전 v3.12 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.11</title>
+    <title>촛불회 연혁 살펴보기 v3.12</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -157,19 +157,29 @@
             margin-bottom: 4px;
         }
 
-        /* 단일 선택 항목 바 + 우측 '내용 복사' 버튼 */
+        /* 📌 [v3.12] 선택 항목 바와 바깥 복사 버튼을 감싸는 행 레이아웃 */
+        .selected-bar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            width: 100%;
+        }
+
+        /* 단일 선택 항목 바 (너비가 유연하게 줄어들며 우측 버튼 공간 확보) */
         .selected-summary-bar {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 6px 12px;
+            padding: 8px 14px;
             font-size: 13.5px;
             color: #334155;
-            margin-bottom: 14px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            flex: 1;
+            min-width: 0; /* flex 컨테이너 안에서 말줄임/오버플로 허용 */
+            box-sizing: border-box;
         }
         .summary-content-wrapper {
             display: flex;
@@ -177,7 +187,7 @@
             gap: 6px;
             overflow-x: auto;
             white-space: nowrap;
-            flex: 1;
+            width: 100%;
         }
         .selected-summary-bar .summary-label {
             font-weight: bold;
@@ -193,13 +203,14 @@
             background-color: #27ae60;
             color: white;
             border: none;
-            padding: 6px 14px;
-            font-size: 13px;
+            padding: 8px 16px;
+            font-size: 13.5px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.15s;
             flex-shrink: 0;
+            white-space: nowrap;
         }
         .copy-btn:hover {
             background-color: #219653;
@@ -681,12 +692,15 @@
             .checkbox-item input[type="checkbox"] {
                 transform: scale(0.9);
             }
+            .selected-bar-wrapper {
+                gap: 6px;
+            }
             .selected-summary-bar {
                 font-size: 12.5px;
-                padding: 6px 8px;
+                padding: 6px 10px;
             }
             .copy-btn {
-                padding: 5px 8px;
+                padding: 6px 10px;
                 font-size: 12px;
             }
             .history-box {
@@ -714,7 +728,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.11</span>
+    <span class="version">v3.12</span>
 </div>
 
 <div class="chat-container">
@@ -734,13 +748,15 @@
         </div>
     </div>
 
-    <!-- 3. 선택된 항목 실시간 나열 바 + 우측 단일 '내용 복사' 버튼 -->
-    <div class="selected-summary-bar">
-        <div class="summary-content-wrapper">
-            <span class="summary-label">선택 항목:</span>
-            <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
+    <!-- 📌 [v3.12] 3. 선택된 항목 바와 '결과 복사' 버튼 독립 분리 배치 -->
+    <div class="selected-bar-wrapper">
+        <div class="selected-summary-bar">
+            <div class="summary-content-wrapper">
+                <span class="summary-label">선택 항목:</span>
+                <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
+            </div>
         </div>
-        <button type="button" id="copyBtn" class="copy-btn" onclick="copyHistoryContent()">📋 내용 복사</button>
+        <button type="button" id="copyBtn" class="copy-btn" onclick="copyHistoryContent()">📋 결과 복사</button>
     </div>
 
     <!-- 4. 단일 연혁 본문 서식 뷰어 박스 (구글 시트 교정본 기반) -->
@@ -897,7 +913,7 @@
             });
     };
 
-    // 📌 [v3.11] 단일 연혁 뷰어 렌더링 함수 (requestAnimationFrame을 통한 정밀 즉각 고정)
+    // 단일 연혁 뷰어 렌더링 함수 (requestAnimationFrame을 통한 정밀 즉각 고정)
     function renderFilteredHistory(targetScrollLabel = null) {
         const box = $("historyContentBox");
         const summaryText = $("selectedSummaryText");
@@ -937,12 +953,10 @@
         if (generatedMarkdown.trim()) {
             box.innerHTML = marked.parse(generatedMarkdown);
 
-            // 📌 [v3.11 핵심] 렌더링 직후 requestAnimationFrame 타이밍으로 새 항목 헤더를 내용창 맨 첫 줄에 완벽 정렬
             if (targetScrollLabel) {
                 requestAnimationFrame(() => {
                     const targetElement = document.getElementById(`sec-${encodeURIComponent(targetScrollLabel)}`);
                     if (targetElement) {
-                        // 박스 내부에서의 정확한 상대 오프셋 계산: (target.offsetTop - box.offsetTop) + 현재 박스의 scrollTop
                         const targetPos = targetElement.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
                         box.scrollTop = Math.max(0, targetPos);
                     }
@@ -1001,7 +1015,7 @@
         return clean.padStart(3, "0") + "호";
     }
 
-    // 연혁 본문 내용 복사
+    // 📌 [v3.12] 연혁 본문 결과 복사 함수 ('📋 결과 복사' 자동 복귀)
     function copyHistoryContent() {
         const box = $("historyContentBox");
         const btn = $("copyBtn");
@@ -1044,7 +1058,6 @@
         });
     }
 
-    // 새로 선택한 경우 해당 라벨명을 전달하여 내부 정밀 전환 트리거
     function handleItemCheckboxChange(cb) {
         const label = cb.value;
         const mapped = CUSTOM_MENU_MAPPING.find(m => m.label === label);
