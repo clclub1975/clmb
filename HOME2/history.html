@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.1: 선택 항목 바 우측 끝에 단일 '내용 복사' 버튼 복원, 구글 시트 교정본 실시간 파싱 및 듀얼 뷰어 대조 완성 -->
+    <!-- v3.2: R1_촛불회_회보DB 교정본 웹 게시 CSV 주소 정확히 교체 및 실시간 듀얼 뷰어 연동 완성 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.1 (비교 검증판)</title>
+    <title>촛불회 연혁 살펴보기 v3.2 (비교 검증판)</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -158,7 +158,7 @@
             margin-bottom: 4px;
         }
 
-        /* 📌 [v3.1 복원] 단일 선택 항목 바 + 우측 '내용 복사' 버튼 */
+        /* 단일 선택 항목 바 + 우측 '내용 복사' 버튼 */
         .selected-summary-bar {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
@@ -741,7 +741,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.1</span>
+    <span class="version">v3.2</span>
 </div>
 
 <div class="chat-container">
@@ -761,7 +761,7 @@
         </div>
     </div>
 
-    <!-- 📌 [v3.1 복원] 3. 선택된 항목 실시간 나열 바 + 우측 단일 '내용 복사' 버튼 -->
+    <!-- 3. 선택된 항목 실시간 나열 바 + 우측 단일 '내용 복사' 버튼 -->
     <div class="selected-summary-bar">
         <div class="summary-content-wrapper">
             <span class="summary-label">선택 항목:</span>
@@ -870,8 +870,9 @@
 
     // 1. 기존 원문 마크다운 URL
     const HISTORY_MD_URL = "https://raw.githubusercontent.com/clclub1975/clmb/main/HOME2/history.md";
-    // 2. 신규 구글 시트 '교정본' CSV URL
-    const SHEET_CORRECT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1838786594&single=true&output=csv";
+    
+    // 📌 [v3.2 갱신] 신규 R1_촛불회_회보DB 교정본 웹 게시 CSV 주소
+    const SHEET_CORRECT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv";
 
     const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
 
@@ -948,7 +949,7 @@
                 renderFilteredHistorySheet();
             })
             .catch(err => {
-                $("sheetContentBox").innerHTML = `<span style="color:red;">[구글 시트 연동 안내]<br>교정본 탭의 웹 게시가 필요합니다: ${err.message}</span>`;
+                $("sheetContentBox").innerHTML = `<span style="color:red;">[구글 시트 연동 안내]<br>${err.message}</span>`;
             });
     };
 
@@ -1119,13 +1120,12 @@
         return clean.padStart(3, "0") + "호";
     }
 
-    // 📌 [v3.1 복원] 단일 복사 실행 함수
+    // 단일 복사 실행 함수
     function copyUnifiedContent() {
         const sheetBox = $("sheetContentBox");
         const mdBox = $("historyContentBox");
         const btn = $("unifiedCopyBtn");
 
-        // 시트 내용이 정상 출력 중이면 시트 내용을 복사, 그렇지 않으면 md 내용 복사
         let textToCopy = sheetBox.innerText.trim();
         if (!textToCopy || textToCopy.includes("실시간으로 파싱하는 중") || textToCopy.includes("연동 안내") || textToCopy.includes("에러")) {
             textToCopy = mdBox.innerText.trim();
