@@ -1,10 +1,10 @@
-<!-- test.html v1.2: 구글 시트('교정본') 데이터를 실시간 연동하여 선택한 호수의 8대 항목 및 소분류를 동적 렌더링 -->
+<!-- test.html v1.3: 3번 이벤트/사실/애로사항 소분류 분리 렌더링 및 버전 표기 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 회보 - test.html v1.2</title>
+    <title>촛불회 회보 - test.html v1.3</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -33,13 +33,14 @@
         }
         .modal-title { font-size: 1.15rem; font-weight: bold; color: #1e293b; }
         
-        /* 상단 호수 선택 영역 */
+        /* 상단 호수 선택 영역 및 버전 표기 */
         .selector-container {
             margin-bottom: 16px;
             text-align: center;
             background: #f1f5f9;
             padding: 10px;
             border-radius: 6px;
+            position: relative;
         }
         .selector-container label {
             font-weight: bold;
@@ -55,6 +56,13 @@
             background: #fff;
             color: #1e293b;
             cursor: pointer;
+        }
+        .version-badge {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
         }
 
         .modal-body { font-size: 0.92rem; color: #334155; text-align: left; max-height: 70vh; overflow-y: auto; }
@@ -75,7 +83,7 @@
 <body>
 
     <div class="modal-content">
-        <!-- 상단 드롭다운 선택 영역 (001~010호 기본 세팅) -->
+        <!-- 상단 드롭다운 선택 영역 및 버전 표기 -->
         <div class="selector-container">
             <label for="issue-select">회보 호수 선택:</label>
             <select id="issue-select" onchange="renderSelectedIssue()">
@@ -90,6 +98,7 @@
                 <option value="9">통권 009호</option>
                 <option value="10">통권 010호</option>
             </select>
+            <span class="version-badge">test.html v1.3</span>
         </div>
 
         <div class="modal-header">
@@ -137,17 +146,21 @@
                     const issueNum = parseInt(matches[0], 10);
                     const paddedNum = String(issueNum).padStart(3, '0');
 
-                    // 시트 컬럼 데이터를 8대 핵심 항목 및 세부 소분류 HTML 포맷으로 매핑
+                    // 시트 컬럼 데이터를 8대 핵심 항목 및 개별 소분류 셀로 정확히 매핑
                     let pubDate = cols[2] || `${paddedNum}호`;
                     let summaryText = cols[3] || '';
                     let execText = cols[4] || '';
-                    let eventText = cols[5] || '';
-                    let historyText = cols[6] || '';
-                    let meetingText = cols[7] || '';
-                    let volunteerText = cols[8] || '';
-                    let subGroupText = cols[9] || '';
-                    let peopleText = cols[10] || '';
-                    let articleText = cols[11] || '';
+                    
+                    // 3번 항목 세부 소분류 (시트 컬럼 구조에 맞게 개별 분리)
+                    let eventCell = cols[5] || '';     // 이벤트
+                    let historyCell = cols[6] || '';   // 역사적 사실
+                    let troubleCell = cols[7] || '';   // 애로 사항
+                    
+                    let meetingText = cols[8] || '';
+                    let volunteerText = cols[9] || '';
+                    let subGroupText = cols[10] || '';
+                    let peopleText = cols[11] || '';
+                    let articleText = cols[12] || '';
 
                     let htmlBuilder = '';
 
@@ -159,17 +172,18 @@
                     htmlBuilder += `</ul>`;
 
                     // 2. 조직 및 체계 변화
-                    if (execText || historyText) {
+                    if (execText) {
                         htmlBuilder += `<h4>2. 조직 및 체계 변화</h4><ul>`;
-                        if (execText) htmlBuilder += `<li><strong>임원진:</strong> ${execText.replace(/\\n/g, '<br>')}</li>`;
-                        if (historyText) htmlBuilder += `<li><strong>체계 변화:</strong> ${historyText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `<li><strong>임원진 및 체계:</strong> ${execText.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
-                    // 3. 주요 이벤트 및 마일스톤
-                    if (eventText) {
+                    // 3. 주요 이벤트 및 마일스톤 (3대 소분류 각각 분리 렌더링)
+                    if (eventCell || historyCell || troubleCell) {
                         htmlBuilder += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
-                        htmlBuilder += `<li><strong>이벤트 및 사실:</strong> ${eventText.replace(/\\n/g, '<br>')}</li>`;
+                        if (eventCell) htmlBuilder += `<li><strong>이벤트:</strong> ${eventCell.replace(/\\n/g, '<br>')}</li>`;
+                        if (historyCell) htmlBuilder += `<li><strong>역사적 사실:</strong> ${historyCell.replace(/\\n/g, '<br>')}</li>`;
+                        if (troubleCell) htmlBuilder += `<li><strong>애로 사항:</strong> ${troubleCell.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
@@ -209,12 +223,11 @@
                     }
 
                     sheetDataMap[issueNum] = {
-                        title: `${pubDate} - 통권 ${paddedNum}호 교정본 (구글 시트)`,
+                        title: `${pubDate} - 통권 ${paddedNum}호 교정본 (구글 시트 v1.3)`,
                         content: htmlBuilder
                     };
                 }
 
-                // 데이터 로드 완료 후 기본 선택된 호수 렌더링
                 renderSelectedIssue();
             } catch (e) {
                 console.error("구글 시트 데이터 로드 오류:", e);
