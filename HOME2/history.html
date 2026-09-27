@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.4: history.md 완전 제거, 구글 시트 교정본 기반 단일 연혁 뷰어로 승격 및 버전 v3.4 갱신 -->
+    <!-- v3.5: AI 답변 복사 버튼 문구를 '답변 복사하기'로 변경 및 버전 v3.5 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.4</title>
+    <title>촛불회 연혁 살펴보기 v3.5</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -714,7 +714,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.4</span>
+    <span class="version">v3.5</span>
 </div>
 
 <div class="chat-container">
@@ -810,7 +810,8 @@
         <!-- 최근 AI 답변 -->
         <div class="result-header-row">
             <h3>최근 AI 답변 결과</h3>
-            <button type="button" id="copyAiBtn" class="copy-btn" onclick="copyAiResult()">📋 최근 답변 복사하기</button>
+            <!-- 📌 [v3.5] 문구 변경: '최근 답변 복사하기' -> '답변 복사하기' -->
+            <button type="button" id="copyAiBtn" class="copy-btn" onclick="copyAiResult()">📋 답변 복사하기</button>
         </div>
         <div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
 
@@ -897,7 +898,7 @@
             });
     };
 
-    // 📌 [v3.4] 단일 연혁 뷰어 렌더링 함수
+    // 단일 연혁 뷰어 렌더링 함수
     function renderFilteredHistory() {
         const box = $("historyContentBox");
         const summaryText = $("selectedSummaryText");
@@ -1005,6 +1006,7 @@
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
 
+    // 📌 [v3.5] AI 답변 복사 실행 함수
     function copyAiResult() {
         copyResult("aiResult", "copyAiBtn");
     }
@@ -1246,7 +1248,7 @@
         btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
 
-    // AI 질의 함수 (구글 시트 연혁 텍스트 기반 단일화)
+    // AI 질의 함수
     async function askAI(isSequential) {
         const targetType = isSequential ? "sequential" : "new";
         if (currentController) {
