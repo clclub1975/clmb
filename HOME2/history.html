@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.5: AI 답변 복사 버튼 문구를 '답변 복사하기'로 변경 및 버전 v3.5 갱신 -->
+    <!-- v3.6: '기타 활동', '인물 동정' 명칭 및 구글 시트 1:1 매핑 통일, 버전 v3.6 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.5</title>
+    <title>촛불회 연혁 살펴보기 v3.6</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -714,7 +714,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.5</span>
+    <span class="version">v3.6</span>
 </div>
 
 <div class="chat-container">
@@ -810,7 +810,6 @@
         <!-- 최근 AI 답변 -->
         <div class="result-header-row">
             <h3>최근 AI 답변 결과</h3>
-            <!-- 📌 [v3.5] 문구 변경: '최근 답변 복사하기' -> '답변 복사하기' -->
             <button type="button" id="copyAiBtn" class="copy-btn" onclick="copyAiResult()">📋 답변 복사하기</button>
         </div>
         <div id="aiResult" class="result-box">조건을 설정하고 질문을 입력한 뒤 버튼을 눌러주세요.</div>
@@ -846,7 +845,7 @@
     // 사용자가 체크박스를 누른 순서를 기록하는 배열 (최신 체크 항목이 맨 앞 [0]에 위치)
     let selectedHistoryOrder = [];
 
-    // 15개 소분류 정의 및 교정본 시트 실제 열(Column) 이름 후보군 정밀 매핑
+    // 📌 [v3.6] 15개 소분류 정의: '기타 활동', '인물 동정'으로 명칭 통일 및 구글 시트 실제 열(Column) 1:1 정밀 매핑
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", colKeys: ["한 줄 요약", "한줄요약", "한줄 요약"] },
         { label: "임원진", colKeys: ["임원진", "임원진 구성"] },
@@ -859,9 +858,9 @@
         { label: "정기 봉사", colKeys: ["정기 봉사", "정기봉사", "정기 봉사활동"] },
         { label: "기타 봉사", colKeys: ["기타 봉사", "기타봉사", "기타 봉사활동"] },
         { label: "학술/문화 활동", colKeys: ["학술/문화 활동", "학술/문화", "학술문화 활동", "학술문화"] },
-        { label: "친목/기타 활동", colKeys: ["친목/기타 활동", "친목/기타", "친목기타 활동", "친목/행사"] },
+        { label: "기타 활동", colKeys: ["기타 활동", "기타활동", "친목/기타 활동", "친목/기타"] },
         { label: "인물 인터뷰", colKeys: ["인물 인터뷰", "인터뷰", "인물인터뷰"] },
-        { label: "회원 동정", colKeys: ["회원 동정", "회원동정", "인물 동향"] },
+        { label: "인물 동정", colKeys: ["인물 동정", "인물동정", "개별 동정", "개별동정", "회원 동정", "인물 동향"] },
         { label: "경조사", colKeys: ["경조사", "경조사 및 소식"] }
     ];
 
@@ -1006,7 +1005,6 @@
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
 
-    // 📌 [v3.5] AI 답변 복사 실행 함수
     function copyAiResult() {
         copyResult("aiResult", "copyAiBtn");
     }
