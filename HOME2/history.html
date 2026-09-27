@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v2.3: API 키 설치 상태 시 안내창 디폴트 숨김(접힘) 처리 및 버전 v2.3 갱신 -->
+    <!-- v3.0: Dual Viewer(A/B 검증) 탑재 - 상단 history.md 기반 vs 하단 구글 시트 교정본 실시간 파싱 기반 비교 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v2.3</title>
+    <title>촛불회 연혁 살펴보기 v3.0 (비교 검증판)</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -12,6 +12,7 @@
             --primary-color: #8b0000;
             --primary-hover: #6d0000;
             --accent-color: #f57c00;
+            --sheet-accent: #1e7e34;
             --text-main: #2c3e50;
             --text-muted: #64748b;
             --bg-color: #f8f9fa;
@@ -80,7 +81,6 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
         }
 
-        /* 📖 섹션 공통 헤더 스타일 */
         .section-header {
             margin-bottom: 12px;
         }
@@ -158,7 +158,7 @@
             margin-bottom: 4px;
         }
 
-        /* 선택된 항목 목록 표시 바 + 우측 복사 버튼 */
+        /* 공통 요약 바 */
         .selected-summary-bar {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
@@ -166,7 +166,7 @@
             padding: 6px 12px;
             font-size: 13.5px;
             color: #334155;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -189,12 +189,14 @@
             font-weight: 600;
             color: var(--primary-color);
         }
+
+        /* 복사 버튼 */
         .copy-btn {
             background-color: #27ae60;
             color: white;
             border: none;
-            padding: 6px 14px;
-            font-size: 13px;
+            padding: 6px 12px;
+            font-size: 12.5px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
@@ -204,21 +206,47 @@
         .copy-btn:hover {
             background-color: #219653;
         }
+        .copy-btn-sheet {
+            background-color: #1e7e34;
+        }
+        .copy-btn-sheet:hover {
+            background-color: #155724;
+        }
 
-        /* 📖 연혁 본문 서식 뷰어 박스 */
+        /* 뷰어 라벨 */
+        .viewer-source-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+        .tag-md {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .tag-sheet {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        /* 연혁 본문 서식 뷰어 공통 */
         .history-box {
             background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 18px 22px;
-            max-height: 480px;
+            padding: 16px 20px;
+            max-height: 380px;
             overflow-y: auto;
             line-height: 1.7;
             font-size: 14px;
             color: #334155;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
             scroll-behavior: smooth;
-            margin-bottom: 30px;
+            margin-bottom: 22px;
         }
         .history-box h2 {
             font-size: 1.15rem;
@@ -239,6 +267,11 @@
             margin-top: 18px;
             margin-bottom: 10px;
             border-radius: 0 4px 4px 0;
+        }
+        .history-box.sheet-box h3 {
+            color: #155724;
+            background: #f0fff4;
+            border-left: 4px solid #28a745;
         }
         .history-box h2:first-child, .history-box h3:first-child {
             margin-top: 0;
@@ -637,7 +670,7 @@
             line-height: 1;
         }
 
-        /* 📱 모바일 최적화 (한 줄 정렬 및 3열 그리드) */
+        /* 📱 모바일 최적화 */
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
@@ -686,11 +719,11 @@
                 padding: 6px 8px;
             }
             .copy-btn {
-                padding: 5px 10px;
-                font-size: 12px;
+                padding: 5px 8px;
+                font-size: 11.5px;
             }
             .history-box {
-                max-height: 380px;
+                max-height: 300px;
                 padding: 12px 14px;
                 font-size: 13px;
             }
@@ -709,18 +742,18 @@
 <body>
 
 <div class="home-btn-container">
-    <a href="https://clclub1975.github.io/clmb/index.html" class="home-btn">← 메인으로 돌아가기</a>
+    <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
 </div>
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v2.3</span>
+    <span class="version">v3.0</span>
 </div>
 
 <div class="chat-container">
-    <!-- 1. 연혁 내용 보기 제목 (최상단) -->
+    <!-- 1. 섹션 헤더 -->
     <div class="section-header">
-        <h3>📖 촛불회 연혁 내용 보기</h3>
+        <h3>📖 촛불회 연혁 내용 보기 (대조 검증)</h3>
     </div>
 
     <!-- 2. 검색 항목 선택: 디폴트 열림 상태 (닫기 버튼) -->
@@ -734,27 +767,39 @@
         </div>
     </div>
 
-    <!-- 3. 선택된 항목 실시간 나열 바 (세로 바 ' | ' 구분자 + 우측 복사 버튼) -->
+    <!-- 3. 선택된 항목 실시간 나열 바 -->
     <div class="selected-summary-bar">
         <div class="summary-content-wrapper">
             <span class="summary-label">선택 항목:</span>
             <span id="selectedSummaryText" class="summary-content">선택된 항목 없음</span>
         </div>
-        <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 내용 복사</button>
     </div>
 
-    <!-- 4. 연혁 본문 서식 뷰어 박스 -->
+    <!-- 📌 창 1: 기존 history.md 기반 뷰어 (대조군) -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:4px;">
+        <span class="viewer-source-tag tag-md">1️⃣ 기존 데이터: GitHub history.md</span>
+        <button type="button" id="historyCopyBtn" class="copy-btn" onclick="copyResult('historyContentBox', 'historyCopyBtn')">📋 history.md 복사</button>
+    </div>
     <div id="historyContentBox" class="history-box">
         <div style="color: #64748b; font-style: italic;">GitHub에서 history.md 연혁 원문을 불러오는 중입니다...</div>
     </div>
 
-    <!-- 5. AI를 이용한 연혁 분석 섹션 시작 -->
+    <!-- 📌 창 2: 신규 구글 시트 교정본 기반 동적 뷰어 (실험군) -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:4px;">
+        <span class="viewer-source-tag tag-sheet">2️⃣ 신규 데이터: 구글 시트 '교정본' 실시간 연동 (gid=1838786594)</span>
+        <button type="button" id="sheetCopyBtn" class="copy-btn copy-btn-sheet" onclick="copyResult('sheetContentBox', 'sheetCopyBtn')">📋 구글시트 복사</button>
+    </div>
+    <div id="sheetContentBox" class="history-box sheet-box">
+        <div style="color: #1e7e34; font-style: italic;">구글 스프레드시트 교정본 데이터를 실시간으로 파싱하는 중입니다...</div>
+    </div>
+
+    <!-- 5. AI를 이용한 연혁 분석 섹션 -->
     <div class="ai-analysis-section">
         <div class="section-header">
             <h3>🤖 AI를 이용한 연혁 분석</h3>
         </div>
 
-        <!-- 📌 [v2.3] API Key 가이드 박스: 키 설치 시 초기 숨김 상태 적용 -->
+        <!-- API Key 가이드 박스 -->
         <div id="apiBox" class="api-box">
             <div class="api-box-header">
                 <span id="apiStatusBadge" class="api-status-badge">🟢 공용 키 사용 중</span>
@@ -767,12 +812,9 @@
                     💡 <b>개인 (무료)키 발급 및 설치 방법:</b><br>
                     1. 만약 공용 키가 설치되어 있는 상태라면, 먼저 <b>[키 삭제하기]</b> 버튼을 누릅니다.<br>
                     2. 파란색 글씨의 <a href="https://aistudio.google.com/" target="_blank">[여기(Google AI Studio)]</a>를 눌러 사이트로 이동한 뒤, 로그인 계정이 본인 것인지를 확인합니다.<br>
-                    3. 로그인 계정 확인은 창의 왼쪽 하단(다른 위치일 수도 있음)에서 할 수 있습니다.<br>
-                    4. 만약 본인 계정으로의 변경이 필요하면 ‘계정 전환’ 버튼을 눌러 변경합니다.<br>
-                    5. 화면 우측 상단(또는 중앙)에 있는 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
-                    6. 생성된 키의 복사 버튼(📋)을 누른 뒤, 이 페이지로 돌아와 아래 빈 입력창에 붙여넣습니다.<br>
-                    7. 저장 버튼을 누르면 곧바로 저장이 완료됩니다.<br>
-                    8. 최초 1회만 해두면 기기가 기억합니다.
+                    3. 로그인 계정 확인은 창의 왼쪽 하단에서 할 수 있습니다.<br>
+                    4. 화면 우측 상단의 <b>[API 키 만들기 (Create API key)]</b> 버튼을 누르면 키가 생성됩니다.<br>
+                    5. 생성된 키를 복사하여 아래 빈 입력창에 붙여넣고 저장하세요.
                 </p>
                 <div class="api-row">
                     <input type="password" id="apiKeyInput" placeholder="복사한 Gemini API Key를 여기에 붙여넣으세요" oninput="checkKeyInputState()">
@@ -833,36 +875,41 @@
     const HTML_DIVIDER = `<div class="result-divider">--------------------------------------------------------------------------------</div>`;
     const renderQnA = (q, content) => `<div class="result-question">${q}</div>${HTML_DIVIDER}<div class="result-content">${content}</div>`;
 
+    // 1. 기존 원문 마크다운 URL
     const HISTORY_MD_URL = "https://raw.githubusercontent.com/clclub1975/clmb/main/HOME2/history.md";
+    // 2. 신규 구글 시트 '교정본' CSV URL
+    const SHEET_CORRECT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-cuFQ89zh4t6L-_m_-ktGAYFgVz8lBeyHZFnPK2UDQHOe84sPzBkEdMlj-5tvX-41v9oB7n0B94dP/pub?gid=1838786594&single=true&output=csv";
+
     const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
 
     let rawHistoryMarkdown = "";
+    let sheetParsedRows = [];
     let currentController = null;
     let activeTaskType = null;
     let conversationHistory = [];
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 사용자가 체크박스를 누른 순서를 기록하는 배열 (최신 체크 항목이 맨 앞 [0]에 위치)
+    // 사용자가 체크박스를 누른 순서를 기록하는 배열
     let selectedHistoryOrder = [];
 
-    // 15개 소분류 정의 및 history.md 고유 앵커 ID 매핑
+    // 15개 소분류 정의 (history.md 앵커 ID 매핑 및 교정본 컬럼 키워드 매핑)
     const CUSTOM_MENU_MAPPING = [
-        { label: "한 줄 요약", anchorId: "sub-1-3" },
-        { label: "임원진", anchorId: "sub-2-1" },
-        { label: "체계 변화", anchorId: "sub-2-2" },
-        { label: "주요 이벤트", anchorId: "sub-3-1" },
-        { label: "역사적 사실", anchorId: "sub-3-2" },
-        { label: "애로 사항", anchorId: "sub-3-3" },
-        { label: "회의 종류", anchorId: "sub-4-1" },
-        { label: "의결 사항", anchorId: "sub-4-2" },
-        { label: "정기 봉사", anchorId: "sub-5-1" },
-        { label: "기타 봉사", anchorId: "sub-5-2" },
-        { label: "학술/문화 활동", anchorId: "sub-6-1" },
-        { label: "친목/기타 활동", anchorId: "sub-6-2" },
-        { label: "인물 인터뷰", anchorId: "sub-7-1" },
-        { label: "회원 동정", anchorId: "sub-7-2" },
-        { label: "경조사", anchorId: "sub-7-3" }
+        { label: "한 줄 요약", anchorId: "sub-1-3", group: "한줄요약" },
+        { label: "임원진", anchorId: "sub-2-1", group: "임원진" },
+        { label: "체계 변화", anchorId: "sub-2-2", group: "체계변화" },
+        { label: "주요 이벤트", anchorId: "sub-3-1", group: "사건", subType: "이벤트" },
+        { label: "역사적 사실", anchorId: "sub-3-2", group: "사건", subType: "역사적사실" },
+        { label: "애로 사항", anchorId: "sub-3-3", group: "사건", subType: "애로사항" },
+        { label: "회의 종류", anchorId: "sub-4-1", group: "회의", subType: "종류" },
+        { label: "의결 사항", anchorId: "sub-4-2", group: "회의", subType: "의결" },
+        { label: "정기 봉사", anchorId: "sub-5-1", group: "활동", subType: "정기봉사" },
+        { label: "기타 봉사", anchorId: "sub-5-2", group: "활동", subType: "기타봉사" },
+        { label: "학술/문화 활동", anchorId: "sub-6-1", group: "활동", subType: "학술문화" },
+        { label: "친목/기타 활동", anchorId: "sub-6-2", group: "활동", subType: "친목기타" },
+        { label: "인물 인터뷰", anchorId: "sub-7-1", group: "인물", subType: "인터뷰" },
+        { label: "회원 동정", anchorId: "sub-7-2", group: "인물", subType: "동정" },
+        { label: "경조사", anchorId: "sub-7-3", group: "인물", subType: "경조사" }
     ];
 
     window.onload = async () => {
@@ -883,48 +930,53 @@
             }
         };
 
-        // history.md 로드 (초기 상태: 전체 체크 해제 유지 및 안내 문구 출력)
-        try {
-            const mdRes = await fetch(HISTORY_MD_URL);
-            if (!mdRes.ok) throw new Error("history.md 네트워크 응답 에러");
-            rawHistoryMarkdown = await mdRes.text();
-            renderFilteredHistory();
-        } catch (error) {
-            $("historyContentBox").innerHTML = `<span style="color:red;">[history.md 로딩 에러] 파일을 불러오지 못했습니다.<br>${error.message}</span>`;
-        }
+        // 1. 기존 history.md 로드
+        fetch(HISTORY_MD_URL)
+            .then(res => {
+                if (!res.ok) throw new Error("history.md 응답 에러");
+                return res.text();
+            })
+            .then(mdText => {
+                rawHistoryMarkdown = mdText;
+                renderFilteredHistoryMD();
+            })
+            .catch(err => {
+                $("historyContentBox").innerHTML = `<span style="color:red;">[history.md 로딩 에러] ${err.message}</span>`;
+            });
+
+        // 2. 신규 구글 시트 '교정본' CSV 실시간 로드
+        fetch(SHEET_CORRECT_CSV_URL)
+            .then(res => {
+                if (!res.ok) throw new Error("구글 시트 응답 에러");
+                return res.text();
+            })
+            .then(csvText => {
+                sheetParsedRows = parseCSV(csvText);
+                renderFilteredHistorySheet();
+            })
+            .catch(err => {
+                $("sheetContentBox").innerHTML = `<span style="color:red;">[구글 시트 로딩 에러] ${err.message}</span>`;
+            });
     };
 
-    // 📌 [선택 이력 순서 기반 렌더링 및 ' | ' 구분자 표기]
-    function renderFilteredHistory() {
+    // 📌 창 1: history.md 기반 렌더링 함수
+    function renderFilteredHistoryMD() {
         const box = $("historyContentBox");
-        const summaryText = $("selectedSummaryText");
         if (!rawHistoryMarkdown) return;
 
         const isAll = $("selectAllCheckbox").checked;
 
-        // 1. 상단 선택 요약 바 텍스트 업데이트 (구분자: ' | ')
-        if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
-            summaryText.innerText = "전체 선택";
-        } else if (selectedHistoryOrder.length > 0) {
-            summaryText.innerText = selectedHistoryOrder.map(item => item.label).join(" | ");
-        } else {
-            summaryText.innerText = "선택된 항목 없음";
-        }
-
-        // 2. 아무것도 선택되지 않았을 때 (디폴트 상태)
         if (!isAll && selectedHistoryOrder.length === 0) {
-            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">상단 '검색항목'에서 원하는 항목을 체크하면 해당 연혁 본문이 이곳에 표시됩니다.</div>`;
+            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">상단 '검색항목'에서 원하는 항목을 체크하면 해당 연혁 본문이 표시됩니다.</div>`;
             return;
         }
 
-        // 3. 전체 선택인 경우 전체 마크다운 즉시 출력
         if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
             box.innerHTML = marked.parse(rawHistoryMarkdown);
             box.scrollTop = 0;
             return;
         }
 
-        // 4. <h3 id="sub- 문구를 기점으로 섹션들을 분할
         const sections = rawHistoryMarkdown.split(/(?=<h3\s+id\s*=\s*["']sub-)/i);
         const sectionMap = {};
 
@@ -935,27 +987,165 @@
                 const secId = idMatch[1];
                 let cleanSec = trimmed;
                 const dividerIdx = cleanSec.indexOf('---');
-                if (dividerIdx !== -1) {
-                    cleanSec = cleanSec.substring(0, dividerIdx).trim();
-                }
+                if (dividerIdx !== -1) cleanSec = cleanSec.substring(0, dividerIdx).trim();
                 sectionMap[secId] = cleanSec;
             }
         });
 
-        // 사용자가 누른 순서(selectedHistoryOrder)대로 섹션을 조립 (맨 앞 요소가 최상단에 위치)
         let matchedMarkdownParts = [];
         selectedHistoryOrder.forEach(item => {
-            if (sectionMap[item.anchorId]) {
-                matchedMarkdownParts.push(sectionMap[item.anchorId]);
-            }
+            if (sectionMap[item.anchorId]) matchedMarkdownParts.push(sectionMap[item.anchorId]);
         });
 
         if (matchedMarkdownParts.length > 0) {
             box.innerHTML = marked.parse(matchedMarkdownParts.join("\n\n<hr style='border:0; border-top:1px dashed #cbd5e1; margin:20px 0;'>\n\n"));
             box.scrollTop = 0;
         } else {
-            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">선택하신 항목에 해당하는 연혁 내용이 존재하지 않습니다.</div>`;
+            box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">선택하신 항목에 해당하는 내용이 없습니다.</div>`;
         }
+    }
+
+    // 📌 창 2: 구글 시트 교정본 기반 동적 연혁 조립 및 렌더링 함수
+    function renderFilteredHistorySheet() {
+        const box = $("sheetContentBox");
+        if (!sheetParsedRows || sheetParsedRows.length === 0) return;
+
+        const isAll = $("selectAllCheckbox").checked;
+
+        if (!isAll && selectedHistoryOrder.length === 0) {
+            box.innerHTML = `<div style="color: #1e7e34; font-style: italic; text-align: center; padding: 25px 10px;">상단 '검색항목'을 체크하면 구글 시트에서 실시간 파싱된 내용이 표시됩니다.</div>`;
+            return;
+        }
+
+        // 전체 또는 선택된 항목들의 마크다운 생성
+        const targetItems = (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length)
+            ? CUSTOM_MENU_MAPPING
+            : selectedHistoryOrder;
+
+        let generatedMarkdown = "";
+
+        targetItems.forEach(item => {
+            const sectionContent = buildSheetSectionMarkdown(item);
+            if (sectionContent) {
+                generatedMarkdown += sectionContent + "\n\n<hr style='border:0; border-top:1px dashed #a7f3d0; margin:20px 0;'>\n\n";
+            }
+        });
+
+        if (generatedMarkdown.trim()) {
+            box.innerHTML = marked.parse(generatedMarkdown);
+            box.scrollTop = 0;
+        } else {
+            box.innerHTML = `<div style="color: #1e7e34; font-style: italic; text-align: center; padding: 25px 10px;">구글 시트에 선택된 조건에 부합하는 데이터가 없습니다.</div>`;
+        }
+    }
+
+    // 📌 구글 시트 한 행의 텍스트에서 소분류 항목별 내용 추출 및 마크다운 목록 생성
+    function buildSheetSectionMarkdown(item) {
+        let lines = [];
+
+        sheetParsedRows.forEach(row => {
+            const no = row["통권 호수"] || row["통권호수"] || row["호수"] || "";
+            const issueDate = row["발행월"] || row["발행 일자"] || "";
+            if (!no) return;
+
+            // 표준 헤더 라벨 "[001호] 1984년 3월호"
+            const prefix = `* **[${formatIssueNo(no)}] ${issueDate}** : `;
+            let contentText = "";
+
+            if (item.label === "한 줄 요약") {
+                contentText = row["한 줄 요약"] || row["한줄요약"] || "";
+            } else if (item.label === "임원진") {
+                contentText = row["임원진"] || "";
+            } else if (item.label === "체계 변화") {
+                contentText = row["체계 변화"] || row["체계변화"] || "";
+            } else if (item.group === "사건") {
+                const raw = row["주요 사건/이슈"] || row["주요 사건"] || row["주요사건"] || "";
+                contentText = extractSubCategoryText(raw, item.label);
+            } else if (item.group === "회의") {
+                const raw = row["정기 모임/회의"] || row["회의"] || "";
+                contentText = extractSubCategoryText(raw, item.label);
+            } else if (item.group === "활동") {
+                const raw = row["활동/사업"] || row["활동"] || "";
+                contentText = extractSubCategoryText(raw, item.label);
+            } else if (item.group === "인물") {
+                const raw = row["인물 동향"] || row["회원 동정"] || row["인물"] || "";
+                contentText = extractSubCategoryText(raw, item.label);
+            }
+
+            if (contentText && contentText.trim() && contentText.trim() !== "-" && contentText.trim() !== "없음") {
+                lines.push(prefix + contentText.trim());
+            }
+        });
+
+        if (lines.length === 0) return "";
+        return `### ${item.label}\n\n` + lines.join("\n");
+    }
+
+    // 복합 컬럼 텍스트에서 특정 소분류 내용만 지능형 추출
+    function extractSubCategoryText(rawText, label) {
+        if (!rawText) return "";
+        // 줄바꿈 또는 글머리기호 분할
+        const paragraphs = rawText.split(/\n+/);
+        let matched = [];
+
+        paragraphs.forEach(p => {
+            const clean = p.trim();
+            if (!clean) return;
+
+            if (label === "주요 이벤트" && (clean.includes("이벤트") || clean.includes("행사") || clean.includes("기념"))) {
+                matched.push(clean);
+            } else if (label === "역사적 사실" && (clean.includes("역사") || clean.includes("창간") || clean.includes("발족") || clean.includes("결성"))) {
+                matched.push(clean);
+            } else if (label === "애로 사항" && (clean.includes("애로") || clean.includes("재정") || clean.includes("부진") || clean.includes("침체") || clean.includes("어려움"))) {
+                matched.push(clean);
+            } else if (label === "회의 종류" && (clean.includes("총회") || clean.includes("상임위") || clean.includes("임시총회") || clean.includes("모임"))) {
+                matched.push(clean);
+            } else if (label === "의결 사항" && (clean.includes("의결") || clean.includes("선출") || clean.includes("개정") || clean.includes("결정"))) {
+                matched.push(clean);
+            } else if (label === "정기 봉사" && (clean.includes("성로원") || clean.includes("영아원") || clean.includes("한빛") || clean.includes("정기"))) {
+                matched.push(clean);
+            } else if (label === "기타 봉사" && (clean.includes("수해") || clean.includes("일일") || clean.includes("농활") || clean.includes("야학"))) {
+                matched.push(clean);
+            } else if (label === "학술/문화 활동" && (clean.includes("학회") || clean.includes("세미나") || clean.includes("H.T") || clean.includes("강독") || clean.includes("토론"))) {
+                matched.push(clean);
+            } else if (label === "친목/기타 활동" && (clean.includes("M.T") || clean.includes("MT") || clean.includes("야유회") || clean.includes("체육대회") || clean.includes("소풍"))) {
+                matched.push(clean);
+            } else if (label === "인물 인터뷰" && (clean.includes("인터뷰") || clean.includes("탐방") || clean.includes("대담"))) {
+                matched.push(clean);
+            } else if (label === "회원 동정" && (clean.includes("입대") || clean.includes("제대") || clean.includes("유학") || clean.includes("출국") || clean.includes("동정"))) {
+                matched.push(clean);
+            } else if (label === "경조사" && (clean.includes("결혼") || clean.includes("화촉") || clean.includes("부친상") || clean.includes("모친상") || clean.includes("돌잔치") || clean.includes("조문"))) {
+                matched.push(clean);
+            }
+        });
+
+        // 특정 키워드에 걸리지 않았더라도 단일 내용인 경우 보존
+        if (matched.length === 0 && paragraphs.length === 1 && !rawText.includes(":") && !rawText.includes("▶")) {
+            return rawText;
+        }
+        return matched.join(" / ");
+    }
+
+    function formatIssueNo(numStr) {
+        const clean = numStr.replace(/[^0-9]/g, "");
+        return clean.padStart(3, "0") + "호";
+    }
+
+    // 📌 상단 선택 항목 요약 바 동기화 및 2개 창 동시 렌더링 호출
+    function refreshBothViewers() {
+        const summaryText = $("selectedSummaryText");
+        const isAll = $("selectAllCheckbox").checked;
+
+        if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
+            summaryText.innerText = "전체 선택";
+        } else if (selectedHistoryOrder.length > 0) {
+            summaryText.innerText = selectedHistoryOrder.map(item => item.label).join(" | ");
+        } else {
+            summaryText.innerText = "선택된 항목 없음";
+        }
+
+        renderFilteredHistoryMD();
+        renderFilteredHistorySheet();
     }
 
     function renderCheckboxes() {
@@ -966,12 +1156,12 @@
         });
     }
 
-    // 개별 체크박스 클릭 핸들러 (체크 시 배열 맨 앞에 unshift, 해제 시 배열에서 제거)
     function handleItemCheckboxChange(cb, anchorId) {
         const label = cb.value;
+        const mapped = CUSTOM_MENU_MAPPING.find(m => m.label === label);
         if (cb.checked) {
             selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
-            selectedHistoryOrder.unshift({ label: label, anchorId: anchorId });
+            selectedHistoryOrder.unshift(mapped);
         } else {
             selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
         }
@@ -979,10 +1169,9 @@
         const allChecked = Array.from(document.querySelectorAll('input[name="targetMenu"]')).every(c => c.checked);
         $("selectAllCheckbox").checked = allChecked;
 
-        renderFilteredHistory();
+        refreshBothViewers();
     }
 
-    // 전체 선택 토글 핸들러
     const toggleSelectAll = (selectAllCb) => {
         const isChecked = selectAllCb.checked;
         document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = isChecked);
@@ -991,7 +1180,7 @@
         } else {
             selectedHistoryOrder = [];
         }
-        renderFilteredHistory();
+        refreshBothViewers();
     };
 
     function handleKeyDown(event) {
@@ -1021,7 +1210,6 @@
         $("apiToggleBoxBtn").innerText = isHidden ? "안내 숨기기 ▲" : "안내 펼치기 ▼";
     };
 
-    // 📌 [v2.3] API 키 상태 검사 및 키 설치 시 안내창 자동 숨김(접힘) 로직
     function checkApiKeyStatus() {
         const savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
         const keyType = localStorage.getItem("GEMINI_KEY_TYPE");
@@ -1039,7 +1227,6 @@
             $("dropdownArrow").style.display = "none";
             $("apiSaveBtn").disabled = true;
 
-            // 📌 키가 이미 설치되어 있으므로 안내창을 기본적으로 숨김 처리
             apiContent.style.display = "none";
             apiBox.classList.add("collapsed");
             toggleBtn.innerText = "안내 펼치기 ▼";
@@ -1061,7 +1248,6 @@
             badge.innerText = "⚠️ 키 미설정 상태";
             Object.assign(badge.style, { color: "#c0392b", background: "#fadbd8" });
 
-            // 📌 키가 없으면 안내를 볼 수 있도록 펼쳐둠
             apiContent.style.display = "block";
             apiBox.classList.remove("collapsed");
             toggleBtn.innerText = "안내 숨기기 ▲";
@@ -1121,7 +1307,6 @@
             } else {
                 isPersonalWaitState = true;
                 checkApiKeyStatus();
-                // 개인키 입력 대기 시에는 입력창을 볼 수 있도록 펼쳐줌
                 $("apiBoxContent").style.display = "block";
                 $("apiBox").classList.remove("collapsed");
                 $("apiToggleBoxBtn").innerText = "안내 숨기기 ▲";
@@ -1196,7 +1381,7 @@
         btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
 
-    // 연혁 본문 기반 AI 질의 및 미선택 차단 로직
+    // AI 질의 함수
     async function askAI(isSequential) {
         const targetType = isSequential ? "sequential" : "new";
         if (currentController) {
@@ -1211,7 +1396,6 @@
         const isAll = $("selectAllCheckbox").checked;
         const checkedLabels = Array.from(document.querySelectorAll('input[name="targetMenu"]:checked')).map(cb => cb.value);
 
-        // 1. 아무것도 선택되지 않았을 때 AI 분석 차단
         if (!isAll && checkedLabels.length === 0) {
             alert("선택된 연혁 항목이 없습니다.\n상단 '검색항목'에서 1개 이상의 항목을 선택한 후 질문해 주세요.");
             $("aiResult").innerHTML = `<strong style="color:#d35400;">[안내] 선택된 연혁 항목이 없습니다. 상단 '검색항목'에서 항목을 체크해 주세요.</strong>`;
@@ -1245,34 +1429,12 @@
             $("cumulativeSection").style.display = "block";
         }
 
-        // 2. 참조 대상 연혁 데이터 추출 (history.md 기반)
-        let targetHistoryText = "";
-        let targetSummaryTitle = "";
-
-        if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
-            targetHistoryText = rawHistoryMarkdown;
-            targetSummaryTitle = "전체 연혁";
-        } else {
-            const sections = rawHistoryMarkdown.split(/(?=<h3\s+id\s*=\s*["']sub-)/i);
-            const sectionMap = {};
-            sections.forEach(sec => {
-                const trimmed = sec.trim();
-                const idMatch = trimmed.match(/<h3\s+id\s*=\s*["']([^"']+)["']/i);
-                if (idMatch && idMatch[1]) {
-                    let cleanSec = trimmed;
-                    const dividerIdx = cleanSec.indexOf('---');
-                    if (dividerIdx !== -1) cleanSec = cleanSec.substring(0, dividerIdx).trim();
-                    sectionMap[idMatch[1]] = cleanSec;
-                }
-            });
-
-            let matchedSections = [];
-            selectedHistoryOrder.forEach(item => {
-                if (sectionMap[item.anchorId]) matchedSections.push(sectionMap[item.anchorId]);
-            });
-            targetHistoryText = matchedSections.join("\n\n---\n\n");
-            targetSummaryTitle = selectedHistoryOrder.map(item => item.label).join(" | ");
+        // AI에게 넘길 데이터: 두 뷰어 창 중 2번 신규 창의 텍스트를 우선 참조, 없으면 1번 참조
+        let targetHistoryText = $("sheetContentBox").innerText.trim();
+        if (!targetHistoryText || targetHistoryText.includes("실시간으로 파싱하는 중")) {
+            targetHistoryText = $("historyContentBox").innerText.trim();
         }
+        const targetSummaryTitle = $("selectedSummaryText").innerText;
 
         const qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
 
@@ -1349,6 +1511,36 @@ ${contextPrompt}
         const box = $("cumulativeResultBox");
         box.innerHTML = conversationHistory.map((item, idx) => (idx > 0 ? `<br><div class="cumulative-separator">================================================================================</div><br>` : '') + `<div class="cumulative-item">${renderQnA(item.q, item.a.replace(/\n/g, "<br>"))}</div>`).join('');
         box.scrollTop = box.scrollHeight;
+    }
+
+    // CSV 파서 함수 (큰따옴표 및 줄바꿈 완전 지원)
+    function parseCSV(text) {
+        let rows = [], currentRow = [], currentField = "", inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            let c = text[i], nextC = text[i + 1];
+            if (inQuotes) {
+                if (c === '"') {
+                    if (nextC === '"') { currentField += '"'; i++; } else inQuotes = false;
+                } else currentField += c;
+            } else {
+                if (c === '"') inQuotes = true;
+                else if (c === ',') { currentRow.push(currentField.trim()); currentField = ""; }
+                else if (c === '\r' && nextC === '\n') { currentRow.push(currentField.trim()); rows.push(currentRow); currentRow = []; currentField = ""; i++; }
+                else if (c === '\n') { currentRow.push(currentField.trim()); rows.push(currentRow); currentRow = []; currentField = ""; }
+                else currentField += c;
+            }
+        }
+        if (currentField !== "" || currentRow.length > 0) { currentRow.push(currentField.trim()); rows.push(currentRow); }
+        if (rows.length === 0) return [];
+        let headers = rows[0].map(h => h.trim()), result = [];
+        for (let i = 1; i < rows.length; i++) {
+            let cols = rows[i];
+            if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
+            let obj = {};
+            for (let j = 0; j < headers.length; j++) obj[headers[j]] = cols[j] ? cols[j].trim() : "";
+            result.push(obj);
+        }
+        return result;
     }
 </script>
 
