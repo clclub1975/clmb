@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.10: 새 항목 체크 시 스크롤 모션 제거 및 내용창 상단 즉각 고정(Instant Jump) 적용, 버전 v3.10 갱신 -->
+    <!-- v3.11: 새 항목 선택 시 내용보기 창 상단 정확한 첫 줄 즉시 정렬(requestAnimationFrame) 적용, 버전 v3.11 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.10</title>
+    <title>촛불회 연혁 살펴보기 v3.11</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -714,7 +714,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.10</span>
+    <span class="version">v3.11</span>
 </div>
 
 <div class="chat-container">
@@ -897,7 +897,7 @@
             });
     };
 
-    // 📌 [v3.10] 단일 연혁 뷰어 렌더링 함수 (스크롤 모션 없는 즉각 전환 - Instant Jump)
+    // 📌 [v3.11] 단일 연혁 뷰어 렌더링 함수 (requestAnimationFrame을 통한 정밀 즉각 고정)
     function renderFilteredHistory(targetScrollLabel = null) {
         const box = $("historyContentBox");
         const summaryText = $("selectedSummaryText");
@@ -937,17 +937,16 @@
         if (generatedMarkdown.trim()) {
             box.innerHTML = marked.parse(generatedMarkdown);
 
-            // 📌 [v3.10 핵심] 스크롤 모션 제거: 부드러운 스크롤(smooth) 없이 즉시 상단 고정(Instant Jump)
+            // 📌 [v3.11 핵심] 렌더링 직후 requestAnimationFrame 타이밍으로 새 항목 헤더를 내용창 맨 첫 줄에 완벽 정렬
             if (targetScrollLabel) {
-                const targetElement = document.getElementById(`sec-${encodeURIComponent(targetScrollLabel)}`);
-                if (targetElement) {
-                    const scrollOffset = targetElement.offsetTop - box.offsetTop;
-                    // behavior: 'auto'로 즉각적인 화면 전환 수행 (애니메이션 노출 방지)
-                    box.scrollTo({
-                        top: Math.max(0, scrollOffset),
-                        behavior: 'auto'
-                    });
-                }
+                requestAnimationFrame(() => {
+                    const targetElement = document.getElementById(`sec-${encodeURIComponent(targetScrollLabel)}`);
+                    if (targetElement) {
+                        // 박스 내부에서의 정확한 상대 오프셋 계산: (target.offsetTop - box.offsetTop) + 현재 박스의 scrollTop
+                        const targetPos = targetElement.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+                        box.scrollTop = Math.max(0, targetPos);
+                    }
+                });
             } else if (isAll || selectedHistoryOrder.length === 0) {
                 box.scrollTop = 0;
             }
@@ -1045,7 +1044,7 @@
         });
     }
 
-    // 새로 선택한 경우 해당 라벨명을 전달하여 내부 즉각 전환 트리거
+    // 새로 선택한 경우 해당 라벨명을 전달하여 내부 정밀 전환 트리거
     function handleItemCheckboxChange(cb) {
         const label = cb.value;
         const mapped = CUSTOM_MENU_MAPPING.find(m => m.label === label);
