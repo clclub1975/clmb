@@ -1,10 +1,10 @@
-<!-- test.html v1.1: 통권 001호 모달 디스플레이 - abstract.md 8대 항목 및 상세 소분류 완벽 반영 -->
+<!-- test.html v1.2: 구글 시트('교정본') 데이터를 실시간 연동하여 선택한 호수의 8대 항목 및 소분류를 동적 렌더링 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 회보 - test.html v1.1</title>
+    <title>촛불회 회보 - test.html v1.2</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -32,10 +32,32 @@
             margin-bottom: 16px;
         }
         .modal-title { font-size: 1.15rem; font-weight: bold; color: #1e293b; }
-        .modal-close {
-            background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
+        
+        /* 상단 호수 선택 영역 */
+        .selector-container {
+            margin-bottom: 16px;
+            text-align: center;
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 6px;
         }
-        .modal-body { font-size: 0.92rem; color: #334155; text-align: left; }
+        .selector-container label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #334155;
+            margin-right: 8px;
+        }
+        .selector-container select {
+            padding: 6px 12px;
+            font-size: 0.95rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #fff;
+            color: #1e293b;
+            cursor: pointer;
+        }
+
+        .modal-body { font-size: 0.92rem; color: #334155; text-align: left; max-height: 70vh; overflow-y: auto; }
         .modal-body h4 {
             margin-top: 16px;
             margin-bottom: 6px;
@@ -47,66 +69,180 @@
         .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
         .modal-body li { margin-bottom: 6px; }
         .modal-body strong { color: #0f172a; }
+        .loading { text-align: center; padding: 20px; color: #666; }
     </style>
 </head>
 <body>
 
     <div class="modal-content">
-        <div class="modal-header">
-            <span class="modal-title" id="modal-issue-title">1984년 3월 - 통권 001호 교정본 (test.html v1.1)</span>
-            <button class="modal-close" onclick="alert('창 닫기')">&times;</button>
+        <!-- 상단 드롭다운 선택 영역 (001~010호 기본 세팅) -->
+        <div class="selector-container">
+            <label for="issue-select">회보 호수 선택:</label>
+            <select id="issue-select" onchange="renderSelectedIssue()">
+                <option value="1">통권 001호</option>
+                <option value="2">통권 002호</option>
+                <option value="3">통권 003호</option>
+                <option value="4">통권 004호</option>
+                <option value="5">통권 005호</option>
+                <option value="6">통권 006호</option>
+                <option value="7">통권 007호</option>
+                <option value="8">통권 008호</option>
+                <option value="9">통권 009호</option>
+                <option value="10">통권 010호</option>
+            </select>
         </div>
+
+        <div class="modal-header">
+            <span class="modal-title" id="modal-issue-title">구글 시트 데이터 로딩 중...</span>
+        </div>
+        
         <div class="modal-body" id="modal-issue-text">
-            <h4>1. 회보 정보</h4>
-            <ul>
-                <li><strong>통권 호수:</strong> 통권 001호</li>
-                <li><strong>발행년월:</strong> 1984년 3월</li>
-                <li><strong>한 줄 요약:</strong> 촛불회 결성 10주년을 맞아 회원 간 단결과 봉사 정신을 재다짐하고 회의 역사를 정립하기 위해 창간된 월간 회보 창간호.</li>
-            </ul>
-            
-            <h4>2. 조직 및 체계 변화</h4>
-            <ul>
-                <li><strong>임원진:</strong> 회장 김찬욱(6기), 부회장 박기석(6기), 편집부장 김민수(7기), 제7회기 회장단 및 부장단(연구기획부장 이준호, 편집관리부장 윤오미).</li>
-                <li><strong>체계 변화:</strong> 삼각산 야유회(1984.3.11), 대성고등학교 11기 신입생 환영회 개최(1984.3.17).</li>
-            </ul>
-
-            <h4>3. 주요 이벤트 및 마일스톤</h4>
-            <ul>
-                <li><strong>이벤트:</strong> 삼각산 야유회 개최 (1984.3.11) 및 대성고등학교 11기 신입생 환영회 개최 (1984.3.17).</li>
-                <li><strong>역사적 사실:</strong> 1974년 결성 이래 촛불회 결성 10주년 수립, 월간 회보 공식 창간.</li>
-                <li><strong>애로 사항:</strong> 회원들의 자발적 회비 납부 저조(3월 31일 자진 납부 기간 만료), 영아원 활동 참가 회원 감소 및 봉사 활동 기록부 공백 발생.</li>
-            </ul>
-
-            <h4>4. 주요 회의</h4>
-            <ul>
-                <li><strong>회의 종류:</strong> 제6차 정기총회 (1984.2.18)</li>
-                <li><strong>의결 사항:</strong> 제6회기 사업 마무리 및 제7회기 회장단 선출, 회보 발간 추진 안건 가결.</li>
-            </ul>
-
-            <h4>5. 봉사 활동</h4>
-            <ul>
-                <li><strong>정기 봉사:</strong> 불광동 '녹원 영아원' 정기 방문 봉사, 노량진 '성노원 아기집' 방문 봉사.</li>
-                <li><strong>기타 봉사:</strong> 회원 상호간 친목 도모 및 지역 사회 소외계층 지원 논의.</li>
-            </ul>
-
-            <h4>6. 소집단 활동</h4>
-            <ul>
-                <li><strong>학술/문화:</strong> 회보 창간 기획 및 편집 회의 진행.</li>
-                <li><strong>기타 활동:</strong> 기수별 소모임 및 친목 모임 활성화 방안 토의.</li>
-            </ul>
-
-            <h4>7. 인물 소식</h4>
-            <ul>
-                <li><strong>인터뷰:</strong> 창간호를 맞아 초대 임원진 및 창립 멤버들의 소회 인터뷰 수록.</li>
-                <li><strong>개별 동정 및 경조사:</strong> 회원들의 신규 입사, 진학 및 주요 경조사 소식 공유.</li>
-            </ul>
-
-            <h4>8. 기고문</h4>
-            <ul>
-                <li><strong>기고문 요약:</strong> 촛불회 10주년을 맞이하는 감회와 앞으로 나아갈 길에 대한 선배 기수의 특별 기고문 게재.</li>
-            </ul>
+            <div class="loading">구글 시트('교정본') 데이터를 불러오는 중입니다...</div>
         </div>
     </div>
 
+    <script>
+        const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
+        let sheetDataMap = {};
+
+        // CSV 파싱 함수
+        function parseCSV(text) {
+            let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
+            for (let l of text) {
+                if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
+                else if (',' === l && s) l = row[++r] = '';
+                else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
+                else row[r] += l;
+                p = l;
+            }
+            return ret;
+        }
+
+        // 구글 시트 데이터를 가져와 파싱하는 함수
+        async function loadGoogleSheetData() {
+            try {
+                const response = await fetch(correctCsvUrl);
+                if (!response.ok) throw new Error("네트워크 응답에 실패했습니다.");
+                const csvText = await response.text();
+                const rows = parseCSV(csvText);
+
+                for (let j = 1; j < rows.length; j++) {
+                    const cols = rows[j].map(c => c.trim());
+                    if (cols.length < 3) continue;
+
+                    // 통권 호수 번호 추출
+                    const matches = cols[1].match(/(\d+)/g);
+                    if (!matches || matches.length === 0) continue;
+                    
+                    const issueNum = parseInt(matches[0], 10);
+                    const paddedNum = String(issueNum).padStart(3, '0');
+
+                    // 시트 컬럼 데이터를 8대 핵심 항목 및 세부 소분류 HTML 포맷으로 매핑
+                    let pubDate = cols[2] || `${paddedNum}호`;
+                    let summaryText = cols[3] || '';
+                    let execText = cols[4] || '';
+                    let eventText = cols[5] || '';
+                    let historyText = cols[6] || '';
+                    let meetingText = cols[7] || '';
+                    let volunteerText = cols[8] || '';
+                    let subGroupText = cols[9] || '';
+                    let peopleText = cols[10] || '';
+                    let articleText = cols[11] || '';
+
+                    let htmlBuilder = '';
+
+                    // 1. 회보 정보
+                    htmlBuilder += `<h4>1. 회보 정보</h4><ul>`;
+                    htmlBuilder += `<li><strong>통권 호수:</strong> 통권 ${paddedNum}호</li>`;
+                    htmlBuilder += `<li><strong>발행년월:</strong> ${pubDate}</li>`;
+                    if (summaryText) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${summaryText.replace(/\\n/g, '<br>')}</li>`;
+                    htmlBuilder += `</ul>`;
+
+                    // 2. 조직 및 체계 변화
+                    if (execText || historyText) {
+                        htmlBuilder += `<h4>2. 조직 및 체계 변화</h4><ul>`;
+                        if (execText) htmlBuilder += `<li><strong>임원진:</strong> ${execText.replace(/\\n/g, '<br>')}</li>`;
+                        if (historyText) htmlBuilder += `<li><strong>체계 변화:</strong> ${historyText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    // 3. 주요 이벤트 및 마일스톤
+                    if (eventText) {
+                        htmlBuilder += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
+                        htmlBuilder += `<li><strong>이벤트 및 사실:</strong> ${eventText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    // 4. 주요 회의
+                    if (meetingText) {
+                        htmlBuilder += `<h4>4. 주요 회의</h4><ul>`;
+                        htmlBuilder += `<li><strong>회의 및 의결:</strong> ${meetingText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    // 5. 봉사 활동
+                    if (volunteerText) {
+                        htmlBuilder += `<h4>5. 봉사 활동</h4><ul>`;
+                        htmlBuilder += `<li><strong>봉사 내용:</strong> ${volunteerText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    // 6. 소집단 활동
+                    if (subGroupText) {
+                        htmlBuilder += `<h4>6. 소집단 활동</h4><ul>`;
+                        htmlBuilder += `<li><strong>학술/문화/모임:</strong> ${subGroupText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    // 7. 인물 소식
+                    if (peopleText) {
+                        htmlBuilder += `<h4>7. 인물 소식</h4><ul>`;
+                        htmlBuilder += `<li><strong>동정 및 소식:</strong> ${peopleText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    // 8. 기고문
+                    if (articleText) {
+                        htmlBuilder += `<h4>8. 기고문</h4><ul>`;
+                        htmlBuilder += `<li><strong>기고문 요약:</strong> ${articleText.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `</ul>`;
+                    }
+
+                    sheetDataMap[issueNum] = {
+                        title: `${pubDate} - 통권 ${paddedNum}호 교정본 (구글 시트)`,
+                        content: htmlBuilder
+                    };
+                }
+
+                // 데이터 로드 완료 후 기본 선택된 호수 렌더링
+                renderSelectedIssue();
+            } catch (e) {
+                console.error("구글 시트 데이터 로드 오류:", e);
+                document.getElementById('modal-issue-text').innerHTML = `<p style="color:red; text-align:center;">구글 시트 데이터를 불러오는 데 실패했습니다.</p>`;
+            }
+        }
+
+        // 드롭다운 선택 시 해당 호수 데이터를 화면에 출력하는 함수
+        function renderSelectedIssue() {
+            const selectElem = document.getElementById('issue-select');
+            const selectedNum = parseInt(selectElem.value, 10);
+            
+            const titleElem = document.getElementById('modal-issue-title');
+            const textElem = document.getElementById('modal-issue-text');
+
+            if (sheetDataMap[selectedNum]) {
+                titleElem.textContent = sheetDataMap[selectedNum].title;
+                textElem.innerHTML = sheetDataMap[selectedNum].content;
+            } else {
+                titleElem.textContent = `통권 ${String(selectedNum).padStart(3, '0')}호 교정 데이터 없음`;
+                textElem.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">해당 호수에 대한 구글 시트 교정 데이터가 아직 등록되지 않았습니다.</p>`;
+            }
+        }
+
+        // 페이지 최초 실행 시 구글 시트 연동 시작
+        window.onload = function() {
+            loadGoogleSheetData();
+        };
+    </script>
 </body>
 </html>
