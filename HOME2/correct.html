@@ -1,12 +1,10 @@
-<!-- v11.7: 구글 시트('교정본') 데이터를 test.html v1.5 기반 8대 핵심 항목 및 8번 기고문 개별 글머리표 분리 렌더링 로직으로 전면 업그레이드 및 버전 v11.7 적용 -->
+<!-- v11.8: abstract.md 연동 완전 폐지, [요약]과 [교정] 버튼 모두 구글 시트('교정본') 데이터 연동 및 8번 기고문 개별 글머리표 분리 렌더링 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>촛불회 회보 둘러보기</title>
-    <!-- 마크다운 렌더링을 위한 marked.js 라이브러리 로드 -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -229,7 +227,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v11.7</span>
+                <span class="version">v11.8</span>
             </h1>
         </header>
 
@@ -255,7 +253,7 @@
         </div>
     </div>
 
-    <!-- 요약 내용 표시용 모달 팝업 -->
+    <!-- 내용 표시용 모달 팝업 -->
     <div class="modal-overlay" id="summary-modal" onclick="closeSummaryModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -269,9 +267,7 @@
     <script>
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
         const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
-        const abstractMarkdownUrl = 'abstract.md';
         
-        let summaryMap = {};    // 기존 md 요약 데이터
         let correctMap = {};    // 구글 시트 교정본 8대 항목 구조화 데이터
         let globalPdfMap = {};  // 모든 호수의 PDF 링크 정보를 담을 객체
 
@@ -287,27 +283,7 @@
             return ret;
         }
 
-        // 기존 abstract.md 로드
-        async function loadAbstractData() {
-            try {
-                const response = await fetch(abstractMarkdownUrl);
-                if (!response.ok) return;
-                const mdText = await response.text();
-                const sections = mdText.split(/(?=#+\s*\[\s*\d+호?\s*\])/);
-                sections.forEach(sec => {
-                    const matchHeader = sec.match(/#+\s*\[\s*(\d+)호?\s*\]/);
-                    if (matchHeader) {
-                        const issueNum = parseInt(matchHeader[1], 10);
-                        const content = sec.replace(/#+.*[\r\n]+/, '').trim();
-                        summaryMap[issueNum] = content;
-                    }
-                });
-            } catch (e) {
-                console.error("abstract.md 로드 오류:", e);
-            }
-        }
-
-        // 구글 시트('교정본') 데이터를 test.html v1.5 기반으로 정밀 매핑 및 8번 기고문 글머리표 분리 렌더링
+        // 구글 시트('교정본') 데이터를 로드하여 8대 항목 및 8번 기고문 글머리표 분리 렌더링 준비
         async function loadCorrectSheetData() {
             try {
                 const response = await fetch(correctCsvUrl);
@@ -417,7 +393,10 @@
                     }
 
                     if (issueNum) {
-                        correctMap[issueNum] = htmlBuilder;
+                        correctMap[issueNum] = {
+                            title: `${pubDate} - 통권 ${paddedNum}호 내용 (구글 시트 v11.8)`,
+                            content: htmlBuilder
+                        };
                     }
                 }
             } catch (e) {
@@ -427,7 +406,6 @@
 
         async function loadCalendarData() {
             try {
-                await loadAbstractData();
                 await loadCorrectSheetData();
                 const respPdf = await fetch(pdfCsvUrl);
                 const pdfCsvText = await respPdf.text();
@@ -456,10 +434,9 @@
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
-                    const summaryText = "요약";
-                    const editStatus = "교정";
+                    
                     issueMap[`${year}-${month}`] = {
-                        issueNo: paddedNum, summary: summaryText, rawNum: issueNumber, status: editStatus, link: pdfLink
+                        issueNo: paddedNum, summary: "요약", rawNum: issueNumber, status: "교정", link: pdfLink
                     };
                 }
                 renderCalendarMatrix(issueMap);
@@ -469,30 +446,34 @@
             }
         }
 
-        // [요약] 클릭 시 기존 abstract.md 내용 표시
+        // [요약] 버튼 클릭 시에도 구글 시트 데이터를 동일하게 오픈
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
-            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 (abstract.md)`;
-            if (summaryMap[issueNum]) {
-                textElem.innerHTML = marked.parse(summaryMap[issueNum]);
+            
+            if (correctMap[issueNum]) {
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 (구글 시트 v11.8)`;
+                textElem.innerHTML = correctMap[issueNum].content;
             } else {
-                textElem.innerHTML = "<p>아직 작성된 요약 내용이 없습니다.</p>";
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 데이터 없음`;
+                textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 구글 시트 데이터가 아직 없습니다.</p>`;
             }
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 클릭 시 구글 시트 교정본 내용 표시
+        // [교정] 버튼 클릭 시에도 구글 시트 데이터를 동일하게 오픈
         function openCorrectModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
-            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트 v11.7)`;
+            
             if (correctMap[issueNum]) {
-                textElem.innerHTML = correctMap[issueNum];
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트 v11.8)`;
+                textElem.innerHTML = correctMap[issueNum].content;
             } else {
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 데이터 없음`;
                 textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 구글 시트 교정 데이터가 아직 없습니다.</p>`;
             }
             modal.style.display = 'flex';
@@ -617,7 +598,6 @@
                     const key = `${year}-${month}`;
                     const data = issueMap[key];
                     if (data !== undefined) {
-                        const statusClass = data.status === '교정완료' ? '' : 'pending';
                         const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
                         td.innerHTML = `
                             <div class="cell-content">
@@ -628,7 +608,7 @@
                                     <span class="cell-summary">${data.summary}</span>
                                 </div>
                                 <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${year}, ${month})">
-                                    <span class="cell-status ${statusClass}">${data.status}</span>
+                                    <span class="cell-status">${data.status}</span>
                                 </div>
                             </div>
                         `;
