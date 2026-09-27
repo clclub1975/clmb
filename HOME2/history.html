@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.6: '기타 활동', '인물 동정' 명칭 및 구글 시트 1:1 매핑 통일, 버전 v3.6 갱신 -->
+    <!-- v3.7: 체크박스 선택 순서대로 본문 및 상단 라벨 직관적 순차 렌더링(FIFO) 적용, 버전 v3.7 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.6</title>
+    <title>촛불회 연혁 살펴보기 v3.7</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -714,7 +714,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.6</span>
+    <span class="version">v3.7</span>
 </div>
 
 <div class="chat-container">
@@ -842,10 +842,10 @@
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 사용자가 체크박스를 누른 순서를 기록하는 배열 (최신 체크 항목이 맨 앞 [0]에 위치)
+    // 📌 사용자가 체크박스를 누른 순서대로 기록하는 배열 (먼저 누른 항목이 앞쪽 [0]에 위치)
     let selectedHistoryOrder = [];
 
-    // 📌 [v3.6] 15개 소분류 정의: '기타 활동', '인물 동정'으로 명칭 통일 및 구글 시트 실제 열(Column) 1:1 정밀 매핑
+    // 15개 소분류 정의 및 교정본 시트 실제 열(Column) 이름 후보군 정밀 매핑
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", colKeys: ["한 줄 요약", "한줄요약", "한줄 요약"] },
         { label: "임원진", colKeys: ["임원진", "임원진 구성"] },
@@ -905,7 +905,7 @@
 
         const isAll = $("selectAllCheckbox").checked;
 
-        // 1. 상단 선택 요약 바 텍스트 업데이트 (구분자: ' | ')
+        // 1. 상단 선택 요약 바 텍스트 업데이트 (선택한 순서대로 ' | ' 연결)
         if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
             summaryText.innerText = "전체 선택";
         } else if (selectedHistoryOrder.length > 0) {
@@ -920,7 +920,7 @@
             return;
         }
 
-        // 3. 전체 또는 선택된 항목들의 마크다운 생성
+        // 3. 전체 또는 선택된 항목들의 마크다운 생성 (선택한 순서대로 출력)
         const targetItems = (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length)
             ? CUSTOM_MENU_MAPPING
             : selectedHistoryOrder;
@@ -1030,13 +1030,16 @@
         });
     }
 
+    // 📌 [v3.7 핵심] 선택한 순서대로 배열 뒤에 추가(push)하여 순차적 직관 정렬 유지
     function handleItemCheckboxChange(cb) {
         const label = cb.value;
         const mapped = CUSTOM_MENU_MAPPING.find(m => m.label === label);
         if (cb.checked) {
+            // 중복 방지 후 배열의 맨 뒤(push)에 추가 -> 먼저 누른 항목이 상단에 위치
             selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
-            selectedHistoryOrder.unshift(mapped);
+            selectedHistoryOrder.push(mapped);
         } else {
+            // 해제 시 해당 항목만 제거
             selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
         }
 
