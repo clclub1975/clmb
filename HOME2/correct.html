@@ -1,4 +1,4 @@
-<!-- v11.6: 구글 시트('교정본') 데이터를 abstract.md의 8대 핵심 항목 포맷과 1:1 일치하도록 정확히 매핑 및 버전 v11.6 적용 -->
+<!-- v11.7: 구글 시트('교정본') 데이터를 test.html v1.5 기반 8대 핵심 항목 및 8번 기고문 개별 글머리표 분리 렌더링 로직으로 전면 업그레이드 및 버전 v11.7 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -47,11 +47,7 @@
             padding-bottom: 6px;
             text-align: center;
         }
-        h1 {
-            font-size: 1.35rem;
-            color: #2c3e50;
-            line-height: 1.3;
-        }
+        h1 { font-size: 1.35rem; color: #2c3e50; line-height: 1.3; }
         .title-wrap { display: inline-block; }
         h1 .version {
             font-size: 0.7rem;
@@ -62,7 +58,6 @@
             vertical-align: middle;
             margin-left: 4px;
         }
-        
         /* 표기 못한 누락 호수 안내 바 스타일 */
         .missing-notice {
             background-color: #fff1f2;
@@ -84,20 +79,10 @@
             margin: 0 2px;
         }
         .missing-link:hover { color: #1d4ed8; }
-        .missing-none {
-            color: #64748b;
-            font-weight: 600;
-            margin: 0 2px;
-        }
-
+        .missing-none { color: #64748b; font-weight: 600; margin: 0 2px; }
         /* 캘린더 테이블 영역 */
         .table-container { width: 100%; overflow-x: auto; margin-top: 4px; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-            table-layout: fixed;
-        }
+        table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
         th, td {
             padding: 2px;
             border: 1px solid #e1e4e8;
@@ -121,7 +106,6 @@
             font-size: 0.9rem;
         }
         th:not(:first-child), td:not(:first-child) { width: 7.62%; }
-
         /* 3분할 독립 블록 셀 구조 스타일 */
         .cell-content {
             display: flex;
@@ -140,13 +124,8 @@
             transition: background-color 0.15s ease;
             cursor: pointer;
         }
-        .cell-block:not(:last-child) {
-            border-bottom: 1px solid #edf2f7;
-        }
-        .cell-block:active {
-            background-color: rgba(0, 0, 0, 0.08);
-        }
-        
+        .cell-block:not(:last-child) { border-bottom: 1px solid #edf2f7; }
+        .cell-block:active { background-color: rgba(0, 0, 0, 0.08); }
         .cell-issue {
             font-weight: bold;
             font-size: 0.88rem;
@@ -171,10 +150,7 @@
             text-decoration: underline;
             text-underline-offset: 2px;
         }
-        .cell-status.pending {
-            color: #dc2626;
-        }
-        
+        .cell-status.pending { color: #dc2626; }
         .missing-cell-issue {
             display: flex;
             align-items: center;
@@ -186,12 +162,12 @@
             color: #4b5563;
             background-color: #fafafa;
         }
-
         /* 요약 상세 팝업 모달 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
@@ -219,15 +195,19 @@
         .modal-close {
             background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
         }
-
         .modal-body { font-size: 0.9rem; color: #334155; line-height: 1.5; text-align: left; }
-        .modal-body h4 { margin-top: 14px; margin-bottom: 4px; color: #1e293b; font-size: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
+        .modal-body h4 {
+            margin-top: 14px;
+            margin-bottom: 4px;
+            color: #1e293b;
+            font-size: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 2px;
+        }
         .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
         .modal-body li { margin-bottom: 5px; }
         .modal-body strong { color: #0f172a; }
-
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
-
         @media (max-width: 768px) {
             h1 { font-size: 1.1rem; }
             th, td { height: 60px; font-size: 0.7rem; }
@@ -249,7 +229,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v11.6</span>
+                <span class="version">v11.7</span>
             </h1>
         </header>
 
@@ -290,9 +270,9 @@
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
         const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
         const abstractMarkdownUrl = 'abstract.md';
-
+        
         let summaryMap = {};    // 기존 md 요약 데이터
-        let correctMap = {};    // 새로 추가된 구글 시트 교정본 8대 항목 구조화 데이터
+        let correctMap = {};    // 구글 시트 교정본 8대 항목 구조화 데이터
         let globalPdfMap = {};  // 모든 호수의 PDF 링크 정보를 담을 객체
 
         function parseCSV(text) {
@@ -327,7 +307,7 @@
             }
         }
 
-        // 구글 시트('교정본') 데이터를 abstract.md의 8대 핵심 항목 포맷에 1:1 대응하여 렌더링
+        // 구글 시트('교정본') 데이터를 test.html v1.5 기반으로 정밀 매핑 및 8번 기고문 글머리표 분리 렌더링
         async function loadCorrectSheetData() {
             try {
                 const response = await fetch(correctCsvUrl);
@@ -339,81 +319,100 @@
                     const cols = rows[j].map(c => c.trim());
                     if (cols.length < 3) continue;
 
-                    // B열(인덱스 1)에서 통권 호수 번호 추출
                     const matches = cols[1].match(/(\d+)/g);
                     if (!matches || matches.length === 0) continue;
                     
                     const issueNum = parseInt(matches[0], 10);
                     const paddedNum = String(issueNum).padStart(3, '0');
 
-                    // 시트 컬럼 구조를 abstract.md 8대 항목 포맷에 맞게 매핑
-                    let pubDate = cols[2] || `${paddedNum}호`;
-                    let summaryText = cols[3] || '';
-                    let execText = cols[4] || '';
-                    let eventText = cols[5] || '';
-                    let historyText = cols[6] || '';
-                    let meetingText = cols[7] || '';
-                    let volunteerText = cols[8] || '';
-                    let subGroupText = cols[9] || '';
-                    let peopleText = cols[10] || '';
-                    let articleText = cols[11] || '';
+                    let pubDate       = cols[2] || `${paddedNum}호`;
+                    let summaryText   = cols[3] || '';  
+                    let execCell      = cols[4] || '';  
+                    let sysCell       = cols[5] || '';  
+                    let eventCell     = cols[6] || '';  
+                    let historyCell   = cols[7] || '';  
+                    let troubleCell   = cols[8] || '';  
+                    let meetingType   = cols[9] || '';  
+                    let meetingVote   = cols[10] || ''; 
+                    let volRegular    = cols[11] || ''; 
+                    let volEtc        = cols[12] || ''; 
+                    let subStudy      = cols[13] || ''; 
+                    let subEtc        = cols[14] || ''; 
+                    let peopleInter   = cols[15] || ''; 
+                    let peopleNews    = cols[16] || ''; 
+                    let peopleEvent   = cols[17] || ''; 
+                    let articleSummary = cols[18] || ''; 
 
                     let htmlBuilder = '';
 
                     // 1. 회보 정보
                     htmlBuilder += `<h4>1. 회보 정보</h4><ul>`;
-                    htmlBuilder += `<li>*통권 호수:* 통권 ${paddedNum}호</li>`;
-                    htmlBuilder += `<li>*발행년월:* ${pubDate}</li>`;
-                    if (summaryText) htmlBuilder += `<li>*한 줄 요약:* ${summaryText.replace(/\\n/g, '<br>')}</li>`;
+                    htmlBuilder += `<li><strong>통권 호수:</strong> 통권 ${paddedNum}호</li>`;
+                    htmlBuilder += `<li><strong>발행년월:</strong> ${pubDate}</li>`;
+                    if (summaryText) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${summaryText.replace(/\\n/g, '<br>')}</li>`;
                     htmlBuilder += `</ul>`;
 
                     // 2. 조직 및 체계 변화
-                    if (execText || historyText) {
+                    if (execCell || sysCell) {
                         htmlBuilder += `<h4>2. 조직 및 체계 변화</h4><ul>`;
-                        if (execText) htmlBuilder += `<li>*임원진:* ${execText.replace(/\\n/g, '<br>')}</li>`;
-                        if (historyText) htmlBuilder += `<li>*체계 변화:* ${historyText.replace(/\\n/g, '<br>')}</li>`;
+                        if (execCell) htmlBuilder += `<li><strong>임원진:</strong> ${execCell.replace(/\\n/g, '<br>')}</li>`;
+                        if (sysCell) htmlBuilder += `<li><strong>체계 변화:</strong> ${sysCell.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
                     // 3. 주요 이벤트 및 마일스톤
-                    if (eventText) {
+                    if (eventCell || historyCell || troubleCell) {
                         htmlBuilder += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
-                        htmlBuilder += `<li>*이벤트 및 사실:* ${eventText.replace(/\\n/g, '<br>')}</li>`;
+                        if (eventCell) htmlBuilder += `<li><strong>이벤트:</strong> ${eventCell.replace(/\\n/g, '<br>')}</li>`;
+                        if (historyCell) htmlBuilder += `<li><strong>역사적 사실:</strong> ${historyCell.replace(/\\n/g, '<br>')}</li>`;
+                        if (troubleCell) htmlBuilder += `<li><strong>애로 사항:</strong> ${troubleCell.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
                     // 4. 주요 회의
-                    if (meetingText) {
+                    if (meetingType || meetingVote) {
                         htmlBuilder += `<h4>4. 주요 회의</h4><ul>`;
-                        htmlBuilder += `<li>*회의 및 의결:* ${meetingText.replace(/\\n/g, '<br>')}</li>`;
+                        if (meetingType) htmlBuilder += `<li><strong>회의 종류:</strong> ${meetingType.replace(/\\n/g, '<br>')}</li>`;
+                        if (meetingVote) htmlBuilder += `<li><strong>의결 사항:</strong> ${meetingVote.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
                     // 5. 봉사 활동
-                    if (volunteerText) {
+                    if (volRegular || volEtc) {
                         htmlBuilder += `<h4>5. 봉사 활동</h4><ul>`;
-                        htmlBuilder += `<li>*봉사 내용:* ${volunteerText.replace(/\\n/g, '<br>')}</li>`;
+                        if (volRegular) htmlBuilder += `<li><strong>정기 봉사:</strong> ${volRegular.replace(/\\n/g, '<br>')}</li>`;
+                        if (volEtc) htmlBuilder += `<li><strong>기타 봉사:</strong> ${volEtc.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
                     // 6. 소집단 활동
-                    if (subGroupText) {
+                    if (subStudy || subEtc) {
                         htmlBuilder += `<h4>6. 소집단 활동</h4><ul>`;
-                        htmlBuilder += `<li>*학술/문화/모임:* ${subGroupText.replace(/\\n/g, '<br>')}</li>`;
+                        if (subStudy) htmlBuilder += `<li><strong>학술/문화:</strong> ${subStudy.replace(/\\n/g, '<br>')}</li>`;
+                        if (subEtc) htmlBuilder += `<li><strong>기타 활동:</strong> ${subEtc.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
                     // 7. 인물 소식
-                    if (peopleText) {
+                    if (peopleInter || peopleNews || peopleEvent) {
                         htmlBuilder += `<h4>7. 인물 소식</h4><ul>`;
-                        htmlBuilder += `<li>*동정 및 소식:* ${peopleText.replace(/\\n/g, '<br>')}</li>`;
+                        if (peopleInter) htmlBuilder += `<li><strong>인터뷰:</strong> ${peopleInter.replace(/\\n/g, '<br>')}</li>`;
+                        if (peopleNews) htmlBuilder += `<li><strong>개별 동정:</strong> ${peopleNews.replace(/\\n/g, '<br>')}</li>`;
+                        if (peopleEvent) htmlBuilder += `<li><strong>경조사:</strong> ${peopleEvent.replace(/\\n/g, '<br>')}</li>`;
                         htmlBuilder += `</ul>`;
                     }
 
-                    // 8. 기고문
-                    if (articleText) {
+                    // 8. 기고문 (각 기고문별 개별 글머리표 분리 렌더링)
+                    if (articleSummary) {
                         htmlBuilder += `<h4>8. 기고문</h4><ul>`;
-                        htmlBuilder += `<li>*기고문 요약:* ${articleText.replace(/\\n/g, '<br>')}</li>`;
+                        let cleanArt = articleSummary.replace(/\\n/g, '\n');
+                        let articles = cleanArt.split(/(?=\[.*?\])/g);
+                        articles.forEach(art => {
+                            let trimmedArt = art.trim();
+                            if (trimmedArt) {
+                                htmlBuilder += `<li>${trimmedArt.replace(/\\n/g, '<br>')}</li>`;
+                            }
+                        });
                         htmlBuilder += `</ul>`;
                     }
 
@@ -430,57 +429,39 @@
             try {
                 await loadAbstractData();
                 await loadCorrectSheetData();
-
                 const respPdf = await fetch(pdfCsvUrl);
                 const pdfCsvText = await respPdf.text();
                 const pdfRows = parseCSV(pdfCsvText);
-
-                let issueMap = {}; 
-
+                let issueMap = {};
                 for (let j = 1; j < pdfRows.length; j++) {
                     const pCols = pdfRows[j].map(c => c.trim());
                     if (pCols.length < 3) continue;
-                    
-                    const fileName = pCols[0]; 
-                    const fileUrl = pCols[2];  
+                    const fileName = pCols[0];
+                    const fileUrl = pCols[2];
                     const colDate = pCols.length > 4 ? pCols[4] : '';
-
                     const matches = fileName.match(/(\d+)/g);
                     if (!matches || matches.length === 0) continue;
-                    
                     let issueNumber = parseInt(matches[0], 10);
                     if (fileName.includes('100+1')) {
                         issueNumber = 101;
                     }
                     if (issueNumber > 180) continue;
-
                     const paddedNum = String(issueNumber).padStart(3, '0');
                     const pdfLink = (fileUrl && fileUrl.startsWith('http')) ? fileUrl : '#';
-                    
                     globalPdfMap[issueNumber] = pdfLink;
                     globalPdfMap[String(issueNumber)] = pdfLink;
                     globalPdfMap[paddedNum] = pdfLink;
-
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
                     if (!matchDate) continue;
-                    
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
-
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
-
                     const summaryText = "요약";
                     const editStatus = "교정";
-
                     issueMap[`${year}-${month}`] = {
-                        issueNo: paddedNum,
-                        summary: summaryText,
-                        rawNum: issueNumber,
-                        status: editStatus,
-                        link: pdfLink
+                        issueNo: paddedNum, summary: summaryText, rawNum: issueNumber, status: editStatus, link: pdfLink
                     };
                 }
-
                 renderCalendarMatrix(issueMap);
             } catch (error) {
                 console.error("데이터 연동 실패:", error);
@@ -493,33 +474,27 @@
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
-
             titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 (abstract.md)`;
-            
             if (summaryMap[issueNum]) {
                 textElem.innerHTML = marked.parse(summaryMap[issueNum]);
             } else {
                 textElem.innerHTML = "<p>아직 작성된 요약 내용이 없습니다.</p>";
             }
-
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 클릭 시 새 구글 시트('교정본') 8대 항목 포맷 내용 표시
+        // [교정] 클릭 시 구글 시트 교정본 내용 표시
         function openCorrectModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
-
-            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트)`;
-            
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트 v11.7)`;
             if (correctMap[issueNum]) {
                 textElem.innerHTML = correctMap[issueNum];
             } else {
                 textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 구글 시트 교정 데이터가 아직 없습니다.</p>`;
             }
-
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
@@ -542,24 +517,19 @@
         });
 
         function getEstimatedMissingNumber(targetYear, targetMonth, issueMap) {
-            const startYear = 1984, startMonth = 3; 
+            const startYear = 1984, startMonth = 3;
             const targetIndex = (targetYear - startYear) * 12 + (targetMonth - 1);
             const baseIndex = (startYear - startYear) * 12 + (startMonth - 1);
-            
-            if (targetIndex < baseIndex) return ""; 
+            if (targetIndex < baseIndex) return "";
             if (targetYear > 2003 || (targetYear === 2003 && targetMonth > 11)) return "";
-
             let prevNum = null, prevDist = Infinity;
             let nextNum = null, nextDist = Infinity;
-
             for (let y = 1984; y <= 2003; y++) {
                 for (let m = 1; m <= 12; m++) {
                     if (y === 1984 && m < 3) continue;
-                    if (y === 2003 && m > 11) continue; 
-                    
+                    if (y === 2003 && m > 11) continue;
                     const idx = (y - startYear) * 12 + (m - 1);
                     const data = issueMap[`${y}-${m}`];
-                    
                     if (data && data.rawNum !== undefined && data.rawNum <= 180) {
                         const dist = idx - targetIndex;
                         if (dist < 0 && Math.abs(dist) < prevDist) {
@@ -572,14 +542,12 @@
                     }
                 }
             }
-
             let estimated = null;
             if (prevNum !== null) {
                 estimated = prevNum + prevDist;
             } else if (nextNum !== null) {
                 estimated = nextNum - nextDist;
             }
-
             if (estimated !== null && estimated > 0 && estimated <= 180) {
                 let exists = false;
                 for (let key in issueMap) {
@@ -592,26 +560,21 @@
                     return String(estimated).padStart(3, '0');
                 }
             }
-
             return "";
         }
 
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
-
             const startYear = 1984;
             const endYear = 2003;
-
             let existingNums = new Set();
             for (let key in issueMap) {
                 existingNums.add(issueMap[key].rawNum);
             }
-
             let unmappedMissing = [];
             for (let n = 1; n <= 180; n++) {
-                if (existingNums.has(n)) continue; 
-
+                if (existingNums.has(n)) continue;
                 let canBeMapped = false;
                 for (let y = startYear; y <= endYear; y++) {
                     for (let m = 1; m <= 12; m++) {
@@ -628,11 +591,9 @@
                     }
                     if (canBeMapped) break;
                 }
-
                 if (!canBeMapped) {
                     const issueStr = `${n}호`;
                     const pdfUrl = globalPdfMap[n] || globalPdfMap[String(n)] || globalPdfMap[String(n).padStart(3, '0')];
-                    
                     if (pdfUrl && pdfUrl !== '#') {
                         unmappedMissing.push(`<a href="${pdfUrl}" target="_blank" class="missing-link">${issueStr}</a>`);
                     } else {
@@ -640,32 +601,24 @@
                     }
                 }
             }
-
             const noticeContainer = document.getElementById('unmapped-missing-container');
             if (unmappedMissing.length > 0) {
                 noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> ${unmappedMissing.join(', ')}`;
             } else {
                 noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> 없음`;
             }
-
             for (let year = startYear; year <= endYear; year++) {
                 const tr = document.createElement('tr');
-                
                 const thYear = document.createElement('th');
                 thYear.textContent = year;
                 tr.appendChild(thYear);
-
                 for (let month = 1; month <= 12; month++) {
                     const td = document.createElement('td');
                     const key = `${year}-${month}`;
                     const data = issueMap[key];
-
                     if (data !== undefined) {
                         const statusClass = data.status === '교정완료' ? '' : 'pending';
-                        const linkAttr = (data.link && data.link !== '#') 
-                            ? `href="${data.link}" target="_blank"` 
-                            : `href="#" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
-
+                        const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
                         td.innerHTML = `
                             <div class="cell-content">
                                 <a ${linkAttr} class="cell-block">
@@ -689,7 +642,6 @@
                     }
                     tr.appendChild(td);
                 }
-
                 tbody.appendChild(tr);
             }
         }
