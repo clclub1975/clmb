@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.2: R1_촛불회_회보DB 교정본 웹 게시 CSV 주소 정확히 교체 및 실시간 듀얼 뷰어 연동 완성 -->
+    <!-- v3.3: 구글 시트 교정본 2행 헤더 인식 및 독립 컬럼 1:1 매핑 적용, 시간순 렌더링 완성 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.2 (비교 검증판)</title>
+    <title>촛불회 연혁 살펴보기 v3.3 (비교 검증판)</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -741,7 +741,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.2</span>
+    <span class="version">v3.3</span>
 </div>
 
 <div class="chat-container">
@@ -871,7 +871,7 @@
     // 1. 기존 원문 마크다운 URL
     const HISTORY_MD_URL = "https://raw.githubusercontent.com/clclub1975/clmb/main/HOME2/history.md";
     
-    // 📌 [v3.2 갱신] 신규 R1_촛불회_회보DB 교정본 웹 게시 CSV 주소
+    // 2. 신규 R1_촛불회_회보DB 교정본 웹 게시 CSV 주소
     const SHEET_CORRECT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv";
 
     const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
@@ -887,23 +887,23 @@
     // 사용자가 체크박스를 누른 순서를 기록하는 배열
     let selectedHistoryOrder = [];
 
-    // 15개 소분류 정의
+    // 📌 [v3.3] 15개 소분류 정의 및 교정본 시트 실제 열(Column) 이름 후보군 정밀 매핑
     const CUSTOM_MENU_MAPPING = [
-        { label: "한 줄 요약", anchorId: "sub-1-3", group: "한줄요약" },
-        { label: "임원진", anchorId: "sub-2-1", group: "임원진" },
-        { label: "체계 변화", anchorId: "sub-2-2", group: "체계변화" },
-        { label: "주요 이벤트", anchorId: "sub-3-1", group: "사건", subType: "이벤트" },
-        { label: "역사적 사실", anchorId: "sub-3-2", group: "사건", subType: "역사적사실" },
-        { label: "애로 사항", anchorId: "sub-3-3", group: "사건", subType: "애로사항" },
-        { label: "회의 종류", anchorId: "sub-4-1", group: "회의", subType: "종류" },
-        { label: "의결 사항", anchorId: "sub-4-2", group: "회의", subType: "의결" },
-        { label: "정기 봉사", anchorId: "sub-5-1", group: "활동", subType: "정기봉사" },
-        { label: "기타 봉사", anchorId: "sub-5-2", group: "활동", subType: "기타봉사" },
-        { label: "학술/문화 활동", anchorId: "sub-6-1", group: "활동", subType: "학술문화" },
-        { label: "친목/기타 활동", anchorId: "sub-6-2", group: "활동", subType: "친목기타" },
-        { label: "인물 인터뷰", anchorId: "sub-7-1", group: "인물", subType: "인터뷰" },
-        { label: "회원 동정", anchorId: "sub-7-2", group: "인물", subType: "동정" },
-        { label: "경조사", anchorId: "sub-7-3", group: "인물", subType: "경조사" }
+        { label: "한 줄 요약", anchorId: "sub-1-3", colKeys: ["한 줄 요약", "한줄요약", "한줄 요약"] },
+        { label: "임원진", anchorId: "sub-2-1", colKeys: ["임원진", "임원진 구성"] },
+        { label: "체계 변화", anchorId: "sub-2-2", colKeys: ["체계 변화", "체계변화", "조직 및 체계 변화"] },
+        { label: "주요 이벤트", anchorId: "sub-3-1", colKeys: ["이벤트", "주요 이벤트", "주요이벤트"] },
+        { label: "역사적 사실", anchorId: "sub-3-2", colKeys: ["역사적 사실", "역사적사실"] },
+        { label: "애로 사항", anchorId: "sub-3-3", colKeys: ["애로 사항", "애로사항"] },
+        { label: "회의 종류", anchorId: "sub-4-1", colKeys: ["회의 종류", "회의종류", "정기 모임/회의", "회의"] },
+        { label: "의결 사항", anchorId: "sub-4-2", colKeys: ["의결 사항", "의결사항", "의결"] },
+        { label: "정기 봉사", anchorId: "sub-5-1", colKeys: ["정기 봉사", "정기봉사", "정기 봉사활동"] },
+        { label: "기타 봉사", anchorId: "sub-5-2", colKeys: ["기타 봉사", "기타봉사", "기타 봉사활동"] },
+        { label: "학술/문화 활동", anchorId: "sub-6-1", colKeys: ["학술/문화 활동", "학술/문화", "학술문화 활동", "학술문화"] },
+        { label: "친목/기타 활동", anchorId: "sub-6-2", colKeys: ["친목/기타 활동", "친목/기타", "친목기타 활동", "친목/행사"] },
+        { label: "인물 인터뷰", anchorId: "sub-7-1", colKeys: ["인물 인터뷰", "인터뷰", "인물인터뷰"] },
+        { label: "회원 동정", anchorId: "sub-7-2", colKeys: ["회원 동정", "회원동정", "인물 동향"] },
+        { label: "경조사", anchorId: "sub-7-3", colKeys: ["경조사", "경조사 및 소식"] }
     ];
 
     window.onload = async () => {
@@ -945,7 +945,8 @@
                 return res.text();
             })
             .then(csvText => {
-                sheetParsedRows = parseCSV(csvText);
+                // 2행 헤더 인식 파서 실행
+                sheetParsedRows = parseSheetCSVWithSmartHeader(csvText);
                 renderFilteredHistorySheet();
             })
             .catch(err => {
@@ -999,7 +1000,7 @@
         }
     }
 
-    // 창 2: 구글 시트 교정본 기반 동적 연혁 조립 렌더링
+    // 📌 [v3.3] 창 2: 구글 시트 교정본 기반 동적 연혁 조립 렌더링
     function renderFilteredHistorySheet() {
         const box = $("sheetContentBox");
         if (!sheetParsedRows || sheetParsedRows.length === 0) return;
@@ -1032,40 +1033,26 @@
         }
     }
 
-    // 구글 시트 행 데이터로부터 시간순(001호~180호) 연혁 목록 블록 생성
+    // 📌 [v3.3] 구글 시트 행 데이터로부터 시간순(001호~180호) 연혁 목록 블록 생성
     function buildSheetSectionMarkdown(item) {
         let lines = [];
 
         sheetParsedRows.forEach(row => {
-            const no = row["통권 호수"] || row["통권호수"] || row["호수"] || "";
-            const issueDate = row["발행월"] || row["발행 일자"] || "";
-            if (!no) return;
+            // 통권 호수 찾기
+            const rawNo = getRowValue(row, ["통권 호수", "통권호수", "호수", "권호"]);
+            // 발행년월 찾기
+            const issueDate = getRowValue(row, ["발행년월", "발행월", "발행 일자", "발행일자", "발행일"]);
+            if (!rawNo) return;
 
-            const prefix = `* **[${formatIssueNo(no)}] ${issueDate}** : `;
-            let contentText = "";
-
-            if (item.label === "한 줄 요약") {
-                contentText = row["한 줄 요약"] || row["한줄요약"] || "";
-            } else if (item.label === "임원진") {
-                contentText = row["임원진"] || "";
-            } else if (item.label === "체계 변화") {
-                contentText = row["체계 변화"] || row["체계변화"] || "";
-            } else if (item.group === "사건") {
-                const raw = row["주요 사건/이슈"] || row["주요 사건"] || row["주요사건"] || "";
-                contentText = extractSubCategoryText(raw, item.label);
-            } else if (item.group === "회의") {
-                const raw = row["정기 모임/회의"] || row["회의"] || "";
-                contentText = extractSubCategoryText(raw, item.label);
-            } else if (item.group === "활동") {
-                const raw = row["활동/사업"] || row["활동"] || "";
-                contentText = extractSubCategoryText(raw, item.label);
-            } else if (item.group === "인물") {
-                const raw = row["인물 동향"] || row["회원 동정"] || row["인물"] || "";
-                contentText = extractSubCategoryText(raw, item.label);
-            }
+            const prefix = `* **[${formatIssueNo(rawNo)}] ${issueDate}** : `;
+            
+            // 해당 소분류 컬럼에서 값 직접 취득
+            let contentText = getRowValue(row, item.colKeys);
 
             if (contentText && contentText.trim() && contentText.trim() !== "-" && contentText.trim() !== "없음") {
-                lines.push(prefix + contentText.trim());
+                // 줄바꿈이 있는 경우 한 줄 서식에 맞게 정돈
+                const formatted = contentText.trim().replace(/\r?\n+/g, " / ");
+                lines.push(prefix + formatted);
             }
         });
 
@@ -1073,46 +1060,24 @@
         return `### ${item.label}\n\n` + lines.join("\n");
     }
 
-    function extractSubCategoryText(rawText, label) {
-        if (!rawText) return "";
-        const paragraphs = rawText.split(/\n+/);
-        let matched = [];
-
-        paragraphs.forEach(p => {
-            const clean = p.trim();
-            if (!clean) return;
-
-            if (label === "주요 이벤트" && (clean.includes("이벤트") || clean.includes("행사") || clean.includes("기념"))) {
-                matched.push(clean);
-            } else if (label === "역사적 사실" && (clean.includes("역사") || clean.includes("창간") || clean.includes("발족") || clean.includes("결성"))) {
-                matched.push(clean);
-            } else if (label === "애로 사항" && (clean.includes("애로") || clean.includes("재정") || clean.includes("부진") || clean.includes("침체") || clean.includes("어려움"))) {
-                matched.push(clean);
-            } else if (label === "회의 종류" && (clean.includes("총회") || clean.includes("상임위") || clean.includes("임시총회") || clean.includes("모임"))) {
-                matched.push(clean);
-            } else if (label === "의결 사항" && (clean.includes("의결") || clean.includes("선출") || clean.includes("개정") || clean.includes("결정"))) {
-                matched.push(clean);
-            } else if (label === "정기 봉사" && (clean.includes("성로원") || clean.includes("영아원") || clean.includes("한빛") || clean.includes("정기"))) {
-                matched.push(clean);
-            } else if (label === "기타 봉사" && (clean.includes("수해") || clean.includes("일일") || clean.includes("농활") || clean.includes("야학"))) {
-                matched.push(clean);
-            } else if (label === "학술/문화 활동" && (clean.includes("학회") || clean.includes("세미나") || clean.includes("H.T") || clean.includes("강독") || clean.includes("토론"))) {
-                matched.push(clean);
-            } else if (label === "친목/기타 활동" && (clean.includes("M.T") || clean.includes("MT") || clean.includes("야유회") || clean.includes("체육대회") || clean.includes("소풍"))) {
-                matched.push(clean);
-            } else if (label === "인물 인터뷰" && (clean.includes("인터뷰") || clean.includes("탐방") || clean.includes("대담"))) {
-                matched.push(clean);
-            } else if (label === "회원 동정" && (clean.includes("입대") || clean.includes("제대") || clean.includes("유학") || clean.includes("출국") || clean.includes("동정"))) {
-                matched.push(clean);
-            } else if (label === "경조사" && (clean.includes("결혼") || clean.includes("화촉") || clean.includes("부친상") || clean.includes("모친상") || clean.includes("돌잔치") || clean.includes("조문"))) {
-                matched.push(clean);
+    // 컬럼 키 후보군 중 매칭되는 첫 번째 값을 반환하는 헬퍼 함수
+    function getRowValue(row, possibleKeys) {
+        if (!row || !possibleKeys) return "";
+        for (let key of possibleKeys) {
+            if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+                return row[key].trim();
             }
-        });
-
-        if (matched.length === 0 && paragraphs.length === 1 && !rawText.includes(":") && !rawText.includes("▶")) {
-            return rawText;
+            // 공백을 제거한 키 비교
+            const cleanKey = key.replace(/\s+/g, "");
+            for (let actualKey in row) {
+                if (actualKey.replace(/\s+/g, "") === cleanKey) {
+                    if (row[actualKey] !== undefined && row[actualKey] !== null && row[actualKey] !== "") {
+                        return row[actualKey].trim();
+                    }
+                }
+            }
         }
-        return matched.join(" / ");
+        return "";
     }
 
     function formatIssueNo(numStr) {
@@ -1518,8 +1483,9 @@ ${contextPrompt}
         box.scrollTop = box.scrollHeight;
     }
 
-    function parseCSV(text) {
-        let rows = [], currentRow = [], currentField = "", inQuotes = false;
+    // 📌 [v3.3] 2행 헤더를 자동 감지하여 파싱하는 스마트 CSV 파서
+    function parseSheetCSVWithSmartHeader(text) {
+        let rawRows = [], currentRow = [], currentField = "", inQuotes = false;
         for (let i = 0; i < text.length; i++) {
             let c = text[i], nextC = text[i + 1];
             if (inQuotes) {
@@ -1529,19 +1495,37 @@ ${contextPrompt}
             } else {
                 if (c === '"') inQuotes = true;
                 else if (c === ',') { currentRow.push(currentField.trim()); currentField = ""; }
-                else if (c === '\r' && nextC === '\n') { currentRow.push(currentField.trim()); rows.push(currentRow); currentRow = []; currentField = ""; i++; }
-                else if (c === '\n') { currentRow.push(currentField.trim()); rows.push(currentRow); currentRow = []; currentField = ""; }
+                else if (c === '\r' && nextC === '\n') { currentRow.push(currentField.trim()); rawRows.push(currentRow); currentRow = []; currentField = ""; i++; }
+                else if (c === '\n') { currentRow.push(currentField.trim()); rawRows.push(currentRow); currentRow = []; currentField = ""; }
                 else currentField += c;
             }
         }
-        if (currentField !== "" || currentRow.length > 0) { currentRow.push(currentField.trim()); rows.push(currentRow); }
-        if (rows.length === 0) return [];
-        let headers = rows[0].map(h => h.trim()), result = [];
-        for (let i = 1; i < rows.length; i++) {
-            let cols = rows[i];
+        if (currentField !== "" || currentRow.length > 0) { currentRow.push(currentField.trim()); rawRows.push(currentRow); }
+        if (rawRows.length < 2) return [];
+
+        // 1. 헤더 행 위치 찾기: '통권 호수' 또는 '발행년월' 또는 '한 줄 요약'이 들어 있는 행을 실제 헤더로 인식
+        let headerRowIndex = 0;
+        for (let r = 0; r < Math.min(rawRows.length, 5); r++) {
+            const joined = rawRows[r].join(" ");
+            if (joined.includes("통권") || joined.includes("발행년월") || joined.includes("한 줄 요약") || joined.includes("한줄요약")) {
+                headerRowIndex = r;
+                break;
+            }
+        }
+
+        const headers = rawRows[headerRowIndex].map(h => h.trim());
+        let result = [];
+
+        // 헤더 행 다음 행부터 데이터 객체로 조립
+        for (let i = headerRowIndex + 1; i < rawRows.length; i++) {
+            let cols = rawRows[i];
             if (!cols || cols.length === 0 || (cols.length === 1 && cols[0] === "")) continue;
             let obj = {};
-            for (let j = 0; j < headers.length; j++) obj[headers[j]] = cols[j] ? cols[j].trim() : "";
+            for (let j = 0; j < headers.length; j++) {
+                if (headers[j]) {
+                    obj[headers[j]] = cols[j] ? cols[j].trim() : "";
+                }
+            }
             result.push(obj);
         }
         return result;
