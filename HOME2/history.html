@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.9: 바깥 브라우저 창 스크롤 완전 고정 및 내용보기 창 내부만 정밀 스크롤 이동 적용, 버전 v3.9 갱신 -->
+    <!-- v3.10: 새 항목 체크 시 스크롤 모션 제거 및 내용창 상단 즉각 고정(Instant Jump) 적용, 버전 v3.10 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.9</title>
+    <title>촛불회 연혁 살펴보기 v3.10</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -714,7 +714,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.9</span>
+    <span class="version">v3.10</span>
 </div>
 
 <div class="chat-container">
@@ -897,7 +897,7 @@
             });
     };
 
-    // 📌 [v3.9] 단일 연혁 뷰어 렌더링 함수 (바깥 창 스크롤 방지 & 박스 내부 스크롤만 이동)
+    // 📌 [v3.10] 단일 연혁 뷰어 렌더링 함수 (스크롤 모션 없는 즉각 전환 - Instant Jump)
     function renderFilteredHistory(targetScrollLabel = null) {
         const box = $("historyContentBox");
         const summaryText = $("selectedSummaryText");
@@ -937,14 +937,15 @@
         if (generatedMarkdown.trim()) {
             box.innerHTML = marked.parse(generatedMarkdown);
 
-            // 📌 [v3.9 핵심] 바깥 창(Window) 스크롤 차단: 박스 내부의 scrollTop만 직접 제어
+            // 📌 [v3.10 핵심] 스크롤 모션 제거: 부드러운 스크롤(smooth) 없이 즉시 상단 고정(Instant Jump)
             if (targetScrollLabel) {
                 const targetElement = document.getElementById(`sec-${encodeURIComponent(targetScrollLabel)}`);
                 if (targetElement) {
                     const scrollOffset = targetElement.offsetTop - box.offsetTop;
+                    // behavior: 'auto'로 즉각적인 화면 전환 수행 (애니메이션 노출 방지)
                     box.scrollTo({
                         top: Math.max(0, scrollOffset),
-                        behavior: 'smooth'
+                        behavior: 'auto'
                     });
                 }
             } else if (isAll || selectedHistoryOrder.length === 0) {
@@ -1044,7 +1045,7 @@
         });
     }
 
-    // 새로 선택한 경우 해당 라벨명을 전달하여 내부 스크롤만 트리거
+    // 새로 선택한 경우 해당 라벨명을 전달하여 내부 즉각 전환 트리거
     function handleItemCheckboxChange(cb) {
         const label = cb.value;
         const mapped = CUSTOM_MENU_MAPPING.find(m => m.label === label);
