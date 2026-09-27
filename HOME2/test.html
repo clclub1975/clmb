@@ -1,51 +1,106 @@
-<!-- 통권 001호 교정본 모달 디스플레이 코드 전용 조각 -->
-<div class="modal-content" onclick="event.stopPropagation()">
-    <div class="modal-header">
-        <span class="modal-title" id="modal-issue-title">1984년 3월 - 통권 001호 교정본 (구글 시트)</span>
-        <button class="modal-close" onclick="closeSummaryModal()">&times;</button>
+<!-- test.html v1.0: 통권 001호 모달 디스플레이 순수 HTML 포맷 적용 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>촛불회 회보 - test.html v1.0</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.5;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        .modal-title { font-size: 1.15rem; font-weight: bold; color: #1e293b; }
+        .modal-close {
+            background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
+        }
+        .modal-body { font-size: 0.92rem; color: #334155; text-align: left; }
+        .modal-body h4 {
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #1e293b;
+            font-size: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 4px;
+        }
+        .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
+        .modal-body li { margin-bottom: 6px; }
+        .modal-body strong { color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="modal-title" id="modal-issue-title">1984년 3월 - 통권 001호 교정본 (test.html v1.0)</span>
+            <button class="modal-close" onclick="alert('창 닫기')">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-issue-text">
+            <h4>1. 회보 정보</h4>
+            <ul>
+                <li><strong>통권 호수:</strong> 통권 001호</li>
+                <li><strong>발행년월:</strong> 1984년 3월</li>
+                <li><strong>한 줄 요약:</strong> 촛불회 결성 10주년을 맞아 회원 간 단결과 봉사 정신을 재다짐하고 회의 역사를 정립하기 위해 창간된 월간 회보 창간호.</li>
+            </ul>
+            
+            <h4>2. 조직 및 체계 변화</h4>
+            <ul>
+                <li><strong>임원진:</strong> 회장 김찬욱(6기), 부회장 박기석(6기), 편집부장 김민수(7기), 제7회기 회장단 및 부장단(연구기획부장 이준호, 편집관리부장 윤오미).</li>
+                <li><strong>체계 변화:</strong> 삼각산 야유회(1984.3.11), 대성고등학교 11기 신입생 환영회 개최(1984.3.17).</li>
+            </ul>
+
+            <h4>3. 주요 이벤트 및 마일스톤</h4>
+            <ul>
+                <li><strong>이벤트 및 사실:</strong> 제7회기(1984.3.1~8.31) 개시와 함께 YB 촛불회에서 OB 촛불회로 옮기는 이적 원서 작성(3월 1일부터) 실시, 역대 기구 조직표(1~7회기) 최초 정립 및 수록.</li>
+            </ul>
+
+            <h4>4. 주요 회의</h4>
+            <ul>
+                <li><strong>회의 및 의결:</strong> 1974년 결성 이래 촛불회 결성 10주년 수립, 월간 회보 공식 창간.</li>
+            </ul>
+
+            <h4>5. 봉사 활동</h4>
+            <ul>
+                <li><strong>봉사 내용:</strong> 회원들의 자발적 회비 납부 저조(3월 31일 자진 납부 기간 만료), 영아원 활동 참가 회원 감소 및 봉사 활동 기록부 공백 발생.</li>
+            </ul>
+
+            <h4>6. 소집단 활동</h4>
+            <ul>
+                <li><strong>학술/문화/모임:</strong> 제6차 정기총회 (1984.2.18)</li>
+            </ul>
+
+            <h4>7. 인물 소식</h4>
+            <ul>
+                <li><strong>동정 및 소식:</strong> 제6회기 사업 마무리 및 제7회기 회장단 선출, 회보 발간 추진 안건 가결.</li>
+            </ul>
+
+            <h4>8. 기고문</h4>
+            <ul>
+                <li><strong>기고문 요약:</strong> 불광동 '녹원 영아원' 정기 방문 봉사, 노량진 '성노원 아기집' 방문 봉사.</li>
+            </ul>
+        </div>
     </div>
-    <div class="modal-body" id="modal-issue-text">
-        <h4>1. 회보 정보</h4>
-        <ul>
-            <li>*통권 호수:* 통권 001호</li>
-            <li>*발행년월:* 1984년 3월</li>
-            <li>*한 줄 요약:* 촛불회 결성 10주년을 맞아 회원 간 단결과 봉사 정신을 재다짐하고 회의 역사를 정립하기 위해 창간된 월간 회보 창간호.</li>
-        </ul>
-        
-        <h4>2. 조직 및 체계 변화</h4>
-        <ul>
-            <li>*임원진:* 회장 김찬욱(6기), 부회장 박기석(6기), 편집부장 김민수(7기), 제7회기 회장단 및 부장단(연구기획부장 이준호, 편집관리부장 윤오미).</li>
-            <li>*체계 변화:* 삼각산 야유회(1984.3.11), 대성고등학교 11기 신입생 환영회 개최(1984.3.17).</li>
-        </ul>
 
-        <h4>3. 주요 이벤트 및 마일스톤</h4>
-        <ul>
-            <li>*이벤트 및 사실:* 제7회기(1984.3.1~8.31) 개시와 함께 YB 촛불회에서 OB 촛불회로 옮기는 이적 원서 작성(3월 1일부터) 실시, 역대 기구 조직표(1~7회기) 최초 정립 및 수록.</li>
-        </ul>
-
-        <h4>4. 주요 회의</h4>
-        <ul>
-            <li>*회의 및 의결:* 1974년 결성 이래 촛불회 결성 10주년 수립, 월간 회보 공식 창간.</li>
-        </ul>
-
-        <h4>5. 봉사 활동</h4>
-        <ul>
-            <li>*봉사 내용:* 회원들의 자발적 회비 납부 저조(3월 31일 자진 납부 기간 만료), 영아원 활동 참가 회원 감소 및 봉사 활동 기록부 공백 발생.</li>
-        </ul>
-
-        <h4>6. 소집단 활동</h4>
-        <ul>
-            <li>*학술/문화/모임:* 제6차 정기총회 (1984.2.18)</li>
-        </ul>
-
-        <h4>7. 인물 소식</h4>
-        <ul>
-            <li>*동정 및 소식:* 제6회기 사업 마무리 및 제7회기 회장단 선출, 회보 발간 추진 안건 가결.</li>
-        </ul>
-
-        <h4>8. 기고문</h4>
-        <ul>
-            <li>*기고문 요약:* 불광동 '녹원 영아원' 정기 방문 봉사, 노량진 '성노원 아기집' 방문 봉사.</li>
-        </ul>
-    </div>
-</div>
+</body>
+</html>
