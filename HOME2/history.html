@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v4.0: AI 분석 프롬프트 전면 개정(집계, 카운트, 통계, 흐름 분석 권한 전면 부여), 버전 v4.0 메이저 갱신 -->
+    <!-- v4.1: 디폴트 '한 줄 요약' 선택 로딩, 질문창 플레이스홀더 및 기본 질의 "촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘." 반영, 버전 v4.1 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v4.0</title>
+    <title>촛불회 연혁 살펴보기 v4.1</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -774,7 +774,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v4.0</span>
+    <span class="version">v4.1</span>
 </div>
 
 <div class="chat-container">
@@ -862,10 +862,10 @@
             </div>
         </div>
 
-        <!-- 질문 입력창 -->
+        <!-- 📌 [v4.1] 질문 입력창: "촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘." 반영 -->
         <div class="input-group">
             <div class="input-wrapper">
-                <textarea id="userQuery" placeholder="예: 촛불회가 주로 봉사한 기관들을 정리해줘.&#10;    (이 질문은 '정기 봉사' 항목에 체크한 후 실행하면 더 효율적입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
+                <textarea id="userQuery" placeholder="예: 촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘.&#10;    (이 질문은 '한 줄 요약' 항목에 체크한 후 실행하는 예시입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
                 <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
             </div>
         </div>
@@ -968,7 +968,7 @@
             });
     };
 
-    // 단일 연혁 뷰어 렌더링 함수 (requestAnimationFrame을 통한 정밀 즉각 고정)
+    // 단일 연혁 뷰어 렌더링 함수
     function renderFilteredHistory(targetScrollLabel = null) {
         const box = $("historyContentBox");
         const summaryText = $("selectedSummaryText");
@@ -976,7 +976,7 @@
 
         const isAll = $("selectAllCheckbox").checked;
 
-        // 1. 상단 선택 요약 바 텍스트 업데이트 (선택한 순서대로 ' | ' 연결)
+        // 1. 상단 선택 요약 바 텍스트 업데이트
         if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
             summaryText.innerText = "전체 선택";
         } else if (selectedHistoryOrder.length > 0) {
@@ -991,7 +991,7 @@
             return;
         }
 
-        // 3. 전체 또는 선택된 항목들의 마크다운 생성 (선택한 순서대로 출력)
+        // 3. 전체 또는 선택된 항목들의 마크다운 생성
         const targetItems = (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length)
             ? CUSTOM_MENU_MAPPING
             : selectedHistoryOrder;
@@ -1125,13 +1125,21 @@
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
 
-    // 16개 항목 체크박스 렌더링
+    // 📌 [v4.1] 16개 항목 체크박스 렌더링 (디폴트로 '한 줄 요약' 체크)
     function renderCheckboxes() {
         const container = $("checkboxContainer");
         container.innerHTML = "";
+        
+        // '한 줄 요약'을 기본 선택 항목으로 배열에 등록
+        const defaultItem = CUSTOM_MENU_MAPPING.find(m => m.label === "한 줄 요약");
+        selectedHistoryOrder = defaultItem ? [defaultItem] : [];
+
         CUSTOM_MENU_MAPPING.forEach(item => {
-            container.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" onchange="handleItemCheckboxChange(this)"> ${item.label}</label>`;
+            const isChecked = (item.label === "한 줄 요약") ? "checked" : "";
+            container.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" ${isChecked} onchange="handleItemCheckboxChange(this)"> ${item.label}</label>`;
         });
+
+        $("selectedSummaryText").innerText = "한 줄 요약";
     }
 
     function handleItemCheckboxChange(cb) {
@@ -1362,7 +1370,7 @@
         btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
 
-    // 📌 [v4.0 핵심 개정] 집계, 통계, 카운트, 빈도 및 흐름 분석을 전면 허용하는 스마트 분석 엔진
+    // AI 질의 함수
     async function askAI(isSequential) {
         const targetType = isSequential ? "sequential" : "new";
         if (currentController) {
@@ -1391,7 +1399,8 @@
         }
 
         let queryInput = $("userQuery");
-        let query = queryInput.value.trim() || "촛불회가 주로 봉사한 기관들을 정리해줘.";
+        // 📌 [v4.1] 기본 질문도 '촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘.'로 설정
+        let query = queryInput.value.trim() || "촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘.";
         if (!queryInput.value.trim()) {
             queryInput.value = query;
             autoResize(queryInput);
@@ -1432,7 +1441,6 @@
                 ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 바탕으로 심층 비교 및 연속 분석을 수행하세요.` 
                 : "";
                 
-            // 📌 [v4.0] 통계 집계 및 분석 권한이 명확히 부여된 개선 프롬프트
             const promptText = `당신은 촛불회 50년 역사 기록을 정밀하게 분석하고 통계를 내어 알기 쉽게 전달하는 전문 역사 데이터 분석가이자 친절한 안내자입니다.
 아래에 제공된 [촛불회 공식 연혁 기록]을 철저한 1차 데이터 원천(Ground Truth)으로 삼아 사용자의 질문에 답해 주세요.
 
