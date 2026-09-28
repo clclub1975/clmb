@@ -1,4 +1,4 @@
-<!-- v12.0: [교정] 버튼 클릭 시 좌측 PDF 원본 / 우측 상단 '원본' 탭 + 하단 편집 가능한 '교정본' 탭의 2열-2행 분할 모달 창 적용, 버전 v12.0 -->
+<!-- v12.1: [교정] 클릭 시 PDF 새 창 분리 및 모달 창을 상하 2행(1행: 원본, 2행: 편집 가능한 교정본) 단일 열 구조로 개편, 버전 v12.1 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -161,7 +161,7 @@
             background-color: #fafafa;
         }
 
-        /* 2열 레이아웃 모달 팝업 스타일 */
+        /* 공통 모달 팝업 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -172,135 +172,13 @@
             align-items: center;
             z-index: 1000;
         }
-        .modal-container-2col {
-            background: #fff;
-            border-radius: 8px;
-            width: 95%;
-            max-width: 1300px;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-        .modal-header {
-            background: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 12px 20px;
-            z-index: 10;
-        }
-        .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
-        .modal-close {
-            background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
-        }
-        
-        /* 좌우 2열 분할 영역 */
-        .modal-body-2col {
-            display: flex;
-            flex: 1;
-            height: calc(90vh - 55px);
-            overflow: hidden;
-        }
-        /* 1열: PDF 원본 뷰어 */
-        .col-pdf {
-            flex: 1;
-            border-right: 2px solid #e2e8f0;
-            background: #f1f5f9;
-            display: flex;
-            flex-direction: column;
-        }
-        .col-pdf iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .pdf-placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #64748b;
-            font-size: 0.95rem;
-        }
-
-        /* 2열: 우측 상하 2행 분할 영역 */
-        .col-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        /* 우측 상단 1행: 원본 탭 내용 */
-        .row-original {
-            flex: 1;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 15px;
-            overflow-y: auto;
-            background: #fafafa;
-        }
-        .row-original h3 {
-            font-size: 0.95rem;
-            color: #2563eb;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 4px;
-        }
-        /* 우측 하단 2행: 교정본 탭 편집 영역 */
-        .row-correct {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-        }
-        .row-correct h3 {
-            font-size: 0.95rem;
-            color: #16a34a;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .edit-textarea {
-            width: 100%;
-            flex: 1;
-            min-height: 150px;
-            padding: 10px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            resize: vertical;
-            line-height: 1.4;
-        }
-        .save-btn {
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 8px;
-            align-self: flex-end;
-        }
-        .save-btn:hover { background-color: #1d4ed8; }
-
-        /* 기존 단일 모달 스타일 (요약 전용) */
         .modal-content-single {
             background: #fff;
             padding: 0 20px 20px 20px;
             border-radius: 8px;
             width: 90%;
-            max-width: 650px;
-            max-height: 80vh;
+            max-width: 700px;
+            max-height: 85vh;
             overflow-y: auto;
             position: relative;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -317,6 +195,10 @@
             margin-bottom: 15px;
             z-index: 10;
         }
+        .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
+        .modal-close {
+            background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
+        }
         .modal-body { font-size: 0.9rem; color: #334155; line-height: 1.5; text-align: left; }
         .modal-body h4 {
             margin-top: 14px;
@@ -329,12 +211,65 @@
         .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
         .modal-body li { margin-bottom: 5px; }
         .modal-body strong { color: #0f172a; }
-        .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
-
-        @media (max-width: 900px) {
-            .modal-body-2col { flex-direction: column; }
-            .col-pdf { height: 300px; border-right: none; border-bottom: 2px solid #e2e8f0; }
+        
+        /* 교정 전용 상하 2행 분할 모달 스타일 */
+        .modal-content-correct {
+            background: #fff;
+            padding: 0 20px 20px 20px;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
+        .section-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .section-box h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #cbd5e1;
+            color: #2563eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-box.correct-box h3 { color: #16a34a; }
+        .edit-textarea {
+            width: 100%;
+            height: 250px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            resize: vertical;
+            line-height: 1.4;
+            background: #fff;
+        }
+        .save-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            margin-left: auto;
+        }
+        .save-btn:hover { background-color: #1d4ed8; }
+
+        .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
     </style>
 </head>
 <body>
@@ -346,7 +281,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.0</span>
+                <span class="version">v12.1</span>
             </h1>
         </header>
 
@@ -383,35 +318,28 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (2열 2행 분할창) -->
+    <!-- [교정] 모달 팝업 (상하 2행 단일 열 구조) -->
     <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
-        <div class="modal-container-2col" onclick="event.stopPropagation()">
-            <div class="modal-header">
+        <div class="modal-content-correct" onclick="event.stopPropagation()">
+            <div class="modal-header-single">
                 <span class="modal-title" id="correct-modal-title">회보 교정 작업실</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <div class="modal-body-2col">
-                <!-- 1열: PDF 원본 뷰어 -->
-                <div class="col-pdf" id="pdf-viewer-container">
-                    <div class="pdf-placeholder">PDF 원본을 불러오는 중입니다...</div>
-                </div>
-                <!-- 2열: 우측 상/하 2행 분할 -->
-                <div class="col-content">
-                    <!-- 상단 1행: 원본 탭 내용 -->
-                    <div class="row-original">
-                        <h3>📄 원본 탭 내용 (AI 추출 원본)</h3>
-                        <div class="modal-body" id="original-content-text">원본 데이터를 불러오는 중입니다...</div>
-                    </div>
-                    <!-- 하단 2행: 교정본 탭 내용 및 편집 양식 -->
-                    <div class="row-correct">
-                        <h3>
-                            <span>✏️ 교정본 탭 편집 양식</span>
-                            <span style="font-size:0.75rem; font-weight:normal; color:#64748b;">수정 후 저장 시 구글 시트에 반영됩니다</span>
-                        </h3>
-                        <textarea class="edit-textarea" id="correct-edit-textarea" placeholder="교정 내용을 입력하세요..."></textarea>
-                        <button class="save-btn" onclick="saveCorrectData()">저장하기</button>
-                    </div>
-                </div>
+            
+            <!-- 상단 1행: 원본 탭 내용 (요약과 동일한 형식) -->
+            <div class="section-box">
+                <h3>📄 원본 탭 내용 (AI 추출 원본)</h3>
+                <div class="modal-body" id="correct-original-text">원본 데이터를 불러오는 중입니다...</div>
+            </div>
+
+            <!-- 하단 2행: 교정본 탭 내용 및 편집 양식 (요약과 동일한 형식 기반 수정 가능) -->
+            <div class="section-box correct-box">
+                <h3>
+                    <span>✏️ 교정본 탭 편집 양식</span>
+                    <span style="font-size:0.75rem; font-weight:normal; color:#64748b;">수정 후 저장 시 구글 시트에 반영됩니다</span>
+                </h3>
+                <textarea class="edit-textarea" id="correct-edit-textarea" placeholder="교정 내용을 입력하세요..."></textarea>
+                <button class="save-btn" onclick="saveCorrectData()">저장하기</button>
             </div>
         </div>
     </div>
@@ -437,7 +365,85 @@
             return ret;
         }
 
-        // 구글 시트 데이터 로드 (교정본 및 원본)
+        // 시트 데이터 구조화 공통 함수 (8대 항목 HTML 생성)
+        function buildStructuredHtml(cols, isOriginal = false) {
+            let pubDate       = cols[3] || '';
+            let summaryText   = cols[4] || '';  
+            let execCell      = cols[5] || '';  
+            let sysCell       = cols[6] || '';  
+            let eventCell     = cols[7] || '';  
+            let historyCell   = cols[8] || '';  
+            let troubleCell   = cols[9] || '';  
+            let meetingType   = cols[10] || '';  
+            let meetingVote   = cols[11] || ''; 
+            let volRegular    = cols[12] || ''; 
+            let volEtc        = cols[13] || ''; 
+            let subStudy      = cols[14] || ''; 
+            let subEtc        = cols[15] || ''; 
+            let peopleInter   = cols[16] || ''; 
+            let peopleNews    = cols[17] || ''; 
+            let peopleEvent   = cols[18] || ''; 
+            let articleSummary = cols[19] || ''; 
+
+            let htmlBuilder = '';
+            htmlBuilder += `<h4>1. 회보 정보</h4><ul>`;
+            htmlBuilder += `<li><strong>발행년월:</strong> ${pubDate}</li>`;
+            if (summaryText) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${summaryText.replace(/\\n/g, '<br>')}</li>`;
+            htmlBuilder += `</ul>`;
+
+            if (execCell || sysCell) {
+                htmlBuilder += `<h4>2. 조직 및 체계 변화</h4><ul>`;
+                if (execCell) htmlBuilder += `<li><strong>임원진:</strong> ${execCell.replace(/\\n/g, '<br>')}</li>`;
+                if (sysCell) htmlBuilder += `<li><strong>체계 변화:</strong> ${sysCell.replace(/\\n/g, '<br>')}</li>`;
+                htmlBuilder += `</ul>`;
+            }
+            if (eventCell || historyCell || troubleCell) {
+                htmlBuilder += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
+                if (eventCell) htmlBuilder += `<li><strong>이벤트:</strong> ${eventCell.replace(/\\n/g, '<br>')}</li>`;
+                if (historyCell) htmlBuilder += `<li><strong>역사적 사실:</strong> ${historyCell.replace(/\\n/g, '<br>')}</li>`;
+                if (troubleCell) htmlBuilder += `<li><strong>애로 사항:</strong> ${troubleCell.replace(/\\n/g, '<br>')}</li>`;
+                htmlBuilder += `</ul>`;
+            }
+            if (meetingType || meetingVote) {
+                htmlBuilder += `<h4>4. 주요 회의</h4><ul>`;
+                if (meetingType) htmlBuilder += `<li><strong>회의 종류:</strong> ${meetingType.replace(/\\n/g, '<br>')}</li>`;
+                if (meetingVote) htmlBuilder += `<li><strong>의결 사항:</strong> ${meetingVote.replace(/\\n/g, '<br>')}</li>`;
+                htmlBuilder += `</ul>`;
+            }
+            if (volRegular || volEtc) {
+                htmlBuilder += `<h4>5. 봉사 활동</h4><ul>`;
+                if (volRegular) htmlBuilder += `<li><strong>정기 봉사:</strong> ${volRegular.replace(/\\n/g, '<br>')}</li>`;
+                if (volEtc) htmlBuilder += `<li><strong>기타 봉사:</strong> ${volEtc.replace(/\\n/g, '<br>')}</li>`;
+                htmlBuilder += `</ul>`;
+            }
+            if (subStudy || subEtc) {
+                htmlBuilder += `<h4>6. 소집단 활동</h4><ul>`;
+                if (subStudy) htmlBuilder += `<li><strong>학술/문화:</strong> ${subStudy.replace(/\\n/g, '<br>')}</li>`;
+                if (subEtc) htmlBuilder += `<li><strong>기타 활동:</strong> ${subEtc.replace(/\\n/g, '<br>')}</li>`;
+                htmlBuilder += `</ul>`;
+            }
+            if (peopleInter || peopleNews || peopleEvent) {
+                htmlBuilder += `<h4>7. 인물 소식</h4><ul>`;
+                if (peopleInter) htmlBuilder += `<li><strong>인터뷰:</strong> ${peopleInter.replace(/\\n/g, '<br>')}</li>`;
+                if (peopleNews) htmlBuilder += `<li><strong>개별 동정:</strong> ${peopleNews.replace(/\\n/g, '<br>')}</li>`;
+                if (peopleEvent) htmlBuilder += `<li><strong>경조사:</strong> ${peopleEvent.replace(/\\n/g, '<br>')}</li>`;
+                htmlBuilder += `</ul>`;
+            }
+            if (articleSummary) {
+                htmlBuilder += `<h4>8. 기고문</h4><ul>`;
+                let cleanArt = articleSummary.replace(/\\n/g, '\n');
+                let articles = cleanArt.split(/(?=\[.*?\])/g);
+                articles.forEach(art => {
+                    let trimmedArt = art.trim();
+                    if (trimmedArt) {
+                        htmlBuilder += `<li>${trimmedArt.replace(/\\n/g, '<br>')}</li>`;
+                    }
+                });
+                htmlBuilder += `</ul>`;
+            }
+            return htmlBuilder;
+        }
+
         async function loadAllSheetData() {
             try {
                 // 1. 교정본 데이터 로드
@@ -452,85 +458,12 @@
                         if (!matches || matches.length === 0) continue;
                         const issueNum = parseInt(matches[0], 10);
                         const paddedNum = String(issueNum).padStart(3, '0');
+                        let pubDate = cols[3] || `${paddedNum}호`;
 
-                        let pubDate       = cols[3] || `${paddedNum}호`;
-                        let summaryText   = cols[4] || '';  
-                        let execCell      = cols[5] || '';  
-                        let sysCell       = cols[6] || '';  
-                        let eventCell     = cols[7] || '';  
-                        let historyCell   = cols[8] || '';  
-                        let troubleCell   = cols[9] || '';  
-                        let meetingType   = cols[10] || '';  
-                        let meetingVote   = cols[11] || ''; 
-                        let volRegular    = cols[12] || ''; 
-                        let volEtc        = cols[13] || ''; 
-                        let subStudy      = cols[14] || ''; 
-                        let subEtc        = cols[15] || ''; 
-                        let peopleInter   = cols[16] || ''; 
-                        let peopleNews    = cols[17] || ''; 
-                        let peopleEvent   = cols[18] || ''; 
-                        let articleSummary = cols[19] || ''; 
-
-                        let htmlBuilder = '';
-                        htmlBuilder += `<h4>1. 회보 정보</h4><ul><li><strong>통권 호수:</strong> 통권 ${paddedNum}호</li><li><strong>발행년월:</strong> ${pubDate}</li>`;
-                        if (summaryText) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${summaryText.replace(/\\n/g, '<br>')}</li>`;
-                        htmlBuilder += `</ul>`;
-
-                        if (execCell || sysCell) {
-                            htmlBuilder += `<h4>2. 조직 및 체계 변화</h4><ul>`;
-                            if (execCell) htmlBuilder += `<li><strong>임원진:</strong> ${execCell.replace(/\\n/g, '<br>')}</li>`;
-                            if (sysCell) htmlBuilder += `<li><strong>체계 변화:</strong> ${sysCell.replace(/\\n/g, '<br>')}</li>`;
-                            htmlBuilder += `</ul>`;
-                        }
-                        if (eventCell || historyCell || troubleCell) {
-                            htmlBuilder += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
-                            if (eventCell) htmlBuilder += `<li><strong>이벤트:</strong> ${eventCell.replace(/\\n/g, '<br>')}</li>`;
-                            if (historyCell) htmlBuilder += `<li><strong>역사적 사실:</strong> ${historyCell.replace(/\\n/g, '<br>')}</li>`;
-                            if (troubleCell) htmlBuilder += `<li><strong>애로 사항:</strong> ${troubleCell.replace(/\\n/g, '<br>')}</li>`;
-                            htmlBuilder += `</ul>`;
-                        }
-                        if (meetingType || meetingVote) {
-                            htmlBuilder += `<h4>4. 주요 회의</h4><ul>`;
-                            if (meetingType) htmlBuilder += `<li><strong>회의 종류:</strong> ${meetingType.replace(/\\n/g, '<br>')}</li>`;
-                            if (meetingVote) htmlBuilder += `<li><strong>의결 사항:</strong> ${meetingVote.replace(/\\n/g, '<br>')}</li>`;
-                            htmlBuilder += `</ul>`;
-                        }
-                        if (volRegular || volEtc) {
-                            htmlBuilder += `<h4>5. 봉사 활동</h4><ul>`;
-                            if (volRegular) htmlBuilder += `<li><strong>정기 봉사:</strong> ${volRegular.replace(/\\n/g, '<br>')}</li>`;
-                            if (volEtc) htmlBuilder += `<li><strong>기타 봉사:</strong> ${volEtc.replace(/\\n/g, '<br>')}</li>`;
-                            htmlBuilder += `</ul>`;
-                        }
-                        if (subStudy || subEtc) {
-                            htmlBuilder += `<h4>6. 소집단 활동</h4><ul>`;
-                            if (subStudy) htmlBuilder += `<li><strong>학술/문화:</strong> ${subStudy.replace(/\\n/g, '<br>')}</li>`;
-                            if (subEtc) htmlBuilder += `<li><strong>기타 활동:</strong> ${subEtc.replace(/\\n/g, '<br>')}</li>`;
-                            htmlBuilder += `</ul>`;
-                        }
-                        if (peopleInter || peopleNews || peopleEvent) {
-                            htmlBuilder += `<h4>7. 인물 소식</h4><ul>`;
-                            if (peopleInter) htmlBuilder += `<li><strong>인터뷰:</strong> ${peopleInter.replace(/\\n/g, '<br>')}</li>`;
-                            if (peopleNews) htmlBuilder += `<li><strong>개별 동정:</strong> ${peopleNews.replace(/\\n/g, '<br>')}</li>`;
-                            if (peopleEvent) htmlBuilder += `<li><strong>경조사:</strong> ${peopleEvent.replace(/\\n/g, '<br>')}</li>`;
-                            htmlBuilder += `</ul>`;
-                        }
-                        if (articleSummary) {
-                            htmlBuilder += `<h4>8. 기고문</h4><ul>`;
-                            let cleanArt = articleSummary.replace(/\\n/g, '\n');
-                            let articles = cleanArt.split(/(?=\[.*?\])/g);
-                            articles.forEach(art => {
-                                let trimmedArt = art.trim();
-                                if (trimmedArt) {
-                                    htmlBuilder += `<li>${trimmedArt.replace(/\\n/g, '<br>')}</li>`;
-                                }
-                            });
-                            htmlBuilder += `</ul>`;
-                        }
-
+                        let htmlBuilder = buildStructuredHtml(cols);
                         correctMap[issueNum] = {
                             title: `${pubDate} - 통권 ${paddedNum}호 교정본`,
-                            content: htmlBuilder,
-                            rawText: cols.join('\t') // 편집 저장용 원본 행 데이터 백업
+                            content: htmlBuilder
                         };
                     }
                 }
@@ -543,17 +476,17 @@
                     for (let j = 1; j < rowsOrig.length; j++) {
                         const cols = rowsOrig[j].map(c => c.trim());
                         if (cols.length < 3) continue;
-                        const matches = cols.toString().match(/(\d+)/g);
+                        const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
                         if (!matches || matches.length === 0) continue;
                         const issueNum = parseInt(matches[0], 10);
-                        
-                        // 원본 탭의 전체 행 데이터를 보기 좋게 텍스트 형태로 조합
-                        let origHtml = `<ul>`;
-                        cols.forEach((val, idx) => {
-                            if (val) origHtml += `<li><strong>[Col ${idx+1}]:</strong> ${val.replace(/\\n/g, '<br>')}</li>`;
-                        });
-                        origHtml += `</ul>`;
-                        originalMap[issueNum] = origHtml;
+                        const paddedNum = String(issueNum).padStart(3, '0');
+                        let pubDate = cols[3] || `${paddedNum}호`;
+
+                        let htmlBuilder = buildStructuredHtml(cols, true);
+                        originalMap[issueNum] = {
+                            title: `${pubDate} - 통권 ${paddedNum}호 원본`,
+                            content: htmlBuilder
+                        };
                     }
                 }
             } catch (e) {
@@ -620,34 +553,34 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시 (2열 2행 분할 모달 창)
+        // [교정] 버튼 클릭 시 (PDF 새 창 열기 + 상하 2행 단일 열 모달 창)
         function openCorrectModal(issueNum, year, month) {
+            // 1. PDF 원본은 새 창으로 별도 오픈 ('001'을 눌렀을 때처럼)
+            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
+            if (pdfUrl && pdfUrl !== '#') {
+                window.open(pdfUrl, '_blank');
+            } else {
+                alert(`${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 PDF 파일이 아직 연동되지 않았습니다.`);
+            }
+
+            // 2. 상하 2행 모달 창 오픈
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
-            const pdfContainer = document.getElementById('pdf-viewer-container');
-            const origTextElem = document.getElementById('original-content-text');
+            const origTextElem = document.getElementById('correct-original-text');
             const editTextarea = document.getElementById('correct-edit-textarea');
 
             titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 작업실`;
 
-            // 1열: PDF 뷰어 연동
-            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
-            if (pdfUrl && pdfUrl !== '#') {
-                pdfContainer.innerHTML = `<iframe src="${pdfUrl}" title="PDF 원본 뷰어"></iframe>`;
-            } else {
-                pdfContainer.innerHTML = `<div class="pdf-placeholder">해당 호수의 PDF 원본 파일이 연동되지 않았습니다.</div>`;
-            }
-
-            // 우측 상단 1행: 원본 탭 내용 연동
+            // 상단 1행: 원본 탭 내용 연동
             if (originalMap[issueNum]) {
-                origTextElem.innerHTML = originalMap[issueNum];
+                origTextElem.innerHTML = originalMap[issueNum].content;
             } else {
                 origTextElem.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 탭 데이터가 없습니다.</p>`;
             }
 
-            // 우측 하단 2행: 교정본 탭 편집 영역 연동
+            // 하단 2행: 교정본 탭 편집 영역 연동
             if (correctMap[issueNum]) {
-                editTextarea.value = correctMap[issueNum].content.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, ""); // 텍스트 형태로 textarea에 로드
+                editTextarea.value = correctMap[issueNum].content.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, "");
             } else {
                 editTextarea.value = `통권 ${issueNum}호 교정 데이터를 불러오지 못했습니다.`;
             }
