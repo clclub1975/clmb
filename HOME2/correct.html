@@ -1,4 +1,4 @@
-<!-- v12.8: 슬라이드 원안 반영 [원본 보기 / 교정 하기] 토글 및 [PDF 보기] 버튼 구조의 단일 창 전환 레이아웃 적용, 버전 v12.8 -->
+<!-- v12.9: [PDF 보기] 클릭 시 독립된 브라우저 팝업 창(새 창)으로 열리도록 수정, 버전 v12.9 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -237,6 +237,8 @@
             border-radius: 6px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             transition: background-color 0.2s ease;
+            cursor: pointer;
+            border: none;
         }
         .pdf-link-btn:hover { background-color: #1d4ed8; }
 
@@ -299,7 +301,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.8</span>
+                <span class="version">v12.9</span>
             </h1>
         </header>
 
@@ -336,24 +338,24 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: [원본 보기 / 교정 하기] 토글 + [PDF 보기] 버튼 구조) -->
+    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: [원본 보기 / 교정 하기] 토글 + [PDF 보기] 독립 팝업 버튼 구조) -->
     <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
         <div class="modal-container-toggle" onclick="event.stopPropagation()">
             <div class="modal-header-toggle">
                 <span class="modal-title" id="correct-modal-title">회보 교정 작업실</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <!-- 상단 토글 및 PDF 보기 컨트롤 바 -->
+            <!-- 상단 토글 및 독립 팝업형 PDF 보기 컨트롤 바 -->
             <div class="modal-controls">
                 <div class="toggle-group">
                     <button class="toggle-btn active" id="btn-orig-toggle" onclick="switchTab('original')">원본 보기</button>
                     <button class="toggle-btn" id="btn-corr-toggle" onclick="switchTab('correct')">교정 하기</button>
                 </div>
                 <div id="pdf-btn-container">
-                    <!-- PDF 보기 버튼 동적 생성 -->
+                    <!-- 독립된 팝업 브라우저로 열리는 PDF 버튼 동적 생성 -->
                 </div>
             </div>
-            <!-- 메인 컨텐츠 디스플레이 영역 -->
+            <!-- 메인 콘텐츠 디스플레이 영역 -->
             <div class="modal-body-container modal-body" id="toggle-content-box">
                 콘텐츠를 불러오는 중입니다...
             </div>
@@ -585,6 +587,20 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
+        // 독립된 브라우저 팝업 창으로 PDF 열기 함수
+        function openPdfPopup(issueNum) {
+            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
+            if (pdfUrl && pdfUrl !== '#') {
+                const popupWidth = 800;
+                const popupHeight = 900;
+                const left = (window.screen.width - popupWidth) / 2;
+                const top = (window.screen.height - popupHeight) / 2;
+                window.open(pdfUrl, '_blank', `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
+            } else {
+                alert('해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.');
+            }
+        }
+
         // [원본 보기 / 교정 하기] 토글 전환 함수
         function switchTab(tabName) {
             currentIssueData.activeTab = tabName;
@@ -597,9 +613,9 @@
             const { issueNum, year, month } = currentIssueData;
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
 
-            // PDF 보기 버튼 구성
+            // 독립된 브라우저 팝업 창 열기 버튼 구성
             if (pdfUrl && pdfUrl !== '#') {
-                pdfContainer.innerHTML = `<a href="${pdfUrl}" target="_blank" class="pdf-link-btn">📄 PDF 보기</a>`;
+                pdfContainer.innerHTML = `<button type="button" class="pdf-link-btn" onclick="openPdfPopup(${issueNum})">📄 PDF 보기</button>`;
             } else {
                 pdfContainer.innerHTML = `<span style="font-size:0.8rem; color:#dc2626;">PDF 미연동</span>`;
             }
