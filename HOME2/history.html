@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.13: '기고문' 추가(총 16개), 상단 [전체 선택] 및 [전체 해제 ✕] 전용 제어 바 분리, PC/모바일 공통 4열×4행 직사각형 레이아웃 적용, 버전 v3.13 갱신 -->
+    <!-- v3.14: '학술/문화 활동' 라벨을 '학술/문화'로 변경, 4열×4행 최적화 및 버전 v3.14 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.13</title>
+    <title>촛불회 연혁 살펴보기 v3.14</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -128,7 +128,7 @@
             background: #e2e8f0;
         }
 
-        /* 📌 [v3.13] 체크박스 패널 및 상단 제어 바 */
+        /* 체크박스 패널 및 상단 제어 바 */
         .checkbox-panel {
             display: block;
             background: #ffffff;
@@ -173,7 +173,7 @@
             color: #dc2626;
         }
 
-        /* 📌 [v3.13] 4열 × 4행 그리드 (총 16개 항목) */
+        /* 4열 × 4행 그리드 (총 16개 항목) */
         .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -767,7 +767,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.13</span>
+    <span class="version">v3.14</span>
 </div>
 
 <div class="chat-container">
@@ -782,14 +782,14 @@
         <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 검색할 목록 닫기 ▲</button>
     </div>
     <div id="checkboxPanel" class="checkbox-panel">
-        <!-- 📌 [v3.13] 상단 제어 바: [전체 선택] 및 [전체 해제 ✕] 버튼 -->
+        <!-- 상단 제어 바: [전체 선택] 및 [전체 해제 ✕] 버튼 -->
         <div class="checkbox-top-control">
             <label class="select-all-label">
                 <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"> [ 전체 선택 ]
             </label>
             <button type="button" class="deselect-all-btn" onclick="deselectAllItems()">전체 해제 ✕</button>
         </div>
-        <!-- 📌 [v3.13] 4열 × 4행 = 총 16개 항목 그리드 -->
+        <!-- 4열 × 4행 = 총 16개 항목 그리드 -->
         <div id="checkboxContainer" class="checkbox-grid">
             <span style="color:#888; font-style:italic;">데이터 로딩 중...</span>
         </div>
@@ -908,7 +908,7 @@
     // 사용자가 체크박스를 누른 순서대로 기록하는 배열
     let selectedHistoryOrder = [];
 
-    // 📌 [v3.13] 16개 소분류 정의 ('기고문' 추가) 및 교정본 시트 실제 열(Column) 이름 후보군 정밀 매핑
+    // 📌 [v3.14] 16개 소분류 정의 ('학술/문화 활동'을 '학술/문화'로 변경) 및 교정본 시트 실제 열(Column) 매핑
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", colKeys: ["한 줄 요약", "한줄요약", "한줄 요약"] },
         { label: "임원진", colKeys: ["임원진", "임원진 구성"] },
@@ -920,7 +920,7 @@
         { label: "의결 사항", colKeys: ["의결 사항", "의결사항", "의결"] },
         { label: "정기 봉사", colKeys: ["정기 봉사", "정기봉사", "정기 봉사활동"] },
         { label: "기타 봉사", colKeys: ["기타 봉사", "기타봉사", "기타 봉사활동"] },
-        { label: "학술/문화 활동", colKeys: ["학술/문화 활동", "학술/문화", "학술문화 활동", "학술문화"] },
+        { label: "학술/문화", colKeys: ["학술/문화", "학술/문화 활동", "학술문화 활동", "학술문화"] },
         { label: "기타 활동", colKeys: ["기타 활동", "기타활동", "친목/기타 활동", "친목/기타"] },
         { label: "인물 인터뷰", colKeys: ["인물 인터뷰", "인터뷰", "인물인터뷰"] },
         { label: "인물 동정", colKeys: ["인물 동정", "인물동정", "개별 동정", "개별동정", "회원 동정", "인물 동향"] },
@@ -1098,7 +1098,7 @@
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
 
-    // 📌 [v3.13] 16개 항목 체크박스 렌더링
+    // 16개 항목 체크박스 렌더링
     function renderCheckboxes() {
         const container = $("checkboxContainer");
         container.innerHTML = "";
@@ -1138,7 +1138,7 @@
         renderFilteredHistory();
     };
 
-    // 📌 [v3.13] [전체 해제 ✕] 버튼 클릭 함수
+    // [전체 해제 ✕] 버튼 클릭 함수
     function deselectAllItems() {
         $("selectAllCheckbox").checked = false;
         document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = false);
