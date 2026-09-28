@@ -1,4 +1,4 @@
-<!-- v12.4: 원본 탭 데이터 매칭 및 렌더링 오류 수정, 버전 v12.4 적용 -->
+<!-- v12.5: 슬라이드 원안 반영 [교정] 클릭 시 좌측 PDF 뷰어 + 우측 상하 2행(1행: 원본 탭, 2행: 교정본 탭) 통합 모달 작업실 적용, 버전 v12.5 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -148,7 +148,6 @@
             text-decoration: underline;
             text-underline-offset: 2px;
         }
-        .cell-status.pending { color: #dc2626; }
         .missing-cell-issue {
             display: flex;
             align-items: center;
@@ -161,7 +160,7 @@
             background-color: #fafafa;
         }
 
-        /* 공통 모달 팝업 스타일 */
+        /* 2열 레이아웃 통합 모달 팝업 스타일 (슬라이드 원안 반영) */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -172,6 +171,98 @@
             align-items: center;
             z-index: 1000;
         }
+        .modal-container-2col {
+            background: #fff;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 1300px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            z-index: 10;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
+        .modal-close {
+            background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
+        }
+        
+        /* 좌우 2열 분할 영역 */
+        .modal-body-2col {
+            display: flex;
+            flex: 1;
+            height: calc(90vh - 55px);
+            overflow: hidden;
+        }
+        /* 1열: PDF 원본 뷰어 */
+        .col-pdf {
+            flex: 1;
+            border-right: 2px solid #e2e8f0;
+            background: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+        }
+        .col-pdf iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .pdf-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* 2열: 우측 상하 2행 분할 영역 */
+        .col-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        /* 우측 상단 1행: 원본 탭 내용 */
+        .row-original {
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+        .row-original h3 {
+            font-size: 0.95rem;
+            color: #2563eb;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+        }
+        /* 우측 하단 2행: 교정본 탭 내용 */
+        .row-correct {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #fff;
+        }
+        .row-correct h3 {
+            font-size: 0.95rem;
+            color: #16a34a;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+        }
+
+        /* 기존 단일 모달 스타일 (요약 전용) */
         .modal-content-single {
             background: #fff;
             padding: 0 20px 20px 20px;
@@ -195,10 +286,6 @@
             margin-bottom: 15px;
             z-index: 10;
         }
-        .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
-        .modal-close {
-            background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
-        }
         .modal-body { font-size: 0.9rem; color: #334155; line-height: 1.5; text-align: left; }
         .modal-body h4 {
             margin-top: 14px;
@@ -212,6 +299,11 @@
         .modal-body li { margin-bottom: 5px; }
         .modal-body strong { color: #0f172a; }
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
+
+        @media (max-width: 900px) {
+            .modal-body-2col { flex-direction: column; }
+            .col-pdf { height: 300px; border-right: none; border-bottom: 2px solid #e2e8f0; }
+        }
     </style>
 </head>
 <body>
@@ -223,7 +315,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.4</span>
+                <span class="version">v12.5</span>
             </h1>
         </header>
 
@@ -249,7 +341,7 @@
         </div>
     </div>
 
-    <!-- [요약] 모달 팝업 (원본) -->
+    <!-- [요약] 모달 팝업 (단일창) -->
     <div class="modal-overlay" id="summary-modal" onclick="closeModal()">
         <div class="modal-content-single" onclick="event.stopPropagation()">
             <div class="modal-header-single">
@@ -260,14 +352,32 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (수정) -->
+    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: 좌우 2열 및 우측 상하 2행 통합 작업실) -->
     <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
-        <div class="modal-content-single" onclick="event.stopPropagation()">
-            <div class="modal-header-single">
-                <span class="modal-title" id="correct-modal-title">수정</span>
+        <div class="modal-container-2col" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="correct-modal-title">회보 교정 작업실</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <div class="modal-body" id="correct-modal-text">데이터를 불러오는 중입니다...</div>
+            <div class="modal-body-2col">
+                <!-- 1열: PDF 원본 뷰어 -->
+                <div class="col-pdf" id="pdf-viewer-container">
+                    <div class="pdf-placeholder">PDF 원본을 불러오는 중입니다...</div>
+                </div>
+                <!-- 2열: 우측 상/하 2행 분할 -->
+                <div class="col-content">
+                    <!-- 상단 1행: 원본 탭 내용 -->
+                    <div class="row-original">
+                        <h3>📄 ‘원본’ 탭 내용 보기</h3>
+                        <div class="modal-body" id="original-content-text">원본 데이터를 불러오는 중입니다...</div>
+                    </div>
+                    <!-- 하단 2행: 교정본 탭 내용 -->
+                    <div class="row-correct">
+                        <h3>✏️ ‘교정본’ 탭 내용 보기</h3>
+                        <div class="modal-body" id="correct-content-text">교정본 데이터를 불러오는 중입니다...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -463,13 +573,13 @@
             }
         }
 
-        // [요약] 버튼 클릭 시 (원본 모달 창 - 헤더: '원본')
+        // [요약] 버튼 클릭 시 (원본 모달 창)
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('summary-modal-title');
             const textElem = document.getElementById('summary-modal-text');
             
-            titleElem.textContent = "원본";
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본`;
             if (originalMap[issueNum]) {
                 textElem.innerHTML = originalMap[issueNum].content;
             } else {
@@ -479,30 +589,36 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시 (조그마한 PDF 팝업 창 + 교정본 모달 창 - 헤더: '수정')
+        // [교정] 버튼 클릭 시 (좌우 2열 및 우측 상하 2행 통합 작업실 팝업)
         function openCorrectModal(issueNum, year, month) {
-            // 1. PDF 원본은 조그마한 팝업 창 크기로 별도 오픈
-            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
-            if (pdfUrl && pdfUrl !== '#') {
-                const popupWidth = 800;
-                const popupHeight = 900;
-                const left = (window.screen.width - popupWidth) / 2;
-                const top = (window.screen.height - popupHeight) / 2;
-                window.open(pdfUrl, '_blank', `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
-            } else {
-                alert(`${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 PDF 파일이 아직 연동되지 않았습니다.`);
-            }
-
-            // 2. 교정본 모달 창 오픈 (헤더: '수정')
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
-            const textElem = document.getElementById('correct-modal-text');
+            const pdfContainer = document.getElementById('pdf-viewer-container');
+            const origTextElem = document.getElementById('original-content-text');
+            const correctTextElem = document.getElementById('correct-content-text');
 
-            titleElem.textContent = "수정";
-            if (correctMap[issueNum]) {
-                textElem.innerHTML = correctMap[issueNum].content;
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 작업실`;
+
+            // 1열: PDF 원본 뷰어 연동
+            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
+            if (pdfUrl && pdfUrl !== '#') {
+                pdfContainer.innerHTML = `<iframe src="${pdfUrl}" title="PDF 원본 뷰어"></iframe>`;
             } else {
-                textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 교정본 데이터가 아직 없습니다.</p>`;
+                pdfContainer.innerHTML = `<div class="pdf-placeholder">해당 호수의 PDF 원본 파일이 연동되지 않았습니다.</div>`;
+            }
+
+            // 우측 상단 1행: '원본' 탭 내용 연동
+            if (originalMap[issueNum]) {
+                origTextElem.innerHTML = originalMap[issueNum].content;
+            } else {
+                origTextElem.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 탭 데이터가 없습니다.</p>`;
+            }
+
+            // 우측 하단 2행: '교정본' 탭 내용 연동
+            if (correctMap[issueNum]) {
+                correctTextElem.innerHTML = correctMap[issueNum].content;
+            } else {
+                correctTextElem.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 탭 데이터가 없습니다.</p>`;
             }
 
             modal.style.display = 'flex';
