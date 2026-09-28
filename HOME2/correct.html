@@ -1,4 +1,4 @@
-<!-- v12.1: [교정] 클릭 시 PDF 새 창 분리 및 모달 창을 상하 2행(1행: 원본, 2행: 편집 가능한 교정본) 단일 열 구조로 개편, 버전 v12.1 -->
+<!-- v12.2: PDF 조그마한 팝업창 분리 및 요약/교정 독립된 단일 모달 양식으로 개편, 버전 v12.2 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -211,64 +211,6 @@
         .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
         .modal-body li { margin-bottom: 5px; }
         .modal-body strong { color: #0f172a; }
-        
-        /* 교정 전용 상하 2행 분할 모달 스타일 */
-        .modal-content-correct {
-            background: #fff;
-            padding: 0 20px 20px 20px;
-            border-radius: 8px;
-            width: 95%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-        .section-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .section-box h3 {
-            font-size: 1rem;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #cbd5e1;
-            color: #2563eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .section-box.correct-box h3 { color: #16a34a; }
-        .edit-textarea {
-            width: 100%;
-            height: 250px;
-            padding: 10px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            resize: vertical;
-            line-height: 1.4;
-            background: #fff;
-        }
-        .save-btn {
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-            display: block;
-            margin-left: auto;
-        }
-        .save-btn:hover { background-color: #1d4ed8; }
-
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
     </style>
 </head>
@@ -281,7 +223,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.1</span>
+                <span class="version">v12.2</span>
             </h1>
         </header>
 
@@ -307,7 +249,7 @@
         </div>
     </div>
 
-    <!-- [요약] 모달 팝업 (단일창) -->
+    <!-- [요약] 모달 팝업 (원본 탭 내용 기반) -->
     <div class="modal-overlay" id="summary-modal" onclick="closeModal()">
         <div class="modal-content-single" onclick="event.stopPropagation()">
             <div class="modal-header-single">
@@ -318,29 +260,14 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (상하 2행 단일 열 구조) -->
+    <!-- [교정] 모달 팝업 (교정본 탭 내용 기반 - 독립된 단일창) -->
     <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
-        <div class="modal-content-correct" onclick="event.stopPropagation()">
+        <div class="modal-content-single" onclick="event.stopPropagation()">
             <div class="modal-header-single">
-                <span class="modal-title" id="correct-modal-title">회보 교정 작업실</span>
+                <span class="modal-title" id="correct-modal-title">회보 교정 내용</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            
-            <!-- 상단 1행: 원본 탭 내용 (요약과 동일한 형식) -->
-            <div class="section-box">
-                <h3>📄 원본 탭 내용 (AI 추출 원본)</h3>
-                <div class="modal-body" id="correct-original-text">원본 데이터를 불러오는 중입니다...</div>
-            </div>
-
-            <!-- 하단 2행: 교정본 탭 내용 및 편집 양식 (요약과 동일한 형식 기반 수정 가능) -->
-            <div class="section-box correct-box">
-                <h3>
-                    <span>✏️ 교정본 탭 편집 양식</span>
-                    <span style="font-size:0.75rem; font-weight:normal; color:#64748b;">수정 후 저장 시 구글 시트에 반영됩니다</span>
-                </h3>
-                <textarea class="edit-textarea" id="correct-edit-textarea" placeholder="교정 내용을 입력하세요..."></textarea>
-                <button class="save-btn" onclick="saveCorrectData()">저장하기</button>
-            </div>
+            <div class="modal-body" id="correct-modal-text">데이터를 불러오는 중입니다...</div>
         </div>
     </div>
 
@@ -366,23 +293,23 @@
         }
 
         // 시트 데이터 구조화 공통 함수 (8대 항목 HTML 생성)
-        function buildStructuredHtml(cols, isOriginal = false) {
-            let pubDate       = cols[3] || '';
-            let summaryText   = cols[4] || '';  
-            let execCell      = cols[5] || '';  
-            let sysCell       = cols[6] || '';  
-            let eventCell     = cols[7] || '';  
-            let historyCell   = cols[8] || '';  
-            let troubleCell   = cols[9] || '';  
-            let meetingType   = cols[10] || '';  
-            let meetingVote   = cols[11] || ''; 
-            let volRegular    = cols[12] || ''; 
-            let volEtc        = cols[13] || ''; 
-            let subStudy      = cols[14] || ''; 
-            let subEtc        = cols[15] || ''; 
-            let peopleInter   = cols[16] || ''; 
-            let peopleNews    = cols[17] || ''; 
-            let peopleEvent   = cols[18] || ''; 
+        function buildStructuredHtml(cols) {
+            let pubDate        = cols[3] || '';
+            let summaryText    = cols[4] || '';  
+            let execCell       = cols[5] || '';  
+            let sysCell        = cols[6] || '';  
+            let eventCell      = cols[7] || '';  
+            let historyCell    = cols[8] || '';  
+            let troubleCell    = cols[9] || '';  
+            let meetingType    = cols[10] || '';  
+            let meetingVote    = cols[11] || ''; 
+            let volRegular     = cols[12] || ''; 
+            let volEtc         = cols[13] || ''; 
+            let subStudy       = cols[14] || ''; 
+            let subEtc         = cols[15] || ''; 
+            let peopleInter    = cols[16] || ''; 
+            let peopleNews     = cols[17] || ''; 
+            let peopleEvent    = cols[18] || ''; 
             let articleSummary = cols[19] || ''; 
 
             let htmlBuilder = '';
@@ -482,7 +409,7 @@
                         const paddedNum = String(issueNum).padStart(3, '0');
                         let pubDate = cols[3] || `${paddedNum}호`;
 
-                        let htmlBuilder = buildStructuredHtml(cols, true);
+                        let htmlBuilder = buildStructuredHtml(cols);
                         originalMap[issueNum] = {
                             title: `${pubDate} - 통권 ${paddedNum}호 원본`,
                             content: htmlBuilder
@@ -536,62 +463,52 @@
             }
         }
 
-        // [요약] 버튼 클릭 시 (단일 모달 창)
+        // [요약] 버튼 클릭 시 (원본 탭 기반 모달 창)
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('summary-modal-title');
             const textElem = document.getElementById('summary-modal-text');
             
-            if (correctMap[issueNum]) {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약`;
-                textElem.innerHTML = correctMap[issueNum].content;
+            if (originalMap[issueNum]) {
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 요약`;
+                textElem.innerHTML = originalMap[issueNum].content;
             } else {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 데이터 없음`;
-                textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 구글 시트 데이터가 아직 없습니다.</p>`;
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 데이터 없음`;
+                textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 원본 시트 데이터가 아직 없습니다.</p>`;
             }
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시 (PDF 새 창 열기 + 상하 2행 단일 열 모달 창)
+        // [교정] 버튼 클릭 시 (조그마한 PDF 팝업 창 + 교정본 탭 기반 독립 모달 창)
         function openCorrectModal(issueNum, year, month) {
-            // 1. PDF 원본은 새 창으로 별도 오픈 ('001'을 눌렀을 때처럼)
+            // 1. PDF 원본은 조그마한 팝업 창 크기로 별도 오픈
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
             if (pdfUrl && pdfUrl !== '#') {
-                window.open(pdfUrl, '_blank');
+                const popupWidth = 800;
+                const popupHeight = 900;
+                const left = (window.screen.width - popupWidth) / 2;
+                const top = (window.screen.height - popupHeight) / 2;
+                window.open(pdfUrl, '_blank', `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
             } else {
                 alert(`${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 PDF 파일이 아직 연동되지 않았습니다.`);
             }
 
-            // 2. 상하 2행 모달 창 오픈
+            // 2. 교정본 모달 창 오픈
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
-            const origTextElem = document.getElementById('correct-original-text');
-            const editTextarea = document.getElementById('correct-edit-textarea');
+            const textElem = document.getElementById('correct-modal-text');
 
-            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 작업실`;
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 내용`;
 
-            // 상단 1행: 원본 탭 내용 연동
-            if (originalMap[issueNum]) {
-                origTextElem.innerHTML = originalMap[issueNum].content;
-            } else {
-                origTextElem.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 탭 데이터가 없습니다.</p>`;
-            }
-
-            // 하단 2행: 교정본 탭 편집 영역 연동
             if (correctMap[issueNum]) {
-                editTextarea.value = correctMap[issueNum].content.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, "");
+                textElem.innerHTML = correctMap[issueNum].content;
             } else {
-                editTextarea.value = `통권 ${issueNum}호 교정 데이터를 불러오지 못했습니다.`;
+                textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 교정본 데이터가 아직 없습니다.</p>`;
             }
 
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
-        }
-
-        // 저장하기 버튼 동작
-        function saveCorrectData() {
-            alert("수정된 내용이 구글 시트 '교정본' 탭에 저장 요청되었습니다.\n(현재 데모 버전이며, 실제 시트 반영을 위해 GAS 연동이 필요합니다.)");
         }
 
         function closeModal() {
