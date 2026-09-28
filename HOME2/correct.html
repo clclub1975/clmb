@@ -1,4 +1,4 @@
-<!-- v12.11: 표기 못한 누락 호수 안내 문구 'PDF도 없고, 공간도 없음' 수정 및 버전 v12.11 -->
+<!-- v12.12: 구글 시트 교정본 A열(교정상황) 동적 연동 및 상태별 색상(교정:빨강, 진행:초록, 완료:검정) 적용, 버전 v12.12 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -142,12 +142,16 @@
         }
         .cell-status {
             font-size: 0.68rem;
-            color: #16a34a;
-            font-weight: 500;
+            font-weight: 600;
             line-height: 1;
             text-decoration: underline;
             text-underline-offset: 2px;
         }
+        /* 교정상황별 색상 클래스 */
+        .status-correct { color: #dc2626; }   /* 교정: 빨간색 */
+        .status-progress { color: #16a34a; }  /* 진행: 초록색 */
+        .status-done { color: #1e293b; }      /* 완료: 검은색 */
+
         .missing-cell-issue {
             display: flex;
             align-items: center;
@@ -301,7 +305,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.11</span>
+                <span class="version">v12.12</span>
             </h1>
         </header>
 
@@ -367,9 +371,10 @@
         const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
         const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=239571560&single=true&output=csv';
         
-        let correctMap = {};    // 교정본 데이터
-        let originalMap = {};   // 원본 데이터
-        let globalPdfMap = {};  // PDF 링크 정보
+        let correctMap = {};         // 교정본 데이터
+        let originalMap = {};        // 원본 데이터
+        let correctStatusMap = {};   // 시트 A열 교정상황 (교정, 진행, 완료 등)
+        let globalPdfMap = {};       // PDF 링크 정보
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
 
         function parseCSV(text) {
@@ -465,7 +470,7 @@
 
         async function loadAllSheetData() {
             try {
-                // 1. 교정본 데이터 로드
+                // 1. 교정본 데이터 로드 (A열 교정상황 포함)
                 const respCorrect = await fetch(correctCsvUrl);
                 if (respCorrect.ok) {
                     const csvText = await respCorrect.text();
@@ -473,11 +478,14 @@
                     for (let j = 1; j < rows.length; j++) {
                         const cols = rows[j].map(c => c.trim());
                         if (cols.length < 3) continue;
+                        const statusVal = cols[0] || '교정';
                         const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
                         if (!matches || matches.length === 0) continue;
                         const issueNum = parseInt(matches[0], 10);
                         const paddedNum = String(issueNum).padStart(3, '0');
                         let pubDate = cols[3] || `${paddedNum}호`;
+
+                        correctStatusMap[issueNum] = statusVal;
 
                         let htmlBuilder = buildStructuredHtml(cols);
                         correctMap[issueNum] = {
@@ -544,8 +552,15 @@
                     const month = parseInt(matchDate[2], 10);
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
                     
+                    // A열 교정상황 값 연동 (기본값: '교정')
+                    const statusText = correctStatusMap[issueNumber] || "교정";
+
                     issueMap[`${year}-${month}`] = {
-                        issueNo: paddedNum, summary: "요약", rawNum: issueNumber, status: "교정", link: pdfLink
+                        issueNo: paddedNum,
+                        summary: "요약",
+                        rawNum: issueNumber,
+                        status: statusText,
+                        link: pdfLink
                     };
                 }
                 renderCalendarMatrix(issueMap);
@@ -719,6 +734,15 @@
             return "";
         }
 
+        // 교정상황별 CSS 클래스 반환
+        function getStatusColorClass(status) {
+            if (!status) return 'status-correct';
+            if (status.includes('완료')) return 'status-done';
+            if (status.includes('진행')) return 'status-progress';
+            if (status.includes('교정')) return 'status-correct';
+            return 'status-correct';
+        }
+
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -774,6 +798,8 @@
                     const data = issueMap[key];
                     if (data !== undefined) {
                         const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
+                        const statusClass = getStatusColorClass(data.status);
+
                         td.innerHTML = `
                             <div class="cell-content">
                                 <a ${linkAttr} class="cell-block">
@@ -783,7 +809,7 @@
                                     <span class="cell-summary">${data.summary}</span>
                                 </div>
                                 <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${year}, ${month})">
-                                    <span class="cell-status">${data.status}</span>
+                                    <span class="cell-status ${statusClass}">${data.status}</span>
                                 </div>
                             </div>
                         `;
