@@ -1,4 +1,4 @@
-<!-- v11.8: abstract.md 연동 완전 폐지, [요약]과 [교정] 버튼 모두 구글 시트('교정본') 데이터 연동 및 8번 기고문 개별 글머리표 분리 렌더링 적용 -->
+<!-- v11.9: 구글 시트 B열 추가에 따른 컬럼 인덱스 전체 시프트(Shift) 반영 및 버전 v11.9 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -227,7 +227,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v11.8</span>
+                <span class="version">v11.9</span>
             </h1>
         </header>
 
@@ -283,7 +283,7 @@
             return ret;
         }
 
-        // 구글 시트('교정본') 데이터를 로드하여 8대 항목 및 8번 기고문 글머리표 분리 렌더링 준비
+        // 구글 시트('교정본') 데이터 로드 (B열 추가로 인한 컬럼 인덱스 +1 Shift 반영)
         async function loadCorrectSheetData() {
             try {
                 const response = await fetch(correctCsvUrl);
@@ -295,29 +295,31 @@
                     const cols = rows[j].map(c => c.trim());
                     if (cols.length < 3) continue;
 
-                    const matches = cols[1].match(/(\d+)/g);
+                    // 통권 호수 번호 추출 (A열 또는 B열 위치 확인)
+                    const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
                     if (!matches || matches.length === 0) continue;
                     
                     const issueNum = parseInt(matches[0], 10);
                     const paddedNum = String(issueNum).padStart(3, '0');
 
-                    let pubDate       = cols[2] || `${paddedNum}호`;
-                    let summaryText   = cols[3] || '';  
-                    let execCell      = cols[4] || '';  
-                    let sysCell       = cols[5] || '';  
-                    let eventCell     = cols[6] || '';  
-                    let historyCell   = cols[7] || '';  
-                    let troubleCell   = cols[8] || '';  
-                    let meetingType   = cols[9] || '';  
-                    let meetingVote   = cols[10] || ''; 
-                    let volRegular    = cols[11] || ''; 
-                    let volEtc        = cols[12] || ''; 
-                    let subStudy      = cols[13] || ''; 
-                    let subEtc        = cols[14] || ''; 
-                    let peopleInter   = cols[15] || ''; 
-                    let peopleNews    = cols[16] || ''; 
-                    let peopleEvent   = cols[17] || ''; 
-                    let articleSummary = cols[18] || ''; 
+                    // B열 추가로 인해 기존 인덱스에서 +1씩 밀린 컬럼 매핑
+                    let pubDate       = cols[3] || `${paddedNum}호`;
+                    let summaryText   = cols[4] || '';  
+                    let execCell      = cols[5] || '';  
+                    let sysCell       = cols[6] || '';  
+                    let eventCell     = cols[7] || '';  
+                    let historyCell   = cols[8] || '';  
+                    let troubleCell   = cols[9] || '';  
+                    let meetingType   = cols[10] || '';  
+                    let meetingVote   = cols[11] || ''; 
+                    let volRegular    = cols[12] || ''; 
+                    let volEtc        = cols[13] || ''; 
+                    let subStudy      = cols[14] || ''; 
+                    let subEtc        = cols[15] || ''; 
+                    let peopleInter   = cols[16] || ''; 
+                    let peopleNews    = cols[17] || ''; 
+                    let peopleEvent   = cols[18] || ''; 
+                    let articleSummary = cols[19] || ''; 
 
                     let htmlBuilder = '';
 
@@ -394,7 +396,7 @@
 
                     if (issueNum) {
                         correctMap[issueNum] = {
-                            title: `${pubDate} - 통권 ${paddedNum}호 내용 (구글 시트 v11.8)`,
+                            title: `${pubDate} - 통권 ${paddedNum}호 내용 (구글 시트 v11.9)`,
                             content: htmlBuilder
                         };
                     }
@@ -446,14 +448,14 @@
             }
         }
 
-        // [요약] 버튼 클릭 시에도 구글 시트 데이터를 동일하게 오픈
+        // [요약] 버튼 클릭 시
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
             
             if (correctMap[issueNum]) {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 (구글 시트 v11.8)`;
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 (구글 시트 v11.9)`;
                 textElem.innerHTML = correctMap[issueNum].content;
             } else {
                 titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 데이터 없음`;
@@ -463,14 +465,14 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시에도 구글 시트 데이터를 동일하게 오픈
+        // [교정] 버튼 클릭 시
         function openCorrectModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
             
             if (correctMap[issueNum]) {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트 v11.8)`;
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트 v11.9)`;
                 textElem.innerHTML = correctMap[issueNum].content;
             } else {
                 titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 데이터 없음`;
@@ -630,4 +632,3 @@
     </script>
 </body>
 </html>
- 
