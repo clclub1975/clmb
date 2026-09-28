@@ -1,4 +1,4 @@
-<!-- v12.10: PDF 새 탭 열림 시 모달 창 상태 보존 및 모바일 멀티태스킹 탭 전환 최적화, 버전 v12.10 -->
+<!-- v12.11: 표기 못한 누락 호수 안내 문구 'PDF도 없고, 공간도 없음' 수정 및 버전 v12.11 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -301,7 +301,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.10</span>
+                <span class="version">v12.11</span>
             </h1>
         </header>
 
@@ -753,7 +753,7 @@
                     if (pdfUrl && pdfUrl !== '#') {
                         unmappedMissing.push(`<a href="${pdfUrl}" target="_blank" class="missing-link">${issueStr}</a>`);
                     } else {
-                        unmappedMissing.push(`<span class="missing-none">${n}호(PDF 없음)</span>`);
+                        unmappedMissing.push(`<span class="missing-none">${n}호(PDF도 없고, 공간도 없음)</span>`);
                     }
                 }
             }
