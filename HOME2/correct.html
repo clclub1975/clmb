@@ -1,4 +1,4 @@
-<!-- v12.2: PDF 조그마한 팝업창 분리 및 요약/교정 독립된 단일 모달 양식으로 개편, 버전 v12.2 -->
+<!-- v12.3: 원본 모달 헤더 '원본', 교정본 모달 헤더 '수정' 표기로 변경, 버전 v12.3 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -223,7 +223,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.2</span>
+                <span class="version">v12.3</span>
             </h1>
         </header>
 
@@ -249,22 +249,22 @@
         </div>
     </div>
 
-    <!-- [요약] 모달 팝업 (원본 탭 내용 기반) -->
+    <!-- [요약] 모달 팝업 (원본) -->
     <div class="modal-overlay" id="summary-modal" onclick="closeModal()">
         <div class="modal-content-single" onclick="event.stopPropagation()">
             <div class="modal-header-single">
-                <span class="modal-title" id="summary-modal-title">회보 내용</span>
+                <span class="modal-title" id="summary-modal-title">원본</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="summary-modal-text">데이터를 불러오는 중입니다...</div>
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (교정본 탭 내용 기반 - 독립된 단일창) -->
+    <!-- [교정] 모달 팝업 (수정) -->
     <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
         <div class="modal-content-single" onclick="event.stopPropagation()">
             <div class="modal-header-single">
-                <span class="modal-title" id="correct-modal-title">회보 교정 내용</span>
+                <span class="modal-title" id="correct-modal-title">수정</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="correct-modal-text">데이터를 불러오는 중입니다...</div>
@@ -463,24 +463,23 @@
             }
         }
 
-        // [요약] 버튼 클릭 시 (원본 탭 기반 모달 창)
+        // [요약] 버튼 클릭 시 (원본 모달 창 - 헤더: '원본')
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('summary-modal-title');
             const textElem = document.getElementById('summary-modal-text');
             
+            titleElem.textContent = "원본";
             if (originalMap[issueNum]) {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 요약`;
                 textElem.innerHTML = originalMap[issueNum].content;
             } else {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 데이터 없음`;
                 textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 원본 시트 데이터가 아직 없습니다.</p>`;
             }
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시 (조그마한 PDF 팝업 창 + 교정본 탭 기반 독립 모달 창)
+        // [교정] 버튼 클릭 시 (조그마한 PDF 팝업 창 + 교정본 모달 창 - 헤더: '수정')
         function openCorrectModal(issueNum, year, month) {
             // 1. PDF 원본은 조그마한 팝업 창 크기로 별도 오픈
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
@@ -494,13 +493,12 @@
                 alert(`${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본 PDF 파일이 아직 연동되지 않았습니다.`);
             }
 
-            // 2. 교정본 모달 창 오픈
+            // 2. 교정본 모달 창 오픈 (헤더: '수정')
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
             const textElem = document.getElementById('correct-modal-text');
 
-            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 내용`;
-
+            titleElem.textContent = "수정";
             if (correctMap[issueNum]) {
                 textElem.innerHTML = correctMap[issueNum].content;
             } else {
