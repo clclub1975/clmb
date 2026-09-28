@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v4.1: 디폴트 '한 줄 요약' 선택 로딩, 질문창 플레이스홀더 및 기본 질의 "촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘." 반영, 버전 v4.1 갱신 -->
+    <!-- v4.2: 질문창 플레이스홀더 및 기본 질의 "촛불회의 정체성을 파악해줘." 환원, 프롬프트 최적화 및 버전 v4.2 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v4.1</title>
+    <title>촛불회 연혁 살펴보기 v4.2</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -481,6 +481,7 @@
             line-height: 1.5;
         }
 
+        /* 📌 [v4.2] 질문 입력창: "촛불회의 정체성을 파악해줘."로 환원 */
         .input-group {
             display: flex;
             gap: 8px;
@@ -774,7 +775,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v4.1</span>
+    <span class="version">v4.2</span>
 </div>
 
 <div class="chat-container">
@@ -862,10 +863,10 @@
             </div>
         </div>
 
-        <!-- 📌 [v4.1] 질문 입력창: "촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘." 반영 -->
+        <!-- 📌 [v4.2] 질문 입력창: "촛불회의 정체성을 파악해줘." 환원 -->
         <div class="input-group">
             <div class="input-wrapper">
-                <textarea id="userQuery" placeholder="예: 촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘.&#10;    (이 질문은 '한 줄 요약' 항목에 체크한 후 실행하는 예시입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
+                <textarea id="userQuery" placeholder="예: 촛불회의 정체성을 파악해줘.&#10;    (이 질문은 '한 줄 요약' 항목에 체크한 후 실행하는 예시입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
                 <button type="button" id="clearBtn" class="clear-btn" onclick="clearQuery()" title="입력 내용 지우기">✕</button>
             </div>
         </div>
@@ -1125,7 +1126,7 @@
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
 
-    // 📌 [v4.1] 16개 항목 체크박스 렌더링 (디폴트로 '한 줄 요약' 체크)
+    // 16개 항목 체크박스 렌더링 (디폴트로 '한 줄 요약' 체크)
     function renderCheckboxes() {
         const container = $("checkboxContainer");
         container.innerHTML = "";
@@ -1399,8 +1400,8 @@
         }
 
         let queryInput = $("userQuery");
-        // 📌 [v4.1] 기본 질문도 '촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘.'로 설정
-        let query = queryInput.value.trim() || "촛불회란 어떤 모임이었는지 알기 쉽게 설명해줘.";
+        // 📌 [v4.2] 기본 질문을 '촛불회의 정체성을 파악해줘.'로 설정
+        let query = queryInput.value.trim() || "촛불회의 정체성을 파악해줘.";
         if (!queryInput.value.trim()) {
             queryInput.value = query;
             autoResize(queryInput);
@@ -1432,7 +1433,7 @@
         btnText.innerText = "생성 중단";
         btn.classList.add("stop-btn");
         $("copyAiBtn").style.display = "none";
-        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[참조 연혁: ${targetSummaryTitle}] 조건으로 AI가 연혁 데이터를 분석·집계하는 중입니다...</span>`);
+        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[참조 연혁: ${targetSummaryTitle}] 조건으로 AI가 연혁 데이터를 분석 중입니다...</span>`);
         $("aiResult").scrollTop = 0;
         $("aiResult").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
@@ -1441,22 +1442,24 @@
                 ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 바탕으로 심층 비교 및 연속 분석을 수행하세요.` 
                 : "";
                 
-            const promptText = `당신은 촛불회 50년 역사 기록을 정밀하게 분석하고 통계를 내어 알기 쉽게 전달하는 전문 역사 데이터 분석가이자 친절한 안내자입니다.
-아래에 제공된 [촛불회 공식 연혁 기록]을 철저한 1차 데이터 원천(Ground Truth)으로 삼아 사용자의 질문에 답해 주세요.
+            // 📌 [v4.2] 개념 분석과 통계 집계의 균형을 맞춘 최적화 프롬프트
+            const promptText = `당신은 촛불회 50년 역사 기록을 정밀하게 분석하고 알기 쉽게 전달하는 전문 역사 안내자입니다.
+아래에 제공된 [촛불회 공식 연혁 기록]을 유일한 근거 데이터로 삼아 사용자의 질문에 답해 주세요.
 
 [촛불회 공식 연혁 기록]
 ${targetHistoryText}
 
-[분석 및 답변 지침 (엄격 적용)]
-1. 데이터 원천 준수:
-   - 반드시 위에 제공된 [촛불회 공식 연혁 기록]에 기술된 실제 텍스트 및 기록들만을 기초 데이터로 사용하세요. 외부의 없는 역사적 사실을 임의로 날조하거나 지어내지 마세요.
-2. 집계·카운트·통계·패턴 분석의 적극적 수행:
-   - 사용자가 인원수, 건수, 횟수, 순위, 빈도, 시대별 추이 및 변화 흐름, 주요 패턴 등을 질문하는 경우, 본문에 완제품 형태의 '총합 숫자'가 명시되어 있지 않더라도 거부하지 마세요.
-   - 본문에 나열된 개별 기록들(예: 괄호 안의 작성자/회원 이름, 기고문 제목, 회의 안건, 봉사처, 행사명, 호수 등)을 전수 조사하여 직접 카운트, 분류, 중복 제거, 집계하여 구체적인 수치(예: 총 O명, 총 O건 등)와 대표 근거 목록을 명확히 제시하세요.
-3. 근거의 투명성:
-   - 분석 결과나 통계를 설명할 때는 관련된 호수나 연월([001호] 1984년 등), 회원 이름, 봉사처 등 본문에 나온 명확한 텍스트 근거를 함께 인용하세요.
-4. 부재 사실의 구분:
-   - 제공된 기록 전체를 전수 조사해도 전혀 언급조차 없는 외부 질문에 대해서만 "제공된 연혁 기록에는 해당 내용이 기록되어 있지 않습니다"라고 명확히 밝히세요. 본문에 기록이 있음에도 단순 통계 수치가 적혀있지 않다는 이유로 거부해서는 안 됩니다.
+[분석 및 답변 지침]
+1. 데이터 기반 답변:
+   - 반드시 위에 제공된 [촛불회 공식 연혁 기록]에 나타난 실제 사실들만을 바탕으로 답변하세요. 없는 역사적 사실을 지어내지 마세요.
+2. 성격·정체성·개념 질문:
+   - 조직의 성격, 정체성, 발자취, 시대적 의의 등을 묻는 질문에는 본문의 주요 활동(봉사, 학술, 조직, 친목 등)을 종합하여 핵심 축별로 명확하고 알기 쉽게 구조화하여 답변하세요.
+3. 통계·카운트·인원수 질문:
+   - 인원수, 횟수, 순위, 빈도 등을 묻는 질문의 경우, 총합 수치가 완제품으로 적혀 있지 않더라도 본문에 나열된 개별 기록들(괄호 안 인명, 기고문 제목, 행사명 등)을 직접 집계하여 구체적인 수치와 대표 사례를 제시하세요.
+4. 근거 표기:
+   - 설명 시 관련된 호수나 연월([001호] 1984년 등), 인명, 단체명을 명확히 인용하세요.
+5. 부재 사실:
+   - 기록에 전혀 언급조차 없는 외부 질문에 대해서만 "제공된 연혁 기록에는 해당 내용이 기록되어 있지 않습니다"라고 밝히세요.
 ${contextPrompt}
 
 [사용자 질문]
