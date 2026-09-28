@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.15: '기고문' 항목을 correct.html처럼 대괄호([제목]) 기준 하위 불릿 목록으로 분리 줄바꿈 렌더링, 버전 v3.15 갱신 -->
+    <!-- v4.0: AI 분석 프롬프트 전면 개정(집계, 카운트, 통계, 흐름 분석 권한 전면 부여), 버전 v4.0 메이저 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.15</title>
+    <title>촛불회 연혁 살펴보기 v4.0</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -292,7 +292,6 @@
         .history-box li {
             margin-bottom: 6px;
         }
-        /* 기고문 하위 불릿 목록 스타일 */
         .history-box ul ul {
             list-style-type: circle;
             margin: 4px 0 8px 15px;
@@ -775,7 +774,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.15</span>
+    <span class="version">v4.0</span>
 </div>
 
 <div class="chat-container">
@@ -1025,7 +1024,7 @@
         }
     }
 
-    // 📌 [v3.15 핵심] correct.html과 동일한 대괄호 기준 기고문 하위 불릿 목록 렌더링
+    // correct.html과 동일한 대괄호 기준 기고문 하위 불릿 목록 렌더링
     function buildSheetSectionMarkdown(item) {
         let lines = [];
         const isArticle = (item.label === "기고문");
@@ -1041,9 +1040,7 @@
             const trimmedContent = contentText.trim();
 
             if (isArticle) {
-                // correct.html 방식: 줄바꿈 정리 후 대괄호 시작 지점(?=\[.*?\]) 기준으로 분리
                 let cleanArt = trimmedContent.replace(/\\n/g, '\n').replace(/\r/g, '');
-                // 혹시 '/' 로 구분되어 들어온 텍스트도 대괄호 앞이면 깔끔하게 분리
                 cleanArt = cleanArt.replace(/\s*\/\s*(?=\[)/g, '\n');
                 let articles = cleanArt.split(/(?=\[.*?\])/g);
 
@@ -1051,7 +1048,6 @@
                 articles.forEach(art => {
                     let cleaned = art.trim().replace(/^[-*•/]\s*/, '').trim();
                     if (cleaned) {
-                        // 한 편의 기고문 안에서의 줄바꿈은 공백 1칸으로 정돈
                         cleaned = cleaned.replace(/\n+/g, ' ');
                         articleSubLines.push(`  - ${cleaned}`);
                     }
@@ -1061,7 +1057,6 @@
                     lines.push(`* **[${formatIssueNo(rawNo)}] ${issueDate}** :\n` + articleSubLines.join("\n"));
                 }
             } else {
-                // 일반 항목: 기존대로 인라인 슬래시(/) 연결
                 const formatted = trimmedContent.replace(/\r?\n+/g, " / ");
                 lines.push(`* **[${formatIssueNo(rawNo)}] ${issueDate}** : ${formatted}`);
             }
@@ -1367,7 +1362,7 @@
         btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
 
-    // AI 질의 함수
+    // 📌 [v4.0 핵심 개정] 집계, 통계, 카운트, 빈도 및 흐름 분석을 전면 허용하는 스마트 분석 엔진
     async function askAI(isSequential) {
         const targetType = isSequential ? "sequential" : "new";
         if (currentController) {
@@ -1428,25 +1423,32 @@
         btnText.innerText = "생성 중단";
         btn.classList.add("stop-btn");
         $("copyAiBtn").style.display = "none";
-        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[참조 연혁: ${targetSummaryTitle}] 조건으로 AI가 답변을 생성하는 중입니다...</span>`);
+        $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<span class='loading'>[참조 연혁: ${targetSummaryTitle}] 조건으로 AI가 연혁 데이터를 분석·집계하는 중입니다...</span>`);
         $("aiResult").scrollTop = 0;
         $("aiResult").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         try {
             let contextPrompt = isSequential && conversationHistory.length > 0 
-                ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 바탕으로 심층 분석해 주세요.` 
+                ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 바탕으로 심층 비교 및 연속 분석을 수행하세요.` 
                 : "";
                 
-            const promptText = `당신은 촛불회 50년 역사를 잘 알고 있는 친절하고 정확한 역사 안내자입니다.
-아래에 제공된 [촛불회 공식 연혁 기록]만을 엄격한 사실 근거로 삼아 사용자의 질문에 답해 주세요.
+            // 📌 [v4.0] 통계 집계 및 분석 권한이 명확히 부여된 개선 프롬프트
+            const promptText = `당신은 촛불회 50년 역사 기록을 정밀하게 분석하고 통계를 내어 알기 쉽게 전달하는 전문 역사 데이터 분석가이자 친절한 안내자입니다.
+아래에 제공된 [촛불회 공식 연혁 기록]을 철저한 1차 데이터 원천(Ground Truth)으로 삼아 사용자의 질문에 답해 주세요.
 
 [촛불회 공식 연혁 기록]
 ${targetHistoryText}
 
-[엄격한 제약 사항 및 분석 지침]
-1. 반드시 위에 제시된 [촛불회 공식 연혁 기록]에 기술된 사실만을 바탕으로 답변하세요.
-2. 기록에 명시되지 않은 사항은 상상하거나 외부 지식으로 유추하지 마시고, "제공된 연혁 기록에는 해당 내용이 기록되어 있지 않습니다"라고 명확히 밝혀주세요.
-3. 통권 호수나 연월 표기([001호] 1984년 등)가 기록에 있다면 이를 인용하여 구체적으로 설명하세요.
+[분석 및 답변 지침 (엄격 적용)]
+1. 데이터 원천 준수:
+   - 반드시 위에 제공된 [촛불회 공식 연혁 기록]에 기술된 실제 텍스트 및 기록들만을 기초 데이터로 사용하세요. 외부의 없는 역사적 사실을 임의로 날조하거나 지어내지 마세요.
+2. 집계·카운트·통계·패턴 분석의 적극적 수행:
+   - 사용자가 인원수, 건수, 횟수, 순위, 빈도, 시대별 추이 및 변화 흐름, 주요 패턴 등을 질문하는 경우, 본문에 완제품 형태의 '총합 숫자'가 명시되어 있지 않더라도 거부하지 마세요.
+   - 본문에 나열된 개별 기록들(예: 괄호 안의 작성자/회원 이름, 기고문 제목, 회의 안건, 봉사처, 행사명, 호수 등)을 전수 조사하여 직접 카운트, 분류, 중복 제거, 집계하여 구체적인 수치(예: 총 O명, 총 O건 등)와 대표 근거 목록을 명확히 제시하세요.
+3. 근거의 투명성:
+   - 분석 결과나 통계를 설명할 때는 관련된 호수나 연월([001호] 1984년 등), 회원 이름, 봉사처 등 본문에 나온 명확한 텍스트 근거를 함께 인용하세요.
+4. 부재 사실의 구분:
+   - 제공된 기록 전체를 전수 조사해도 전혀 언급조차 없는 외부 질문에 대해서만 "제공된 연혁 기록에는 해당 내용이 기록되어 있지 않습니다"라고 명확히 밝히세요. 본문에 기록이 있음에도 단순 통계 수치가 적혀있지 않다는 이유로 거부해서는 안 됩니다.
 ${contextPrompt}
 
 [사용자 질문]
