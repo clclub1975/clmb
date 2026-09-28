@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.12: 선택 항목 바와 '결과 복사' 버튼 분리 배치 및 버튼 문구 변경, 버전 v3.12 갱신 -->
+    <!-- v3.13: '기고문' 추가(총 16개), 상단 [전체 선택] 및 [전체 해제 ✕] 전용 제어 바 분리, PC/모바일 공통 4열×4행 직사각형 레이아웃 적용, 버전 v3.13 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.12</title>
+    <title>촛불회 연혁 살펴보기 v3.13</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -127,37 +127,69 @@
         .toggle-btn:hover {
             background: #e2e8f0;
         }
+
+        /* 📌 [v3.13] 체크박스 패널 및 상단 제어 바 */
         .checkbox-panel {
             display: block;
             background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 18px;
+            padding: 16px 18px;
             margin-bottom: 16px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
         }
+        .checkbox-top-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .select-all-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2980b9;
+            cursor: pointer;
+            user-select: none;
+        }
+        .deselect-all-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            padding: 4px 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .deselect-all-btn:hover {
+            background: #fee2e2;
+            border-color: #f87171;
+            color: #dc2626;
+        }
+
+        /* 📌 [v3.13] 4열 × 4행 그리드 (총 16개 항목) */
         .checkbox-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px 10px;
         }
         .checkbox-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: 6px;
+            font-size: 13.5px;
             cursor: pointer;
-        }
-        .checkbox-item.select-all {
-            font-weight: bold;
-            color: #2980b9;
-            grid-column: 1 / -1;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 8px;
-            margin-bottom: 4px;
+            user-select: none;
+            white-space: nowrap;
         }
 
-        /* 📌 [v3.12] 선택 항목 바와 바깥 복사 버튼을 감싸는 행 레이아웃 */
+        /* 선택 항목 바와 우측 '결과 복사' 버튼 분리 레이아웃 */
         .selected-bar-wrapper {
             display: flex;
             align-items: center;
@@ -165,8 +197,6 @@
             margin-bottom: 14px;
             width: 100%;
         }
-
-        /* 단일 선택 항목 바 (너비가 유연하게 줄어들며 우측 버튼 공간 확보) */
         .selected-summary-bar {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
@@ -178,7 +208,7 @@
             align-items: center;
             gap: 8px;
             flex: 1;
-            min-width: 0; /* flex 컨테이너 안에서 말줄임/오버플로 허용 */
+            min-width: 0;
             box-sizing: border-box;
         }
         .summary-content-wrapper {
@@ -648,7 +678,7 @@
             line-height: 1;
         }
 
-        /* 📱 모바일 최적화 */
+        /* 📱 모바일 최적화 (4열 × 4행 레이아웃 유지) */
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
@@ -679,25 +709,34 @@
                 text-align: center;
             }
             .checkbox-panel {
-                padding: 12px 10px;
+                padding: 12px 8px;
             }
+            /* 4열 유지 및 글자 크기/간격 초경량 최적화 */
             .checkbox-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 8px 4px;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px 2px;
             }
             .checkbox-item {
-                font-size: 12px;
-                gap: 4px;
+                font-size: 11.5px;
+                gap: 2px;
+                letter-spacing: -0.5px;
             }
             .checkbox-item input[type="checkbox"] {
-                transform: scale(0.9);
+                transform: scale(0.85);
+            }
+            .select-all-label {
+                font-size: 12.5px;
+            }
+            .deselect-all-btn {
+                font-size: 11.5px;
+                padding: 3px 8px;
             }
             .selected-bar-wrapper {
                 gap: 6px;
             }
             .selected-summary-bar {
-                font-size: 12.5px;
-                padding: 6px 10px;
+                font-size: 12px;
+                padding: 6px 8px;
             }
             .copy-btn {
                 padding: 6px 10px;
@@ -728,7 +767,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.12</span>
+    <span class="version">v3.13</span>
 </div>
 
 <div class="chat-container">
@@ -743,12 +782,20 @@
         <button id="toggleBtn" class="toggle-btn" onclick="toggleCheckboxPanel()">📂 검색할 목록 닫기 ▲</button>
     </div>
     <div id="checkboxPanel" class="checkbox-panel">
+        <!-- 📌 [v3.13] 상단 제어 바: [전체 선택] 및 [전체 해제 ✕] 버튼 -->
+        <div class="checkbox-top-control">
+            <label class="select-all-label">
+                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"> [ 전체 선택 ]
+            </label>
+            <button type="button" class="deselect-all-btn" onclick="deselectAllItems()">전체 해제 ✕</button>
+        </div>
+        <!-- 📌 [v3.13] 4열 × 4행 = 총 16개 항목 그리드 -->
         <div id="checkboxContainer" class="checkbox-grid">
             <span style="color:#888; font-style:italic;">데이터 로딩 중...</span>
         </div>
     </div>
 
-    <!-- 📌 [v3.12] 3. 선택된 항목 바와 '결과 복사' 버튼 독립 분리 배치 -->
+    <!-- 3. 선택된 항목 바와 '결과 복사' 버튼 독립 분리 배치 -->
     <div class="selected-bar-wrapper">
         <div class="selected-summary-bar">
             <div class="summary-content-wrapper">
@@ -858,10 +905,10 @@
     let lastSingleResult = null;
     let isPersonalWaitState = false;
 
-    // 사용자가 체크박스를 누른 순서대로 기록하는 배열 (먼저 누른 항목이 앞쪽 [0]에 위치)
+    // 사용자가 체크박스를 누른 순서대로 기록하는 배열
     let selectedHistoryOrder = [];
 
-    // 15개 소분류 정의 및 교정본 시트 실제 열(Column) 이름 후보군 정밀 매핑
+    // 📌 [v3.13] 16개 소분류 정의 ('기고문' 추가) 및 교정본 시트 실제 열(Column) 이름 후보군 정밀 매핑
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", colKeys: ["한 줄 요약", "한줄요약", "한줄 요약"] },
         { label: "임원진", colKeys: ["임원진", "임원진 구성"] },
@@ -877,7 +924,8 @@
         { label: "기타 활동", colKeys: ["기타 활동", "기타활동", "친목/기타 활동", "친목/기타"] },
         { label: "인물 인터뷰", colKeys: ["인물 인터뷰", "인터뷰", "인물인터뷰"] },
         { label: "인물 동정", colKeys: ["인물 동정", "인물동정", "개별 동정", "개별동정", "회원 동정", "인물 동향"] },
-        { label: "경조사", colKeys: ["경조사", "경조사 및 소식"] }
+        { label: "경조사", colKeys: ["경조사", "경조사 및 소식"] },
+        { label: "기고문", colKeys: ["기고문", "기 고 문", "기고"] }
     ];
 
     window.onload = async () => {
@@ -1015,7 +1063,7 @@
         return clean.padStart(3, "0") + "호";
     }
 
-    // 📌 [v3.12] 연혁 본문 결과 복사 함수 ('📋 결과 복사' 자동 복귀)
+    // 연혁 본문 결과 복사 함수
     function copyHistoryContent() {
         const box = $("historyContentBox");
         const btn = $("copyBtn");
@@ -1050,9 +1098,10 @@
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
 
+    // 📌 [v3.13] 16개 항목 체크박스 렌더링
     function renderCheckboxes() {
         const container = $("checkboxContainer");
-        container.innerHTML = `<label class="checkbox-item select-all"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"> [ 전체 선택 ]</label>`;
+        container.innerHTML = "";
         CUSTOM_MENU_MAPPING.forEach(item => {
             container.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" onchange="handleItemCheckboxChange(this)"> ${item.label}</label>`;
         });
@@ -1077,6 +1126,7 @@
         renderFilteredHistory(targetScrollLabel);
     }
 
+    // [전체 선택] 토글
     const toggleSelectAll = (selectAllCb) => {
         const isChecked = selectAllCb.checked;
         document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = isChecked);
@@ -1087,6 +1137,14 @@
         }
         renderFilteredHistory();
     };
+
+    // 📌 [v3.13] [전체 해제 ✕] 버튼 클릭 함수
+    function deselectAllItems() {
+        $("selectAllCheckbox").checked = false;
+        document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = false);
+        selectedHistoryOrder = [];
+        renderFilteredHistory();
+    }
 
     function handleKeyDown(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
@@ -1454,4 +1512,3 @@ ${contextPrompt}
 
 </body>
 </html>
- 
