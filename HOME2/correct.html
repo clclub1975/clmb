@@ -1,4 +1,4 @@
-<!-- v12.7: [교정] 모달 내 좌측 목차(TOC) 메뉴 및 우측 원본·교정본 동시 앵커 스크롤 연동 레이아웃 적용, 버전 v12.7 -->
+<!-- v12.8: 슬라이드 원안 반영 [원본 보기 / 교정 하기] 토글 및 [PDF 보기] 버튼 구조의 단일 창 전환 레이아웃 적용, 버전 v12.8 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -160,7 +160,7 @@
             background-color: #fafafa;
         }
 
-        /* 3열 레이아웃 통합 모달 팝업 스타일 (슬라이드 원안 반영) */
+        /* 슬라이드 원안 반영 통합 모달 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -171,18 +171,18 @@
             align-items: center;
             z-index: 1000;
         }
-        .modal-container-3col {
+        .modal-container-toggle {
             background: #fff;
             border-radius: 8px;
-            width: 98%;
-            max-width: 1450px;
-            height: 92vh;
+            width: 90%;
+            max-width: 850px;
+            height: 85vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
-        .modal-header {
+        .modal-header-toggle {
             background: #fff;
             display: flex;
             justify-content: space-between;
@@ -192,94 +192,63 @@
             z-index: 10;
         }
         .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
-        .modal-close {
-            background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
-        }
         
-        /* 3열 분할 영역 메인 */
-        .modal-body-3col {
+        /* 상단 컨트롤 영역 (토글 버튼 + PDF 보기 버튼) */
+        .modal-controls {
             display: flex;
-            flex: 1;
-            height: calc(92vh - 55px);
-            overflow: hidden;
-        }
-        /* 1열: 목차(TOC) 메뉴 영역 + PDF 버튼 */
-        .col-menu {
-            width: 240px;
-            border-right: 2px solid #e2e8f0;
+            justify-content: space-between;
+            align-items: center;
             background: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            gap: 15px;
+            padding: 10px 20px;
+            border-bottom: 1px solid #e2e8f0;
         }
-        .pdf-open-btn {
-            display: block;
-            width: 100%;
-            background-color: #2563eb;
-            color: #fff;
-            padding: 10px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            text-align: center;
-            text-decoration: none;
+        .toggle-group {
+            display: flex;
+            background: #e2e8f0;
+            padding: 3px;
             border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
-            transition: background-color 0.2s ease;
         }
-        .pdf-open-btn:hover { background-color: #1d4ed8; }
-        .toc-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        .toc-item button {
-            width: 100%;
-            text-align: left;
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            padding: 8px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #334155;
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #64748b;
             cursor: pointer;
+            border-radius: 4px;
             transition: all 0.15s ease;
         }
-        .toc-item button:hover {
-            background-color: #eff6ff;
-            border-color: #2563eb;
+        .toggle-btn.active {
+            background: #ffffff;
             color: #2563eb;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-
-        /* 2열 & 3열 콘텐츠 영역 */
-        .col-content-box {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border-right: 1px solid #e2e8f0;
-            background: #fafafa;
+        .toggle-btn.active.correct-mode {
+            color: #16a34a;
         }
-        .col-content-box:last-child { border-right: none; background: #fff; }
-        .box-header {
-            padding: 10px 15px;
-            font-size: 0.95rem;
+        .pdf-link-btn {
+            background-color: #2563eb;
+            color: white;
+            padding: 6px 14px;
+            font-size: 0.88rem;
             font-weight: bold;
-            border-bottom: 1px solid #cbd5e1;
-            background: #f1f3f5;
-            color: #1e293b;
+            text-decoration: none;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: background-color 0.2s ease;
         }
-        .box-header.original-hdr { color: #2563eb; background: #eff6ff; }
-        .box-header.correct-hdr { color: #16a34a; background: #f0fdf4; }
-        .scrollable-content {
+        .pdf-link-btn:hover { background-color: #1d4ed8; }
+
+        /* 메인 콘텐츠 출력 영역 */
+        .modal-body-container {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
-            scroll-behavior: smooth;
+            background: #fff;
+        }
+        .modal-close {
+            background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
 
         /* 기존 단일 모달 스타일 (요약 전용) */
@@ -319,11 +288,6 @@
         .modal-body li { margin-bottom: 5px; }
         .modal-body strong { color: #0f172a; }
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
-
-        @media (max-width: 1000px) {
-            .modal-body-3col { flex-direction: column; }
-            .col-menu { width: 100%; height: auto; max-height: 150px; border-right: none; border-bottom: 2px solid #e2e8f0; }
-        }
     </style>
 </head>
 <body>
@@ -335,7 +299,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.7</span>
+                <span class="version">v12.8</span>
             </h1>
         </header>
 
@@ -372,43 +336,26 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (3열 레이아웃: 좌측 목차 메뉴 + 중앙 원본 + 우측 교정본) -->
+    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: [원본 보기 / 교정 하기] 토글 + [PDF 보기] 버튼 구조) -->
     <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
-        <div class="modal-container-3col" onclick="event.stopPropagation()">
-            <div class="modal-header">
+        <div class="modal-container-toggle" onclick="event.stopPropagation()">
+            <div class="modal-header-toggle">
                 <span class="modal-title" id="correct-modal-title">회보 교정 작업실</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <div class="modal-body-3col">
-                <!-- 1열: 목차(TOC) 메뉴 및 PDF 버튼 영역 -->
-                <div class="col-menu">
-                    <div id="pdf-btn-wrapper">
-                        <!-- PDF 버튼 동적 생성 -->
-                    </div>
-                    <div style="font-size:0.8rem; font-weight:bold; color:#64748b; margin-top:4px;">목차 선택 (항목 이동)</div>
-                    <ul class="toc-list">
-                        <li class="toc-item"><button onclick="scrollToSection('sec1')">1. 회보 정보</button></li>
-                        <li class="toc-item"><button onclick="scrollToSection('sec2')">2. 조직 및 체계 변화</button></li>
-                        <li class="toc-item"><button onclick="scrollToSection('sec3')">3. 주요 이벤트</button></li>
-                        <li class="toc-item"><button onclick="scrollToSection('sec4')">4. 주요 회의</button></li>
-                        <li class="toc-item"><button onclick="scrollToSection('sec5')">5. 봉사 활동</button></li>
-                        <li class="toc-item"><button onclick="scrollToSection('sec6')">6. 소집단 활동</button></li>
-                        <li class="toc-item"><button onclick="scrollToSection('sec7')">7. 인물 소식</button></li>
-                        <li class="toc-item"><button onclick="scrollToSection('sec8')">8. 기고문</button></li>
-                    </ul>
+            <!-- 상단 토글 및 PDF 보기 컨트롤 바 -->
+            <div class="modal-controls">
+                <div class="toggle-group">
+                    <button class="toggle-btn active" id="btn-orig-toggle" onclick="switchTab('original')">원본 보기</button>
+                    <button class="toggle-btn" id="btn-corr-toggle" onclick="switchTab('correct')">교정 하기</button>
                 </div>
-                
-                <!-- 2열: 원본 탭 내용 -->
-                <div class="col-content-box">
-                    <div class="box-header original-hdr">📄 ‘원본’ 탭 내용</div>
-                    <div class="scrollable-content modal-body" id="original-content-text">원본 데이터를 불러오는 중입니다...</div>
+                <div id="pdf-btn-container">
+                    <!-- PDF 보기 버튼 동적 생성 -->
                 </div>
-
-                <!-- 3열: 교정본 탭 내용 -->
-                <div class="col-content-box">
-                    <div class="box-header correct-hdr">✏️ ‘교정본’ 탭 내용</div>
-                    <div class="scrollable-content modal-body" id="correct-content-text">교정본 데이터를 불러오는 중입니다...</div>
-                </div>
+            </div>
+            <!-- 메인 컨텐츠 디스플레이 영역 -->
+            <div class="modal-body-container modal-body" id="toggle-content-box">
+                콘텐츠를 불러오는 중입니다...
             </div>
         </div>
     </div>
@@ -421,6 +368,7 @@
         let correctMap = {};    // 교정본 데이터
         let originalMap = {};   // 원본 데이터
         let globalPdfMap = {};  // PDF 링크 정보
+        let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
 
         function parseCSV(text) {
             let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0;
@@ -434,7 +382,7 @@
             return ret;
         }
 
-        // 시트 데이터 구조화 공통 함수 (ID 앵커 태그 부여로 목차 연동)
+        // 시트 데이터 구조화 공통 함수
         function buildStructuredHtml(cols) {
             let pubDate        = cols[3] || '';
             let summaryText    = cols[4] || '';  
@@ -455,69 +403,51 @@
             let articleSummary = cols[19] || ''; 
 
             let htmlBuilder = '';
-            htmlBuilder += `<div id="sec1"><h4>1. 회보 정보</h4><ul>`;
+            htmlBuilder += `<h4>1. 회보 정보</h4><ul>`;
             htmlBuilder += `<li><strong>발행년월:</strong> ${pubDate}</li>`;
             if (summaryText) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${summaryText.replace(/\\n/g, '<br>')}</li>`;
-            htmlBuilder += `</ul></div>`;
+            htmlBuilder += `</ul>`;
 
             if (execCell || sysCell) {
-                htmlBuilder += `<div id="sec2"><h4>2. 조직 및 체계 변화</h4><ul>`;
+                htmlBuilder += `<h4>2. 조직 및 체계 변화</h4><ul>`;
                 if (execCell) htmlBuilder += `<li><strong>임원진:</strong> ${execCell.replace(/\\n/g, '<br>')}</li>`;
                 if (sysCell) htmlBuilder += `<li><strong>체계 변화:</strong> ${sysCell.replace(/\\n/g, '<br>')}</li>`;
-                htmlBuilder += `</ul></div>`;
-            } else {
-                htmlBuilder += `<div id="sec2"></div>`;
+                htmlBuilder += `</ul>`;
             }
-
             if (eventCell || historyCell || troubleCell) {
-                htmlBuilder += `<div id="sec3"><h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
+                htmlBuilder += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
                 if (eventCell) htmlBuilder += `<li><strong>이벤트:</strong> ${eventCell.replace(/\\n/g, '<br>')}</li>`;
                 if (historyCell) htmlBuilder += `<li><strong>역사적 사실:</strong> ${historyCell.replace(/\\n/g, '<br>')}</li>`;
                 if (troubleCell) htmlBuilder += `<li><strong>애로 사항:</strong> ${troubleCell.replace(/\\n/g, '<br>')}</li>`;
-                htmlBuilder += `</ul></div>`;
-            } else {
-                htmlBuilder += `<div id="sec3"></div>`;
+                htmlBuilder += `</ul>`;
             }
-
             if (meetingType || meetingVote) {
-                htmlBuilder += `<div id="sec4"><h4>4. 주요 회의</h4><ul>`;
+                htmlBuilder += `<h4>4. 주요 회의</h4><ul>`;
                 if (meetingType) htmlBuilder += `<li><strong>회의 종류:</strong> ${meetingType.replace(/\\n/g, '<br>')}</li>`;
                 if (meetingVote) htmlBuilder += `<li><strong>의결 사항:</strong> ${meetingVote.replace(/\\n/g, '<br>')}</li>`;
-                htmlBuilder += `</ul></div>`;
-            } else {
-                htmlBuilder += `<div id="sec4"></div>`;
+                htmlBuilder += `</ul>`;
             }
-
             if (volRegular || volEtc) {
-                htmlBuilder += `<div id="sec5"><h4>5. 봉사 활동</h4><ul>`;
+                htmlBuilder += `<h4>5. 봉사 활동</h4><ul>`;
                 if (volRegular) htmlBuilder += `<li><strong>정기 봉사:</strong> ${volRegular.replace(/\\n/g, '<br>')}</li>`;
                 if (volEtc) htmlBuilder += `<li><strong>기타 봉사:</strong> ${volEtc.replace(/\\n/g, '<br>')}</li>`;
-                htmlBuilder += `</ul></div>`;
-            } else {
-                htmlBuilder += `<div id="sec5"></div>`;
+                htmlBuilder += `</ul>`;
             }
-
             if (subStudy || subEtc) {
-                htmlBuilder += `<div id="sec6"><h4>6. 소집단 활동</h4><ul>`;
+                htmlBuilder += `<h4>6. 소집단 활동</h4><ul>`;
                 if (subStudy) htmlBuilder += `<li><strong>학술/문화:</strong> ${subStudy.replace(/\\n/g, '<br>')}</li>`;
                 if (subEtc) htmlBuilder += `<li><strong>기타 활동:</strong> ${subEtc.replace(/\\n/g, '<br>')}</li>`;
-                htmlBuilder += `</ul></div>`;
-            } else {
-                htmlBuilder += `<div id="sec6"></div>`;
+                htmlBuilder += `</ul>`;
             }
-
             if (peopleInter || peopleNews || peopleEvent) {
-                htmlBuilder += `<div id="sec7"><h4>7. 인물 소식</h4><ul>`;
+                htmlBuilder += `<h4>7. 인물 소식</h4><ul>`;
                 if (peopleInter) htmlBuilder += `<li><strong>인터뷰:</strong> ${peopleInter.replace(/\\n/g, '<br>')}</li>`;
                 if (peopleNews) htmlBuilder += `<li><strong>개별 동정:</strong> ${peopleNews.replace(/\\n/g, '<br>')}</li>`;
                 if (peopleEvent) htmlBuilder += `<li><strong>경조사:</strong> ${peopleEvent.replace(/\\n/g, '<br>')}</li>`;
-                htmlBuilder += `</ul></div>`;
-            } else {
-                htmlBuilder += `<div id="sec7"></div>`;
+                htmlBuilder += `</ul>`;
             }
-
             if (articleSummary) {
-                htmlBuilder += `<div id="sec8"><h4>8. 기고문</h4><ul>`;
+                htmlBuilder += `<h4>8. 기고문</h4><ul>`;
                 let cleanArt = articleSummary.replace(/\\n/g, '\n');
                 let articles = cleanArt.split(/(?=\[.*?\])/g);
                 articles.forEach(art => {
@@ -526,11 +456,8 @@
                         htmlBuilder += `<li>${trimmedArt.replace(/\\n/g, '<br>')}</li>`;
                     }
                 });
-                htmlBuilder += `</ul></div>`;
-            } else {
-                htmlBuilder += `<div id="sec8"></div>`;
+                htmlBuilder += `</ul>`;
             }
-
             return htmlBuilder;
         }
 
@@ -642,55 +569,59 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시 (3열 레이아웃 작업실 팝업 연동)
+        // [교정] 버튼 클릭 시 (슬라이드 원안 토글 모달 연동)
         function openCorrectModal(issueNum, year, month) {
+            currentIssueData = { issueNum, year, month, activeTab: 'original' };
+            
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
-            const pdfWrapper = document.getElementById('pdf-btn-wrapper');
-            const origTextElem = document.getElementById('original-content-text');
-            const correctTextElem = document.getElementById('correct-content-text');
-
-            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 작업실`;
-
-            // 1열 목차 상단: PDF 원본 새 창 열기 버튼 구성
-            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
-            if (pdfUrl && pdfUrl !== '#') {
-                pdfWrapper.innerHTML = `<a href="${pdfUrl}" target="_blank" class="pdf-open-btn">📄 PDF 원본 새 창 열기</a>`;
-            } else {
-                pdfWrapper.innerHTML = `<div style="font-size:0.8rem; color:#dc2626; text-align:center; padding:6px;">PDF 미연동</div>`;
-            }
-
-            // 2열: '원본' 탭 내용 로드
-            if (originalMap[issueNum]) {
-                origTextElem.innerHTML = originalMap[issueNum].content;
-            } else {
-                origTextElem.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 탭 데이터가 없습니다.</p>`;
-            }
-
-            // 3열: '교정본' 탭 내용 로드
-            if (correctMap[issueNum]) {
-                correctTextElem.innerHTML = correctMap[issueNum].content;
-            } else {
-                correctTextElem.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 탭 데이터가 없습니다.</p>`;
-            }
-
+            
+            titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 회보`;
+            
+            // 초기 탭을 '원본 보기'로 설정하여 렌더링
+            switchTab('original');
+            
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // 목차 항목 클릭 시 우측 두 개 화면(원본, 교정본) 동시에 해당 섹션 위치로 스크롤 동기화
-        function scrollToSection(secId) {
-            const origBox = document.getElementById('original-content-text');
-            const corrBox = document.getElementById('correct-content-text');
+        // [원본 보기 / 교정 하기] 토글 전환 함수
+        function switchTab(tabName) {
+            currentIssueData.activeTab = tabName;
             
-            const origTarget = origBox.querySelector(`#${secId}`);
-            const corrTarget = corrBox.querySelector(`#${secId}`);
+            const btnOrig = document.getElementById('btn-orig-toggle');
+            const btnCorr = document.getElementById('btn-corr-toggle');
+            const contentBox = document.getElementById('toggle-content-box');
+            const pdfContainer = document.getElementById('pdf-btn-container');
+            
+            const { issueNum, year, month } = currentIssueData;
+            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
 
-            if (origTarget) {
-                origBox.scrollTo({ top: origTarget.offsetTop - 10, behavior: 'smooth' });
+            // PDF 보기 버튼 구성
+            if (pdfUrl && pdfUrl !== '#') {
+                pdfContainer.innerHTML = `<a href="${pdfUrl}" target="_blank" class="pdf-link-btn">📄 PDF 보기</a>`;
+            } else {
+                pdfContainer.innerHTML = `<span style="font-size:0.8rem; color:#dc2626;">PDF 미연동</span>`;
             }
-            if (corrTarget) {
-                corrBox.scrollTo({ top: corrTarget.offsetTop - 10, behavior: 'smooth' });
+
+            if (tabName === 'original') {
+                btnOrig.classList.add('active');
+                btnCorr.classList.remove('active', 'correct-mode');
+                
+                if (originalMap[issueNum]) {
+                    contentBox.innerHTML = originalMap[issueNum].content;
+                } else {
+                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 시트 데이터가 없습니다.</p>`;
+                }
+            } else {
+                btnCorr.classList.add('active', 'correct-mode');
+                btnOrig.classList.remove('active');
+                
+                if (correctMap[issueNum]) {
+                    contentBox.innerHTML = correctMap[issueNum].content;
+                } else {
+                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 시트 데이터가 없습니다.</p>`;
+                }
             }
         }
 
