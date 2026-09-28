@@ -1,4 +1,4 @@
-<!-- v12.10: [원본 보기 / 교정 하기 / PDF 보기] 3가지 통합 탭 토글 구조 적용, 버전 v12.10 -->
+<!-- v12.11: [원본 보기 / 교정 하기 / PDF 보기] 모달 내 3분할 통합 탭 토글 및 모바일 최적화 PDF 뷰어 연결 구현, 버전 v12.11 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -233,18 +233,36 @@
             color: #ea580c;
         }
 
-        /* 메인 콘텐츠 출력 영역 (텍스트 또는 PDF iframe) */
+        /* 메인 콘텐츠 출력 영역 */
         .modal-body-container {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
             background: #fff;
         }
-        .modal-body-container iframe {
-            width: 100%;
+        .pdf-tab-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             height: 100%;
-            border: none;
+            text-align: center;
+            gap: 15px;
         }
+        .pdf-open-large-btn {
+            display: inline-block;
+            background-color: #ea580c;
+            color: white;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(234, 88, 12, 0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .pdf-open-large-btn:hover { background-color: #c2410c; transform: translateY(-1px); }
+
         .modal-close {
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
@@ -297,7 +315,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.10</span>
+                <span class="version">v12.11</span>
             </h1>
         </header>
 
@@ -604,7 +622,7 @@
                 if (originalMap[issueNum]) {
                     contentBox.innerHTML = originalMap[issueNum].content;
                 } else {
-                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 시트 데이터가 없습니다.</p>`;
+                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 시트 데이터가 아직 없습니다.</p>`;
                 }
             } else if (tabName === 'correct') {
                 btnCorr.classList.add('active', 'correct-mode');
@@ -612,14 +630,23 @@
                 if (correctMap[issueNum]) {
                     contentBox.innerHTML = correctMap[issueNum].content;
                 } else {
-                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 시트 데이터가 없습니다.</p>`;
+                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 시트 데이터가 아직 없습니다.</p>`;
                 }
             } else if (tabName === 'pdf') {
                 btnPdf.classList.add('active', 'pdf-mode');
                 contentBox.className = "modal-body-container";
                 if (pdfUrl && pdfUrl !== '#') {
-                    // 구글 드라이브 뷰어 링크 구조 활용 또는 직접 임베드
-                    contentBox.innerHTML = `<iframe src="${pdfUrl}" title="PDF 뷰어"></iframe>`;
+                    // 모바일과 PC 모두에서 화면 이탈 없이 버튼 클릭으로 원본 PDF 창을 띄울 수 있는 안전한 인터페이스 제공
+                    contentBox.innerHTML = `
+                        <div class="pdf-tab-content">
+                            <p style="font-size: 0.95rem; color: #475569; line-height: 1.5;">
+                                보안 정책으로 인해 웹페이지 내부에 직접 PDF를 띄울 수 없습니다.<br>
+                                아래 버튼을 누르시면 PDF 원본이 새 탭(창)으로 열리며,<br>
+                                상단 탭을 통해 언제든지 <strong>'원본 보기'</strong>나 <strong>'교정 하기'</strong>로 돌아올 수 있습니다.
+                            </p>
+                            <a href="${pdfUrl}" target="_blank" class="pdf-open-large-btn">📄 PDF 문서 새 창으로 열기</a>
+                        </div>
+                    `;
                 } else {
                     contentBox.innerHTML = `<div style="text-align:center; padding:40px; color:#dc2626;">해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.</div>`;
                 }
