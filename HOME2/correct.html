@@ -1,4 +1,4 @@
-<!-- v12.11: [원본 보기 / 교정 하기 / PDF 보기] 모달 내 3분할 통합 탭 토글 및 모바일 최적화 PDF 뷰어 연결 구현, 버전 v12.11 -->
+<!-- v12.9: [PDF 보기] 클릭 시 독립된 브라우저 팝업 창(새 창)으로 열리도록 수정, 버전 v12.9 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -174,9 +174,9 @@
         .modal-container-toggle {
             background: #fff;
             border-radius: 8px;
-            width: 92%;
-            max-width: 900px;
-            height: 88vh;
+            width: 90%;
+            max-width: 850px;
+            height: 85vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -193,9 +193,11 @@
         }
         .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
         
-        /* 상단 3개 통합 탭 토글 바 */
+        /* 상단 컨트롤 영역 (토글 버튼 + PDF 보기 버튼) */
         .modal-controls {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
             background: #f8fafc;
             padding: 10px 20px;
             border-bottom: 1px solid #e2e8f0;
@@ -205,21 +207,17 @@
             background: #e2e8f0;
             padding: 3px;
             border-radius: 6px;
-            gap: 2px;
-            width: 100%;
         }
         .toggle-btn {
-            flex: 1;
             background: transparent;
             border: none;
-            padding: 8px 12px;
+            padding: 6px 14px;
             font-size: 0.88rem;
             font-weight: 600;
             color: #64748b;
             cursor: pointer;
             border-radius: 4px;
             transition: all 0.15s ease;
-            text-align: center;
         }
         .toggle-btn.active {
             background: #ffffff;
@@ -229,9 +227,20 @@
         .toggle-btn.active.correct-mode {
             color: #16a34a;
         }
-        .toggle-btn.active.pdf-mode {
-            color: #ea580c;
+        .pdf-link-btn {
+            background-color: #2563eb;
+            color: white;
+            padding: 6px 14px;
+            font-size: 0.88rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+            border: none;
         }
+        .pdf-link-btn:hover { background-color: #1d4ed8; }
 
         /* 메인 콘텐츠 출력 영역 */
         .modal-body-container {
@@ -240,29 +249,6 @@
             overflow-y: auto;
             background: #fff;
         }
-        .pdf-tab-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            gap: 15px;
-        }
-        .pdf-open-large-btn {
-            display: inline-block;
-            background-color: #ea580c;
-            color: white;
-            padding: 14px 28px;
-            font-size: 1rem;
-            font-weight: bold;
-            text-decoration: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(234, 88, 12, 0.2);
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-        .pdf-open-large-btn:hover { background-color: #c2410c; transform: translateY(-1px); }
-
         .modal-close {
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
@@ -315,7 +301,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v12.11</span>
+                <span class="version">v12.9</span>
             </h1>
         </header>
 
@@ -352,19 +338,21 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: [원본 보기 / 교정 하기 / PDF 보기] 3가지 통합 탭 토글 구조) -->
+    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: [원본 보기 / 교정 하기] 토글 + [PDF 보기] 독립 팝업 버튼 구조) -->
     <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
         <div class="modal-container-toggle" onclick="event.stopPropagation()">
             <div class="modal-header-toggle">
                 <span class="modal-title" id="correct-modal-title">회보 교정 작업실</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <!-- 상단 3개 통합 탭 토글 바 -->
+            <!-- 상단 토글 및 독립 팝업형 PDF 보기 컨트롤 바 -->
             <div class="modal-controls">
                 <div class="toggle-group">
                     <button class="toggle-btn active" id="btn-orig-toggle" onclick="switchTab('original')">원본 보기</button>
                     <button class="toggle-btn" id="btn-corr-toggle" onclick="switchTab('correct')">교정 하기</button>
-                    <button class="toggle-btn" id="btn-pdf-toggle" onclick="switchTab('pdf')">PDF 보기</button>
+                </div>
+                <div id="pdf-btn-container">
+                    <!-- 독립된 팝업 브라우저로 열리는 PDF 버튼 동적 생성 -->
                 </div>
             </div>
             <!-- 메인 콘텐츠 디스플레이 영역 -->
@@ -583,7 +571,7 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시 (슬라이드 원안 3개 통합 탭 모달 연동)
+        // [교정] 버튼 클릭 시 (슬라이드 원안 토글 모달 연동)
         function openCorrectModal(issueNum, year, month) {
             currentIssueData = { issueNum, year, month, activeTab: 'original' };
             
@@ -599,56 +587,56 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [원본 보기 / 교정 하기 / PDF 보기] 3가지 통합 탭 전환 함수
+        // 독립된 브라우저 팝업 창으로 PDF 열기 함수
+        function openPdfPopup(issueNum) {
+            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
+            if (pdfUrl && pdfUrl !== '#') {
+                const popupWidth = 800;
+                const popupHeight = 900;
+                const left = (window.screen.width - popupWidth) / 2;
+                const top = (window.screen.height - popupHeight) / 2;
+                window.open(pdfUrl, '_blank', `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
+            } else {
+                alert('해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.');
+            }
+        }
+
+        // [원본 보기 / 교정 하기] 토글 전환 함수
         function switchTab(tabName) {
             currentIssueData.activeTab = tabName;
             
             const btnOrig = document.getElementById('btn-orig-toggle');
             const btnCorr = document.getElementById('btn-corr-toggle');
-            const btnPdf = document.getElementById('btn-pdf-toggle');
             const contentBox = document.getElementById('toggle-content-box');
+            const pdfContainer = document.getElementById('pdf-btn-container');
             
-            const { issueNum } = currentIssueData;
+            const { issueNum, year, month } = currentIssueData;
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
 
-            // 탭 스타일 초기화
-            btnOrig.classList.remove('active');
-            btnCorr.classList.remove('active', 'correct-mode');
-            btnPdf.classList.remove('active', 'pdf-mode');
+            // 독립된 브라우저 팝업 창 열기 버튼 구성
+            if (pdfUrl && pdfUrl !== '#') {
+                pdfContainer.innerHTML = `<button type="button" class="pdf-link-btn" onclick="openPdfPopup(${issueNum})">📄 PDF 보기</button>`;
+            } else {
+                pdfContainer.innerHTML = `<span style="font-size:0.8rem; color:#dc2626;">PDF 미연동</span>`;
+            }
 
             if (tabName === 'original') {
                 btnOrig.classList.add('active');
-                contentBox.className = "modal-body-container modal-body";
+                btnCorr.classList.remove('active', 'correct-mode');
+                
                 if (originalMap[issueNum]) {
                     contentBox.innerHTML = originalMap[issueNum].content;
                 } else {
-                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 시트 데이터가 아직 없습니다.</p>`;
+                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 시트 데이터가 없습니다.</p>`;
                 }
-            } else if (tabName === 'correct') {
+            } else {
                 btnCorr.classList.add('active', 'correct-mode');
-                contentBox.className = "modal-body-container modal-body";
+                btnOrig.classList.remove('active');
+                
                 if (correctMap[issueNum]) {
                     contentBox.innerHTML = correctMap[issueNum].content;
                 } else {
-                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 시트 데이터가 아직 없습니다.</p>`;
-                }
-            } else if (tabName === 'pdf') {
-                btnPdf.classList.add('active', 'pdf-mode');
-                contentBox.className = "modal-body-container";
-                if (pdfUrl && pdfUrl !== '#') {
-                    // 모바일과 PC 모두에서 화면 이탈 없이 버튼 클릭으로 원본 PDF 창을 띄울 수 있는 안전한 인터페이스 제공
-                    contentBox.innerHTML = `
-                        <div class="pdf-tab-content">
-                            <p style="font-size: 0.95rem; color: #475569; line-height: 1.5;">
-                                보안 정책으로 인해 웹페이지 내부에 직접 PDF를 띄울 수 없습니다.<br>
-                                아래 버튼을 누르시면 PDF 원본이 새 탭(창)으로 열리며,<br>
-                                상단 탭을 통해 언제든지 <strong>'원본 보기'</strong>나 <strong>'교정 하기'</strong>로 돌아올 수 있습니다.
-                            </p>
-                            <a href="${pdfUrl}" target="_blank" class="pdf-open-large-btn">📄 PDF 문서 새 창으로 열기</a>
-                        </div>
-                    `;
-                } else {
-                    contentBox.innerHTML = `<div style="text-align:center; padding:40px; color:#dc2626;">해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.</div>`;
+                    contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 시트 데이터가 없습니다.</p>`;
                 }
             }
         }
