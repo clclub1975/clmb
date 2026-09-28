@@ -1,4 +1,4 @@
-<!-- v11.9: 구글 시트 B열 추가에 따른 컬럼 인덱스 전체 시프트(Shift) 반영 및 버전 v11.9 적용 -->
+<!-- v11.10: 모달 헤더 고정(Sticky Header) 적용 및 모달 타이틀 버전 표기 제거, 버전 v11.10 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -160,7 +160,7 @@
             color: #4b5563;
             background-color: #fafafa;
         }
-        /* 요약 상세 팝업 모달 스타일 */
+        /* 요약 상세 팝업 모달 스타일 (헤더 고정 구현) */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -173,21 +173,26 @@
         }
         .modal-content {
             background: #fff;
-            padding: 20px;
+            padding: 0 20px 20px 20px;
             border-radius: 8px;
             width: 90%;
             max-width: 650px;
             max-height: 80vh;
             overflow-y: auto;
+            position: relative;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .modal-header {
+            position: sticky;
+            top: 0;
+            background: #fff;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 10px;
+            padding: 15px 0 10px 0;
             margin-bottom: 15px;
+            z-index: 10;
         }
         .modal-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; }
         .modal-close {
@@ -227,7 +232,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v11.9</span>
+                <span class="version">v11.10</span>
             </h1>
         </header>
 
@@ -295,14 +300,12 @@
                     const cols = rows[j].map(c => c.trim());
                     if (cols.length < 3) continue;
 
-                    // 통권 호수 번호 추출 (A열 또는 B열 위치 확인)
                     const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
                     if (!matches || matches.length === 0) continue;
                     
                     const issueNum = parseInt(matches[0], 10);
                     const paddedNum = String(issueNum).padStart(3, '0');
 
-                    // B열 추가로 인해 기존 인덱스에서 +1씩 밀린 컬럼 매핑
                     let pubDate       = cols[3] || `${paddedNum}호`;
                     let summaryText   = cols[4] || '';  
                     let execCell      = cols[5] || '';  
@@ -396,7 +399,7 @@
 
                     if (issueNum) {
                         correctMap[issueNum] = {
-                            title: `${pubDate} - 통권 ${paddedNum}호 내용 (구글 시트 v11.9)`,
+                            title: `${pubDate} - 통권 ${paddedNum}호 내용`,
                             content: htmlBuilder
                         };
                     }
@@ -448,14 +451,14 @@
             }
         }
 
-        // [요약] 버튼 클릭 시
+        // [요약] 버튼 클릭 시 (버전 표기 제거)
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
             
             if (correctMap[issueNum]) {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 (구글 시트 v11.9)`;
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약`;
                 textElem.innerHTML = correctMap[issueNum].content;
             } else {
                 titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 요약 데이터 없음`;
@@ -465,14 +468,14 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시
+        // [교정] 버튼 클릭 시 (버전 표기 제거)
         function openCorrectModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('modal-issue-title');
             const textElem = document.getElementById('modal-issue-text');
             
             if (correctMap[issueNum]) {
-                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본 (구글 시트 v11.9)`;
+                titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정본`;
                 textElem.innerHTML = correctMap[issueNum].content;
             } else {
                 titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 교정 데이터 없음`;
