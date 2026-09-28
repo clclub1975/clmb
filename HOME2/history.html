@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v3.14: '학술/문화 활동' 라벨을 '학술/문화'로 변경, 4열×4행 최적화 및 버전 v3.14 갱신 -->
+    <!-- v3.15: '기고문' 항목을 correct.html처럼 대괄호([제목]) 기준 하위 불릿 목록으로 분리 줄바꿈 렌더링, 버전 v3.15 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v3.14</title>
+    <title>촛불회 연혁 살펴보기 v3.15</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -291,6 +291,15 @@
         }
         .history-box li {
             margin-bottom: 6px;
+        }
+        /* 기고문 하위 불릿 목록 스타일 */
+        .history-box ul ul {
+            list-style-type: circle;
+            margin: 4px 0 8px 15px;
+            padding-left: 15px;
+        }
+        .history-box ul ul li {
+            margin-bottom: 3px;
         }
         .history-box strong {
             color: #0f172a;
@@ -711,7 +720,6 @@
             .checkbox-panel {
                 padding: 12px 8px;
             }
-            /* 4열 유지 및 글자 크기/간격 초경량 최적화 */
             .checkbox-grid {
                 grid-template-columns: repeat(4, 1fr);
                 gap: 8px 2px;
@@ -767,7 +775,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v3.14</span>
+    <span class="version">v3.15</span>
 </div>
 
 <div class="chat-container">
@@ -867,7 +875,7 @@
         <div class="action-btn-group">
             <button type="button" id="submitBtn" class="submit-btn" onclick="askAI(false)"><span id="submitBtnText">새로 질문하기</span></button>
             <button type="button" id="sequentialBtn" class="sequential-btn" onclick="askAI(true)"><span id="sequentialBtnText">이어서 질문하기</span></button>
-            <button type="button" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
+            <button type="reset" id="resetAllBtn" class="reset-all-btn" onclick="resetAllContent()">질문/답변 창 초기화</button>
         </div>
 
         <!-- 최근 AI 답변 -->
@@ -908,7 +916,7 @@
     // 사용자가 체크박스를 누른 순서대로 기록하는 배열
     let selectedHistoryOrder = [];
 
-    // 📌 [v3.14] 16개 소분류 정의 ('학술/문화 활동'을 '학술/문화'로 변경) 및 교정본 시트 실제 열(Column) 매핑
+    // 16개 소분류 정의 및 교정본 시트 실제 열(Column) 매핑
     const CUSTOM_MENU_MAPPING = [
         { label: "한 줄 요약", colKeys: ["한 줄 요약", "한줄요약", "한줄 요약"] },
         { label: "임원진", colKeys: ["임원진", "임원진 구성"] },
@@ -1017,21 +1025,45 @@
         }
     }
 
-    // h3 태그에 고유 id를 부여하여 박스 내부 앵커 스크롤 타깃 생성
+    // 📌 [v3.15 핵심] correct.html과 동일한 대괄호 기준 기고문 하위 불릿 목록 렌더링
     function buildSheetSectionMarkdown(item) {
         let lines = [];
+        const isArticle = (item.label === "기고문");
 
         sheetParsedRows.forEach(row => {
             const rawNo = getRowValue(row, ["통권 호수", "통권호수", "호수", "권호"]);
             const issueDate = getRowValue(row, ["발행년월", "발행월", "발행 일자", "발행일자", "발행일"]);
             if (!rawNo) return;
 
-            const prefix = `* **[${formatIssueNo(rawNo)}] ${issueDate}** : `;
             let contentText = getRowValue(row, item.colKeys);
+            if (!contentText || !contentText.trim() || contentText.trim() === "-" || contentText.trim() === "없음") return;
 
-            if (contentText && contentText.trim() && contentText.trim() !== "-" && contentText.trim() !== "없음") {
-                const formatted = contentText.trim().replace(/\r?\n+/g, " / ");
-                lines.push(prefix + formatted);
+            const trimmedContent = contentText.trim();
+
+            if (isArticle) {
+                // correct.html 방식: 줄바꿈 정리 후 대괄호 시작 지점(?=\[.*?\]) 기준으로 분리
+                let cleanArt = trimmedContent.replace(/\\n/g, '\n').replace(/\r/g, '');
+                // 혹시 '/' 로 구분되어 들어온 텍스트도 대괄호 앞이면 깔끔하게 분리
+                cleanArt = cleanArt.replace(/\s*\/\s*(?=\[)/g, '\n');
+                let articles = cleanArt.split(/(?=\[.*?\])/g);
+
+                let articleSubLines = [];
+                articles.forEach(art => {
+                    let cleaned = art.trim().replace(/^[-*•/]\s*/, '').trim();
+                    if (cleaned) {
+                        // 한 편의 기고문 안에서의 줄바꿈은 공백 1칸으로 정돈
+                        cleaned = cleaned.replace(/\n+/g, ' ');
+                        articleSubLines.push(`  - ${cleaned}`);
+                    }
+                });
+
+                if (articleSubLines.length > 0) {
+                    lines.push(`* **[${formatIssueNo(rawNo)}] ${issueDate}** :\n` + articleSubLines.join("\n"));
+                }
+            } else {
+                // 일반 항목: 기존대로 인라인 슬래시(/) 연결
+                const formatted = trimmedContent.replace(/\r?\n+/g, " / ");
+                lines.push(`* **[${formatIssueNo(rawNo)}] ${issueDate}** : ${formatted}`);
             }
         });
 
