@@ -1,4 +1,4 @@
-<!-- v13.0: 모달 헤더 '[AI 요약 내용 교정하기]' 추가, 단일 토글 버튼 및 교정자 입력/저장·완료 버튼(모바일 반응형) 적용, 버전 v13.0 -->
+<!-- v13.1: 모달 헤더 '[요약 내용 교정]' 축약, 1행(토글+PDF)/2행(교정자+저장+나가기+완료) 모바일 1줄 최적화, 취소 안전장치 적용, 버전 v13.1 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -197,29 +197,28 @@
         }
         .modal-title { font-size: 1.05rem; font-weight: bold; color: #1e293b; }
         
-        /* 상단 컨트롤 영역 (토글 스위치 + 교정 컨트롤 + PDF 보기 버튼) */
+        /* 상단 컨트롤 영역 (1행과 2행 분리 구조) */
         .modal-controls {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 14px;
+            gap: 6px;
+        }
+        /* 1행: 토글 버튼과 PDF 보기 버튼 양 끝 배치 */
+        .controls-row-1 {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #f8fafc;
-            padding: 8px 16px;
-            border-bottom: 1px solid #e2e8f0;
-            gap: 8px;
-        }
-        .controls-left {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 8px;
+            width: 100%;
         }
         /* 단일 토글 스위치 버튼 */
         .toggle-switch-btn {
             background: #ffffff;
             border: 1px solid #cbd5e1;
-            padding: 6px 14px;
-            font-size: 0.85rem;
+            padding: 5px 12px;
+            font-size: 0.82rem;
             font-weight: 700;
             color: #2563eb;
             cursor: pointer;
@@ -235,52 +234,11 @@
             color: #ffffff;
             border-color: #16a34a;
         }
-        /* 교정 모드 전용 필드 그룹 */
-        .correct-action-group {
-            display: none;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .editor-input-wrap {
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.85rem;
-            color: #334155;
-            font-weight: 600;
-        }
-        .editor-input {
-            width: 80px;
-            padding: 4px 6px;
-            font-size: 0.82rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            margin-left: 4px;
-        }
-        .btn-action {
-            border: none;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-        .btn-action:hover { opacity: 0.85; }
-        .btn-save-exit {
-            background-color: #475569;
-            color: white;
-        }
-        .btn-finish {
-            background-color: #0284c7;
-            color: white;
-        }
-
         .pdf-link-btn {
             background-color: #2563eb;
             color: white;
-            padding: 6px 12px;
-            font-size: 0.85rem;
+            padding: 5px 12px;
+            font-size: 0.82rem;
             font-weight: bold;
             text-decoration: none;
             border-radius: 6px;
@@ -290,6 +248,64 @@
             border: none;
         }
         .pdf-link-btn:hover { background-color: #1d4ed8; }
+
+        /* 2행: 교정 모드 전용 컨트롤 (모바일에서도 완벽하게 한 줄 유지) */
+        .controls-row-2 {
+            display: none; /* 교정 모드일 때 flex로 변경 */
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: #f1f5f9;
+            padding: 5px 8px;
+            border-radius: 6px;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .editor-input-wrap {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.78rem;
+            color: #334155;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .editor-input {
+            width: 55px;
+            padding: 3px 5px;
+            font-size: 0.78rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            margin-left: 3px;
+        }
+        .btn-action-group {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .btn-action {
+            border: none;
+            padding: 4px 7px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-action:hover { opacity: 0.85; }
+        .btn-save-stay {
+            background-color: #0284c7;
+            color: white;
+        }
+        .btn-save-exit {
+            background-color: #475569;
+            color: white;
+        }
+        .btn-finish {
+            background-color: #16a34a;
+            color: white;
+        }
 
         /* 메인 콘텐츠 출력 영역 */
         .modal-body-container {
@@ -350,7 +366,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v13.0</span>
+                <span class="version">v13.1</span>
             </h1>
         </header>
 
@@ -387,31 +403,34 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: 단일 토글 버튼 + 교정 컨트롤 + PDF 보기 구조) -->
-    <div class="modal-overlay" id="correct-modal" onclick="closeModal()">
+    <!-- [교정] 모달 팝업 (슬라이드 원안 반영: 1행(토글+PDF) / 2행(교정자+저장+나가기+완료)) -->
+    <div class="modal-overlay" id="correct-modal" onclick="cancelAndCloseModal()">
         <div class="modal-container-toggle" onclick="event.stopPropagation()">
             <div class="modal-header-toggle">
-                <span class="modal-title" id="correct-modal-title">[AI 요약 내용 교정하기]</span>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <span class="modal-title" id="correct-modal-title">[요약 내용 교정]</span>
+                <button class="modal-close" onclick="cancelAndCloseModal()">&times;</button>
             </div>
             <!-- 상단 컨트롤 바 -->
             <div class="modal-controls">
-                <div class="controls-left">
-                    <!-- 단일 토글 버튼 -->
+                <!-- 1행: 토글 버튼 및 PDF 보기 버튼 좌우 분할 -->
+                <div class="controls-row-1">
                     <button class="toggle-switch-btn" id="btn-mode-toggle" onclick="toggleMode()">
                         <span>📖 원본 보기 중</span> (클릭 시 교정)
                     </button>
-                    <!-- 교정 하기 모드일 때만 표시되는 액션 그룹 -->
-                    <div class="correct-action-group" id="correct-action-group">
-                        <label class="editor-input-wrap">교정자:
-                            <input type="text" id="editor-name-input" class="editor-input" placeholder="이름 입력">
-                        </label>
-                        <button type="button" class="btn-action btn-save-exit" onclick="saveAndExit()">저장하고 나가기</button>
-                        <button type="button" class="btn-action btn-finish" onclick="finishCorrection()">교정 완료</button>
+                    <div id="pdf-btn-container">
+                        <!-- 새 탭/창으로 열리는 PDF 버튼 동적 생성 -->
                     </div>
                 </div>
-                <div id="pdf-btn-container">
-                    <!-- 새 탭/창으로 열리는 PDF 버튼 동적 생성 -->
+                <!-- 2행: 교정 모드일 때만 한 줄로 나타나는 전용 컨트롤 -->
+                <div class="controls-row-2" id="correct-controls-row-2">
+                    <label class="editor-input-wrap">교정자:
+                        <input type="text" id="editor-name-input" class="editor-input" placeholder="이름">
+                    </label>
+                    <div class="btn-action-group">
+                        <button type="button" class="btn-action btn-save-stay" onclick="saveOnly()">저장</button>
+                        <button type="button" class="btn-action btn-save-exit" onclick="saveAndExit()">나가기(저장)</button>
+                        <button type="button" class="btn-action btn-finish" onclick="finishCorrection()">교정완료</button>
+                    </div>
                 </div>
             </div>
             <!-- 메인 콘텐츠 디스플레이 영역 -->
@@ -647,8 +666,8 @@
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
             
-            // 1. 헤더 맨 앞에 '[AI 요약 내용 교정하기]' 추가
-            titleElem.textContent = `[AI 요약 내용 교정하기] ${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 회보`;
+            // 1. 헤더 맨 앞에 '[요약 내용 교정]' 축약 적용
+            titleElem.textContent = `[요약 내용 교정] ${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 회보`;
             
             // 초기 모드는 '원본 보기'
             renderCurrentMode();
@@ -657,7 +676,7 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // 2. 단일 토글 버튼 클릭 함수
+        // 단일 토글 버튼 클릭 함수
         function toggleMode() {
             currentIssueData.activeTab = (currentIssueData.activeTab === 'original') ? 'correct' : 'original';
             renderCurrentMode();
@@ -666,13 +685,13 @@
         // 현재 모드에 따라 UI 및 본문 렌더링
         function renderCurrentMode() {
             const toggleBtn = document.getElementById('btn-mode-toggle');
-            const correctGroup = document.getElementById('correct-action-group');
+            const correctRow2 = document.getElementById('correct-controls-row-2');
             const contentBox = document.getElementById('toggle-content-box');
             const pdfContainer = document.getElementById('pdf-btn-container');
             const { issueNum } = currentIssueData;
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
 
-            // PDF 버튼 구성
+            // PDF 버튼 구성 (1행 우측)
             if (pdfUrl && pdfUrl !== '#') {
                 pdfContainer.innerHTML = `<button type="button" class="pdf-link-btn" onclick="openPdfPopup(${issueNum})">📄 PDF 보기</button>`;
             } else {
@@ -683,7 +702,7 @@
                 // 원본 보기 모드
                 toggleBtn.classList.remove('correct-mode');
                 toggleBtn.innerHTML = `<span>📖 원본 보기 중</span> (클릭 시 교정)`;
-                correctGroup.style.display = 'none';
+                correctRow2.style.display = 'none';
 
                 if (originalMap[issueNum]) {
                     contentBox.innerHTML = originalMap[issueNum].content;
@@ -694,7 +713,7 @@
                 // 교정 하기 모드
                 toggleBtn.classList.add('correct-mode');
                 toggleBtn.innerHTML = `<span>✏️ 교정 하기 중</span> (클릭 시 원본)`;
-                correctGroup.style.display = 'inline-flex';
+                correctRow2.style.display = 'flex';
 
                 if (correctMap[issueNum]) {
                     contentBox.innerHTML = correctMap[issueNum].content;
@@ -704,7 +723,18 @@
             }
         }
 
-        // 교정 모드 액션 버튼 핸들러
+        // 1. [저장]: 창을 닫지 않고 작업 내용 중간 저장
+        function saveOnly() {
+            const editorName = document.getElementById('editor-name-input').value.trim();
+            if (!editorName) {
+                alert('교정자 이름을 입력해 주세요.');
+                document.getElementById('editor-name-input').focus();
+                return;
+            }
+            alert(`[${editorName}] 교정자의 교정 진행 상태가 저장되었습니다. (작업 지속)`);
+        }
+
+        // 2. [나가기(저장)]: 지금까지 작업분 저장 후 모달 닫기
         function saveAndExit() {
             const editorName = document.getElementById('editor-name-input').value.trim();
             if (!editorName) {
@@ -712,10 +742,11 @@
                 document.getElementById('editor-name-input').focus();
                 return;
             }
-            alert(`[${editorName}] 교정자의 교정 진행 상태가 저장되었습니다. (준비 중)`);
-            closeModal();
+            alert(`[${editorName}] 교정자의 교정 내용이 저장되었습니다.`);
+            forceCloseModal();
         }
 
+        // 3. [교정완료]: 최종 검토 마감 저장 및 완료 처리 후 닫기
         function finishCorrection() {
             const editorName = document.getElementById('editor-name-input').value.trim();
             if (!editorName) {
@@ -724,31 +755,29 @@
                 return;
             }
             if (confirm(`[${editorName}] 교정자님, 이 호수의 교정 작업을 '완료' 처리하시겠습니까?`)) {
-                alert('교정 완료 처리가 요청되었습니다. (준비 중)');
-                closeModal();
+                alert('교정 완료 처리가 요청되었습니다.');
+                forceCloseModal();
             }
         }
 
-        // PDF 열기 함수 (PC/모바일 공통: 새 탭/창으로 열고 원래 탭 모달 상태 보존)
-        function openPdfPopup(issueNum) {
-            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
-            if (pdfUrl && pdfUrl !== '#') {
-                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-                if (isMobile) {
-                    window.open(pdfUrl, '_blank');
-                } else {
-                    const popupWidth = 850;
-                    const popupHeight = 900;
-                    const left = (window.screen.width - popupWidth) / 2;
-                    const top = (window.screen.height - popupHeight) / 2;
-                    window.open(pdfUrl, '_blank', `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
+        // 4. 저장하지 않고 나가기(취소) 안전장치: 우측 상단 '×' 또는 배경 클릭 시
+        function cancelAndCloseModal() {
+            if (currentIssueData.activeTab === 'correct') {
+                if (confirm('작업 중인 내용이 저장되지 않습니다. 저장하지 않고 나가시겠습니까?')) {
+                    forceCloseModal();
                 }
             } else {
-                alert('해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.');
+                forceCloseModal();
             }
         }
 
+        // 단일 요약 모달 전용 닫기
         function closeModal() {
+            forceCloseModal();
+        }
+
+        // 모달 실제 닫기 공통 처리
+        function forceCloseModal() {
             const sumModal = document.getElementById('summary-modal');
             const corModal = document.getElementById('correct-modal');
             let wasOpen = false;
@@ -773,6 +802,25 @@
             if (sumModal) sumModal.style.display = 'none';
             if (corModal) corModal.style.display = 'none';
         });
+
+        // PDF 열기 함수 (PC/모바일 공통: 새 탭/창으로 열고 원래 탭 모달 상태 보존)
+        function openPdfPopup(issueNum) {
+            const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
+            if (pdfUrl && pdfUrl !== '#') {
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                if (isMobile) {
+                    window.open(pdfUrl, '_blank');
+                } else {
+                    const popupWidth = 850;
+                    const popupHeight = 900;
+                    const left = (window.screen.width - popupWidth) / 2;
+                    const top = (window.screen.height - popupHeight) / 2;
+                    window.open(pdfUrl, '_blank', `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
+                }
+            } else {
+                alert('해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.');
+            }
+        }
 
         function getEstimatedMissingNumber(targetYear, targetMonth, issueMap) {
             const startYear = 1984, startMonth = 3;
