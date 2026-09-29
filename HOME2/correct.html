@@ -1,4 +1,4 @@
-<!-- v13.7: 렌더링 병목 알고리즘(사전 계산 캐싱) 최적화 및 거대 원본 데이터 백그라운드 지연 로딩(Lazy Load) 적용, 버전 v13.7 -->
+<!-- v13.8: 상태 배너 텍스트 간소화('교정 작업 중', '원문 보기 중') 및 폰트 크기 확대 적용, 버전 v13.8 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -249,10 +249,11 @@
             background: #ecfdf5;
             border: 1.5px solid #86efac;
         }
+        /* v13.8: 폰트 크기 확대 (0.92rem -> 1.05rem) */
         .status-banner-text {
             display: inline-flex;
             align-items: center;
-            font-size: 0.92rem;
+            font-size: 1.05rem; 
             font-weight: 800;
             color: #0369a1;
             letter-spacing: -0.2px;
@@ -489,7 +490,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v13.7</span>
+                <span class="version">v13.8</span>
             </h1>
         </header>
 
@@ -539,7 +540,7 @@
             <!-- 상단 컨트롤 바 -->
             <div class="modal-controls">
                 <div class="controls-title-bar" id="controls-title-bar">
-                    <span class="status-banner-text" id="mode-status-badge">📖 현재 [원문 보기] 페이지입니다</span>
+                    <span class="status-banner-text" id="mode-status-badge">📖 원문 보기 중</span>
                     <button class="btn-toggle-switch" id="btn-mode-toggle" onclick="toggleMode()">✏️ 교정하러 가기</button>
                 </div>
                 <!-- 2행 -->
@@ -1018,8 +1019,9 @@
             }
 
             if (currentIssueData.activeTab === 'original') {
+                // v13.8: 원문 보기 상태 텍스트 간소화
                 titleBar.classList.remove('correct-mode');
-                statusBadge.textContent = '📖 현재 [원문 보기] 페이지입니다';
+                statusBadge.textContent = '📖 원문 보기 중';
                 toggleBtn.textContent = '✏️ 교정하러 가기';
                 correctRow2.style.display = 'none';
                 footerFinish.style.display = 'none';
@@ -1029,8 +1031,9 @@
                 else contentBox.innerHTML = `<p>${issueNum}호에 대한 데이터가 없습니다.</p>`;
 
             } else {
+                // v13.8: 교정 작업 상태 텍스트 간소화
                 titleBar.classList.add('correct-mode');
-                statusBadge.textContent = '✏️ 현재 [교정 작업] 페이지입니다';
+                statusBadge.textContent = '✏️ 교정 작업 중';
                 toggleBtn.textContent = '📖 원문 보러가기';
                 correctRow2.style.display = 'flex';
                 footerFinish.style.display = 'flex';
