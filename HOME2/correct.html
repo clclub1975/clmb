@@ -1,4 +1,4 @@
-<!-- v13.2: 상태라벨/전환버튼 분리, 1·2행 폰트 및 높이(28px) 통일, 이름입력 중앙정렬(75px), 하단 전폭 교정완료 버튼, 무변경 시 즉시닫기 적용, 버전 v13.2 -->
+<!-- v13.3: Promise.all 병렬로딩 최적화, 헤더 '회보' 제거, PDF/나가기 우측정렬 일치, 저장 간격확보, '교정하기' 표기, 자체 알림/확인창 탑재, 버전 v13.3 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -271,17 +271,21 @@
         }
         .pdf-link-btn:hover { background-color: #1d4ed8; }
 
-        /* 2행: 교정 모드 전용 컨트롤 (교정자+이름+저장+나가기) */
+        /* 2행: 교정 모드 전용 컨트롤 (좌측 교정자/저장, 우측 나가기(저장) 정렬) */
         .controls-row-2 {
             display: none; /* 교정 모드일 때 flex로 변경 */
-            justify-content: flex-start;
+            justify-content: space-between;
             align-items: center;
             width: 100%;
             background: #f1f5f9;
             padding: 5px 8px;
             border-radius: 6px;
-            gap: 6px;
             white-space: nowrap;
+        }
+        .row-2-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .editor-input-wrap {
             display: inline-flex;
@@ -320,10 +324,12 @@
         .btn-save-stay {
             background-color: #0284c7;
             color: white;
+            margin-left: 14px; /* 4. 교정자+이름 위치와 넉넉한 간격 확보 */
         }
         .btn-save-exit {
             background-color: #475569;
             color: white;
+            margin-left: auto; /* 3. PDF 보기 버튼과 우측 끝선 완벽 일치 */
         }
 
         /* 메인 콘텐츠 출력 영역 */
@@ -397,6 +403,58 @@
         .modal-body li { margin-bottom: 5px; }
         .modal-body strong { color: #0f172a; }
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
+
+        /* 6. 자체 커스텀 다이얼로그 (Alert & Confirm) 스타일 */
+        .custom-dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(2px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .custom-dialog-card {
+            background: #ffffff;
+            border-radius: 10px;
+            width: 85%;
+            max-width: 360px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: dialogPop 0.15s ease-out;
+        }
+        @keyframes dialogPop {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .custom-dialog-msg {
+            font-size: 0.92rem;
+            color: #1e293b;
+            line-height: 1.5;
+            margin-bottom: 18px;
+            word-break: keep-all;
+        }
+        .custom-dialog-btns {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        .custom-dialog-btn {
+            flex: 1;
+            height: 34px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.15s ease;
+        }
+        .custom-dialog-btn:hover { opacity: 0.85; }
+        .dialog-btn-confirm { background-color: #2563eb; color: #ffffff; }
+        .dialog-btn-cancel { background-color: #e2e8f0; color: #475569; }
     </style>
 </head>
 <body>
@@ -408,7 +466,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v13.2</span>
+                <span class="version">v13.3</span>
             </h1>
         </header>
 
@@ -445,10 +503,11 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (v13.2 적용) -->
+    <!-- [교정] 모달 팝업 (v13.3 적용) -->
     <div class="modal-overlay" id="correct-modal" onclick="cancelAndCloseModal()">
         <div class="modal-container-toggle" onclick="event.stopPropagation()">
             <div class="modal-header-toggle">
+                <!-- 2. 헤더 끝의 '회보' 제거 -->
                 <span class="modal-title" id="correct-modal-title">[요약 내용 교정]</span>
                 <button class="modal-close" onclick="cancelAndCloseModal()">&times;</button>
             </div>
@@ -458,18 +517,20 @@
                 <div class="controls-row-1">
                     <div class="row-1-left">
                         <span class="status-badge" id="mode-status-badge">📖 원문 보기 중</span>
-                        <button class="btn-toggle-switch" id="btn-mode-toggle" onclick="toggleMode()">교정</button>
+                        <button class="btn-toggle-switch" id="btn-mode-toggle" onclick="toggleMode()">✏️ 교정하기</button>
                     </div>
                     <div id="pdf-btn-container">
                         <!-- 새 탭/창으로 열리는 PDF 버튼 동적 생성 -->
                     </div>
                 </div>
-                <!-- 2행: 교정자 + 이름입력창 + 저장 + 나가기(저장) -->
+                <!-- 2행: 좌측(교정자 + 이름 + 간격 + 저장) / 우측 끝(나가기(저장)) -->
                 <div class="controls-row-2" id="correct-controls-row-2">
-                    <label class="editor-input-wrap">교정자:
-                        <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
-                    </label>
-                    <button type="button" class="btn-action btn-save-stay" onclick="saveOnly()">저장</button>
+                    <div class="row-2-left">
+                        <label class="editor-input-wrap">교정자:
+                            <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
+                        </label>
+                        <button type="button" class="btn-action btn-save-stay" onclick="saveOnly()">저장</button>
+                    </div>
                     <button type="button" class="btn-action btn-save-exit" onclick="saveAndExit()">나가기(저장)</button>
                 </div>
             </div>
@@ -484,20 +545,71 @@
         </div>
     </div>
 
+    <!-- 6. 자체 커스텀 다이얼로그 (Alert & Confirm UI) -->
+    <div class="custom-dialog-overlay" id="custom-dialog-overlay">
+        <div class="custom-dialog-card">
+            <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
+            <div class="custom-dialog-btns" id="custom-dialog-btns">
+                <!-- 동적 버튼 생성 -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const pdfCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
         const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
         const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=239571560&single=true&output=csv';
         
-        let correctMap = {};         // 교정본 데이터
-        let originalMap = {};        // 원본 데이터
+        let correctRawRows = null;   // 교정본 CSV 원본 행
+        let originalRawRows = null;  // 원본 CSV 원본 행
+        let correctMap = {};         // 캐싱된 교정본 HTML
+        let originalMap = {};        // 캐싱된 원본 HTML
         let correctStatusMap = {};   // 시트 A열 교정상황 (교정, 진행, 완료 등)
         let globalPdfMap = {};       // PDF 링크 정보
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
-        let isDirty = false;         // 1. 내용 수정 여부 감지 플래그
+        let isDirty = false;
 
         function markAsDirty() {
             isDirty = true;
+        }
+
+        // 6. 자체 커스텀 Alert 함수
+        function showCustomAlert(message, callback) {
+            const overlay = document.getElementById('custom-dialog-overlay');
+            const msgElem = document.getElementById('custom-dialog-msg');
+            const btnsElem = document.getElementById('custom-dialog-btns');
+            
+            msgElem.textContent = message;
+            btnsElem.innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
+            overlay.style.display = 'flex';
+
+            document.getElementById('btn-dialog-ok').onclick = function() {
+                overlay.style.display = 'none';
+                if (callback) callback();
+            };
+        }
+
+        // 6. 자체 커스텀 Confirm 함수
+        function showCustomConfirm(message, onConfirm, onCancel) {
+            const overlay = document.getElementById('custom-dialog-overlay');
+            const msgElem = document.getElementById('custom-dialog-msg');
+            const btnsElem = document.getElementById('custom-dialog-btns');
+            
+            msgElem.textContent = message;
+            btnsElem.innerHTML = `
+                <button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button>
+                <button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>
+            `;
+            overlay.style.display = 'flex';
+
+            document.getElementById('btn-dialog-yes').onclick = function() {
+                overlay.style.display = 'none';
+                if (onConfirm) onConfirm();
+            };
+            document.getElementById('btn-dialog-no').onclick = function() {
+                overlay.style.display = 'none';
+                if (onCancel) onCancel();
+            };
         }
 
         function parseCSV(text) {
@@ -512,7 +624,6 @@
             return ret;
         }
 
-        // 시트 데이터 구조화 공통 함수
         function buildStructuredHtml(cols) {
             let pubDate        = cols[3] || '';
             let summaryText    = cols[4] || '';  
@@ -591,65 +702,66 @@
             return htmlBuilder;
         }
 
-        async function loadAllSheetData() {
-            try {
-                // 1. 교정본 데이터 로드 (A열 교정상황 포함)
-                const respCorrect = await fetch(correctCsvUrl);
-                if (respCorrect.ok) {
-                    const csvText = await respCorrect.text();
-                    const rows = parseCSV(csvText);
-                    for (let j = 1; j < rows.length; j++) {
-                        const cols = rows[j].map(c => c.trim());
-                        if (cols.length < 3) continue;
-                        const statusVal = cols[0] || '교정';
-                        const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
-                        if (!matches || matches.length === 0) continue;
-                        const issueNum = parseInt(matches[0], 10);
-                        const paddedNum = String(issueNum).padStart(3, '0');
-                        let pubDate = cols[3] || `${paddedNum}호`;
+        // 필요 시점에 호수 데이터를 조립하는 온디맨드 함수
+        function getIssueDetail(issueNum, type) {
+            const map = (type === 'original') ? originalMap : correctMap;
+            if (map[issueNum]) return map[issueNum];
 
-                        correctStatusMap[issueNum] = statusVal;
+            const rows = (type === 'original') ? originalRawRows : correctRawRows;
+            if (!rows) return null;
 
-                        let htmlBuilder = buildStructuredHtml(cols);
-                        correctMap[issueNum] = {
-                            title: `${pubDate} - 통권 ${paddedNum}호 교정본`,
-                            content: htmlBuilder
-                        };
-                    }
+            for (let j = 1; j < rows.length; j++) {
+                const cols = rows[j].map(c => c.trim());
+                if (cols.length < 3) continue;
+                const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
+                if (!matches || matches.length === 0) continue;
+                const num = parseInt(matches[0], 10);
+                if (num === issueNum) {
+                    const paddedNum = String(issueNum).padStart(3, '0');
+                    const pubDate = cols[3] || `${paddedNum}호`;
+                    const html = buildStructuredHtml(cols);
+                    map[issueNum] = {
+                        title: `${pubDate} - 통권 ${paddedNum}호 ${type === 'original' ? '원본' : '교정본'}`,
+                        content: html
+                    };
+                    return map[issueNum];
                 }
-
-                // 2. 원본 탭 데이터 로드 (gid=239571560)
-                const respOriginal = await fetch(originalCsvUrl);
-                if (respOriginal.ok) {
-                    const csvTextOrig = await respOriginal.text();
-                    const rowsOrig = parseCSV(csvTextOrig);
-                    for (let j = 1; j < rowsOrig.length; j++) {
-                        const cols = rowsOrig[j].map(c => c.trim());
-                        if (cols.length < 3) continue;
-                        const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
-                        if (!matches || matches.length === 0) continue;
-                        const issueNum = parseInt(matches[0], 10);
-                        const paddedNum = String(issueNum).padStart(3, '0');
-                        let pubDate = cols[3] || `${paddedNum}호`;
-
-                        let htmlBuilder = buildStructuredHtml(cols);
-                        originalMap[issueNum] = {
-                            title: `${pubDate} - 통권 ${paddedNum}호 원본`,
-                            content: htmlBuilder
-                        };
-                    }
-                }
-            } catch (e) {
-                console.error("시트 데이터 로드 오류:", e);
             }
+            return null;
         }
 
+        // 1. 로딩 속도 극대화: 3개 시트 동시 병렬 요청 (Promise.all)
         async function loadCalendarData() {
             try {
-                await loadAllSheetData();
-                const respPdf = await fetch(pdfCsvUrl);
-                const pdfCsvText = await respPdf.text();
-                const pdfRows = parseCSV(pdfCsvText);
+                const [respPdf, respCorrect, respOriginal] = await Promise.all([
+                    fetch(pdfCsvUrl),
+                    fetch(correctCsvUrl),
+                    fetch(originalCsvUrl)
+                ]);
+
+                const [pdfText, correctText, originalText] = await Promise.all([
+                    respPdf.text(),
+                    respCorrect.text(),
+                    respOriginal.text()
+                ]);
+
+                // 교정본 상태값(A열) 고속 매핑
+                correctRawRows = parseCSV(correctText);
+                for (let j = 1; j < correctRawRows.length; j++) {
+                    const cols = correctRawRows[j];
+                    if (cols.length < 3) continue;
+                    const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
+                    if (matches && matches.length > 0) {
+                        const num = parseInt(matches[0], 10);
+                        correctStatusMap[num] = cols[0] ? cols[0].trim() : '교정';
+                    }
+                }
+
+                // 원본 원시 데이터 보관
+                originalRawRows = parseCSV(originalText);
+
+                // PDF 링크 및 캘린더 매트릭스 맵핑
+                const pdfRows = parseCSV(pdfText);
                 let issueMap = {};
                 for (let j = 1; j < pdfRows.length; j++) {
                     const pCols = pdfRows[j].map(c => c.trim());
@@ -699,8 +811,9 @@
             const textElem = document.getElementById('summary-modal-text');
             
             titleElem.textContent = `${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 원본`;
-            if (originalMap[issueNum]) {
-                textElem.innerHTML = originalMap[issueNum].content;
+            const data = getIssueDetail(issueNum, 'original');
+            if (data) {
+                textElem.innerHTML = data.content;
             } else {
                 textElem.innerHTML = `<p>통권 ${issueNum}호에 대한 원본 시트 데이터가 아직 없습니다.</p>`;
             }
@@ -711,27 +824,24 @@
         // [교정] 버튼 클릭 시 (토글 모달 창)
         function openCorrectModal(issueNum, year, month) {
             currentIssueData = { issueNum, year, month, activeTab: 'original' };
-            isDirty = false; // 플래그 초기화
+            isDirty = false;
             
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
             
-            titleElem.textContent = `[요약 내용 교정] ${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호 회보`;
+            // 2. 제목 끝의 '회보' 제거
+            titleElem.textContent = `[요약 내용 교정] ${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호`;
             
-            // 초기 모드는 '원본 보기'
             renderCurrentMode();
-            
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // 2. 상태 표시와 토글 버튼 분리 전환 함수
         function toggleMode() {
             currentIssueData.activeTab = (currentIssueData.activeTab === 'original') ? 'correct' : 'original';
             renderCurrentMode();
         }
 
-        // 현재 모드에 따라 UI 및 본문 렌더링
         function renderCurrentMode() {
             const statusBadge = document.getElementById('mode-status-badge');
             const toggleBtn = document.getElementById('btn-mode-toggle');
@@ -742,7 +852,7 @@
             const { issueNum } = currentIssueData;
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
 
-            // PDF 버튼 구성 (1행 우측)
+            // 1행 우측 PDF 버튼 구성
             if (pdfUrl && pdfUrl !== '#') {
                 pdfContainer.innerHTML = `<button type="button" class="pdf-link-btn" onclick="openPdfPopup(${issueNum})">📄 PDF 보기</button>`;
             } else {
@@ -750,81 +860,83 @@
             }
 
             if (currentIssueData.activeTab === 'original') {
-                // 2. 원문 보기 모드: '원문 보기 중' 라벨 + '교정' 버튼
+                // 5. '교정' -> '✏️ 교정하기'로 표기
                 statusBadge.classList.remove('correct-mode');
                 statusBadge.textContent = '📖 원문 보기 중';
-                toggleBtn.textContent = '✏️ 교정';
+                toggleBtn.textContent = '✏️ 교정하기';
                 correctRow2.style.display = 'none';
                 footerFinish.style.display = 'none';
 
-                if (originalMap[issueNum]) {
-                    contentBox.innerHTML = originalMap[issueNum].content;
+                const data = getIssueDetail(issueNum, 'original');
+                if (data) {
+                    contentBox.innerHTML = data.content;
                 } else {
                     contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '원본' 시트 데이터가 없습니다.</p>`;
                 }
             } else {
-                // 2. 교정 모드: '교정 중' 라벨 + '원본 보기' 버튼
                 statusBadge.classList.add('correct-mode');
                 statusBadge.textContent = '✏️ 교정 중';
                 toggleBtn.textContent = '📖 원본 보기';
                 correctRow2.style.display = 'flex';
                 footerFinish.style.display = 'flex';
 
-                if (correctMap[issueNum]) {
-                    contentBox.innerHTML = correctMap[issueNum].content;
+                const data = getIssueDetail(issueNum, 'correct');
+                if (data) {
+                    contentBox.innerHTML = data.content;
                 } else {
                     contentBox.innerHTML = `<p>통권 ${issueNum}호에 대한 '교정본' 시트 데이터가 없습니다.</p>`;
                 }
             }
         }
 
-        // 4. [저장]: 창 유지 및 중간 저장
         function saveOnly() {
             const editorName = document.getElementById('editor-name-input').value.trim();
             if (!editorName) {
-                alert('교정자 이름을 입력해 주세요.');
-                document.getElementById('editor-name-input').focus();
-                return;
-            }
-            isDirty = false; // 저장 완료 시 플래그 리셋
-            alert(`[${editorName}] 교정자의 교정 진행 상태가 저장되었습니다. (작업 지속)`);
-        }
-
-        // 4. [나가기(저장)]: 저장 후 모달 닫기
-        function saveAndExit() {
-            const editorName = document.getElementById('editor-name-input').value.trim();
-            if (!editorName) {
-                alert('교정자 이름을 입력해 주세요.');
-                document.getElementById('editor-name-input').focus();
+                showCustomAlert('교정자 이름을 입력해 주세요.', () => {
+                    document.getElementById('editor-name-input').focus();
+                });
                 return;
             }
             isDirty = false;
-            alert(`[${editorName}] 교정자의 교정 내용이 저장되었습니다.`);
-            forceCloseModal();
+            showCustomAlert(`[${editorName}] 교정자의 진행 상태가 저장되었습니다. (작업 지속)`);
         }
 
-        // 5. [교정완료]: 하단 폭넓은 마감 버튼 및 확인창
+        function saveAndExit() {
+            const editorName = document.getElementById('editor-name-input').value.trim();
+            if (!editorName) {
+                showCustomAlert('교정자 이름을 입력해 주세요.', () => {
+                    document.getElementById('editor-name-input').focus();
+                });
+                return;
+            }
+            isDirty = false;
+            showCustomAlert(`[${editorName}] 교정자의 교정 내용이 저장되었습니다.`, () => {
+                forceCloseModal();
+            });
+        }
+
         function finishCorrection() {
             const editorName = document.getElementById('editor-name-input').value.trim();
             if (!editorName) {
-                alert('교정자 이름을 입력해 주세요.');
-                document.getElementById('editor-name-input').focus();
+                showCustomAlert('교정자 이름을 입력해 주세요.', () => {
+                    document.getElementById('editor-name-input').focus();
+                });
                 return;
             }
-            if (confirm(`[${editorName}] 교정자님, 이 호수의 교정 작업을 '완료' 처리하시겠습니까?`)) {
+            showCustomConfirm(`[${editorName}] 교정자님, 이 호수의 교정 작업을 '완료' 처리하시겠습니까?`, () => {
                 isDirty = false;
-                alert('교정 완료 처리가 요청되었습니다.');
-                forceCloseModal();
-            }
+                showCustomAlert('교정 완료 처리가 요청되었습니다.', () => {
+                    forceCloseModal();
+                });
+            });
         }
 
-        // 1. 우측 상단 '×' 또는 배경 클릭 시: 편집 내용 없으면 무확인 즉시 닫기
         function cancelAndCloseModal() {
             if (isDirty) {
-                if (confirm('작업 중인 내용이 저장되지 않습니다. 저장하지 않고 나가시겠습니까?')) {
+                showCustomConfirm('작업 중인 내용이 저장되지 않습니다. 저장하지 않고 나가시겠습니까?', () => {
                     isDirty = false;
                     forceCloseModal();
-                }
+                });
             } else {
                 forceCloseModal();
             }
@@ -860,7 +972,6 @@
             if (corModal) corModal.style.display = 'none';
         });
 
-        // PDF 열기 함수
         function openPdfPopup(issueNum) {
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
             if (pdfUrl && pdfUrl !== '#') {
@@ -875,7 +986,7 @@
                     window.open(pdfUrl, '_blank', `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
                 }
             } else {
-                alert('해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.');
+                showCustomAlert('해당 호수의 원본 PDF 파일이 아직 연동되지 않았습니다.');
             }
         }
 
@@ -926,7 +1037,6 @@
             return "";
         }
 
-        // 교정상황별 CSS 클래스 반환
         function getStatusColorClass(status) {
             if (!status) return 'status-correct';
             if (status.includes('완료')) return 'status-done';
@@ -989,7 +1099,7 @@
                     const key = `${year}-${month}`;
                     const data = issueMap[key];
                     if (data !== undefined) {
-                        const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="alert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
+                        const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="showCustomAlert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
                         const statusClass = getStatusColorClass(data.status);
 
                         td.innerHTML = `
