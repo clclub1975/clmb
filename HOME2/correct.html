@@ -1,4 +1,4 @@
-<!-- v13.8: 상태 배너 텍스트 간소화('교정 작업 중', '원문 보기 중') 및 폰트 크기 확대 적용, 버전 v13.8 -->
+<!-- v14.0: '수정내용 저장' 버튼 텍스트 변경, 교정 모드 소분류 라벨 분리 및 항목별 텍스트 편집창(textarea) 구현, 버전 v14.0 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -249,7 +249,6 @@
             background: #ecfdf5;
             border: 1.5px solid #86efac;
         }
-        /* v13.8: 폰트 크기 확대 (0.92rem -> 1.05rem) */
         .status-banner-text {
             display: inline-flex;
             align-items: center;
@@ -286,7 +285,7 @@
             border-color: #93c5fd;
         }
 
-        /* 2행: 교정 모드 전용 컨트롤 (좌측 교정자/저장, 우측 나가기(저장) 정렬) */
+        /* 2행: 교정 모드 전용 컨트롤 (좌측 교정자/수정내용 저장, 우측 나가기(저장) 정렬) */
         .controls-row-2 {
             display: none; /* 교정 모드일 때 flex로 변경 */
             justify-content: space-between;
@@ -347,7 +346,7 @@
         .btn-save-stay {
             background-color: #0284c7;
             color: white;
-            margin-left: 14px;
+            margin-left: 12px;
         }
         .btn-save-exit {
             width: 95px;
@@ -365,6 +364,42 @@
         }
         .modal-close {
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
+        }
+
+        /* v14.0 교정 모드 전용 소분류 항목 및 텍스트 편집창(textarea) 스타일 */
+        .edit-group {
+            margin-bottom: 14px;
+        }
+        .edit-subgroup {
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+        .edit-sublabel {
+            display: block;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .edit-textarea {
+            width: 100%;
+            min-height: 52px;
+            padding: 8px 10px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            color: #1e293b;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .edit-textarea:focus {
+            background-color: #ffffff;
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
         }
 
         /* 맨 하단 교정 완료 버튼 */
@@ -417,11 +452,11 @@
         .modal-body { font-size: 0.9rem; color: #334155; line-height: 1.5; text-align: left; }
         .modal-body h4 {
             margin-top: 14px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             color: #1e293b;
             font-size: 1rem;
             border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 2px;
+            padding-bottom: 3px;
         }
         .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
         .modal-body li { margin-bottom: 5px; }
@@ -490,7 +525,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v13.8</span>
+                <span class="version">v14.0</span>
             </h1>
         </header>
 
@@ -549,7 +584,8 @@
                         <label class="editor-input-wrap">교정자:
                             <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
                         </label>
-                        <button type="button" class="btn-action btn-save-stay" onclick="saveOnly()">저장</button>
+                        <!-- 1. '수정내용 저장' 버튼 텍스트 반영 -->
+                        <button type="button" class="btn-action btn-save-stay" onclick="saveOnly()">수정내용 저장</button>
                     </div>
                     <button type="button" class="btn-action btn-save-exit" onclick="saveAndExit()">나가기(저장)</button>
                 </div>
@@ -637,6 +673,7 @@
             return ret;
         }
 
+        // [원문 보기용] 구조화된 HTML 뷰 생성 함수
         function buildStructuredHtml(cols) {
             let pubDate        = cols[3] || '';
             let summaryText    = cols[4] || '';  
@@ -715,6 +752,105 @@
             return htmlBuilder;
         }
 
+        // v14.0 [교정 작업용] 제목(소분류 라벨)과 내용을 분리하여 텍스트 편집창(textarea)으로 생성하는 함수
+        function buildEditableHtml(cols) {
+            let pubDate        = cols[3] || '';
+            let summaryText    = cols[4] || '';  
+            let execCell       = cols[5] || '';  
+            let sysCell        = cols[6] || '';  
+            let eventCell      = cols[7] || '';  
+            let historyCell    = cols[8] || '';  
+            let troubleCell    = cols[9] || '';  
+            let meetingType    = cols[10] || '';  
+            let meetingVote    = cols[11] || ''; 
+            let volRegular     = cols[12] || ''; 
+            let volEtc         = cols[13] || ''; 
+            let subStudy       = cols[14] || ''; 
+            let subEtc         = cols[15] || ''; 
+            let peopleInter    = cols[16] || ''; 
+            let peopleNews     = cols[17] || ''; 
+            let peopleEvent    = cols[18] || ''; 
+            let articleSummary = cols[19] || ''; 
+
+            let h = '';
+
+            // 1. 회보 정보
+            h += `<div class="edit-group">`;
+            h += `<h4>1. 회보 정보</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">발행년월</label>`;
+            h += `<textarea class="edit-textarea" rows="1" oninput="markAsDirty()">${pubDate}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">한 줄 요약</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${summaryText.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            // 2. 조직 및 체계 변화
+            h += `<div class="edit-group">`;
+            h += `<h4>2. 조직 및 체계 변화</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">임원진</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${execCell.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">체계 변화</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${sysCell.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            // 3. 주요 이벤트 및 마일스톤
+            h += `<div class="edit-group">`;
+            h += `<h4>3. 주요 이벤트 및 마일스톤</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">이벤트</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${eventCell.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">역사적 사실</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${historyCell.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">애로 사항</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${troubleCell.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            // 4. 주요 회의
+            h += `<div class="edit-group">`;
+            h += `<h4>4. 주요 회의</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">회의 종류</label>`;
+            h += `<textarea class="edit-textarea" rows="1" oninput="markAsDirty()">${meetingType.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">의결 사항</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${meetingVote.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            // 5. 봉사 활동
+            h += `<div class="edit-group">`;
+            h += `<h4>5. 봉사 활동</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">정기 봉사</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${volRegular.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">기타 봉사</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${volEtc.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            // 6. 소집단 활동
+            h += `<div class="edit-group">`;
+            h += `<h4>6. 소집단 활동</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">학술/문화</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${subStudy.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">기타 활동</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${subEtc.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            // 7. 인물 소식
+            h += `<div class="edit-group">`;
+            h += `<h4>7. 인물 소식</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">인터뷰</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${peopleInter.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">개별 동정</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${peopleNews.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">경조사</label>`;
+            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${peopleEvent.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            // 8. 기고문
+            h += `<div class="edit-group">`;
+            h += `<h4>8. 기고문</h4>`;
+            h += `<div class="edit-subgroup"><label class="edit-sublabel">기고문 요약/발췌</label>`;
+            h += `<textarea class="edit-textarea" rows="5" oninput="markAsDirty()">${articleSummary.replace(/\\n/g, '\n')}</textarea></div>`;
+            h += `</div>`;
+
+            return h;
+        }
+
         // 지연 로딩을 대비한 온디맨드 추출 로직
         function getIssueDetail(issueNum, type) {
             const map = (type === 'original') ? originalMap : correctMap;
@@ -722,12 +858,11 @@
 
             const rows = (type === 'original') ? originalRawRows : correctRawRows;
             if (!rows) {
-                // 원본 데이터가 백그라운드에서 아직 로딩 중일 경우 방어 처리
                 return {
                     title: `로딩 중`,
                     content: `<div class="loading" style="padding: 40px 20px;">
                                 <strong>⏳ 데이터를 불러오는 중입니다.</strong><br><br>
-                                방대한 원본 데이터를 백그라운드에서 다운로드하고 있습니다.<br>잠시 후 다시 시도해 주세요.
+                                방대한 데이터를 백그라운드에서 다운로드하고 있습니다.<br>잠시 후 다시 시도해 주세요.
                               </div>`
                 };
             }
@@ -741,7 +876,8 @@
                 if (num === issueNum) {
                     const paddedNum = String(issueNum).padStart(3, '0');
                     const pubDate = cols[3] || `${paddedNum}호`;
-                    const html = buildStructuredHtml(cols);
+                    // 교정 작업 모드는 텍스트 편집창(buildEditableHtml), 원문 보기는 일반 뷰(buildStructuredHtml)
+                    const html = (type === 'original') ? buildStructuredHtml(cols) : buildEditableHtml(cols);
                     map[issueNum] = {
                         title: `${pubDate} - ${paddedNum}호 ${type === 'original' ? '원본' : '교정본'}`,
                         content: html
@@ -835,13 +971,11 @@
             }
         }
 
-        // v13.7 알고리즘 최적화: 렌더링 시 단 한 번의 단일 루프로 누락 번호 계산 (CPU 부하 99% 감소)
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
             const startYear = 1984, endYear = 2003;
 
-            // [1단계] 전체 캘린더 빈칸에 대한 추정 번호를 단 1회(240번)만 계산하여 캐싱
             let estimatedMap = {};
             let mappedEstimates = new Set();
 
@@ -851,13 +985,12 @@
                     if (y === 2003 && m > 11) continue;
                     
                     const key = `${y}-${m}`;
-                    if (issueMap[key]) continue; // 이미 매핑된 호수 패스
+                    if (issueMap[key]) continue;
 
                     const targetIndex = (y - startYear) * 12 + (m - 1);
                     let prevNum = null, prevDist = Infinity;
                     let nextNum = null, nextDist = Infinity;
 
-                    // 앞뒤로 가장 가까운 확정 번호 탐색
                     for (let k in issueMap) {
                         let data = issueMap[k];
                         if (data.rawNum > 180) continue;
@@ -878,7 +1011,6 @@
                     if (prevNum !== null) estimated = prevNum + prevDist;
                     else if (nextNum !== null) estimated = nextNum - nextDist;
 
-                    // 계산된 번호가 기존 확정 번호와 겹치지 않으면 배정
                     if (estimated !== null && estimated > 0 && estimated <= 180) {
                         let exists = false;
                         for (let k in issueMap) {
@@ -892,7 +1024,6 @@
                 }
             }
 
-            // [2단계] 확정 번호에도 없고, 추정 칸에도 배정되지 못한 '공간 없는 누락 호수' 추출
             let existingNums = new Set();
             for (let key in issueMap) existingNums.add(issueMap[key].rawNum);
 
@@ -917,7 +1048,6 @@
                 noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> 없음`;
             }
 
-            // [3단계] 고속 렌더링
             for (let year = startYear; year <= endYear; year++) {
                 const tr = document.createElement('tr');
                 const thYear = document.createElement('th');
@@ -952,7 +1082,6 @@
                             </div>
                         `;
                     } else {
-                        // 캐싱된 추정 번호 즉시 할당
                         const missingNo = estimatedMap[key];
                         if (missingNo) {
                             td.innerHTML = `<span class="missing-cell-issue">${String(missingNo).padStart(3, '0')}</span>`;
@@ -983,7 +1112,7 @@
         }
 
         function openCorrectModal(issueNum, year, month) {
-            currentIssueData = { issueNum, year, month, activeTab: 'original' };
+            currentIssueData = { issueNum, year, month, activeTab: 'correct' }; // 교정 클릭 시 교정 모드로 바로 열리도록 설정
             isDirty = false;
             
             const modal = document.getElementById('correct-modal');
@@ -1019,7 +1148,6 @@
             }
 
             if (currentIssueData.activeTab === 'original') {
-                // v13.8: 원문 보기 상태 텍스트 간소화
                 titleBar.classList.remove('correct-mode');
                 statusBadge.textContent = '📖 원문 보기 중';
                 toggleBtn.textContent = '✏️ 교정하러 가기';
@@ -1031,7 +1159,6 @@
                 else contentBox.innerHTML = `<p>${issueNum}호에 대한 데이터가 없습니다.</p>`;
 
             } else {
-                // v13.8: 교정 작업 상태 텍스트 간소화
                 titleBar.classList.add('correct-mode');
                 statusBadge.textContent = '✏️ 교정 작업 중';
                 toggleBtn.textContent = '📖 원문 보러가기';
@@ -1051,7 +1178,7 @@
                 return;
             }
             isDirty = false;
-            showCustomAlert(`[${editorName}] 교정자의 진행 상태가 저장되었습니다. (작업 지속)`);
+            showCustomAlert(`[${editorName}] 교정자의 수정내용이 저장되었습니다. (작업 지속)`);
         }
 
         function saveAndExit() {
@@ -1126,4 +1253,3 @@
     </script>
 </body>
 </html>
- 
