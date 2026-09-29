@@ -1,4 +1,4 @@
-<!-- v13.3: Promise.all 병렬로딩 최적화, 헤더 '회보' 제거, PDF/나가기 우측정렬 일치, 저장 간격확보, '교정하기' 표기, 자체 알림/확인창 탑재, 버전 v13.3 -->
+<!-- v13.4: 1행 3영역 분할(좌측:전환버튼/중앙:상태라벨/우측:PDF), PDF·나가기 버튼 크기(95px) 및 우측끝선 일치, 이름 텍스트 정중앙정렬, 버전 v13.4 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -206,24 +206,40 @@
             padding: 8px 14px;
             gap: 6px;
         }
-        /* 1행: 상태 표시 + 전환 토글 버튼 및 PDF 보기 버튼 양 끝 배치 */
+        /* 1행: 3영역 분할 (좌측:전환버튼, 중앙:상태라벨, 우측:PDF보기) */
         .controls-row-1 {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             width: 100%;
+            position: relative;
         }
         .row-1-left {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            flex: 1;
+            justify-content: flex-start;
         }
+        .row-1-center {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        .row-1-right {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex: 1;
+        }
+
         /* 1·2행 통일 규격: font-size: 0.82rem, height: 28px */
         .status-badge {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             height: 28px;
-            padding: 0 10px;
+            padding: 0 12px;
             font-size: 0.82rem;
             font-weight: 700;
             border-radius: 6px;
@@ -252,13 +268,15 @@
         }
         .btn-toggle-switch:hover { background-color: #f1f5f9; }
         
+        /* 1. PDF 보기 버튼과 나가기 버튼의 동일한 크기(95px) 규격화 */
         .pdf-link-btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            width: 95px;
             height: 28px;
             background-color: #2563eb;
             color: white;
-            padding: 0 12px;
             font-size: 0.82rem;
             font-weight: bold;
             text-decoration: none;
@@ -278,7 +296,7 @@
             align-items: center;
             width: 100%;
             background: #f1f5f9;
-            padding: 5px 8px;
+            padding: 5px 0px; /* 우측 끝선 완벽 일치를 위해 패딩 제거 */
             border-radius: 6px;
             white-space: nowrap;
         }
@@ -296,15 +314,24 @@
             height: 28px;
             flex-shrink: 0;
         }
+        /* 2. 교정자 이름 입력창 가로/세로 정중앙 정렬 보정 */
         .editor-input {
             width: 75px;
             height: 28px;
-            padding: 0 6px;
+            line-height: 28px;
+            padding: 0 4px;
             font-size: 0.82rem;
             text-align: center;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
             margin-left: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .editor-input::placeholder {
+            text-align: center;
+            color: #94a3b8;
         }
         .btn-action {
             display: inline-flex;
@@ -324,12 +351,14 @@
         .btn-save-stay {
             background-color: #0284c7;
             color: white;
-            margin-left: 14px; /* 4. 교정자+이름 위치와 넉넉한 간격 확보 */
+            margin-left: 14px;
         }
+        /* 1. 나가기(저장) 버튼 크기(95px) 일치화 */
         .btn-save-exit {
+            width: 95px;
             background-color: #475569;
             color: white;
-            margin-left: auto; /* 3. PDF 보기 버튼과 우측 끝선 완벽 일치 */
+            margin-left: auto;
         }
 
         /* 메인 콘텐츠 출력 영역 */
@@ -343,9 +372,9 @@
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
 
-        /* 5. 맨 하단 교정 완료 버튼 (폭이 넓고 시원한 디자인) */
+        /* 맨 하단 교정 완료 버튼 */
         .modal-footer-finish {
-            display: none; /* 교정 모드일 때 flex로 변경 */
+            display: none;
             padding: 10px 18px;
             background: #ffffff;
             border-top: 1px solid #e2e8f0;
@@ -404,7 +433,7 @@
         .modal-body strong { color: #0f172a; }
         .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
 
-        /* 6. 자체 커스텀 다이얼로그 (Alert & Confirm) 스타일 */
+        /* 자체 커스텀 다이얼로그 (Alert & Confirm) 스타일 */
         .custom-dialog-overlay {
             display: none;
             position: fixed;
@@ -466,7 +495,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v13.3</span>
+                <span class="version">v13.4</span>
             </h1>
         </header>
 
@@ -503,23 +532,24 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (v13.3 적용) -->
+    <!-- [교정] 모달 팝업 (v13.4 적용) -->
     <div class="modal-overlay" id="correct-modal" onclick="cancelAndCloseModal()">
         <div class="modal-container-toggle" onclick="event.stopPropagation()">
             <div class="modal-header-toggle">
-                <!-- 2. 헤더 끝의 '회보' 제거 -->
                 <span class="modal-title" id="correct-modal-title">[요약 내용 교정]</span>
                 <button class="modal-close" onclick="cancelAndCloseModal()">&times;</button>
             </div>
             <!-- 상단 컨트롤 바 -->
             <div class="modal-controls">
-                <!-- 1행: 상태 표시창 + 토글 버튼 및 PDF 보기 버튼 -->
+                <!-- 1행: 3영역 분할 (좌측:전환버튼, 중앙:상태라벨, 우측:PDF보기) -->
                 <div class="controls-row-1">
                     <div class="row-1-left">
-                        <span class="status-badge" id="mode-status-badge">📖 원문 보기 중</span>
                         <button class="btn-toggle-switch" id="btn-mode-toggle" onclick="toggleMode()">✏️ 교정하기</button>
                     </div>
-                    <div id="pdf-btn-container">
+                    <div class="row-1-center">
+                        <span class="status-badge" id="mode-status-badge">📖 원문 보기 중</span>
+                    </div>
+                    <div class="row-1-right" id="pdf-btn-container">
                         <!-- 새 탭/창으로 열리는 PDF 버튼 동적 생성 -->
                     </div>
                 </div>
@@ -545,7 +575,7 @@
         </div>
     </div>
 
-    <!-- 6. 자체 커스텀 다이얼로그 (Alert & Confirm UI) -->
+    <!-- 자체 커스텀 다이얼로그 (Alert & Confirm UI) -->
     <div class="custom-dialog-overlay" id="custom-dialog-overlay">
         <div class="custom-dialog-card">
             <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
@@ -573,7 +603,7 @@
             isDirty = true;
         }
 
-        // 6. 자체 커스텀 Alert 함수
+        // 자체 커스텀 Alert 함수
         function showCustomAlert(message, callback) {
             const overlay = document.getElementById('custom-dialog-overlay');
             const msgElem = document.getElementById('custom-dialog-msg');
@@ -589,7 +619,7 @@
             };
         }
 
-        // 6. 자체 커스텀 Confirm 함수
+        // 자체 커스텀 Confirm 함수
         function showCustomConfirm(message, onConfirm, onCancel) {
             const overlay = document.getElementById('custom-dialog-overlay');
             const msgElem = document.getElementById('custom-dialog-msg');
@@ -702,7 +732,6 @@
             return htmlBuilder;
         }
 
-        // 필요 시점에 호수 데이터를 조립하는 온디맨드 함수
         function getIssueDetail(issueNum, type) {
             const map = (type === 'original') ? originalMap : correctMap;
             if (map[issueNum]) return map[issueNum];
@@ -730,7 +759,6 @@
             return null;
         }
 
-        // 1. 로딩 속도 극대화: 3개 시트 동시 병렬 요청 (Promise.all)
         async function loadCalendarData() {
             try {
                 const [respPdf, respCorrect, respOriginal] = await Promise.all([
@@ -745,7 +773,6 @@
                     respOriginal.text()
                 ]);
 
-                // 교정본 상태값(A열) 고속 매핑
                 correctRawRows = parseCSV(correctText);
                 for (let j = 1; j < correctRawRows.length; j++) {
                     const cols = correctRawRows[j];
@@ -757,10 +784,8 @@
                     }
                 }
 
-                // 원본 원시 데이터 보관
                 originalRawRows = parseCSV(originalText);
 
-                // PDF 링크 및 캘린더 매트릭스 맵핑
                 const pdfRows = parseCSV(pdfText);
                 let issueMap = {};
                 for (let j = 1; j < pdfRows.length; j++) {
@@ -804,7 +829,6 @@
             }
         }
 
-        // [요약] 버튼 클릭 시 (원본 모달 창)
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('summary-modal-title');
@@ -821,7 +845,6 @@
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
 
-        // [교정] 버튼 클릭 시 (토글 모달 창)
         function openCorrectModal(issueNum, year, month) {
             currentIssueData = { issueNum, year, month, activeTab: 'original' };
             isDirty = false;
@@ -829,7 +852,6 @@
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
             
-            // 2. 제목 끝의 '회보' 제거
             titleElem.textContent = `[요약 내용 교정] ${year}년 ${month}월 - 통권 ${String(issueNum).padStart(3, '0')}호`;
             
             renderCurrentMode();
@@ -852,15 +874,14 @@
             const { issueNum } = currentIssueData;
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
 
-            // 1행 우측 PDF 버튼 구성
+            // 1행 우측 끝 규격화된 PDF 버튼 (width: 95px)
             if (pdfUrl && pdfUrl !== '#') {
                 pdfContainer.innerHTML = `<button type="button" class="pdf-link-btn" onclick="openPdfPopup(${issueNum})">📄 PDF 보기</button>`;
             } else {
-                pdfContainer.innerHTML = `<span style="font-size:0.8rem; color:#dc2626; height:28px; display:inline-flex; align-items:center;">PDF 미연동</span>`;
+                pdfContainer.innerHTML = `<span style="font-size:0.8rem; color:#dc2626; height:28px; width:95px; display:inline-flex; align-items:center; justify-content:center;">PDF 미연동</span>`;
             }
 
             if (currentIssueData.activeTab === 'original') {
-                // 5. '교정' -> '✏️ 교정하기'로 표기
                 statusBadge.classList.remove('correct-mode');
                 statusBadge.textContent = '📖 원문 보기 중';
                 toggleBtn.textContent = '✏️ 교정하기';
