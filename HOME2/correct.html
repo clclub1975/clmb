@@ -1,4 +1,4 @@
-<!-- v13.5: 헤더 '[요약 교정]' 및 '통권' 삭제, 헤더 내 '회보 보기' 배치, 전용 타이틀 바 신설, '원문 보러가기/교정하러 가기' 우측배치, 버전 v13.5 -->
+<!-- v13.6: '교정 작업 / 원문 보기' 전용 상태 타이틀 배너(Bar) 시각적 강화 및 직관적 식별 디자인 적용, 버전 v13.6 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -203,7 +203,6 @@
         }
         .modal-title { font-size: 1.05rem; font-weight: bold; color: #1e293b; }
         
-        /* 3. 헤더 내 '회보 보기' 버튼 */
         .pdf-link-btn {
             display: inline-flex;
             align-items: center;
@@ -234,36 +233,41 @@
             gap: 6px;
         }
         
-        /* 4. 신설된 전용 타이틀 바 (상태 라벨 + 우측 '보러가기' 버튼) */
+        /* v13.6: 확실하게 인식되는 상태 전용 타이틀 배너(Bar) 스타일 */
         .controls-title-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             width: 100%;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            background: #f0f9ff;
+            border: 1.5px solid #bae6fd;
         }
-        .status-badge {
+        .controls-title-bar.correct-mode {
+            background: #ecfdf5;
+            border: 1.5px solid #86efac;
+        }
+        .status-banner-text {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            height: 28px;
-            padding: 0 12px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            border-radius: 6px;
-            background: #e2e8f0;
-            color: #334155;
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: #0369a1;
+            letter-spacing: -0.2px;
             white-space: nowrap;
         }
-        .status-badge.correct-mode {
-            background: #dcfce7;
+        .controls-title-bar.correct-mode .status-banner-text {
             color: #15803d;
         }
-        /* 5. 타이틀 바 우측 끝에 배치되는 모드 전환 버튼 */
+
+        /* 타이틀 바 우측 끝에 배치되는 모드 전환 버튼 */
         .btn-toggle-switch {
             height: 28px;
             padding: 0 12px;
             font-size: 0.82rem;
-            font-weight: 600;
+            font-weight: 700;
             border: 1px solid #cbd5e1;
             background: #ffffff;
             color: #2563eb;
@@ -273,9 +277,13 @@
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            margin-left: auto;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .btn-toggle-switch:hover { background-color: #f1f5f9; }
+        .btn-toggle-switch:hover { background-color: #f8fafc; }
+        .controls-title-bar.correct-mode .btn-toggle-switch {
+            color: #0284c7;
+            border-color: #93c5fd;
+        }
 
         /* 2행: 교정 모드 전용 컨트롤 (좌측 교정자/저장, 우측 나가기(저장) 정렬) */
         .controls-row-2 {
@@ -481,7 +489,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v13.5</span>
+                <span class="version">v13.6</span>
             </h1>
         </header>
 
@@ -518,7 +526,7 @@
         </div>
     </div>
 
-    <!-- [교정] 모달 팝업 (v13.5 적용) -->
+    <!-- [교정] 모달 팝업 (v13.6 적용) -->
     <div class="modal-overlay" id="correct-modal" onclick="cancelAndCloseModal()">
         <div class="modal-container-toggle" onclick="event.stopPropagation()">
             <!-- 모달 헤더: [요약 교정] 1984년 3월 - 001호 + [회보 보기] + [×] -->
@@ -526,16 +534,16 @@
                 <div class="modal-header-left">
                     <span class="modal-title" id="correct-modal-title">[요약 교정]</span>
                     <span id="pdf-btn-container">
-                        <!-- 3. 헤더 내 '회보 보기' 버튼 동적 생성 -->
+                        <!-- 헤더 내 '회보 보기' 버튼 동적 생성 -->
                     </span>
                 </div>
                 <button class="modal-close" onclick="cancelAndCloseModal()">&times;</button>
             </div>
             <!-- 상단 컨트롤 바 -->
             <div class="modal-controls">
-                <!-- 4. 신설된 전용 타이틀 바: 상태 라벨 + 우측 '원문 보러가기/교정하러 가기' 버튼 -->
-                <div class="controls-title-bar">
-                    <span class="status-badge" id="mode-status-badge">📖 원문 보기 중</span>
+                <!-- v13.6: 확실한 배너 형태의 상태 타이틀 바 (배경색과 테두리, 선명한 안내문구) -->
+                <div class="controls-title-bar" id="controls-title-bar">
+                    <span class="status-banner-text" id="mode-status-badge">📖 현재 [원문 보기] 페이지입니다</span>
                     <button class="btn-toggle-switch" id="btn-mode-toggle" onclick="toggleMode()">✏️ 교정하러 가기</button>
                 </div>
                 <!-- 2행: 좌측(교정자 + 이름 + 간격 + 저장) / 우측 끝(나가기(저장)) -->
@@ -835,7 +843,6 @@
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
             
-            // 1, 2. [요약 교정] 및 '통권' 삭제 적용
             titleElem.textContent = `[요약 교정] ${year}년 ${month}월 - ${String(issueNum).padStart(3, '0')}호`;
             
             renderCurrentMode();
@@ -849,6 +856,7 @@
         }
 
         function renderCurrentMode() {
+            const titleBar = document.getElementById('controls-title-bar');
             const statusBadge = document.getElementById('mode-status-badge');
             const toggleBtn = document.getElementById('btn-mode-toggle');
             const correctRow2 = document.getElementById('correct-controls-row-2');
@@ -858,7 +866,6 @@
             const { issueNum } = currentIssueData;
             const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
 
-            // 3. 헤더 내 '회보 보기' 버튼 구성
             if (pdfUrl && pdfUrl !== '#') {
                 pdfContainer.innerHTML = `<button type="button" class="pdf-link-btn" onclick="openPdfPopup(${issueNum})">📄 회보 보기</button>`;
             } else {
@@ -866,9 +873,9 @@
             }
 
             if (currentIssueData.activeTab === 'original') {
-                // 4, 5. 원문 모드: '원문 보기 중' 라벨 + 우측 '교정하러 가기' 버튼
-                statusBadge.classList.remove('correct-mode');
-                statusBadge.textContent = '📖 원문 보기 중';
+                // 원문 보기 모드 배너 설정
+                titleBar.classList.remove('correct-mode');
+                statusBadge.textContent = '📖 현재 [원문 보기] 페이지입니다';
                 toggleBtn.textContent = '✏️ 교정하러 가기';
                 correctRow2.style.display = 'none';
                 footerFinish.style.display = 'none';
@@ -880,9 +887,9 @@
                     contentBox.innerHTML = `<p>${issueNum}호에 대한 '원본' 시트 데이터가 없습니다.</p>`;
                 }
             } else {
-                // 4, 5. 교정 모드: '교정 중' 라벨 + 우측 '원문 보러가기' 버튼
-                statusBadge.classList.add('correct-mode');
-                statusBadge.textContent = '✏️ 교정 중';
+                // 교정 작업 모드 배너 설정 (초록색 계열로 확실한 시각적 차별화)
+                titleBar.classList.add('correct-mode');
+                statusBadge.textContent = '✏️ 현재 [교정 작업] 페이지입니다';
                 toggleBtn.textContent = '📖 원문 보러가기';
                 correctRow2.style.display = 'flex';
                 footerFinish.style.display = 'flex';
