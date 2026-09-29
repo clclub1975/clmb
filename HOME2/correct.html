@@ -1,4 +1,4 @@
-<!-- v14.2: 각 텍스트창별 3대 복원 버튼([방금 취소], [최근 저장 상태로], [원문으로 복원]), 히스토리 자동 보존, 텍스트창 자동 높이 조절(Auto-expanding) 구현, 버전 v14.2 -->
+<!-- v14.3: 모바일 교정 모드 2줄(세로) 배치, 교정자 이름 3글자 자간 압축 표기(방법 B), 완료 셀 연회색 배경 처리, 버전 v14.3 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -104,6 +104,12 @@
             font-size: 0.9rem;
         }
         th:not(:first-child), td:not(:first-child) { width: 7.62%; }
+        
+        /* v14.3 완료된 셀의 연회색 바탕 처리 */
+        td.cell-completed {
+            background-color: #e2e8f0 !important;
+        }
+
         /* 3분할 독립 블록 셀 구조 스타일 */
         .cell-content {
             display: flex;
@@ -140,16 +146,22 @@
             text-decoration: underline;
             text-underline-offset: 2px;
         }
+        /* v14.3 교정자 이름 3글자 자간 압축 표기 스타일 (방법 B) */
         .cell-status {
-            font-size: 0.68rem;
-            font-weight: 600;
+            font-size: 0.62rem;
+            font-weight: 700;
             line-height: 1;
             text-decoration: underline;
             text-underline-offset: 2px;
+            letter-spacing: -0.8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+            padding: 0 1px;
         }
         /* 교정상황별 색상 클래스 */
-        .status-correct { color: #dc2626; }   /* 교정: 빨간색 */
-        .status-progress { color: #16a34a; }  /* 진행: 초록색 */
+        .status-correct { color: #dc2626; }   /* 미교정: 빨간색 */
+        .status-progress { color: #16a34a; }  /* 진행중: 초록색 */
         .status-done { color: #1e293b; }      /* 완료: 검은색 */
 
         .missing-cell-issue {
@@ -366,7 +378,7 @@
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
 
-        /* v14.2 교정 모드: 불릿 목록 구조 및 나란한 정렬 스타일 */
+        /* v14.3 교정 모드: 불릿 목록 구조 및 나란한 정렬 스타일 */
         .edit-ul {
             padding-left: 20px;
             margin-bottom: 12px;
@@ -378,7 +390,7 @@
             margin-bottom: 10px;
             width: 100%;
         }
-        /* 소분류 라벨 */
+        /* 소분류 라벨 (PC 기본) */
         .edit-label {
             flex: 0 0 92px;
             max-width: 92px;
@@ -388,7 +400,7 @@
             padding-top: 5px;
             word-break: keep-all;
         }
-        /* 우측 편집 컨테이너 (텍스트창 + 하단 복원 버튼 툴바) */
+        /* 우측 편집 컨테이너 (PC 기본) */
         .edit-field-wrap {
             flex: 1;
             display: flex;
@@ -418,8 +430,8 @@
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
             border-radius: 5px;
-            resize: none; /* 자동 높이 조절로 수동 리사이즈 비활성화 */
-            overflow-y: hidden; /* 스크롤바 숨김 */
+            resize: none;
+            overflow-y: hidden;
             font-family: inherit;
             transition: border-color 0.15s ease, background-color 0.15s ease;
         }
@@ -430,7 +442,7 @@
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
         }
 
-        /* v14.2 텍스트창 하단 3대 복원 버튼 미니 툴바 스타일 */
+        /* 텍스트창 하단 3대 복원 버튼 미니 툴바 스타일 */
         .restore-toolbar {
             display: flex;
             justify-content: flex-end;
@@ -459,6 +471,33 @@
         }
         .btn-restore:active {
             background-color: #e2e8f0;
+        }
+
+        /* v14.3 모바일 반응형: 교정 모드 라벨 및 텍스트창 2줄(세로) 자동 전환 */
+        @media (max-width: 600px) {
+            .edit-li {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 12px;
+            }
+            .edit-label {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                padding-top: 0;
+                margin-bottom: 4px;
+            }
+            .edit-field-wrap {
+                width: 100%;
+            }
+            .restore-toolbar {
+                margin-top: 3px;
+                gap: 3px;
+            }
+            .btn-restore {
+                font-size: 0.68rem;
+                padding: 2px 5px;
+            }
         }
 
         /* 맨 하단 교정 완료 버튼 */
@@ -584,7 +623,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v14.2</span>
+                <span class="version">v14.3</span>
             </h1>
         </header>
 
@@ -680,7 +719,7 @@
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
 
-        // v14.2 텍스트 복원 및 히스토리 스택 관리 구조체
+        // 텍스트 복원 및 히스토리 스택 관리 구조체
         let editFieldState = {};
 
         function markAsDirty() { isDirty = true; }
@@ -813,7 +852,7 @@
             return htmlBuilder;
         }
 
-        // v14.2 순수 원문 컬럼 텍스트 추출 헬퍼
+        // 순수 원문 컬럼 텍스트 추출 헬퍼
         function getRawOrigValue(issueNum, colIdx) {
             if (!originalRawRows) return '';
             for (let j = 1; j < originalRawRows.length; j++) {
@@ -828,11 +867,10 @@
             return '';
         }
 
-        // v14.2 편집용 아이템 블록 생성 (텍스트창 + 3대 복원 버튼)
+        // 편집용 아이템 블록 생성 (텍스트창 + 3대 복원 버튼)
         function renderEditItem(issueNum, key, label, currentVal, colIdx) {
             const rawOrig = getRawOrigValue(issueNum, colIdx);
             
-            // 상태 및 히스토리 스택 초기화
             editFieldState[key] = {
                 currentSaved: currentVal,
                 pureOriginal: rawOrig,
@@ -854,7 +892,7 @@
             `;
         }
 
-        // v14.2 기고문 전용 편집 블록 생성 (전체 가로폭 + 3대 복원 버튼)
+        // 기고문 전용 편집 블록 생성 (전체 가로폭 + 3대 복원 버튼)
         function renderEditFullItem(issueNum, key, currentVal, colIdx) {
             const rawOrig = getRawOrigValue(issueNum, colIdx);
 
@@ -878,9 +916,9 @@
             `;
         }
 
-        // v14.2 [교정 작업용] 텍스트창 및 3대 복원 버튼 결합 뷰 생성
+        // [교정 작업용] 텍스트창 및 3대 복원 버튼 결합 뷰 생성
         function buildEditableHtml(cols, issueNum) {
-            editFieldState = {}; // 새 호수 열림 시 초기화
+            editFieldState = {};
 
             const val = (idx) => (cols[idx] || '').replace(/\\n/g, '\n');
 
@@ -938,7 +976,7 @@
             return h;
         }
 
-        // v14.2 텍스트창 자동 높이 조절 (Auto-expanding) 엔진
+        // 텍스트창 자동 높이 조절 엔진
         function autoResizeTextarea(textarea) {
             if (!textarea) return;
             textarea.style.height = 'auto';
@@ -952,19 +990,18 @@
             }, 10);
         }
 
-        // v14.2 타이핑 입력 핸들러 및 히스토리 스택 누적
+        // 타이핑 입력 핸들러 및 히스토리 스택 누적
         function handleFieldInput(key) {
             markAsDirty();
             const ta = document.getElementById(`edit_${key}`);
             if (!ta) return;
             autoResizeTextarea(ta);
 
-            // 히스토리 보존 (연속된 동일 값은 제외)
             if (editFieldState[key]) {
                 const stack = editFieldState[key].history;
                 if (stack[stack.length - 1] !== ta.value) {
                     stack.push(ta.value);
-                    if (stack.length > 50) stack.shift(); // 메모리 보호용 최대 50단계
+                    if (stack.length > 50) stack.shift();
                 }
             }
         }
@@ -975,7 +1012,7 @@
             if (!ta || !editFieldState[key]) return;
             const stack = editFieldState[key].history;
             if (stack.length > 1) {
-                stack.pop(); // 현재 상태 팝
+                stack.pop();
                 const prev = stack[stack.length - 1];
                 ta.value = prev;
                 autoResizeTextarea(ta);
@@ -994,7 +1031,6 @@
                 showCustomAlert('이미 최근 저장된 상태와 동일합니다.');
                 return;
             }
-            // 실수 대비 히스토리 스택에 현재 상태 보존
             editFieldState[key].history.push(targetVal);
             ta.value = targetVal;
             autoResizeTextarea(ta);
@@ -1010,7 +1046,6 @@
                 showCustomAlert('이미 순수 원문 내용과 동일합니다.');
                 return;
             }
-            // 실수 대비 히스토리 스택에 현재 상태 보존 (방금 취소로 바로 복구 가능)
             editFieldState[key].history.push(origVal);
             ta.value = origVal;
             autoResizeTextarea(ta);
@@ -1223,9 +1258,20 @@
                         const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="showCustomAlert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
                         
                         let statusClass = 'status-correct';
+                        let isDone = false;
+
+                        // v14.3 교정상태 판별 및 완료 셀 회색 배경 지정
                         if (data.status) {
-                            if (data.status.includes('완료')) statusClass = 'status-done';
-                            else if (data.status.includes('진행')) statusClass = 'status-progress';
+                            if (data.status.includes('완료')) {
+                                statusClass = 'status-done';
+                                isDone = true;
+                            } else if (data.status.includes('진행') || (data.status !== '교정' && data.status.trim() !== '')) {
+                                statusClass = 'status-progress';
+                            }
+                        }
+
+                        if (isDone) {
+                            td.classList.add('cell-completed');
                         }
 
                         td.innerHTML = `
@@ -1237,7 +1283,7 @@
                                     <span class="cell-summary">${data.summary}</span>
                                 </div>
                                 <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${year}, ${month})">
-                                    <span class="cell-status ${statusClass}">${data.status}</span>
+                                    <span class="cell-status ${statusClass}" title="${data.status}">${data.status}</span>
                                 </div>
                             </div>
                         `;
@@ -1328,14 +1374,13 @@
                 const data = getIssueDetail(issueNum, 'correct');
                 if (data) {
                     contentBox.innerHTML = data.content;
-                    autoResizeAllTextareas(); // 렌더링 후 자동 높이 조절 일괄 적용
+                    autoResizeAllTextareas();
                 } else {
                     contentBox.innerHTML = `<p>${issueNum}호에 대한 데이터가 없습니다.</p>`;
                 }
             }
         }
 
-        // v14.2 '수정내용 저장' 시 현재 입력된 모든 텍스트를 새로운 '최근 저장 상태'로 갱신
         function saveOnly() {
             const editorName = document.getElementById('editor-name-input').value.trim();
             if (!editorName) {
@@ -1343,7 +1388,6 @@
                 return;
             }
             
-            // 모든 편집창의 현재 내용을 '최근 저장 상태(currentSaved)'로 업데이트
             for (let key in editFieldState) {
                 const ta = document.getElementById(`edit_${key}`);
                 if (ta) {
@@ -1427,4 +1471,3 @@
     </script>
 </body>
 </html>
- 
