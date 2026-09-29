@@ -1,4 +1,4 @@
-<!-- v14.1: 교정 모드 '원문보기'와 동일 불릿(li) 유지, 라벨-텍스트창 같은줄 배치, 텍스트창 좌측선 수직정렬, 기고문 전체폭 확장, 버전 v14.1 -->
+<!-- v14.2: 각 텍스트창별 3대 복원 버튼([방금 취소], [최근 저장 상태로], [원문으로 복원]), 히스토리 자동 보존, 텍스트창 자동 높이 조절(Auto-expanding) 구현, 버전 v14.2 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -366,7 +366,7 @@
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
 
-        /* v14.1 교정 모드: 원문보기와 동일한 불릿 목록 구조 및 나란한 정렬 스타일 */
+        /* v14.2 교정 모드: 불릿 목록 구조 및 나란한 정렬 스타일 */
         .edit-ul {
             padding-left: 20px;
             margin-bottom: 12px;
@@ -375,10 +375,10 @@
         .edit-li {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             width: 100%;
         }
-        /* 소분류 라벨: 고정 너비로 오른쪽 텍스트 창의 좌측 시작선을 완벽하게 수직 정렬 */
+        /* 소분류 라벨 */
         .edit-label {
             flex: 0 0 92px;
             max-width: 92px;
@@ -388,9 +388,28 @@
             padding-top: 5px;
             word-break: keep-all;
         }
-        /* 텍스트 편집창: 남은 가로 공간을 채우며 세로 시작선 일치 */
-        .edit-textarea-inline {
+        /* 우측 편집 컨테이너 (텍스트창 + 하단 복원 버튼 툴바) */
+        .edit-field-wrap {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 92px);
+        }
+        /* 기고문 전용 래퍼 */
+        .edit-li-full {
+            display: block;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .edit-field-wrap-full {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 텍스트 편집창 (자동 높이 조절 적용) */
+        .edit-textarea-inline, .edit-textarea-full {
+            width: 100%;
             min-height: 38px;
             padding: 6px 8px;
             font-size: 0.88rem;
@@ -399,41 +418,47 @@
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
             border-radius: 5px;
-            resize: vertical;
+            resize: none; /* 자동 높이 조절로 수동 리사이즈 비활성화 */
+            overflow-y: hidden; /* 스크롤바 숨김 */
             font-family: inherit;
             transition: border-color 0.15s ease, background-color 0.15s ease;
         }
-        .edit-textarea-inline:focus {
+        .edit-textarea-inline:focus, .edit-textarea-full:focus {
             background-color: #ffffff;
             border-color: #2563eb;
             outline: none;
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
         }
-        /* 기고문 전용: 라벨 없이 전체 가로폭 100% 사용 */
-        .edit-li-full {
-            display: block;
-            margin-bottom: 8px;
-            width: 100%;
+
+        /* v14.2 텍스트창 하단 3대 복원 버튼 미니 툴바 스타일 */
+        .restore-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
         }
-        .edit-textarea-full {
-            width: 100%;
-            min-height: 90px;
-            padding: 8px 10px;
-            font-size: 0.88rem;
-            line-height: 1.45;
-            color: #1e293b;
-            background-color: #f8fafc;
+        .btn-restore {
+            background: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 5px;
-            resize: vertical;
-            font-family: inherit;
-            transition: border-color 0.15s ease, background-color 0.15s ease;
+            color: #475569;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            line-height: 1.2;
+            display: inline-flex;
+            align-items: center;
         }
-        .edit-textarea-full:focus {
-            background-color: #ffffff;
-            border-color: #2563eb;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        .btn-restore:hover {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+            color: #1e293b;
+        }
+        .btn-restore:active {
+            background-color: #e2e8f0;
         }
 
         /* 맨 하단 교정 완료 버튼 */
@@ -559,7 +584,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v14.1</span>
+                <span class="version">v14.2</span>
             </h1>
         </header>
 
@@ -654,6 +679,9 @@
         let globalPdfMap = {};
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
+
+        // v14.2 텍스트 복원 및 히스토리 스택 관리 구조체
+        let editFieldState = {};
 
         function markAsDirty() { isDirty = true; }
 
@@ -785,78 +813,208 @@
             return htmlBuilder;
         }
 
-        // v14.1 [교정 작업용] 원문보기와 동일한 불릿 목록 구조 유지, 같은 줄 배치 및 텍스트창 좌측선 수직 정렬
-        function buildEditableHtml(cols) {
-            let pubDate        = cols[3] || '';
-            let summaryText    = cols[4] || '';  
-            let execCell       = cols[5] || '';  
-            let sysCell        = cols[6] || '';  
-            let eventCell      = cols[7] || '';  
-            let historyCell    = cols[8] || '';  
-            let troubleCell    = cols[9] || '';  
-            let meetingType    = cols[10] || '';  
-            let meetingVote    = cols[11] || ''; 
-            let volRegular     = cols[12] || ''; 
-            let volEtc         = cols[13] || ''; 
-            let subStudy       = cols[14] || ''; 
-            let subEtc         = cols[15] || ''; 
-            let peopleInter    = cols[16] || ''; 
-            let peopleNews     = cols[17] || ''; 
-            let peopleEvent    = cols[18] || ''; 
-            let articleSummary = cols[19] || ''; 
+        // v14.2 순수 원문 컬럼 텍스트 추출 헬퍼
+        function getRawOrigValue(issueNum, colIdx) {
+            if (!originalRawRows) return '';
+            for (let j = 1; j < originalRawRows.length; j++) {
+                const cols = originalRawRows[j];
+                if (cols.length < 3) continue;
+                const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
+                if (!matches || matches.length === 0) continue;
+                if (parseInt(matches[0], 10) === issueNum) {
+                    return (cols[colIdx] || '').replace(/\\n/g, '\n');
+                }
+            }
+            return '';
+        }
+
+        // v14.2 편집용 아이템 블록 생성 (텍스트창 + 3대 복원 버튼)
+        function renderEditItem(issueNum, key, label, currentVal, colIdx) {
+            const rawOrig = getRawOrigValue(issueNum, colIdx);
+            
+            // 상태 및 히스토리 스택 초기화
+            editFieldState[key] = {
+                currentSaved: currentVal,
+                pureOriginal: rawOrig,
+                history: [currentVal]
+            };
+
+            return `
+                <li class="edit-li">
+                    <strong class="edit-label">${label}:</strong>
+                    <div class="edit-field-wrap">
+                        <textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>
+                        <div class="restore-toolbar">
+                            <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 방금 취소</button>
+                            <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장 상태로</button>
+                            <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문으로 복원</button>
+                        </div>
+                    </div>
+                </li>
+            `;
+        }
+
+        // v14.2 기고문 전용 편집 블록 생성 (전체 가로폭 + 3대 복원 버튼)
+        function renderEditFullItem(issueNum, key, currentVal, colIdx) {
+            const rawOrig = getRawOrigValue(issueNum, colIdx);
+
+            editFieldState[key] = {
+                currentSaved: currentVal,
+                pureOriginal: rawOrig,
+                history: [currentVal]
+            };
+
+            return `
+                <li class="edit-li-full">
+                    <div class="edit-field-wrap-full">
+                        <textarea id="edit_${key}" class="edit-textarea-full" oninput="handleFieldInput('${key}')">${currentVal}</textarea>
+                        <div class="restore-toolbar">
+                            <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 방금 취소</button>
+                            <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장 상태로</button>
+                            <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문으로 복원</button>
+                        </div>
+                    </div>
+                </li>
+            `;
+        }
+
+        // v14.2 [교정 작업용] 텍스트창 및 3대 복원 버튼 결합 뷰 생성
+        function buildEditableHtml(cols, issueNum) {
+            editFieldState = {}; // 새 호수 열림 시 초기화
+
+            const val = (idx) => (cols[idx] || '').replace(/\\n/g, '\n');
 
             let h = '';
 
             // 1. 회보 정보
             h += `<h4>1. 회보 정보</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li"><strong class="edit-label">발행년월:</strong><textarea class="edit-textarea-inline" rows="1" oninput="markAsDirty()">${pubDate}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">한 줄 요약:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${summaryText.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditItem(issueNum, 'pubDate', '발행년월', val(3), 3);
+            h += renderEditItem(issueNum, 'summary', '한 줄 요약', val(4), 4);
             h += `</ul>`;
 
             // 2. 조직 및 체계 변화
             h += `<h4>2. 조직 및 체계 변화</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li"><strong class="edit-label">임원진:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${execCell.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">체계 변화:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${sysCell.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditItem(issueNum, 'exec', '임원진', val(5), 5);
+            h += renderEditItem(issueNum, 'sys', '체계 변화', val(6), 6);
             h += `</ul>`;
 
             // 3. 주요 이벤트 및 마일스톤
             h += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li"><strong class="edit-label">이벤트:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${eventCell.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">역사적 사실:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${historyCell.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">애로 사항:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${troubleCell.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditItem(issueNum, 'event', '이벤트', val(7), 7);
+            h += renderEditItem(issueNum, 'history', '역사적 사실', val(8), 8);
+            h += renderEditItem(issueNum, 'trouble', '애로 사항', val(9), 9);
             h += `</ul>`;
 
             // 4. 주요 회의
             h += `<h4>4. 주요 회의</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li"><strong class="edit-label">회의 종류:</strong><textarea class="edit-textarea-inline" rows="1" oninput="markAsDirty()">${meetingType.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">의결 사항:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${meetingVote.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditItem(issueNum, 'meetingType', '회의 종류', val(10), 10);
+            h += renderEditItem(issueNum, 'meetingVote', '의결 사항', val(11), 11);
             h += `</ul>`;
 
             // 5. 봉사 활동
             h += `<h4>5. 봉사 활동</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li"><strong class="edit-label">정기 봉사:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${volRegular.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">기타 봉사:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${volEtc.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditItem(issueNum, 'volRegular', '정기 봉사', val(12), 12);
+            h += renderEditItem(issueNum, 'volEtc', '기타 봉사', val(13), 13);
             h += `</ul>`;
 
             // 6. 소집단 활동
             h += `<h4>6. 소집단 활동</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li"><strong class="edit-label">학술/문화:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${subStudy.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">기타 활동:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${subEtc.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditItem(issueNum, 'subStudy', '학술/문화', val(14), 14);
+            h += renderEditItem(issueNum, 'subEtc', '기타 활동', val(15), 15);
             h += `</ul>`;
 
             // 7. 인물 소식
             h += `<h4>7. 인물 소식</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li"><strong class="edit-label">인터뷰:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${peopleInter.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">개별 동정:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${peopleNews.replace(/\\n/g, '\n')}</textarea></li>`;
-            h += `<li class="edit-li"><strong class="edit-label">경조사:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${peopleEvent.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditItem(issueNum, 'peopleInter', '인터뷰', val(16), 16);
+            h += renderEditItem(issueNum, 'peopleNews', '개별 동정', val(17), 17);
+            h += renderEditItem(issueNum, 'peopleEvent', '경조사', val(18), 18);
             h += `</ul>`;
 
-            // 8. 기고문: 소분류 라벨 없이 텍스트창 단독 전체 가로폭(100%) 확장
+            // 8. 기고문
             h += `<h4>8. 기고문</h4><ul class="edit-ul">`;
-            h += `<li class="edit-li-full"><textarea class="edit-textarea-full" rows="6" oninput="markAsDirty()">${articleSummary.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += renderEditFullItem(issueNum, 'articles', val(19), 19);
             h += `</ul>`;
 
             return h;
+        }
+
+        // v14.2 텍스트창 자동 높이 조절 (Auto-expanding) 엔진
+        function autoResizeTextarea(textarea) {
+            if (!textarea) return;
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+        }
+
+        function autoResizeAllTextareas() {
+            setTimeout(() => {
+                const textareas = document.querySelectorAll('#toggle-content-box textarea');
+                textareas.forEach(ta => autoResizeTextarea(ta));
+            }, 10);
+        }
+
+        // v14.2 타이핑 입력 핸들러 및 히스토리 스택 누적
+        function handleFieldInput(key) {
+            markAsDirty();
+            const ta = document.getElementById(`edit_${key}`);
+            if (!ta) return;
+            autoResizeTextarea(ta);
+
+            // 히스토리 보존 (연속된 동일 값은 제외)
+            if (editFieldState[key]) {
+                const stack = editFieldState[key].history;
+                if (stack[stack.length - 1] !== ta.value) {
+                    stack.push(ta.value);
+                    if (stack.length > 50) stack.shift(); // 메모리 보호용 최대 50단계
+                }
+            }
+        }
+
+        // 1. [↺ 방금 취소]
+        function undoField(key) {
+            const ta = document.getElementById(`edit_${key}`);
+            if (!ta || !editFieldState[key]) return;
+            const stack = editFieldState[key].history;
+            if (stack.length > 1) {
+                stack.pop(); // 현재 상태 팝
+                const prev = stack[stack.length - 1];
+                ta.value = prev;
+                autoResizeTextarea(ta);
+                markAsDirty();
+            } else {
+                showCustomAlert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
+            }
+        }
+
+        // 2. [⟲ 최근 저장 상태로]
+        function restoreSaved(key) {
+            const ta = document.getElementById(`edit_${key}`);
+            if (!ta || !editFieldState[key]) return;
+            const targetVal = editFieldState[key].currentSaved;
+            if (ta.value === targetVal) {
+                showCustomAlert('이미 최근 저장된 상태와 동일합니다.');
+                return;
+            }
+            // 실수 대비 히스토리 스택에 현재 상태 보존
+            editFieldState[key].history.push(targetVal);
+            ta.value = targetVal;
+            autoResizeTextarea(ta);
+            markAsDirty();
+        }
+
+        // 3. [📖 원문으로 복원]
+        function restoreOriginal(key) {
+            const ta = document.getElementById(`edit_${key}`);
+            if (!ta || !editFieldState[key]) return;
+            const origVal = editFieldState[key].pureOriginal;
+            if (ta.value === origVal) {
+                showCustomAlert('이미 순수 원문 내용과 동일합니다.');
+                return;
+            }
+            // 실수 대비 히스토리 스택에 현재 상태 보존 (방금 취소로 바로 복구 가능)
+            editFieldState[key].history.push(origVal);
+            ta.value = origVal;
+            autoResizeTextarea(ta);
+            markAsDirty();
         }
 
         // 지연 로딩을 대비한 온디맨드 추출 로직
@@ -884,7 +1042,7 @@
                 if (num === issueNum) {
                     const paddedNum = String(issueNum).padStart(3, '0');
                     const pubDate = cols[3] || `${paddedNum}호`;
-                    const html = (type === 'original') ? buildStructuredHtml(cols) : buildEditableHtml(cols);
+                    const html = (type === 'original') ? buildStructuredHtml(cols) : buildEditableHtml(cols, issueNum);
                     map[issueNum] = {
                         title: `${pubDate} - ${paddedNum}호 ${type === 'original' ? '원본' : '교정본'}`,
                         content: html
@@ -1168,17 +1326,31 @@
                 footerFinish.style.display = 'flex';
 
                 const data = getIssueDetail(issueNum, 'correct');
-                if (data) contentBox.innerHTML = data.content;
-                else contentBox.innerHTML = `<p>${issueNum}호에 대한 데이터가 없습니다.</p>`;
+                if (data) {
+                    contentBox.innerHTML = data.content;
+                    autoResizeAllTextareas(); // 렌더링 후 자동 높이 조절 일괄 적용
+                } else {
+                    contentBox.innerHTML = `<p>${issueNum}호에 대한 데이터가 없습니다.</p>`;
+                }
             }
         }
 
+        // v14.2 '수정내용 저장' 시 현재 입력된 모든 텍스트를 새로운 '최근 저장 상태'로 갱신
         function saveOnly() {
             const editorName = document.getElementById('editor-name-input').value.trim();
             if (!editorName) {
                 showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
                 return;
             }
+            
+            // 모든 편집창의 현재 내용을 '최근 저장 상태(currentSaved)'로 업데이트
+            for (let key in editFieldState) {
+                const ta = document.getElementById(`edit_${key}`);
+                if (ta) {
+                    editFieldState[key].currentSaved = ta.value;
+                }
+            }
+
             isDirty = false;
             showCustomAlert(`[${editorName}] 교정자의 수정내용이 저장되었습니다. (작업 지속)`);
         }
