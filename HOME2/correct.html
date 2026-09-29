@@ -1,4 +1,4 @@
-<!-- v14.0: '수정내용 저장' 버튼 텍스트 변경, 교정 모드 소분류 라벨 분리 및 항목별 텍스트 편집창(textarea) 구현, 버전 v14.0 -->
+<!-- v14.1: 교정 모드 '원문보기'와 동일 불릿(li) 유지, 라벨-텍스트창 같은줄 배치, 텍스트창 좌측선 수직정렬, 기고문 전체폭 확장, 버전 v14.1 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -287,7 +287,7 @@
 
         /* 2행: 교정 모드 전용 컨트롤 (좌측 교정자/수정내용 저장, 우측 나가기(저장) 정렬) */
         .controls-row-2 {
-            display: none; /* 교정 모드일 때 flex로 변경 */
+            display: none;
             justify-content: space-between;
             align-items: center;
             width: 100%;
@@ -366,36 +366,70 @@
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
 
-        /* v14.0 교정 모드 전용 소분류 항목 및 텍스트 편집창(textarea) 스타일 */
-        .edit-group {
-            margin-bottom: 14px;
+        /* v14.1 교정 모드: 원문보기와 동일한 불릿 목록 구조 및 나란한 정렬 스타일 */
+        .edit-ul {
+            padding-left: 20px;
+            margin-bottom: 12px;
+            list-style: disc;
         }
-        .edit-subgroup {
-            margin-top: 8px;
+        .edit-li {
+            display: flex;
+            align-items: flex-start;
             margin-bottom: 8px;
-        }
-        .edit-sublabel {
-            display: block;
-            font-size: 0.84rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 4px;
-        }
-        .edit-textarea {
             width: 100%;
-            min-height: 52px;
+        }
+        /* 소분류 라벨: 고정 너비로 오른쪽 텍스트 창의 좌측 시작선을 완벽하게 수직 정렬 */
+        .edit-label {
+            flex: 0 0 92px;
+            max-width: 92px;
+            font-size: 0.88rem;
+            color: #0f172a;
+            font-weight: 700;
+            padding-top: 5px;
+            word-break: keep-all;
+        }
+        /* 텍스트 편집창: 남은 가로 공간을 채우며 세로 시작선 일치 */
+        .edit-textarea-inline {
+            flex: 1;
+            min-height: 38px;
+            padding: 6px 8px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            color: #1e293b;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .edit-textarea-inline:focus {
+            background-color: #ffffff;
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+        /* 기고문 전용: 라벨 없이 전체 가로폭 100% 사용 */
+        .edit-li-full {
+            display: block;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+        .edit-textarea-full {
+            width: 100%;
+            min-height: 90px;
             padding: 8px 10px;
             font-size: 0.88rem;
             line-height: 1.45;
             color: #1e293b;
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            border-radius: 5px;
             resize: vertical;
             font-family: inherit;
             transition: border-color 0.15s ease, background-color 0.15s ease;
         }
-        .edit-textarea:focus {
+        .edit-textarea-full:focus {
             background-color: #ffffff;
             border-color: #2563eb;
             outline: none;
@@ -525,7 +559,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v14.0</span>
+                <span class="version">v14.1</span>
             </h1>
         </header>
 
@@ -584,7 +618,6 @@
                         <label class="editor-input-wrap">교정자:
                             <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
                         </label>
-                        <!-- 1. '수정내용 저장' 버튼 텍스트 반영 -->
                         <button type="button" class="btn-action btn-save-stay" onclick="saveOnly()">수정내용 저장</button>
                     </div>
                     <button type="button" class="btn-action btn-save-exit" onclick="saveAndExit()">나가기(저장)</button>
@@ -752,7 +785,7 @@
             return htmlBuilder;
         }
 
-        // v14.0 [교정 작업용] 제목(소분류 라벨)과 내용을 분리하여 텍스트 편집창(textarea)으로 생성하는 함수
+        // v14.1 [교정 작업용] 원문보기와 동일한 불릿 목록 구조 유지, 같은 줄 배치 및 텍스트창 좌측선 수직 정렬
         function buildEditableHtml(cols) {
             let pubDate        = cols[3] || '';
             let summaryText    = cols[4] || '';  
@@ -775,78 +808,53 @@
             let h = '';
 
             // 1. 회보 정보
-            h += `<div class="edit-group">`;
-            h += `<h4>1. 회보 정보</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">발행년월</label>`;
-            h += `<textarea class="edit-textarea" rows="1" oninput="markAsDirty()">${pubDate}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">한 줄 요약</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${summaryText.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            h += `<h4>1. 회보 정보</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li"><strong class="edit-label">발행년월:</strong><textarea class="edit-textarea-inline" rows="1" oninput="markAsDirty()">${pubDate}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">한 줄 요약:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${summaryText.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
             // 2. 조직 및 체계 변화
-            h += `<div class="edit-group">`;
-            h += `<h4>2. 조직 및 체계 변화</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">임원진</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${execCell.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">체계 변화</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${sysCell.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            h += `<h4>2. 조직 및 체계 변화</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li"><strong class="edit-label">임원진:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${execCell.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">체계 변화:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${sysCell.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
             // 3. 주요 이벤트 및 마일스톤
-            h += `<div class="edit-group">`;
-            h += `<h4>3. 주요 이벤트 및 마일스톤</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">이벤트</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${eventCell.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">역사적 사실</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${historyCell.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">애로 사항</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${troubleCell.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            h += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li"><strong class="edit-label">이벤트:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${eventCell.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">역사적 사실:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${historyCell.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">애로 사항:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${troubleCell.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
             // 4. 주요 회의
-            h += `<div class="edit-group">`;
-            h += `<h4>4. 주요 회의</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">회의 종류</label>`;
-            h += `<textarea class="edit-textarea" rows="1" oninput="markAsDirty()">${meetingType.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">의결 사항</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${meetingVote.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            h += `<h4>4. 주요 회의</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li"><strong class="edit-label">회의 종류:</strong><textarea class="edit-textarea-inline" rows="1" oninput="markAsDirty()">${meetingType.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">의결 사항:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${meetingVote.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
             // 5. 봉사 활동
-            h += `<div class="edit-group">`;
-            h += `<h4>5. 봉사 활동</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">정기 봉사</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${volRegular.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">기타 봉사</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${volEtc.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            h += `<h4>5. 봉사 활동</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li"><strong class="edit-label">정기 봉사:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${volRegular.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">기타 봉사:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${volEtc.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
             // 6. 소집단 활동
-            h += `<div class="edit-group">`;
-            h += `<h4>6. 소집단 활동</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">학술/문화</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${subStudy.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">기타 활동</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${subEtc.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            h += `<h4>6. 소집단 활동</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li"><strong class="edit-label">학술/문화:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${subStudy.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">기타 활동:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${subEtc.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
             // 7. 인물 소식
-            h += `<div class="edit-group">`;
-            h += `<h4>7. 인물 소식</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">인터뷰</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${peopleInter.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">개별 동정</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${peopleNews.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">경조사</label>`;
-            h += `<textarea class="edit-textarea" rows="2" oninput="markAsDirty()">${peopleEvent.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            h += `<h4>7. 인물 소식</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li"><strong class="edit-label">인터뷰:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${peopleInter.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">개별 동정:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${peopleNews.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `<li class="edit-li"><strong class="edit-label">경조사:</strong><textarea class="edit-textarea-inline" rows="2" oninput="markAsDirty()">${peopleEvent.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
-            // 8. 기고문
-            h += `<div class="edit-group">`;
-            h += `<h4>8. 기고문</h4>`;
-            h += `<div class="edit-subgroup"><label class="edit-sublabel">기고문 요약/발췌</label>`;
-            h += `<textarea class="edit-textarea" rows="5" oninput="markAsDirty()">${articleSummary.replace(/\\n/g, '\n')}</textarea></div>`;
-            h += `</div>`;
+            // 8. 기고문: 소분류 라벨 없이 텍스트창 단독 전체 가로폭(100%) 확장
+            h += `<h4>8. 기고문</h4><ul class="edit-ul">`;
+            h += `<li class="edit-li-full"><textarea class="edit-textarea-full" rows="6" oninput="markAsDirty()">${articleSummary.replace(/\\n/g, '\n')}</textarea></li>`;
+            h += `</ul>`;
 
             return h;
         }
@@ -876,7 +884,6 @@
                 if (num === issueNum) {
                     const paddedNum = String(issueNum).padStart(3, '0');
                     const pubDate = cols[3] || `${paddedNum}호`;
-                    // 교정 작업 모드는 텍스트 편집창(buildEditableHtml), 원문 보기는 일반 뷰(buildStructuredHtml)
                     const html = (type === 'original') ? buildStructuredHtml(cols) : buildEditableHtml(cols);
                     map[issueNum] = {
                         title: `${pubDate} - ${paddedNum}호 ${type === 'original' ? '원본' : '교정본'}`,
@@ -890,7 +897,6 @@
 
         async function loadCalendarData() {
             try {
-                // 1. 달력 렌더링에 필수적인 데이터만 "먼저" 병렬 다운로드 (초고속화)
                 const [respPdf, respCorrect] = await Promise.all([
                     fetch(pdfCsvUrl),
                     fetch(correctCsvUrl)
@@ -901,7 +907,6 @@
                     respCorrect.text()
                 ]);
 
-                // 교정 상태 A열 고속 매핑
                 correctRawRows = parseCSV(correctText);
                 for (let j = 1; j < correctRawRows.length; j++) {
                     const cols = correctRawRows[j];
@@ -913,7 +918,6 @@
                     }
                 }
 
-                // PDF 링크 및 달력 배치용 맵핑
                 const pdfRows = parseCSV(pdfText);
                 let issueMap = {};
                 for (let j = 1; j < pdfRows.length; j++) {
@@ -953,10 +957,8 @@
                     };
                 }
 
-                // 2. 단일 패스 달력 렌더링 (병목 제거)
                 renderCalendarMatrix(issueMap);
 
-                // 3. 무거운 원본 데이터는 달력을 그린 후 '백그라운드 지연 로딩(Lazy Load)' 처리
                 fetch(originalCsvUrl)
                     .then(res => res.text())
                     .then(text => {
@@ -1112,7 +1114,7 @@
         }
 
         function openCorrectModal(issueNum, year, month) {
-            currentIssueData = { issueNum, year, month, activeTab: 'correct' }; // 교정 클릭 시 교정 모드로 바로 열리도록 설정
+            currentIssueData = { issueNum, year, month, activeTab: 'correct' };
             isDirty = false;
             
             const modal = document.getElementById('correct-modal');
