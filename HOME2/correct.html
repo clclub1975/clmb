@@ -1,4 +1,4 @@
-<!-- v15.2: 하드코딩 기반 초고속 렌더링(Two-Step Loading) 적용, 추정 알고리즘 레거시 보존, 버전 v15.2 -->
+<!-- v15.3: 하드코딩 렌더링 변수명 오타 수정(year -> y), 버전 v15.3 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -635,7 +635,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.2</span>
+                <span class="version">v15.3</span>
             </h1>
         </header>
 
@@ -724,7 +724,7 @@
         const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=239571560&single=true&output=csv';
         const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbw5RuCfLMa0CmkOYldROQI_CjgzEN2wKlkNppHxejk_ze61rTc3EugDY83QDJdS5bJ5/exec';
 
-        // v15.2: 하드코딩 매핑 데이터 (변하지 않는 역사적 배포 사실 고정)
+        // v15.3: 하드코딩 매핑 데이터
         const hardcodedIssueMap = {
             "1984-3": 1, "1984-4": 2, "1984-5": 3, "1984-6": 4, "1984-7": 5, "1984-8": 6, "1984-9": 7, "1984-10": 8, "1984-11": 9, "1984-12": 10,
             "1985-1": 11, "1985-3": 12, "1985-4": 13, "1985-5": 14, "1985-6": 15, "1985-7": 16, "1985-8": 17, "1985-9": 18, "1985-10": 19, "1985-11": 20,
@@ -1080,7 +1080,7 @@
             return null;
         }
 
-        // v15.2 Step 1: 초고속 하드코딩 캘린더 즉시 렌더링
+        // v15.3 Step 1: 초고속 하드코딩 캘린더 즉시 렌더링 (오타 수정: year -> y)
         function renderHardcodedCalendar() {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -1089,7 +1089,7 @@
             for (let y = startYear; y <= endYear; y++) {
                 const tr = document.createElement('tr');
                 const thYear = document.createElement('th');
-                thYear.textContent = year;
+                thYear.textContent = y; // v15.3 오타 수정
                 tr.appendChild(thYear);
 
                 for (let m = 1; m <= 12; m++) {
@@ -1125,7 +1125,7 @@
             }
         }
 
-        // v15.2 Step 2: 비동기 데이터 수신 후 화면 위에 상태만 스윽 덧입히기
+        // v15.3 Step 2: 비동기 데이터 수신 후 화면 위에 상태만 스윽 덧입히기
         async function fetchDataAndUpdate() {
             try {
                 const [respPdf, respCorrect] = await Promise.all([
@@ -1518,7 +1518,7 @@
             }
         }
 
-        // v15.2 초기화: 뼈대 렌더링 후 비동기 데이터 덧입히기
+        // v15.3 초기화: 뼈대 렌더링 후 비동기 데이터 덧입히기
         window.onload = () => {
             renderHardcodedCalendar();
             fetchDataAndUpdate();
