@@ -1,4 +1,4 @@
-<!-- v14.3: 모바일 교정 모드 2줄(세로) 배치, 교정자 이름 3글자 자간 압축 표기(방법 B), 완료 셀 연회색 배경 처리, 버전 v14.3 -->
+<!-- v14.4: 캘린더 '진행/완료' 칸에 시트 B열 교정자 이름 매핑, 모달창 교정자 입력란 자동 채우기 연동, 버전 v14.4 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -105,7 +105,7 @@
         }
         th:not(:first-child), td:not(:first-child) { width: 7.62%; }
         
-        /* v14.3 완료된 셀의 연회색 바탕 처리 */
+        /* 완료된 셀의 연회색 바탕 처리 */
         td.cell-completed {
             background-color: #e2e8f0 !important;
         }
@@ -146,7 +146,7 @@
             text-decoration: underline;
             text-underline-offset: 2px;
         }
-        /* v14.3 교정자 이름 3글자 자간 압축 표기 스타일 (방법 B) */
+        /* 교정자 이름 3글자 자간 압축 표기 스타일 */
         .cell-status {
             font-size: 0.62rem;
             font-weight: 700;
@@ -245,7 +245,7 @@
             gap: 6px;
         }
         
-        /* 확실하게 인식되는 상태 전용 타이틀 배너(Bar) 스타일 */
+        /* 상태 전용 타이틀 배너(Bar) 스타일 */
         .controls-title-bar {
             display: flex;
             align-items: center;
@@ -297,7 +297,7 @@
             border-color: #93c5fd;
         }
 
-        /* 2행: 교정 모드 전용 컨트롤 (좌측 교정자/수정내용 저장, 우측 나가기(저장) 정렬) */
+        /* 2행: 교정 모드 전용 컨트롤 */
         .controls-row-2 {
             display: none;
             justify-content: space-between;
@@ -378,7 +378,7 @@
             background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b;
         }
 
-        /* v14.3 교정 모드: 불릿 목록 구조 및 나란한 정렬 스타일 */
+        /* 교정 모드: 불릿 목록 구조 및 나란한 정렬 스타일 */
         .edit-ul {
             padding-left: 20px;
             margin-bottom: 12px;
@@ -473,7 +473,7 @@
             background-color: #e2e8f0;
         }
 
-        /* v14.3 모바일 반응형: 교정 모드 라벨 및 텍스트창 2줄(세로) 자동 전환 */
+        /* 모바일 반응형: 교정 모드 라벨 및 텍스트창 2줄(세로) 자동 전환 */
         @media (max-width: 600px) {
             .edit-li {
                 flex-direction: column;
@@ -623,7 +623,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v14.3</span>
+                <span class="version">v14.4</span>
             </h1>
         </header>
 
@@ -714,7 +714,7 @@
         let originalRawRows = null; 
         let correctMap = {};
         let originalMap = {};
-        let correctStatusMap = {};
+        let correctMetaMap = {}; // v14.4: { issueNum: { status: '교정'|'진행'|'완료', editor: '이름' } }
         let globalPdfMap = {};
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
@@ -1107,7 +1107,12 @@
                     const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
                     if (matches && matches.length > 0) {
                         const num = parseInt(matches[0], 10);
-                        correctStatusMap[num] = cols[0] ? cols[0].trim() : '교정';
+                        const statusVal = cols[0] ? cols[0].trim() : '교정';
+                        const editorVal = cols[1] ? cols[1].trim() : ''; // v14.4: B열 교정자 이름
+                        correctMetaMap[num] = {
+                            status: statusVal,
+                            editor: editorVal
+                        };
                     }
                 }
 
@@ -1139,13 +1144,14 @@
                     const month = parseInt(matchDate[2], 10);
                     if (year > 2003 || (year === 2003 && month > 11)) continue;
                     
-                    const statusText = correctStatusMap[issueNumber] || "교정";
+                    const meta = correctMetaMap[issueNumber] || { status: '교정', editor: '' };
 
                     issueMap[`${year}-${month}`] = {
                         issueNo: paddedNum,
                         summary: "요약",
                         rawNum: issueNumber,
-                        status: statusText,
+                        status: meta.status,
+                        editor: meta.editor,
                         link: pdfLink
                     };
                 }
@@ -1258,16 +1264,23 @@
                         const linkAttr = (data.link && data.link !== '#') ? `href="${data.link}" target="_blank"` : `href="#" onclick="showCustomAlert('${year}년 ${month}월 - ${data.issueNo}호 원본 파일이 아직 연동되지 않았습니다.'); return false;"`;
                         
                         let statusClass = 'status-correct';
+                        let displayText = '교정';
                         let isDone = false;
 
-                        // v14.3 교정상태 판별 및 완료 셀 회색 배경 지정
-                        if (data.status) {
-                            if (data.status.includes('완료')) {
-                                statusClass = 'status-done';
-                                isDone = true;
-                            } else if (data.status.includes('진행') || (data.status !== '교정' && data.status.trim() !== '')) {
-                                statusClass = 'status-progress';
-                            }
+                        // v14.4 B열 교정자 이름 및 A열 상태 매핑 로직
+                        const editor = (data.editor || '').trim();
+                        const status = (data.status || '').trim();
+
+                        if (status.includes('완료')) {
+                            statusClass = 'status-done';
+                            displayText = editor || '완료';
+                            isDone = true;
+                        } else if (status.includes('진행') || editor !== '') {
+                            statusClass = 'status-progress';
+                            displayText = editor || '진행';
+                        } else {
+                            statusClass = 'status-correct';
+                            displayText = '교정';
                         }
 
                         if (isDone) {
@@ -1283,7 +1296,7 @@
                                     <span class="cell-summary">${data.summary}</span>
                                 </div>
                                 <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${year}, ${month})">
-                                    <span class="cell-status ${statusClass}" title="${data.status}">${data.status}</span>
+                                    <span class="cell-status ${statusClass}" title="${status}${editor ? ' (' + editor + ')' : ''}">${displayText}</span>
                                 </div>
                             </div>
                         `;
@@ -1326,6 +1339,13 @@
             
             titleElem.textContent = `[요약 교정] ${year}년 ${month}월 - ${String(issueNum).padStart(3, '0')}호`;
             
+            // v14.4 B열 교정자 이름 입력창 자동 채우기
+            const meta = correctMetaMap[issueNum];
+            const editorInput = document.getElementById('editor-name-input');
+            if (editorInput) {
+                editorInput.value = (meta && meta.editor) ? meta.editor : '';
+            }
+
             renderCurrentMode();
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
