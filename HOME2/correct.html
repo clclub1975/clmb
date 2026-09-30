@@ -1,4 +1,4 @@
-<!-- v14.4: 캘린더 '진행/완료' 칸에 시트 B열 교정자 이름 매핑, 모달창 교정자 입력란 자동 채우기 연동, 버전 v14.4 -->
+<!-- v15.0: 구글 시트 GAS Web App 실시간 저장 연동, 비동기 로딩 처리, 캘린더 화면 즉각 동기화, 버전 v15.0 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -355,6 +355,7 @@
             white-space: nowrap;
         }
         .btn-action:hover { opacity: 0.85; }
+        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-save-stay {
             background-color: #0284c7;
             color: white;
@@ -522,6 +523,7 @@
             transition: background-color 0.2s ease;
         }
         .btn-finish-large:hover { background-color: #15803d; }
+        .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
         /* 기존 단일 모달 스타일 (요약 전용) */
         .modal-content-single {
@@ -623,7 +625,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v14.4</span>
+                <span class="version">v15.0</span>
             </h1>
         </header>
 
@@ -682,9 +684,9 @@
                         <label class="editor-input-wrap">교정자:
                             <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
                         </label>
-                        <button type="button" class="btn-action btn-save-stay" onclick="saveOnly()">수정내용 저장</button>
+                        <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">수정내용 저장</button>
                     </div>
-                    <button type="button" class="btn-action btn-save-exit" onclick="saveAndExit()">나가기(저장)</button>
+                    <button type="button" class="btn-action btn-save-exit" id="btn-save-exit" onclick="handleSaveAction('exit')">나가기(저장)</button>
                 </div>
             </div>
             <!-- 메인 콘텐츠 디스플레이 영역 -->
@@ -692,7 +694,7 @@
                 콘텐츠를 불러오는 중입니다...
             </div>
             <div class="modal-footer-finish" id="modal-footer-finish">
-                <button type="button" class="btn-finish-large" onclick="finishCorrection()">✓ 교정 완료</button>
+                <button type="button" class="btn-finish-large" id="btn-finish-large" onclick="handleSaveAction('finish')">✓ 교정 완료</button>
             </div>
         </div>
     </div>
@@ -710,14 +712,18 @@
         const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
         const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=239571560&single=true&output=csv';
         
+        // v15.0: 배포된 Google Apps Script Web App 엔드포인트 URL
+        const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbw5RuCfLMa0CmkOYldROQI_CjgzEN2wKlkNppHxejk_ze61rTc3EugDY83QDJdS5bJ5/exec';
+
         let correctRawRows = null;
         let originalRawRows = null; 
         let correctMap = {};
         let originalMap = {};
-        let correctMetaMap = {}; // v14.4: { issueNum: { status: '교정'|'진행'|'완료', editor: '이름' } }
+        let correctMetaMap = {}; // { issueNum: { status: '교정'|'진행'|'완료', editor: '이름' } }
         let globalPdfMap = {};
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
+        let isSaving = false;
 
         // 텍스트 복원 및 히스토리 스택 관리 구조체
         let editFieldState = {};
@@ -1108,7 +1114,7 @@
                     if (matches && matches.length > 0) {
                         const num = parseInt(matches[0], 10);
                         const statusVal = cols[0] ? cols[0].trim() : '교정';
-                        const editorVal = cols[1] ? cols[1].trim() : ''; // v14.4: B열 교정자 이름
+                        const editorVal = cols[1] ? cols[1].trim() : '';
                         correctMetaMap[num] = {
                             status: statusVal,
                             editor: editorVal
@@ -1257,6 +1263,7 @@
 
                 for (let month = 1; month <= 12; month++) {
                     const td = document.createElement('td');
+                    td.id = `cell-td-${year}-${month}`;
                     const key = `${year}-${month}`;
                     const data = issueMap[key];
 
@@ -1267,7 +1274,6 @@
                         let displayText = '교정';
                         let isDone = false;
 
-                        // v14.4 B열 교정자 이름 및 A열 상태 매핑 로직
                         const editor = (data.editor || '').trim();
                         const status = (data.status || '').trim();
 
@@ -1296,7 +1302,7 @@
                                     <span class="cell-summary">${data.summary}</span>
                                 </div>
                                 <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${year}, ${month})">
-                                    <span class="cell-status ${statusClass}" title="${status}${editor ? ' (' + editor + ')' : ''}">${displayText}</span>
+                                    <span class="cell-status ${statusClass}" id="status-span-${data.rawNum}" title="${status}${editor ? ' (' + editor + ')' : ''}">${displayText}</span>
                                 </div>
                             </div>
                         `;
@@ -1339,7 +1345,6 @@
             
             titleElem.textContent = `[요약 교정] ${year}년 ${month}월 - ${String(issueNum).padStart(3, '0')}호`;
             
-            // v14.4 B열 교정자 이름 입력창 자동 채우기
             const meta = correctMetaMap[issueNum];
             const editorInput = document.getElementById('editor-name-input');
             if (editorInput) {
@@ -1401,44 +1406,133 @@
             }
         }
 
-        function saveOnly() {
+        // v15.0: 구글 시트 비동기 실시간 저장 엔진
+        async function handleSaveAction(actionType) {
+            if (isSaving) return;
+
             const editorName = document.getElementById('editor-name-input').value.trim();
             if (!editorName) {
                 showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
                 return;
             }
-            
-            for (let key in editFieldState) {
-                const ta = document.getElementById(`edit_${key}`);
-                if (ta) {
-                    editFieldState[key].currentSaved = ta.value;
+
+            if (actionType === 'finish') {
+                showCustomConfirm(`[${editorName}] 교정자님, 이 호수의 교정 작업을 '완료' 처리하시겠습니까?`, () => {
+                    executePostSave('완료', editorName, actionType);
+                });
+            } else {
+                executePostSave('진행', editorName, actionType);
+            }
+        }
+
+        async function executePostSave(statusText, editorName, actionType) {
+            isSaving = true;
+
+            const btnStay = document.getElementById('btn-save-stay');
+            const btnExit = document.getElementById('btn-save-exit');
+            const btnFinish = document.getElementById('btn-finish-large');
+
+            btnStay.disabled = true;
+            btnExit.disabled = true;
+            btnFinish.disabled = true;
+
+            const originalBtnStayText = btnStay.textContent;
+            const originalBtnExitText = btnExit.textContent;
+            const originalBtnFinishText = btnFinish.textContent;
+
+            if (actionType === 'stay') btnStay.textContent = '저장 중...';
+            else if (actionType === 'exit') btnExit.textContent = '저장 중...';
+            else if (actionType === 'finish') btnFinish.textContent = '완료 처리 중...';
+
+            // 입력값 취합
+            const getVal = (k) => {
+                const el = document.getElementById(`edit_${k}`);
+                return el ? el.value : '';
+            };
+
+            const payload = {
+                issueNum: currentIssueData.issueNum,
+                status: statusText,
+                editorName: editorName,
+                pubDate: getVal('pubDate'),
+                summary: getVal('summary'),
+                exec: getVal('exec'),
+                sys: getVal('sys'),
+                event: getVal('event'),
+                history: getVal('history'),
+                trouble: getVal('trouble'),
+                meetingType: getVal('meetingType'),
+                meetingVote: getVal('meetingVote'),
+                volRegular: getVal('volRegular'),
+                volEtc: getVal('volEtc'),
+                subStudy: getVal('subStudy'),
+                subEtc: getVal('subEtc'),
+                peopleInter: getVal('peopleInter'),
+                peopleNews: getVal('peopleNews'),
+                peopleEvent: getVal('peopleEvent'),
+                articles: getVal('articles')
+            };
+
+            try {
+                // Google Apps Script 웹 앱으로 데이터 전송 (CORS 대비 no-cors 적용)
+                await fetch(gasWebAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // 성공 시 프론트엔드 상태 및 UI 갱신
+                for (let key in editFieldState) {
+                    const ta = document.getElementById(`edit_${key}`);
+                    if (ta) editFieldState[key].currentSaved = ta.value;
                 }
-            }
-
-            isDirty = false;
-            showCustomAlert(`[${editorName}] 교정자의 수정내용이 저장되었습니다. (작업 지속)`);
-        }
-
-        function saveAndExit() {
-            const editorName = document.getElementById('editor-name-input').value.trim();
-            if (!editorName) {
-                showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
-                return;
-            }
-            isDirty = false;
-            showCustomAlert(`[${editorName}] 교정자의 교정 내용이 저장되었습니다.`, () => forceCloseModal());
-        }
-
-        function finishCorrection() {
-            const editorName = document.getElementById('editor-name-input').value.trim();
-            if (!editorName) {
-                showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
-                return;
-            }
-            showCustomConfirm(`[${editorName}] 교정자님, 이 호수의 교정 작업을 '완료' 처리하시겠습니까?`, () => {
                 isDirty = false;
-                showCustomAlert('교정 완료 처리가 요청되었습니다.', () => forceCloseModal());
-            });
+
+                // 캘린더 화면 실시간 동기화
+                correctMetaMap[currentIssueData.issueNum] = {
+                    status: statusText,
+                    editor: editorName
+                };
+
+                const statusSpan = document.getElementById(`status-span-${currentIssueData.issueNum}`);
+                const cellTd = document.getElementById(`cell-td-${currentIssueData.year}-${currentIssueData.month}`);
+
+                if (statusSpan) {
+                    statusSpan.textContent = editorName;
+                    statusSpan.title = `${statusText} (${editorName})`;
+                    statusSpan.classList.remove('status-correct', 'status-progress', 'status-done');
+                    
+                    if (statusText === '완료') {
+                        statusSpan.classList.add('status-done');
+                        if (cellTd) cellTd.classList.add('cell-completed');
+                    } else {
+                        statusSpan.classList.add('status-progress');
+                        if (cellTd) cellTd.classList.remove('cell-completed');
+                    }
+                }
+
+                if (actionType === 'stay') {
+                    showCustomAlert(`[${editorName}] 교정자의 수정내용이 구글 시트에 안전하게 저장되었습니다.`);
+                } else if (actionType === 'exit') {
+                    showCustomAlert(`[${editorName}] 교정자의 수정내용이 저장되었습니다.`, () => forceCloseModal());
+                } else if (actionType === 'finish') {
+                    showCustomAlert(`[${editorName}] 교정자님의 교정 작업이 '완료' 처리되어 시트에 기록되었습니다.`, () => forceCloseModal());
+                }
+
+            } catch (err) {
+                console.error("저장 통신 실패:", err);
+                showCustomAlert("구글 시트 저장 도중 통신 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            } finally {
+                isSaving = false;
+                btnStay.disabled = false;
+                btnExit.disabled = false;
+                btnFinish.disabled = false;
+                btnStay.textContent = originalBtnStayText;
+                btnExit.textContent = originalBtnExitText;
+                btnFinish.textContent = originalBtnFinishText;
+            }
         }
 
         function cancelAndCloseModal() {
@@ -1491,4 +1585,3 @@
     </script>
 </body>
 </html>
- 
