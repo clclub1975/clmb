@@ -1,4 +1,4 @@
-<!-- v15.5: pdfocrurl.gsheet A열(전체호수) 및 E열(발행월), C열(링크 유무) 기준 1:1 동기화 렌더링, 버전 v15.5 -->
+<!-- v15.6: 1984년 1~2월 열 생략 버그 수정(12개월 셀 전수 생성으로 001호 3월 정위치 복원), 버전 v15.6 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -628,7 +628,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.5</span>
+                <span class="version">v15.6</span>
             </h1>
         </header>
 
@@ -1052,7 +1052,6 @@
             return null;
         }
 
-        // v15.5: pdfocrurl.gsheet A열(호수), E열(발행월), C열(링크 유무) 기준 완전 동적 렌더링
         async function loadCalendarData() {
             try {
                 const [respPdf, respCorrect] = await Promise.all([
@@ -1080,7 +1079,6 @@
 
                 const pdfRows = parseCSV(pdfText);
                 let issueMap = {};
-                let allIssues = [];
 
                 for (let j = 1; j < pdfRows.length; j++) {
                     const pCols = pdfRows[j].map(c => c.trim());
@@ -1105,14 +1103,11 @@
                     globalPdfMap[String(issueNum)] = validLink;
                     globalPdfMap[paddedNum] = validLink;
 
-                    allIssues.push(issueNum);
-
                     const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
                     if (!matchDate) continue;
 
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
-                    if (year > 2003 || (year === 2003 && month > 11)) continue;
 
                     const meta = correctMetaMap[issueNum] || { status: '교정', editor: '' };
 
@@ -1142,7 +1137,7 @@
             }
         }
 
-        // v15.5: 캘린더 그리기 (E열 날짜 좌표 기준 1:1 배치)
+        // v15.6: 캘린더 생성 시 1~12월 모든 열(td)을 무조건 온전히 생성
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -1177,20 +1172,15 @@
                 tr.appendChild(thYear);
 
                 for (let m = 1; m <= 12; m++) {
-                    if (y === 1984 && m < 3) continue;
-                    if (y === 2003 && m > 11) continue;
-
                     const td = document.createElement('td');
                     td.id = `cell-td-${y}-${m}`;
                     const key = `${y}-${m}`;
                     const data = issueMap[key];
 
                     if (data !== undefined) {
-                        // C열에 링크가 없는 경우: 회색 단순 텍스트로 표기
                         if (!data.hasLink) {
                             td.innerHTML = `<span class="missing-cell-issue">${data.paddedNum}</span>`;
                         } else {
-                            // C열에 링크가 있는 경우: 정규 3분할 탭 (호수 + 요약 + 교정상태)
                             let statusClass = 'status-correct';
                             let displayText = '교정';
                             let isDone = false;
