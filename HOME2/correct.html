@@ -1,4 +1,4 @@
-<!-- v15.4: 결번/미입수 호수(PDF 없음) 시각적 분리(회색 텍스트) 렌더링 적용, 버전 v15.4 -->
+<!-- v15.5: pdfocrurl.gsheet A열(전체호수) 및 E열(발행월), C열(링크 유무) 기준 1:1 동기화 렌더링, 버전 v15.5 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -163,7 +163,7 @@
         .status-correct { color: #dc2626; }   /* 미교정: 빨간색 */
         .status-progress { color: #16a34a; }  /* 진행중: 초록색 */
         .status-done { color: #1e293b; }      /* 완료: 검은색 */
-        .status-loading { color: #94a3b8; font-weight: 500; font-size: 0.6rem; } /* 데이터 연결 대기중 */
+        .status-loading { color: #94a3b8; font-weight: 500; font-size: 0.6rem; }
 
         /* 결번/미입수 호수 전용 단순 텍스트 스타일 */
         .missing-cell-issue {
@@ -396,7 +396,6 @@
             margin-bottom: 10px;
             width: 100%;
         }
-        /* 소분류 라벨 (PC 기본) */
         .edit-label {
             flex: 0 0 92px;
             max-width: 92px;
@@ -406,14 +405,12 @@
             padding-top: 5px;
             word-break: keep-all;
         }
-        /* 우측 편집 컨테이너 (PC 기본) */
         .edit-field-wrap {
             flex: 1;
             display: flex;
             flex-direction: column;
             width: calc(100% - 92px);
         }
-        /* 기고문 전용 래퍼 */
         .edit-li-full {
             display: block;
             margin-bottom: 10px;
@@ -425,7 +422,6 @@
             flex-direction: column;
         }
 
-        /* 텍스트 편집창 (자동 높이 조절 적용) */
         .edit-textarea-inline, .edit-textarea-full {
             width: 100%;
             min-height: 38px;
@@ -448,7 +444,6 @@
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
         }
 
-        /* 텍스트창 하단 3대 복원 버튼 미니 툴바 스타일 */
         .restore-toolbar {
             display: flex;
             justify-content: flex-end;
@@ -479,7 +474,6 @@
             background-color: #e2e8f0;
         }
 
-        /* 모바일 반응형 */
         @media (max-width: 600px) {
             .edit-li {
                 flex-direction: column;
@@ -513,7 +507,6 @@
             }
         }
 
-        /* 맨 하단 교정 완료 버튼 */
         .modal-footer-finish {
             display: none;
             padding: 10px 18px;
@@ -537,7 +530,6 @@
         .btn-finish-large:hover { background-color: #15803d; }
         .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* 기존 단일 모달 스타일 (요약 전용) */
         .modal-content-single {
             background: #fff;
             padding: 0 20px 20px 20px;
@@ -573,8 +565,8 @@
         .modal-body ul { padding-left: 20px; margin-bottom: 10px; list-style: disc; }
         .modal-body li { margin-bottom: 5px; }
         .modal-body strong { color: #0f172a; }
+        .loading { text-align: center; padding: 20px; font-size: 0.85rem; color: #666; }
 
-        /* 자체 커스텀 다이얼로그 (Alert & Confirm) 스타일 */
         .custom-dialog-overlay {
             display: none;
             position: fixed;
@@ -636,13 +628,13 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.4</span>
+                <span class="version">v15.5</span>
             </h1>
         </header>
 
         <!-- 표기 못한 누락 호수 안내 영역 -->
         <div class="missing-notice" id="unmapped-missing-container">
-            <strong>표기 못한 누락 호수:</strong> <span id="unmapped-missing-text">데이터 동기화 중...</span>
+            <strong>표기 못한 누락 호수:</strong> <span id="unmapped-missing-text">데이터를 분석 중입니다...</span>
         </div>
 
         <!-- 캘린더 테이블 영역 -->
@@ -656,7 +648,7 @@
                     </tr>
                 </thead>
                 <tbody id="calendar-body">
-                    <!-- 하드코딩된 초고속 렌더링으로 즉시 대체됨 -->
+                    <tr><td colspan="13" class="loading">달력을 구성하고 있습니다...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -724,30 +716,6 @@
         const correctCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv';
         const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=239571560&single=true&output=csv';
         const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbw5RuCfLMa0CmkOYldROQI_CjgzEN2wKlkNppHxejk_ze61rTc3EugDY83QDJdS5bJ5/exec';
-
-        // v15.4: 하드코딩 매핑 데이터 (변하지 않는 역사적 배포 사실 고정)
-        const hardcodedIssueMap = {
-            "1984-3": 1, "1984-4": 2, "1984-5": 3, "1984-6": 4, "1984-7": 5, "1984-8": 6, "1984-9": 7, "1984-10": 8, "1984-11": 9, "1984-12": 10,
-            "1985-1": 11, "1985-3": 12, "1985-4": 13, "1985-5": 14, "1985-6": 15, "1985-7": 16, "1985-8": 17, "1985-9": 18, "1985-10": 19, "1985-11": 20,
-            "1986-2": 21, "1986-3": 22, "1986-4": 23, "1986-5": 24, "1986-6": 25, "1986-7": 26, "1986-8": 27, "1986-9": 28, "1986-10": 29, "1986-11": 30, "1986-12": 31,
-            "1987-1": 32, "1987-2": 33, "1987-3": 34, "1987-4": 35, "1987-5": 36, "1987-6": 37, "1987-7": 38, "1987-8": 39, "1987-9": 40, "1987-10": 41, "1987-11": 42, "1987-12": 43,
-            "1988-1": 44, "1988-2": 45, "1988-3": 46, "1988-4": 47, "1988-5": 48, "1988-6": 49, "1988-8": 50, "1988-9": 51, "1988-10": 52, "1988-11": 53, "1988-12": 54,
-            "1989-1": 55, "1989-2": 56, "1989-3": 57, "1989-4": 58, "1989-5": 59, "1989-6": 60, "1989-7": 61, "1989-8": 62, "1989-9": 63, "1989-10": 64, "1989-11": 65, "1989-12": 66,
-            "1990-1": 67, "1990-2": 68, "1990-3": 69, "1990-4": 70, "1990-5": 71, "1990-6": 72, "1990-7": 73, "1990-8": 74, "1990-9": 75, "1990-10": 76, "1990-11": 77,
-            "1991-1": 78, "1991-2": 79, "1991-3": 80, "1991-4": 81, "1991-5": 82, "1991-6": 83, "1991-7": 84, "1991-8": 85, "1991-9": 86, "1991-10": 87, "1991-11": 88, "1991-12": 89,
-            "1992-1": 90, "1992-2": 91, "1992-3": 92, "1992-4": 93, "1992-5": 94, "1992-6": 95, "1992-7": 96, "1992-8": 97, "1992-9": 98, "1992-10": 99, "1992-11": 100, "1992-12": 101,
-            "1993-1": 102, "1993-2": 103, "1993-3": 104, "1993-4": 105, "1993-5": 106, "1993-6": 107, "1993-7": 108, "1993-8": 109, "1993-9": 110, "1993-10": 111, "1993-11": 112, "1993-12": 113,
-            "1994-1": 114, "1994-2": 115, "1994-3": 116, "1994-4": 117, "1994-5": 118, "1994-6": 119, "1994-7": 120, "1994-8": 121, "1994-9": 122, "1994-10": 123, "1994-11": 124, "1994-12": 125,
-            "1995-1": 126, "1995-2": 127, "1995-3": 128, "1995-4": 129, "1995-5": 130, "1995-6": 131, "1995-7": 132, "1995-8": 133, "1995-9": 134, "1995-10": 135, "1995-11": 136, "1995-12": 137,
-            "1996-1": 138, "1996-2": 139, "1996-3": 140, "1996-4": 141, "1996-5": 142, "1996-6": 143, "1996-7": 144, "1996-8": 145, "1996-9": 146, "1996-10": 147, "1996-11": 148, "1996-12": 149,
-            "1997-1": 150, "1997-2": 151, "1997-3": 152, "1997-4": 153, "1997-5": 154, "1997-6": 155, "1997-7": 156, "1997-8": 157, "1997-9": 158, "1997-10": 159, "1997-11": 160, "1997-12": 161,
-            "1998-1": 162, "1998-2": 163, "1998-3": 164, "1998-4": 165, "1998-5": 166, "1998-6": 167, "1998-7": 168, "1998-11": 169, "1998-12": 170,
-            "1999-1": 171, "1999-2": 172, "1999-3": 173, "1999-4": 175, "1999-5": 176, "1999-6": 177, "1999-7": 178, "1999-8": 179,
-            "2003-11": 180
-        };
-
-        // v15.4: 실제 PDF가 존재하지 않아 빈 칸으로 표시할 결번/미입수 호수 목록
-        const missingIssues = [10, 103, 104, 112, 136, 137, 138, 140, 141, 142, 143, 147, 164, 165, 166, 167, 168, 170];
 
         let correctRawRows = null;
         let originalRawRows = null; 
@@ -1084,65 +1052,14 @@
             return null;
         }
 
-        // v15.4 Step 1: 초고속 하드코딩 캘린더 즉시 렌더링 (결번 분기 처리 추가)
-        function renderHardcodedCalendar() {
-            const tbody = document.getElementById('calendar-body');
-            tbody.innerHTML = '';
-            const startYear = 1984, endYear = 2003;
-
-            for (let y = startYear; y <= endYear; y++) {
-                const tr = document.createElement('tr');
-                const thYear = document.createElement('th');
-                thYear.textContent = y;
-                tr.appendChild(thYear);
-
-                for (let m = 1; m <= 12; m++) {
-                    if (y === 1984 && m < 3) continue;
-                    if (y === 2003 && m > 11) continue;
-
-                    const td = document.createElement('td');
-                    td.id = `cell-td-${y}-${m}`;
-                    const key = `${y}-${m}`;
-                    const issueNum = hardcodedIssueMap[key];
-
-                    if (issueNum) {
-                        const paddedNum = String(issueNum).padStart(3, '0');
-                        
-                        // v15.4 분기: PDF가 없는 결번/미입수 호수일 경우 회색 단순 텍스트로 렌더링
-                        if (missingIssues.includes(issueNum)) {
-                            td.innerHTML = `<span class="missing-cell-issue">${paddedNum}</span>`;
-                        } else {
-                            // 일반 호수의 경우 기존처럼 3칸짜리 탭 렌더링
-                            td.innerHTML = `
-                                <div class="cell-content">
-                                    <a href="#" id="link-${issueNum}" onclick="showCustomAlert('데이터 로딩 중입니다...'); return false;" class="cell-block">
-                                        <span class="cell-issue">${paddedNum}</span>
-                                    </a>
-                                    <div class="cell-block" onclick="openSummaryModal(${issueNum}, ${y}, ${m})">
-                                        <span class="cell-summary">요약</span>
-                                    </div>
-                                    <div class="cell-block" onclick="openCorrectModal(${issueNum}, ${y}, ${m})">
-                                        <span class="cell-status status-loading" id="status-span-${issueNum}">로딩중..</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    } else {
-                        td.style.backgroundColor = '#fafafa';
-                    }
-                    tr.appendChild(td);
-                }
-                tbody.appendChild(tr);
-            }
-        }
-
-        // v15.4 Step 2: 비동기 데이터 수신 후 화면 위에 상태만 스윽 덧입히기
-        async function fetchDataAndUpdate() {
+        // v15.5: pdfocrurl.gsheet A열(호수), E열(발행월), C열(링크 유무) 기준 완전 동적 렌더링
+        async function loadCalendarData() {
             try {
                 const [respPdf, respCorrect] = await Promise.all([
                     fetch(pdfCsvUrl),
                     fetch(correctCsvUrl)
                 ]);
+
                 const [pdfText, correctText] = await Promise.all([
                     respPdf.text(),
                     respCorrect.text()
@@ -1162,105 +1079,55 @@
                 }
 
                 const pdfRows = parseCSV(pdfText);
+                let issueMap = {};
+                let allIssues = [];
+
                 for (let j = 1; j < pdfRows.length; j++) {
                     const pCols = pdfRows[j].map(c => c.trim());
                     if (pCols.length < 3) continue;
-                    const fileName = pCols[0];
-                    const fileUrl = pCols[2];
-                    const matches = fileName.match(/(\d+)/g);
+                    
+                    const colName = pCols[0] || '';
+                    const colLink = pCols[2] || '';
+                    const colDate = pCols.length > 4 ? pCols[4] : '';
+
+                    const matches = colName.match(/(\d+)/g);
                     if (!matches || matches.length === 0) continue;
-                    
-                    let issueNumber = parseInt(matches[0], 10);
-                    if (fileName.includes('100+1')) issueNumber = 101;
-                    if (issueNumber > 180) continue;
 
-                    const paddedNum = String(issueNumber).padStart(3, '0');
-                    const pdfLink = (fileUrl && fileUrl.startsWith('http')) ? fileUrl : '#';
-                    
-                    globalPdfMap[issueNumber] = pdfLink;
-                    globalPdfMap[String(issueNumber)] = pdfLink;
-                    globalPdfMap[paddedNum] = pdfLink;
-                }
+                    let issueNum = parseInt(matches[0], 10);
+                    if (colName.includes('100+1')) issueNum = 101;
+                    if (issueNum > 180) continue;
 
-                // UI 상태 즉각 덧입히기 (Two-Step Rendering)
-                for (const key in hardcodedIssueMap) {
-                    const issueNum = hardcodedIssueMap[key];
-                    
-                    // v15.4: 결번/미입수 호수는 업데이트 처리에서 완전 제외 (오류 방지)
-                    if (missingIssues.includes(issueNum)) continue;
+                    const paddedNum = String(issueNum).padStart(3, '0');
+                    const hasLink = (colLink && colLink.startsWith('http'));
+                    const validLink = hasLink ? colLink : '#';
 
-                    const [y, m] = key.split('-');
-                    const linkElem = document.getElementById(`link-${issueNum}`);
-                    const statusSpan = document.getElementById(`status-span-${issueNum}`);
-                    const cellTd = document.getElementById(`cell-td-${y}-${m}`);
+                    globalPdfMap[issueNum] = validLink;
+                    globalPdfMap[String(issueNum)] = validLink;
+                    globalPdfMap[paddedNum] = validLink;
 
-                    if (!linkElem) continue;
+                    allIssues.push(issueNum);
 
-                    const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
-                    if (pdfUrl && pdfUrl !== '#') {
-                        linkElem.href = pdfUrl;
-                        linkElem.target = "_blank";
-                        linkElem.onclick = null;
-                    } else {
-                        linkElem.onclick = function(e) {
-                            e.preventDefault();
-                            showCustomAlert(`${y}년 ${m}월 - ${String(issueNum).padStart(3, '0')}호 원본 파일이 아직 연동되지 않았습니다.`);
-                        };
-                    }
+                    const matchDate = colDate.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
+                    if (!matchDate) continue;
+
+                    const year = parseInt(matchDate[1], 10);
+                    const month = parseInt(matchDate[2], 10);
+                    if (year > 2003 || (year === 2003 && month > 11)) continue;
 
                     const meta = correctMetaMap[issueNum] || { status: '교정', editor: '' };
-                    const editor = (meta.editor || '').trim();
-                    const status = (meta.status || '').trim();
 
-                    let statusClass = 'status-correct';
-                    let displayText = '교정';
-                    let isDone = false;
-
-                    if (status.includes('완료')) {
-                        statusClass = 'status-done';
-                        displayText = editor || '완료';
-                        isDone = true;
-                    } else if (status.includes('진행') || editor !== '') {
-                        statusClass = 'status-progress';
-                        displayText = editor || '진행';
-                    } else {
-                        statusClass = 'status-correct';
-                        displayText = '교정';
-                    }
-
-                    if (statusSpan) {
-                        statusSpan.textContent = displayText;
-                        statusSpan.title = `${status}${editor ? ' (' + editor + ')' : ''}`;
-                        statusSpan.className = `cell-status ${statusClass}`;
-                        statusSpan.style.color = ''; 
-                    }
-
-                    if (isDone && cellTd) {
-                        cellTd.classList.add('cell-completed');
-                    }
+                    issueMap[`${year}-${month}`] = {
+                        rawNum: issueNum,
+                        paddedNum: paddedNum,
+                        hasLink: hasLink,
+                        link: validLink,
+                        status: meta.status,
+                        editor: meta.editor
+                    };
                 }
 
-                // 표기 못한 누락 호수 계산
-                const existingNums = new Set(Object.values(hardcodedIssueMap));
-                let unmappedMissing = [];
-                for (let n = 1; n <= 180; n++) {
-                    if (existingNums.has(n)) continue;
-                    const issueStr = `${n}호`;
-                    const pdfUrl = globalPdfMap[n] || globalPdfMap[String(n)] || globalPdfMap[String(n).padStart(3, '0')];
-                    if (pdfUrl && pdfUrl !== '#') {
-                        unmappedMissing.push(`<a href="${pdfUrl}" target="_blank" class="missing-link">${issueStr}</a>`);
-                    } else {
-                        unmappedMissing.push(`<span class="missing-none">${n}호(PDF도 없고, 공간도 없음)</span>`);
-                    }
-                }
-                const noticeContainer = document.getElementById('unmapped-missing-container');
-                if (unmappedMissing.length > 0) {
-                    noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> ${unmappedMissing.join(', ')}`;
-                } else {
-                    noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> 없음`;
-                }
+                renderCalendarMatrix(issueMap);
 
-                // 원본 데이터는 느리게 불러와도 모달창 열기 전까지만 완료되면 됨
                 fetch(originalCsvUrl)
                     .then(res => res.text())
                     .then(text => {
@@ -1271,6 +1138,102 @@
 
             } catch (error) {
                 console.error("데이터 연동 실패:", error);
+                document.getElementById('calendar-body').innerHTML = `<tr><td colspan="13" class="loading" style="color:red;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>`;
+            }
+        }
+
+        // v15.5: 캘린더 그리기 (E열 날짜 좌표 기준 1:1 배치)
+        function renderCalendarMatrix(issueMap) {
+            const tbody = document.getElementById('calendar-body');
+            tbody.innerHTML = '';
+            const startYear = 1984, endYear = 2003;
+
+            let existingNums = new Set();
+            for (let key in issueMap) existingNums.add(issueMap[key].rawNum);
+
+            let unmappedMissing = [];
+            for (let n = 1; n <= 180; n++) {
+                if (existingNums.has(n)) continue;
+                const issueStr = `${n}호`;
+                const pdfUrl = globalPdfMap[n] || globalPdfMap[String(n)] || globalPdfMap[String(n).padStart(3, '0')];
+                if (pdfUrl && pdfUrl !== '#') {
+                    unmappedMissing.push(`<a href="${pdfUrl}" target="_blank" class="missing-link">${issueStr}</a>`);
+                } else {
+                    unmappedMissing.push(`<span class="missing-none">${n}호(PDF도 없고, 공간도 없음)</span>`);
+                }
+            }
+
+            const noticeContainer = document.getElementById('unmapped-missing-container');
+            if (unmappedMissing.length > 0) {
+                noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> ${unmappedMissing.join(', ')}`;
+            } else {
+                noticeContainer.innerHTML = `<strong>표기 못한 누락 호수:</strong> 없음`;
+            }
+
+            for (let y = startYear; y <= endYear; y++) {
+                const tr = document.createElement('tr');
+                const thYear = document.createElement('th');
+                thYear.textContent = y;
+                tr.appendChild(thYear);
+
+                for (let m = 1; m <= 12; m++) {
+                    if (y === 1984 && m < 3) continue;
+                    if (y === 2003 && m > 11) continue;
+
+                    const td = document.createElement('td');
+                    td.id = `cell-td-${y}-${m}`;
+                    const key = `${y}-${m}`;
+                    const data = issueMap[key];
+
+                    if (data !== undefined) {
+                        // C열에 링크가 없는 경우: 회색 단순 텍스트로 표기
+                        if (!data.hasLink) {
+                            td.innerHTML = `<span class="missing-cell-issue">${data.paddedNum}</span>`;
+                        } else {
+                            // C열에 링크가 있는 경우: 정규 3분할 탭 (호수 + 요약 + 교정상태)
+                            let statusClass = 'status-correct';
+                            let displayText = '교정';
+                            let isDone = false;
+
+                            const editor = (data.editor || '').trim();
+                            const status = (data.status || '').trim();
+
+                            if (status.includes('완료')) {
+                                statusClass = 'status-done';
+                                displayText = editor || '완료';
+                                isDone = true;
+                            } else if (status.includes('진행') || editor !== '') {
+                                statusClass = 'status-progress';
+                                displayText = editor || '진행';
+                            } else {
+                                statusClass = 'status-correct';
+                                displayText = '교정';
+                            }
+
+                            if (isDone) {
+                                td.classList.add('cell-completed');
+                            }
+
+                            td.innerHTML = `
+                                <div class="cell-content">
+                                    <a href="${data.link}" target="_blank" class="cell-block">
+                                        <span class="cell-issue">${data.paddedNum}</span>
+                                    </a>
+                                    <div class="cell-block" onclick="openSummaryModal(${data.rawNum}, ${y}, ${m})">
+                                        <span class="cell-summary">요약</span>
+                                    </div>
+                                    <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${y}, ${m})">
+                                        <span class="cell-status ${statusClass}" id="status-span-${data.rawNum}" title="${status}${editor ? ' (' + editor + ')' : ''}">${displayText}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        td.style.backgroundColor = '#fafafa';
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
             }
         }
 
@@ -1534,17 +1497,10 @@
             }
         }
 
-        // v15.4 초기화: 뼈대 렌더링 후 비동기 데이터 덧입히기
-        window.onload = () => {
-            renderHardcodedCalendar();
-            fetchDataAndUpdate();
-        };
+        window.onload = loadCalendarData;
 
         /* =========================================================
            [보관용] 과거 동적 추정 알고리즘 (Legacy)
-           - 구글 시트 연동 후 빈칸(누락 호수) 위치를 동적으로 추정하여 캘린더를 렌더링하던 레거시 함수입니다.
-           - v15.2부터 하드코딩 매핑(초고속 렌더링)으로 전환되면서 사용되지 않지만,
-           - 향후 알고리즘 참조를 위해 보존합니다.
            ========================================================= */
         function renderCalendarMatrix_Legacy(issueMap) {
             const tbody = document.getElementById('calendar-body');
