@@ -1,4 +1,4 @@
-<!-- v15.3: 하드코딩 렌더링 변수명 오타 수정(year -> y), 버전 v15.3 -->
+<!-- v15.4: 결번/미입수 호수(PDF 없음) 시각적 분리(회색 텍스트) 렌더링 적용, 버전 v15.4 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -165,6 +165,7 @@
         .status-done { color: #1e293b; }      /* 완료: 검은색 */
         .status-loading { color: #94a3b8; font-weight: 500; font-size: 0.6rem; } /* 데이터 연결 대기중 */
 
+        /* 결번/미입수 호수 전용 단순 텍스트 스타일 */
         .missing-cell-issue {
             display: flex;
             align-items: center;
@@ -635,7 +636,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.3</span>
+                <span class="version">v15.4</span>
             </h1>
         </header>
 
@@ -724,7 +725,7 @@
         const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=239571560&single=true&output=csv';
         const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbw5RuCfLMa0CmkOYldROQI_CjgzEN2wKlkNppHxejk_ze61rTc3EugDY83QDJdS5bJ5/exec';
 
-        // v15.3: 하드코딩 매핑 데이터
+        // v15.4: 하드코딩 매핑 데이터 (변하지 않는 역사적 배포 사실 고정)
         const hardcodedIssueMap = {
             "1984-3": 1, "1984-4": 2, "1984-5": 3, "1984-6": 4, "1984-7": 5, "1984-8": 6, "1984-9": 7, "1984-10": 8, "1984-11": 9, "1984-12": 10,
             "1985-1": 11, "1985-3": 12, "1985-4": 13, "1985-5": 14, "1985-6": 15, "1985-7": 16, "1985-8": 17, "1985-9": 18, "1985-10": 19, "1985-11": 20,
@@ -744,6 +745,9 @@
             "1999-1": 171, "1999-2": 172, "1999-3": 173, "1999-4": 175, "1999-5": 176, "1999-6": 177, "1999-7": 178, "1999-8": 179,
             "2003-11": 180
         };
+
+        // v15.4: 실제 PDF가 존재하지 않아 빈 칸으로 표시할 결번/미입수 호수 목록
+        const missingIssues = [10, 103, 104, 112, 136, 137, 138, 140, 141, 142, 143, 147, 164, 165, 166, 167, 168, 170];
 
         let correctRawRows = null;
         let originalRawRows = null; 
@@ -1080,7 +1084,7 @@
             return null;
         }
 
-        // v15.3 Step 1: 초고속 하드코딩 캘린더 즉시 렌더링 (오타 수정: year -> y)
+        // v15.4 Step 1: 초고속 하드코딩 캘린더 즉시 렌더링 (결번 분기 처리 추가)
         function renderHardcodedCalendar() {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -1089,7 +1093,7 @@
             for (let y = startYear; y <= endYear; y++) {
                 const tr = document.createElement('tr');
                 const thYear = document.createElement('th');
-                thYear.textContent = y; // v15.3 오타 수정
+                thYear.textContent = y;
                 tr.appendChild(thYear);
 
                 for (let m = 1; m <= 12; m++) {
@@ -1103,19 +1107,26 @@
 
                     if (issueNum) {
                         const paddedNum = String(issueNum).padStart(3, '0');
-                        td.innerHTML = `
-                            <div class="cell-content">
-                                <a href="#" id="link-${issueNum}" onclick="showCustomAlert('데이터 로딩 중입니다...'); return false;" class="cell-block">
-                                    <span class="cell-issue">${paddedNum}</span>
-                                </a>
-                                <div class="cell-block" onclick="openSummaryModal(${issueNum}, ${y}, ${m})">
-                                    <span class="cell-summary">요약</span>
+                        
+                        // v15.4 분기: PDF가 없는 결번/미입수 호수일 경우 회색 단순 텍스트로 렌더링
+                        if (missingIssues.includes(issueNum)) {
+                            td.innerHTML = `<span class="missing-cell-issue">${paddedNum}</span>`;
+                        } else {
+                            // 일반 호수의 경우 기존처럼 3칸짜리 탭 렌더링
+                            td.innerHTML = `
+                                <div class="cell-content">
+                                    <a href="#" id="link-${issueNum}" onclick="showCustomAlert('데이터 로딩 중입니다...'); return false;" class="cell-block">
+                                        <span class="cell-issue">${paddedNum}</span>
+                                    </a>
+                                    <div class="cell-block" onclick="openSummaryModal(${issueNum}, ${y}, ${m})">
+                                        <span class="cell-summary">요약</span>
+                                    </div>
+                                    <div class="cell-block" onclick="openCorrectModal(${issueNum}, ${y}, ${m})">
+                                        <span class="cell-status status-loading" id="status-span-${issueNum}">로딩중..</span>
+                                    </div>
                                 </div>
-                                <div class="cell-block" onclick="openCorrectModal(${issueNum}, ${y}, ${m})">
-                                    <span class="cell-status status-loading" id="status-span-${issueNum}">로딩중..</span>
-                                </div>
-                            </div>
-                        `;
+                            `;
+                        }
                     } else {
                         td.style.backgroundColor = '#fafafa';
                     }
@@ -1125,7 +1136,7 @@
             }
         }
 
-        // v15.3 Step 2: 비동기 데이터 수신 후 화면 위에 상태만 스윽 덧입히기
+        // v15.4 Step 2: 비동기 데이터 수신 후 화면 위에 상태만 스윽 덧입히기
         async function fetchDataAndUpdate() {
             try {
                 const [respPdf, respCorrect] = await Promise.all([
@@ -1174,11 +1185,16 @@
                 // UI 상태 즉각 덧입히기 (Two-Step Rendering)
                 for (const key in hardcodedIssueMap) {
                     const issueNum = hardcodedIssueMap[key];
-                    const [y, m] = key.split('-');
+                    
+                    // v15.4: 결번/미입수 호수는 업데이트 처리에서 완전 제외 (오류 방지)
+                    if (missingIssues.includes(issueNum)) continue;
 
+                    const [y, m] = key.split('-');
                     const linkElem = document.getElementById(`link-${issueNum}`);
                     const statusSpan = document.getElementById(`status-span-${issueNum}`);
                     const cellTd = document.getElementById(`cell-td-${y}-${m}`);
+
+                    if (!linkElem) continue;
 
                     const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum).padStart(3, '0')];
                     if (pdfUrl && pdfUrl !== '#') {
@@ -1518,7 +1534,7 @@
             }
         }
 
-        // v15.3 초기화: 뼈대 렌더링 후 비동기 데이터 덧입히기
+        // v15.4 초기화: 뼈대 렌더링 후 비동기 데이터 덧입히기
         window.onload = () => {
             renderHardcodedCalendar();
             fetchDataAndUpdate();
@@ -1600,4 +1616,3 @@
     </script>
 </body>
 </html>
- 
