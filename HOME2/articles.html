@@ -1,4 +1,4 @@
-<!-- v3.7: F열(글 종류) 동적 로딩 유지 및 목록 줄 간격 대폭 축소 -->
+<!-- v4.0: 탭(Tab) 기반 UI 도입 및 랜덤 블라인드 메쉬 그리드 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -51,6 +51,34 @@
             background-color: #e5e7eb;
         }
         
+        /* v4.0: 상단 탭 (Mode Switcher) 스타일 */
+        .tab-container {
+            display: flex;
+            background: #e5e7eb;
+            padding: 6px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 14px 10px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6b7280;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            color: #2563eb;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
         /* 3열 필터 레이아웃 */
         .filter-container {
             display: grid;
@@ -62,9 +90,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
         }
-        .filter-group {
-            width: 100%;
-        }
+        .filter-group { width: 100%; }
         label {
             font-weight: 600;
             display: block;
@@ -86,11 +112,7 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        select:disabled {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-        }
-        
+
         /* 하단 글 목록 리스트 스타일 */
         .list-container {
             background: #ffffff;
@@ -115,7 +137,6 @@
             max-height: 300px;
             overflow-y: auto;
         }
-        /* v3.7: 글 목록 간격을 본문 줄 간격(1.6) 수준으로 대폭 축소 */
         .article-item {
             padding: 2px 8px; 
             margin-bottom: 0px; 
@@ -129,15 +150,45 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .article-item:hover {
-            background-color: #f3f4f6;
-            border-color: #e5e7eb;
+        .article-item:hover { background-color: #f3f4f6; border-color: #e5e7eb; }
+        .article-item.active { background-color: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 600; }
+
+        /* v4.0: 랜덤 선택용 메쉬 그리드 (Mesh Grid) 스타일 */
+        #viewGrid {
+            display: none; /* 기본은 필터뷰, 탭 클릭 시 보임 */
         }
-        .article-item.active {
-            background-color: #eff6ff;
-            border-color: #bfdbfe;
-            color: #1d4ed8;
-            font-weight: 600;
+        .grid-header {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .grid-mesh {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(24px, 1fr)); /* 화면 크기에 맞춰 셀을 유동적으로 꽉 채움 */
+            gap: 6px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .grid-cell {
+            aspect-ratio: 1 / 1;
+            background-color: #cbd5e1;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .grid-cell:hover {
+            background-color: #60a5fa; /* 마우스 오버 시 파란색 하이라이트 */
+            transform: scale(1.15);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .grid-cell.read {
+            background-color: #2563eb; /* 읽은 글은 진한 파란색으로 변함 */
+            opacity: 0.5;
         }
 
         /* 전문 출력 영역 (PC 기본 스타일) */
@@ -149,9 +200,7 @@
             border: 1px solid #e5e7eb;
             position: relative;
         }
-        .close-btn {
-            display: none;
-        }
+        .close-btn { display: none; }
         .meta-info {
             font-size: 14px;
             color: #4b5563;
@@ -174,34 +223,20 @@
             padding: 40px 0;
         }
 
-        /* 반응형: 모바일 모달 및 3열 유지 */
+        /* 반응형: 모바일 모달 및 화면 최적화 */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-                margin: 10px auto;
-            }
-            .filter-container {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 6px;
-                padding: 10px;
-            }
-            label {
-                font-size: 11px;
-                margin-bottom: 4px;
-            }
-            select {
-                padding: 6px 4px;
-                font-size: 12px;
-            }
+            body { padding: 10px; margin: 10px auto; }
+            .tab-btn { font-size: 14px; padding: 10px 5px; }
+            .filter-container { grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px; }
+            label { font-size: 11px; margin-bottom: 4px; }
+            select { padding: 6px 4px; font-size: 12px; }
+            .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 10px; gap: 4px; }
             
             /* 모바일 모달 창 */
             #articleViewer {
                 display: none;
                 position: fixed;
-                top: 0; 
-                left: 0; 
-                width: 100%; 
-                height: 100%;
+                top: 0; left: 0; width: 100%; height: 100%;
                 background-color: rgba(0, 0, 0, 0.6);
                 z-index: 9999;
                 padding: 15px;
@@ -209,37 +244,18 @@
                 align-items: center;
                 justify-content: center;
             }
-            #articleViewer.open {
-                display: flex;
-            }
+            #articleViewer.open { display: flex; }
             .viewer-content-box {
-                width: 100%;
-                max-height: 90vh;
-                overflow-y: auto;
-                padding: 20px;
-                background: #fff;
-                border-radius: 8px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px;
+                background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             }
             .close-btn {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                font-size: 15px;
-                color: #374151;
-                margin-bottom: 15px;
-                padding-bottom: 10px;
-                border-bottom: 1px solid #e5e7eb;
-                cursor: pointer;
-                font-weight: 600;
-                position: sticky;
-                top: 0;
-                background: #fff;
+                display: flex; justify-content: space-between; align-items: center;
+                font-size: 15px; color: #374151; margin-bottom: 15px; padding-bottom: 10px;
+                border-bottom: 1px solid #e5e7eb; cursor: pointer; font-weight: 600;
+                position: sticky; top: 0; background: #fff;
             }
-            .close-icon {
-                color: #ef4444;
-                font-size: 18px;
-            }
+            .close-icon { color: #ef4444; font-size: 18px; }
         }
     </style>
 </head>
@@ -249,42 +265,59 @@
         <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.7</span></h1>
-    <p class="subtitle">글 종류, 기수, 기고자 조건을 선택하여 해당 글 목록을 확인하세요.</p>
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v4.0</span></h1>
+    <p class="subtitle">글을 찾는 방식을 선택해 보세요.</p>
 
-    <div class="filter-container">
-        <div class="filter-group">
-            <label for="typeSelect">1. 글 종류</label>
-            <select id="typeSelect" disabled>
-                <option value="전체">데이터 로딩 중...</option>
-            </select>
+    <!-- v4.0: 상단 탭 버튼 영역 -->
+    <div class="tab-container">
+        <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
+        <button id="tabGridBtn" class="tab-btn">전체 목록에서 선택하기</button>
+    </div>
+
+    <!-- [뷰 1] 세부조건 필터 뷰 -->
+    <div id="viewFilter">
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="typeSelect">1. 글 종류</label>
+                <select id="typeSelect" disabled>
+                    <option value="전체">데이터 로딩 중...</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="cohortSelect">2. 기수</label>
+                <select id="cohortSelect" disabled>
+                    <option value="전체">전체</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="authorSelect">3. 기고자</label>
+                <select id="authorSelect" disabled>
+                    <option value="전체">전체</option>
+                </select>
+            </div>
         </div>
-        <div class="filter-group">
-            <label for="cohortSelect">2. 기수</label>
-            <select id="cohortSelect" disabled>
-                <option value="전체">전체</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label for="authorSelect">3. 기고자</label>
-            <select id="authorSelect" disabled>
-                <option value="전체">전체</option>
-            </select>
+
+        <div class="list-container" id="listContainer" style="display:none;">
+            <h3 id="listTitle">검색된 글 목록</h3>
+            <ul class="article-list" id="articleList"></ul>
         </div>
     </div>
 
-    <div class="list-container" id="listContainer" style="display:none;">
-        <h3 id="listTitle">검색된 글 목록</h3>
-        <ul class="article-list" id="articleList"></ul>
+    <!-- [뷰 2] 랜덤 메쉬 그리드 뷰 -->
+    <div id="viewGrid">
+        <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기)</p>
+        <div class="grid-mesh" id="gridMesh">
+            <!-- 자바스크립트로 촘촘한 셀(Cell)들이 생성되는 곳 -->
+        </div>
     </div>
 
+    <!-- 모달(모바일) & 하단 뷰어(PC) 출력 영역 -->
     <div id="articleViewer">
         <div class="viewer-content-box">
             <div id="closeModalBtn" class="close-btn">
                 <span>기록 보기</span>
                 <span class="close-icon">✕ 닫기</span>
             </div>
-            
             <div class="meta-info" id="metaInfo"></div>
             <div id="contentBody" class="placeholder-text">데이터를 불러오는 중입니다. 잠시만 기다려주세요.</div>
         </div>
@@ -295,46 +328,64 @@
         
         let articlesData = [];
 
+        // DOM Elements
+        const tabFilterBtn = document.getElementById('tabFilterBtn');
+        const tabGridBtn = document.getElementById('tabGridBtn');
+        const viewFilter = document.getElementById('viewFilter');
+        const viewGrid = document.getElementById('viewGrid');
+        
         const typeSelect = document.getElementById('typeSelect');
         const cohortSelect = document.getElementById('cohortSelect');
         const authorSelect = document.getElementById('authorSelect');
         const listContainer = document.getElementById('listContainer');
         const listTitle = document.getElementById('listTitle');
         const articleList = document.getElementById('articleList');
+        
+        const gridMesh = document.getElementById('gridMesh');
+        const gridTotalCount = document.getElementById('gridTotalCount');
+
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
         const articleViewer = document.getElementById('articleViewer');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
+        // 탭 전환 이벤트 리스너
+        tabFilterBtn.addEventListener('click', () => {
+            tabFilterBtn.classList.add('active');
+            tabGridBtn.classList.remove('active');
+            viewFilter.style.display = 'block';
+            viewGrid.style.display = 'none';
+        });
+
+        tabGridBtn.addEventListener('click', () => {
+            tabGridBtn.classList.add('active');
+            tabFilterBtn.classList.remove('active');
+            viewGrid.style.display = 'block';
+            viewFilter.style.display = 'none';
+        });
+
         closeModalBtn.addEventListener('click', () => {
             articleViewer.classList.remove('open');
         });
 
+        // 초고속 CSV 파싱
         function fastParseCSV(text) {
             const articles = [];
-            let start = 0;
-            let inQuotes = false;
-            let row = [];
+            let start = 0, inQuotes = false, row = [];
             if (!text.endsWith('\n')) text += '\n';
 
             for (let i = 0; i < text.length; i++) {
-                if (text[i] === '"') {
-                    inQuotes = !inQuotes;
-                } else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
+                if (text[i] === '"') inQuotes = !inQuotes;
+                else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
                     let val = text.substring(start, i);
                     if (val.endsWith('\r')) val = val.slice(0, -1);
                     if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
                         val = val.substring(1, val.length - 1).replace(/""/g, '"');
                     }
                     row.push(val.trim());
-                    
                     if (text[i] === '\n') {
-                        // row[5]가 바로 구글 시트의 F열(글 종류) 데이터를 의미합니다.
                         if (row.length >= 8 && row[0] !== '' && !row[0].includes('관리 ID')) {
-                            articles.push({
-                                id: row[0], vol: row[1], date: row[2], cohort: row[3], 
-                                author: row[4], type: row[5], title: row[6], content: row[7]
-                            });
+                            articles.push({ id: row[0], vol: row[1], date: row[2], cohort: row[3], author: row[4], type: row[5], title: row[6], content: row[7] });
                         }
                         row = [];
                     }
@@ -344,39 +395,69 @@
             return articles;
         }
 
+        // 데이터 섞기 함수 (랜덤 블라인드를 위해 배열 순서를 무작위 혼합)
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
         async function loadSheetData() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
                 articlesData = fastParseCSV(csvText);
-                initDropdowns();
-                contentBody.textContent = '상단에서 조건을 선택하시거나 글 목록에서 항목을 클릭하세요.';
+                
+                initDropdowns();          // 세부조건 뷰 초기화
+                initBlindGrid();          // 랜덤 메쉬 그리드 초기화
+                
+                contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
             } catch (error) {
-                contentBody.textContent = '구글 시트 데이터를 불러오는 데 실패했습니다. 네트워크 연결을 확인해주세요.';
-                console.error(error);
+                contentBody.textContent = '데이터를 불러오는 데 실패했습니다.';
             }
         }
 
+        // [기능 1] 랜덤 블라인드 그리드 렌더링
+        function initBlindGrid() {
+            gridMesh.innerHTML = '';
+            gridTotalCount.textContent = articlesData.length;
+            
+            // 완벽한 우연을 위해 전체 글 배열을 무작위로 섞음
+            const shuffledArticles = shuffleArray(articlesData);
+            const fragment = document.createDocumentFragment();
+
+            shuffledArticles.forEach(article => {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                
+                cell.addEventListener('click', function() {
+                    // 읽음 표시 색상 변경
+                    this.classList.add('read');
+                    showArticleDetail(article.id);
+                    articleViewer.classList.add('open');
+                });
+                fragment.appendChild(cell);
+            });
+            gridMesh.appendChild(fragment);
+        }
+
+        // [기능 2] 세부조건 드롭다운 및 필터 로직 (v3.7 로직 그대로 유지)
         function initDropdowns() {
             typeSelect.innerHTML = '<option value="전체">전체</option>';
-            
-            // F열(item.type)에서 중복을 제거하고 정렬하여 글 종류 드롭다운 구성
             const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
-            
             const fragment = document.createDocumentFragment();
             types.forEach(type => {
                 const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
+                option.value = type; option.textContent = type;
                 fragment.appendChild(option);
             });
             typeSelect.appendChild(fragment);
 
             typeSelect.value = "전체";
-            typeSelect.disabled = false;
-            cohortSelect.disabled = false;
-            authorSelect.disabled = false;
-
+            typeSelect.disabled = cohortSelect.disabled = authorSelect.disabled = false;
             updateFilters();
         }
 
@@ -384,16 +465,13 @@
             const selectedType = typeSelect.value;
             const selectedCohort = cohortSelect.value;
             const selectedAuthor = authorSelect.value;
-
             let currentPool = articlesData;
-            if (selectedType && selectedType !== "전체") {
-                currentPool = currentPool.filter(item => item.type === selectedType);
-            }
+
+            if (selectedType && selectedType !== "전체") currentPool = currentPool.filter(item => item.type === selectedType);
 
             const validCohorts = currentPool.map(item => item.cohort).filter(c => c && (/^\d+기$/.test(c) || c === '기록 없음'));
             const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
-                if (a === "기록 없음") return 1;
-                if (b === "기록 없음") return -1;
+                if (a === "기록 없음") return 1; if (b === "기록 없음") return -1;
                 return parseInt(a) - parseInt(b);
             });
 
@@ -401,37 +479,27 @@
             const cohortFragment = document.createDocumentFragment();
             sortedCohorts.forEach(cohort => {
                 const option = document.createElement('option');
-                option.value = cohort;
-                option.textContent = cohort;
+                option.value = option.textContent = cohort;
                 if (cohort === selectedCohort) option.selected = true;
                 cohortFragment.appendChild(option);
             });
             cohortSelect.appendChild(cohortFragment);
-
-            if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") {
-                cohortSelect.value = "전체";
-            }
+            if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") cohortSelect.value = "전체";
 
             let authorPool = currentPool;
-            if (cohortSelect.value && cohortSelect.value !== "전체") {
-                authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
-            }
+            if (cohortSelect.value && cohortSelect.value !== "전체") authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
             const sortedAuthors = [...new Set(authorPool.map(item => item.author))].filter(Boolean).sort();
 
             authorSelect.innerHTML = '<option value="전체">전체</option>';
             const authorFragment = document.createDocumentFragment();
             sortedAuthors.forEach(author => {
                 const option = document.createElement('option');
-                option.value = author;
-                option.textContent = author;
+                option.value = option.textContent = author;
                 if (author === selectedAuthor) option.selected = true;
                 authorFragment.appendChild(option);
             });
             authorSelect.appendChild(authorFragment);
-
-            if (!sortedAuthors.includes(selectedAuthor) && selectedAuthor !== "전체") {
-                authorSelect.value = "전체";
-            }
+            if (!sortedAuthors.includes(selectedAuthor) && selectedAuthor !== "전체") authorSelect.value = "전체";
 
             renderArticleList();
         }
@@ -442,15 +510,9 @@
             const selectedAuthor = authorSelect.value;
 
             let filtered = articlesData;
-            if (selectedType && selectedType !== "전체") {
-                filtered = filtered.filter(item => item.type === selectedType);
-            }
-            if (selectedCohort && selectedCohort !== "전체") {
-                filtered = filtered.filter(item => item.cohort === selectedCohort);
-            }
-            if (selectedAuthor && selectedAuthor !== "전체") {
-                filtered = filtered.filter(item => item.author === selectedAuthor);
-            }
+            if (selectedType && selectedType !== "전체") filtered = filtered.filter(item => item.type === selectedType);
+            if (selectedCohort && selectedCohort !== "전체") filtered = filtered.filter(item => item.cohort === selectedCohort);
+            if (selectedAuthor && selectedAuthor !== "전체") filtered = filtered.filter(item => item.author === selectedAuthor);
 
             articleList.innerHTML = '';
             listTitle.textContent = `검색된 글 목록 (${filtered.length}건)`;
@@ -471,7 +533,6 @@
                     document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
                     li.classList.add('active');
                     showArticleDetail(article.id);
-                    
                     articleViewer.classList.add('open');
                 });
                 listFragment.appendChild(li);
@@ -496,7 +557,7 @@
             articleViewer.classList.remove('open');
             metaInfo.style.display = 'none';
             contentBody.className = 'placeholder-text';
-            contentBody.textContent = '목록에서 글을 선택하시면 전문이 표시됩니다.';
+            contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
         };
 
         typeSelect.addEventListener('change', resetViewer);
@@ -506,11 +567,11 @@
             articleViewer.classList.remove('open');
             metaInfo.style.display = 'none';
             contentBody.className = 'placeholder-text';
-            contentBody.textContent = '목록에서 글을 선택하시면 전문이 표시됩니다.';
+            contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
         });
 
+        // 데이터 로드 실행
         loadSheetData();
     </script>
 </body>
 </html>
- 
