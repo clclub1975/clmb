@@ -1,4 +1,4 @@
-<!-- v15.8: 물음표(?) 뱃지 수직/수평 정중앙 정렬 보정 및 툴팁 텍스트 줄바꿈/잘림 해결, 버전 v15.8 -->
+<!-- v15.9: [저장/종료] 확인창 문구를 "교정 전 상태로 표시됩니다"로 수정, 버전 v15.9 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -350,7 +350,7 @@
             color: #94a3b8;
         }
 
-        /* 원문자(?) 안내 툴팁 표준 CSS 개선 */
+        /* 원문자(?) 안내 툴팁 표준 CSS */
         .help-tip-wrap {
             position: relative;
             display: inline-flex;
@@ -384,7 +384,7 @@
             top: 135%;
             left: 0;
             width: 220px;
-            white-space: normal;           /* 부모의 nowrap 무효화 */
+            white-space: normal;
             word-break: keep-all;
             background-color: #1e293b;
             color: #ffffff;
@@ -701,7 +701,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.8</span>
+                <span class="version">v15.9</span>
             </h1>
         </header>
 
@@ -1217,7 +1217,7 @@
             }
         }
 
-        // v15.8: 캘린더 생성 (12개월 셀 전수 생성)
+        // v15.9: 캘린더 생성 (12개월 셀 전수 생성)
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -1395,11 +1395,12 @@
 
         function getSuccessAlertHtml(editorName) {
             if (!editorName) {
-                return `<strong>교정 전 상태로 변경되었습니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
+                return `<strong>교정 전 상태로 표시됩니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
             }
             return `<strong>[${editorName}] 교정자의 수정내용이 저장되었습니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
         }
 
+        // v15.9: [저장/종료] 확인창 문구 개선
         async function handleSaveAction(actionType) {
             if (isSaving) return;
 
@@ -1407,7 +1408,7 @@
 
             if (actionType === 'exit' && !editorName) {
                 showCustomConfirm(
-                    "교정자 이름을 비우고 저장하면 <strong>교정 전 상태</strong>로 변경됩니다.<br>진행하시겠습니까?",
+                    "교정자 이름을 비우고 저장하면 <strong>교정 전 상태</strong>로 표시됩니다.<br>진행하시겠습니까?",
                     () => executePostSave('교정', '', actionType)
                 );
                 return;
