@@ -1,4 +1,4 @@
-<!-- v15.6: 1984년 1~2월 열 생략 버그 수정(12개월 셀 전수 생성으로 001호 3월 정위치 복원), 버전 v15.6 -->
+<!-- v15.7: 교정자 이름 삭제 후 [저장/종료] 시 교정 전 상태로 복원 처리 및 원문자(?) 툴팁 추가, 버전 v15.7 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -314,6 +314,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            position: relative;
         }
         .row-2-right {
             display: inline-flex;
@@ -348,6 +349,67 @@
             text-align: center;
             color: #94a3b8;
         }
+
+        /* 원문자(?) 안내 툴팁 스타일 */
+        .help-tip-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            cursor: pointer;
+        }
+        .help-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #94a3b8;
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: bold;
+            transition: background-color 0.15s ease;
+        }
+        .help-tip-wrap:hover .help-badge {
+            background-color: #2563eb;
+        }
+        .help-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: 130%;
+            left: 0;
+            width: 250px;
+            background-color: #1e293b;
+            color: #ffffff;
+            text-align: left;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            font-weight: 500;
+            line-height: 1.4;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            word-break: keep-all;
+            pointer-events: none;
+        }
+        .help-tooltip::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 7px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #1e293b transparent;
+        }
+        .help-tip-wrap:hover .help-tooltip,
+        .help-tip-wrap:focus .help-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
         .btn-action {
             display: inline-flex;
             align-items: center;
@@ -505,6 +567,13 @@
             .editor-input {
                 width: 68px;
             }
+            .help-tooltip {
+                width: 220px;
+                left: -40px;
+            }
+            .help-tooltip::after {
+                left: 45px;
+            }
         }
 
         .modal-footer-finish {
@@ -628,7 +697,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.6</span>
+                <span class="version">v15.7</span>
             </h1>
         </header>
 
@@ -686,6 +755,13 @@
                         <label class="editor-input-wrap">교정자:
                             <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
                         </label>
+                        <!-- 원문자(?) 안내 툴팁 -->
+                        <div class="help-tip-wrap" tabindex="0">
+                            <span class="help-badge">?</span>
+                            <div class="help-tooltip">
+                                이름을 지운 상태에서 [저장/종료]를 누르면 교정 전 상태로 표시됩니다.
+                            </div>
+                        </div>
                     </div>
                     <div class="row-2-right">
                         <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
@@ -1137,7 +1213,7 @@
             }
         }
 
-        // v15.6: 캘린더 생성 시 1~12월 모든 열(td)을 무조건 온전히 생성
+        // v15.7: 캘린더 생성 (12개월 셀 전수 생성)
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -1314,13 +1390,28 @@
         }
 
         function getSuccessAlertHtml(editorName) {
+            if (!editorName) {
+                return `<strong>교정 전 상태로 변경되었습니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
+            }
             return `<strong>[${editorName}] 교정자의 수정내용이 저장되었습니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
         }
 
+        // v15.7: 교정자 이름 공백 처리 및 저장 분기
         async function handleSaveAction(actionType) {
             if (isSaving) return;
 
             const editorName = document.getElementById('editor-name-input').value.trim();
+
+            // 저장/종료 시 교정자 이름이 비어 있는 경우 -> 교정 전 상태 복원 안내
+            if (actionType === 'exit' && !editorName) {
+                showCustomConfirm(
+                    "교정자 이름을 비우고 저장하면 <strong>교정 전 상태</strong>로 변경됩니다.<br>진행하시겠습니까?",
+                    () => executePostSave('교정', '', actionType)
+                );
+                return;
+            }
+
+            // 그 외 일반 저장/계속 또는 완료 시에는 이름 입력 필수
             if (!editorName) {
                 showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
                 return;
@@ -1406,15 +1497,23 @@
                 const cellTd = document.getElementById(`cell-td-${currentIssueData.year}-${currentIssueData.month}`);
 
                 if (statusSpan) {
-                    statusSpan.textContent = editorName;
-                    statusSpan.title = `${statusText} (${editorName})`;
                     statusSpan.classList.remove('status-correct', 'status-progress', 'status-done');
-                    
+
                     if (statusText === '완료') {
+                        statusSpan.textContent = editorName || '완료';
+                        statusSpan.title = `완료 (${editorName})`;
                         statusSpan.classList.add('status-done');
                         if (cellTd) cellTd.classList.add('cell-completed');
-                    } else {
+                    } else if (statusText === '진행' || editorName !== '') {
+                        statusSpan.textContent = editorName || '진행';
+                        statusSpan.title = `진행 (${editorName})`;
                         statusSpan.classList.add('status-progress');
+                        if (cellTd) cellTd.classList.remove('cell-completed');
+                    } else {
+                        // v15.7: 미교정(교정 전) 상태 복귀
+                        statusSpan.textContent = '교정';
+                        statusSpan.title = '교정';
+                        statusSpan.classList.add('status-correct');
                         if (cellTd) cellTd.classList.remove('cell-completed');
                     }
                 }
