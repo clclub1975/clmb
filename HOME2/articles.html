@@ -1,4 +1,4 @@
-<!-- v3.1: CSS 스타일 적용 및 타이틀 아래 개발용 리마크 영역 제거 -->
+<!-- v3.2: 40권 테스트용 새로운 구글 시트 CSV 링크 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,20 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>촛불회보 기고문 아카이브</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; 
-            max-width: 900px; 
-            margin: 40px auto; 
-            padding: 20px; 
-            line-height: 1.6; 
-            color: #333; 
-            background-color: #f9fafb; 
-            word-break: keep-all; 
+        body {
+            font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            word-break: keep-all;
         }
-        h1 { text-align: center; color: #1f2937; margin-bottom: 10px; }
-        .version-badge { font-size: 14px; font-weight: normal; color: #6b7280; margin-left: 8px; }
-        p.subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; }
-        
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .version-badge {
+            font-size: 14px;
+            font-weight: normal;
+            color: #6b7280;
+            margin-left: 8px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
         .home-btn-container {
             margin-bottom: 20px;
         }
@@ -38,82 +50,90 @@
         .home-btn:hover {
             background-color: #e5e7eb;
         }
-
-        .filter-container { 
-            display: flex; 
-            gap: 15px; 
-            background: #ffffff; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
-            margin-bottom: 25px; 
+        .filter-container {
+            display: flex;
+            gap: 15px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            margin-bottom: 25px;
             flex-wrap: wrap;
         }
-        .filter-group { 
-            flex: 1; 
-            min-width: 220px; 
+        .filter-group {
+            flex: 1;
+            min-width: 220px;
         }
-        label { 
-            font-weight: 600; 
-            display: block; 
-            margin-bottom: 8px; 
-            font-size: 14px; 
-            color: #4b5563; 
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #4b5563;
         }
-        select { 
-            width: 100%; 
-            padding: 10px 12px; 
-            border-radius: 6px; 
-            border: 1px solid #d1d5db; 
-            font-size: 15px; 
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 15px;
             background-color: #fff;
             transition: border-color 0.15s ease-in-out;
         }
-        select:focus { 
-            border-color: #2563eb; 
-            outline: none; 
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); 
+        select:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
         select:disabled {
             background-color: #f3f4f6;
             cursor: not-allowed;
         }
-        
-        #articleViewer { 
-            background: #ffffff; 
-            padding: 30px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
-            border: 1px solid #e5e7eb; 
+        #articleViewer {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
         }
-        .meta-info { 
-            font-size: 14px; 
-            color: #4b5563; 
-            background-color: #f3f4f6; 
-            padding: 12px 16px; 
-            border-radius: 6px; 
-            margin-bottom: 20px; 
+        .meta-info {
+            font-size: 14px;
+            color: #4b5563;
+            background-color: #f3f4f6;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
             border-left: 4px solid #2563eb;
             display: none;
         }
-        #contentBody { 
-            white-space: pre-wrap; 
-            font-size: 16px; 
-            color: #1f2937; 
-            line-height: 1.8; 
+        #contentBody {
+            white-space: pre-wrap;
+            font-size: 16px;
+            color: #1f2937;
+            line-height: 1.8;
         }
         .placeholder-text {
             color: #9ca3af;
             text-align: center;
             padding: 40px 0;
         }
-
         /* 반응형 미디어 쿼리 적용 */
         @media (max-width: 768px) {
-            body { padding: 10px; margin: 10px auto; }
-            .filter-container { flex-direction: column; gap: 10px; padding: 15px; }
-            .filter-group { min-width: 100%; }
-            #articleViewer { padding: 15px; }
+            body {
+                padding: 10px;
+                margin: 10px auto;
+            }
+            .filter-container {
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
+            }
+            .filter-group {
+                min-width: 100%;
+            }
+            #articleViewer {
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -124,8 +144,7 @@
         <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.1</span></h1>
-
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.2</span></h1>
     <p class="subtitle">기수, 기고자, 기고문을 순서대로 선택하여 전문을 확인하세요.</p>
 
     <!-- 가로 배치형 필터 박스 -->
@@ -162,8 +181,9 @@
     </div>
 
     <script>
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6mZQwpFNu30Chf62zXmSiBGOE36xjEGRrhaW9p90W4M7BNT0xGKEbW3mrKSc9C1UfZwt9ry4MfOMN/pub?gid=251511332&single=true&output=csv';
-
+        // 새로운 40권 테스트용 CSV 링크 적용
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
+        
         let articlesData = [];
 
         const cohortSelect = document.getElementById('cohortSelect');
@@ -176,7 +196,7 @@
             let lines = [];
             let row = [''];
             let inQuotes = false;
-            
+
             for (let i = 0; i < text.length; i++) {
                 let c = text[i];
                 let nextC = text[i + 1];
@@ -229,7 +249,6 @@
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
                 articlesData = parseCSV(csvText);
-
                 initDropdowns();
             } catch (error) {
                 contentBody.textContent = '구글 시트 데이터를 불러오는 데 실패했습니다. 네트워크 연결을 확인해주세요.';
@@ -265,6 +284,7 @@
             const selectedCohort = this.value;
             authorSelect.innerHTML = '<option value="">-- 기고자를 선택하세요 --</option>';
             articleSelect.innerHTML = '<option value="">-- 기고문을 선택하세요 --</option>';
+            
             authorSelect.disabled = !selectedCohort;
             articleSelect.disabled = true;
             metaInfo.style.display = 'none';
@@ -292,6 +312,7 @@
             const selectedCohort = cohortSelect.value;
             const selectedAuthor = this.value;
             articleSelect.innerHTML = '<option value="">-- 기고문을 선택하세요 --</option>';
+            
             articleSelect.disabled = !selectedAuthor;
             metaInfo.style.display = 'none';
             contentBody.className = 'placeholder-text';
@@ -336,4 +357,3 @@
     </script>
 </body>
 </html>
- 
