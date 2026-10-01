@@ -1,4 +1,4 @@
-<!-- v3.4: 기본값 전체 지정, 중복 항목 제거, 모바일 최적화 글 목록 레이아웃 -->
+<!-- v3.5: 초고속 파싱 엔진(Index Slicing) 및 DOM 렌더링 최적화 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -89,7 +89,7 @@
             background-color: #f3f4f6;
             cursor: not-allowed;
         }
-        /* 하단 글 목록 리스트 스타일 (모바일 두 줄 방지 축약형) */
+        /* 하단 글 목록 리스트 스타일 */
         .list-container {
             background: #ffffff;
             padding: 20px;
@@ -196,28 +196,23 @@
         <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.4</span></h1>
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.5</span></h1>
     <p class="subtitle">글 종류, 기수, 기고자 조건을 선택하여 해당 글 목록을 확인하세요.</p>
 
     <!-- 3열 배치형 필터 박스 -->
     <div class="filter-container">
-        <!-- 1단계: 글 종류 선택 -->
         <div class="filter-group">
             <label for="typeSelect">1. 글 종류</label>
             <select id="typeSelect" disabled>
-                <option value="전체">불러오는 중...</option>
+                <option value="전체">데이터 로딩 중...</option>
             </select>
         </div>
-
-        <!-- 2단계: 기수 선택 -->
         <div class="filter-group">
             <label for="cohortSelect">2. 기수</label>
             <select id="cohortSelect" disabled>
                 <option value="전체">전체</option>
             </select>
         </div>
-
-        <!-- 3단계: 기고자 선택 -->
         <div class="filter-group">
             <label for="authorSelect">3. 기고자</label>
             <select id="authorSelect" disabled>
@@ -227,7 +222,7 @@
     </div>
 
     <!-- 조건에 맞는 글 목록 출력 영역 -->
-    <div class="list-container" id="listContainer">
+    <div class="list-container" id="listContainer" style="display:none;">
         <h3 id="listTitle">검색된 글 목록</h3>
         <ul class="article-list" id="articleList"></ul>
     </div>
@@ -235,7 +230,7 @@
     <!-- 기고문 전문 출력 영역 -->
     <div id="articleViewer">
         <div class="meta-info" id="metaInfo"></div>
-        <div id="contentBody" class="placeholder-text">목록에서 글을 선택하시면 전문이 표시됩니다.</div>
+        <div id="contentBody" class="placeholder-text">데이터를 불러오는 중입니다. 잠시만 기다려주세요.</div>
     </div>
 
     <script>
@@ -252,81 +247,83 @@
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
 
-        function parseCSV(text) {
-            let lines = [];
-            let row = [''];
+        // v3.5 초고속 CSV 파싱 엔진 (문자열 결합 대신 Index Slicing 사용)
+        function fastParseCSV(text) {
+            const articles = [];
+            let start = 0;
             let inQuotes = false;
+            let row = [];
+
+            // CSV 문자열의 끝에 줄바꿈이 없으면 추가하여 처리 보장
+            if (!text.endsWith('\n')) text += '\n';
 
             for (let i = 0; i < text.length; i++) {
-                let c = text[i];
-                let nextC = text[i + 1];
-
-                if (c === '"') {
-                    if (inQuotes && nextC === '"') {
-                        row[row.length - 1] += '"';
-                        i++;
-                    } else {
-                        inQuotes = !inQuotes;
+                if (text[i] === '"') {
+                    inQuotes = !inQuotes;
+                } else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
+                    let val = text.substring(start, i);
+                    
+                    // \r\n (윈도우 줄바꿈) 호환 처리
+                    if (val.endsWith('\r')) val = val.slice(0, -1);
+                    
+                    // 쌍따옴표 묶임 제거 및 내부 쌍따옴표 이스케이프 해제
+                    if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
+                        val = val.substring(1, val.length - 1).replace(/""/g, '"');
                     }
-                } else if (c === ',' && !inQuotes) {
-                    row.push('');
-                } else if ((c === '\r' && nextC === '\n') && !inQuotes) {
-                    lines.push(row);
-                    row = [''];
-                    i++;
-                } else if (c === '\n' && !inQuotes) {
-                    lines.push(row);
-                    row = [''];
-                } else {
-                    row[row.length - 1] += c;
+                    
+                    row.push(val.trim());
+                    
+                    if (text[i] === '\n') {
+                        // 헤더(첫 줄)나 빈 행 스킵 ('관리 ID' 또는 '관리번호' 등으로 시작하면 제외)
+                        if (row.length >= 8 && row[0] !== '' && !row[0].includes('관리 ID')) {
+                            articles.push({
+                                id: row[0],
+                                vol: row[1],
+                                date: row[2],
+                                cohort: row[3],
+                                author: row[4],
+                                type: row[5],
+                                title: row[6],
+                                content: row[7]
+                            });
+                        }
+                        row = [];
+                    }
+                    start = i + 1; // 다음 셀의 시작점 갱신
                 }
             }
-            if (row.length > 1 || row[0] !== '') {
-                lines.push(row);
-            }
-
-            const result = [];
-            for (let i = 1; i < lines.length; i++) {
-                const r = lines[i];
-                if (r.length >= 8 && r[0].trim() !== '') {
-                    result.push({
-                        id: r[0].trim(),
-                        vol: r[1] ? r[1].trim() : '',
-                        date: r[2] ? r[2].trim() : '',
-                        cohort: r[3] ? r[3].trim() : '',
-                        author: r[4] ? r[4].trim() : '',
-                        type: r[5] ? r[5].trim() : '',
-                        title: r[6] ? r[6].trim() : '',
-                        content: r[7] ? r[7].trim() : ''
-                    });
-                }
-            }
-            return result;
+            return articles;
         }
 
         async function loadSheetData() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
-                articlesData = parseCSV(csvText);
+                
+                // 파싱 엔진 교체
+                articlesData = fastParseCSV(csvText);
+                
                 initDropdowns();
+                contentBody.textContent = '상단에서 조건을 선택하시거나 글 목록에서 항목을 클릭하세요.';
             } catch (error) {
                 contentBody.textContent = '구글 시트 데이터를 불러오는 데 실패했습니다. 네트워크 연결을 확인해주세요.';
                 console.error(error);
             }
         }
 
-        // 초기 드롭다운 설정 (기본값 '전체')
+        // 초기 드롭다운 설정 (DocumentFragment 활용하여 렌더링 부하 최소화)
         function initDropdowns() {
             typeSelect.innerHTML = '<option value="전체">전체</option>';
             const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
             
+            const fragment = document.createDocumentFragment();
             types.forEach(type => {
                 const option = document.createElement('option');
                 option.value = type;
                 option.textContent = type;
-                typeSelect.appendChild(option);
+                fragment.appendChild(option);
             });
+            typeSelect.appendChild(fragment);
 
             typeSelect.value = "전체";
             typeSelect.disabled = false;
@@ -336,7 +333,7 @@
             updateFilters();
         }
 
-        // 연쇄 필터링 업데이트 함수
+        // 연쇄 필터링 업데이트
         function updateFilters() {
             const selectedType = typeSelect.value;
             const selectedCohort = cohortSelect.value;
@@ -356,13 +353,15 @@
             });
 
             cohortSelect.innerHTML = '<option value="전체">전체</option>';
+            const cohortFragment = document.createDocumentFragment();
             sortedCohorts.forEach(cohort => {
                 const option = document.createElement('option');
                 option.value = cohort;
                 option.textContent = cohort;
                 if (cohort === selectedCohort) option.selected = true;
-                cohortSelect.appendChild(option);
+                cohortFragment.appendChild(option);
             });
+            cohortSelect.appendChild(cohortFragment);
 
             if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") {
                 cohortSelect.value = "전체";
@@ -376,13 +375,15 @@
             const sortedAuthors = [...new Set(authorPool.map(item => item.author))].filter(Boolean).sort();
 
             authorSelect.innerHTML = '<option value="전체">전체</option>';
+            const authorFragment = document.createDocumentFragment();
             sortedAuthors.forEach(author => {
                 const option = document.createElement('option');
                 option.value = author;
                 option.textContent = author;
                 if (author === selectedAuthor) option.selected = true;
-                authorSelect.appendChild(option);
+                authorFragment.appendChild(option);
             });
+            authorSelect.appendChild(authorFragment);
 
             if (!sortedAuthors.includes(selectedAuthor) && selectedAuthor !== "전체") {
                 authorSelect.value = "전체";
@@ -391,7 +392,7 @@
             renderArticleList();
         }
 
-        // 하단 글 목록 렌더링 (제목 및 기고자만 간결하게 표시)
+        // 하단 글 목록 초고속 렌더링
         function renderArticleList() {
             const selectedType = typeSelect.value;
             const selectedCohort = cohortSelect.value;
@@ -417,20 +418,21 @@
                 return;
             }
 
+            const listFragment = document.createDocumentFragment();
             filtered.forEach(article => {
                 const li = document.createElement('li');
                 li.className = 'article-item';
-                // 모바일 줄바꿈 방지를 위해 제목과 기고자만 짧게 표기
                 li.textContent = `[${article.title}] - ${article.author}`;
-                li.title = `[${article.title}] - ${article.author} (${article.cohort}, ${article.vol})`; // 툴팁으로 상세 정보 제공
+                li.title = `[${article.title}] - ${article.author} (${article.cohort}, ${article.vol})`;
                 li.addEventListener('click', function() {
                     document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
                     li.classList.add('active');
                     showArticleDetail(article.id);
                 });
-                articleList.appendChild(li);
+                listFragment.appendChild(li);
             });
-
+            
+            articleList.appendChild(listFragment);
             listContainer.style.display = 'block';
         }
 
@@ -445,6 +447,7 @@
             }
         }
 
+        // 이벤트 리스너 등록
         typeSelect.addEventListener('change', () => {
             updateFilters();
             metaInfo.style.display = 'none';
@@ -463,9 +466,10 @@
             renderArticleList();
             metaInfo.style.display = 'none';
             contentBody.className = 'placeholder-text';
-            contentBody.textContent> = '목록에서 글을 선택하시면 전문이 표시됩니다.';
+            contentBody.textContent = '목록에서 글을 선택하시면 전문이 표시됩니다.';
         });
 
+        // 초기 데이터 로딩 실행
         loadSheetData();
     </script>
 </body>
