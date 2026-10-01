@@ -1,4 +1,4 @@
-<!-- v15.7: 교정자 이름 삭제 후 [저장/종료] 시 교정 전 상태로 복원 처리 및 원문자(?) 툴팁 추가, 버전 v15.7 -->
+<!-- v15.8: 물음표(?) 뱃지 수직/수평 정중앙 정렬 보정 및 툴팁 텍스트 줄바꿈/잘림 해결, 버전 v15.8 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -350,50 +350,54 @@
             color: #94a3b8;
         }
 
-        /* 원문자(?) 안내 툴팁 스타일 */
+        /* 원문자(?) 안내 툴팁 표준 CSS 개선 */
         .help-tip-wrap {
             position: relative;
             display: inline-flex;
             align-items: center;
             margin-left: 4px;
             cursor: pointer;
+            outline: none;
         }
         .help-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            display: inline-block;
             width: 18px;
             height: 18px;
+            line-height: 18px;
+            text-align: center;
             border-radius: 50%;
             background-color: #94a3b8;
             color: #ffffff;
             font-size: 0.72rem;
-            font-weight: bold;
+            font-weight: 700;
             transition: background-color 0.15s ease;
+            user-select: none;
         }
-        .help-tip-wrap:hover .help-badge {
+        .help-tip-wrap:hover .help-badge,
+        .help-tip-wrap:focus .help-badge {
             background-color: #2563eb;
         }
         .help-tooltip {
             visibility: hidden;
             opacity: 0;
             position: absolute;
-            top: 130%;
+            top: 135%;
             left: 0;
-            width: 250px;
+            width: 220px;
+            white-space: normal;           /* 부모의 nowrap 무효화 */
+            word-break: keep-all;
             background-color: #1e293b;
             color: #ffffff;
             text-align: left;
-            padding: 7px 10px;
+            padding: 8px 10px;
             border-radius: 6px;
             font-size: 0.76rem;
             font-weight: 500;
-            line-height: 1.4;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-            word-break: keep-all;
+            line-height: 1.45;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
             pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
         }
         .help-tooltip::after {
             content: "";
@@ -568,11 +572,11 @@
                 width: 68px;
             }
             .help-tooltip {
-                width: 220px;
-                left: -40px;
+                width: 210px;
+                left: -30px;
             }
             .help-tooltip::after {
-                left: 45px;
+                left: 35px;
             }
         }
 
@@ -697,7 +701,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.7</span>
+                <span class="version">v15.8</span>
             </h1>
         </header>
 
@@ -1213,7 +1217,7 @@
             }
         }
 
-        // v15.7: 캘린더 생성 (12개월 셀 전수 생성)
+        // v15.8: 캘린더 생성 (12개월 셀 전수 생성)
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -1396,13 +1400,11 @@
             return `<strong>[${editorName}] 교정자의 수정내용이 저장되었습니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
         }
 
-        // v15.7: 교정자 이름 공백 처리 및 저장 분기
         async function handleSaveAction(actionType) {
             if (isSaving) return;
 
             const editorName = document.getElementById('editor-name-input').value.trim();
 
-            // 저장/종료 시 교정자 이름이 비어 있는 경우 -> 교정 전 상태 복원 안내
             if (actionType === 'exit' && !editorName) {
                 showCustomConfirm(
                     "교정자 이름을 비우고 저장하면 <strong>교정 전 상태</strong>로 변경됩니다.<br>진행하시겠습니까?",
@@ -1411,7 +1413,6 @@
                 return;
             }
 
-            // 그 외 일반 저장/계속 또는 완료 시에는 이름 입력 필수
             if (!editorName) {
                 showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
                 return;
@@ -1510,7 +1511,6 @@
                         statusSpan.classList.add('status-progress');
                         if (cellTd) cellTd.classList.remove('cell-completed');
                     } else {
-                        // v15.7: 미교정(교정 전) 상태 복귀
                         statusSpan.textContent = '교정';
                         statusSpan.title = '교정';
                         statusSpan.classList.add('status-correct');
