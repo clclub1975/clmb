@@ -1,4 +1,4 @@
-<!-- v3.2: 40권 테스트용 새로운 구글 시트 CSV 링크 연동 -->
+<!-- v3.3: 3열 필터 레이아웃 및 하단 글 목록 리스트 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 40px auto;
             padding: 20px;
             line-height: 1.6;
@@ -50,19 +50,19 @@
         .home-btn:hover {
             background-color: #e5e7eb;
         }
+        /* 3열 필터 레이아웃 */
         .filter-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             background: #ffffff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
-            flex-wrap: wrap;
         }
         .filter-group {
-            flex: 1;
-            min-width: 220px;
+            width: 100%;
         }
         label {
             font-weight: 600;
@@ -89,6 +89,51 @@
             background-color: #f3f4f6;
             cursor: not-allowed;
         }
+        /* 하단 글 목록 리스트 스타일 */
+        .list-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            border: 1px solid #e5e7eb;
+            display: none;
+        }
+        .list-container h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 8px;
+        }
+        .article-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .article-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            margin-bottom: 4px;
+            border: 1px solid transparent;
+            font-size: 15px;
+        }
+        .article-item:hover {
+            background-color: #f3f4f6;
+            border-color: #e5e7eb;
+        }
+        .article-item.active {
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        /* 전문 출력 영역 */
         #articleViewer {
             background: #ffffff;
             padding: 30px;
@@ -117,19 +162,24 @@
             text-align: center;
             padding: 40px 0;
         }
-        /* 반응형 미디어 쿼리 적용 */
+        /* 반응형: PC와 모바일 모두 3열 유지 및 모바일 최적화 */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
                 margin: 10px auto;
             }
             .filter-container {
-                flex-direction: column;
-                gap: 10px;
-                padding: 15px;
+                grid-template-columns: repeat(3, 1fr); /* 모바일에서도 3열 유지 */
+                gap: 8px;
+                padding: 12px;
             }
-            .filter-group {
-                min-width: 100%;
+            label {
+                font-size: 12px;
+                margin-bottom: 4px;
+            }
+            select {
+                padding: 6px 8px;
+                font-size: 13px;
             }
             #articleViewer {
                 padding: 15px;
@@ -144,51 +194,59 @@
         <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.2</span></h1>
-    <p class="subtitle">기수, 기고자, 기고문을 순서대로 선택하여 전문을 확인하세요.</p>
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.3</span></h1>
+    <p class="subtitle">글 종류, 기수, 기고자 조건을 선택하여 해당 글 목록을 확인하세요.</p>
 
-    <!-- 가로 배치형 필터 박스 -->
+    <!-- 3열 배치형 필터 박스 -->
     <div class="filter-container">
-        <!-- 1단계: 기수 선택 -->
+        <!-- 1단계: 글 종류 선택 -->
         <div class="filter-group">
-            <label for="cohortSelect">1. 기수 선택</label>
+            <label for="typeSelect">1. 글 종류 선택</label>
+            <select id="typeSelect" disabled>
+                <option value="">불러오는 중...</option>
+            </select>
+        </div>
+
+        <!-- 2단계: 기수 선택 -->
+        <div class="filter-group">
+            <label for="cohortSelect">2. 기수 선택</label>
             <select id="cohortSelect" disabled>
-                <option value="">데이터 불러오는 중...</option>
+                <option value="">먼저 종류 선택</option>
             </select>
         </div>
 
-        <!-- 2단계: 기고자 선택 -->
+        <!-- 3단계: 기고자 선택 -->
         <div class="filter-group">
-            <label for="authorSelect">2. 기고자 선택</label>
+            <label for="authorSelect">3. 기고자 선택</label>
             <select id="authorSelect" disabled>
-                <option value="">-- 기고자를 선택하세요 --</option>
+                <option value="">먼저 기수 선택</option>
             </select>
         </div>
+    </div>
 
-        <!-- 3단계: 기고문 선택 -->
-        <div class="filter-group">
-            <label for="articleSelect">3. 기고문 선택</label>
-            <select id="articleSelect" disabled>
-                <option value="">-- 기고문을 선택하세요 --</option>
-            </select>
-        </div>
+    <!-- 조건에 맞는 글 목록 출력 영역 -->
+    <div class="list-container" id="listContainer">
+        <h3 id="listTitle">검색된 글 목록</h3>
+        <ul class="article-list" id="articleList"></ul>
     </div>
 
     <!-- 기고문 전문 출력 영역 -->
     <div id="articleViewer">
         <div class="meta-info" id="metaInfo"></div>
-        <div id="contentBody" class="placeholder-text">구글 시트에서 데이터를 불러오고 있습니다. 잠시만 기다려주세요.</div>
+        <div id="contentBody" class="placeholder-text">상단 조건들을 선택한 후 글 목록에서 항목을 클릭하세요.</div>
     </div>
 
     <script>
-        // 새로운 40권 테스트용 CSV 링크 적용
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
         
         let articlesData = [];
 
+        const typeSelect = document.getElementById('typeSelect');
         const cohortSelect = document.getElementById('cohortSelect');
         const authorSelect = document.getElementById('authorSelect');
-        const articleSelect = document.getElementById('articleSelect');
+        const listContainer = document.getElementById('listContainer');
+        const listTitle = document.getElementById('listTitle');
+        const articleList = document.getElementById('articleList');
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
 
@@ -249,108 +307,168 @@
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
                 articlesData = parseCSV(csvText);
-                initDropdowns();
+                initTypeDropdown();
             } catch (error) {
                 contentBody.textContent = '구글 시트 데이터를 불러오는 데 실패했습니다. 네트워크 연결을 확인해주세요.';
                 console.error(error);
             }
         }
 
-        function initDropdowns() {
-            cohortSelect.innerHTML = '<option value="">-- 기수를 선택하세요 --</option><option value="전체">전체</option>';
+        // 1단계: 글 종류 초기화
+        function initTypeDropdown() {
+            typeSelect.innerHTML = '<option value="">-- 전체 --</option><option value="전체">전체</option>';
+            const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
             
-            const validCohorts = articlesData.map(item => item.cohort).filter(cohort => {
-                return cohort && (/^\d+기$/.test(cohort) || cohort === '기록 없음');
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                typeSelect.appendChild(option);
             });
 
+            typeSelect.disabled = false;
+            updateFilters();
+        }
+
+        // 연쇄 필터링 업데이트 함수
+        function updateFilters() {
+            const selectedType = typeSelect.value;
+            const selectedCohort = cohortSelect.value;
+            const selectedAuthor = authorSelect.value;
+
+            // 데이터 필터링 풀 설정
+            let currentPool = articlesData;
+            if (selectedType && selectedType !== "전체") {
+                currentPool = currentPool.filter(item => item.type === selectedType);
+            }
+
+            // 2단계 기수 목록 갱신
+            const validCohorts = currentPool.map(item => item.cohort).filter(c => c && (/^\d+기$/.test(c) || c === '기록 없음'));
             const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
                 if (a === "기록 없음") return 1;
                 if (b === "기록 없음") return -1;
                 return parseInt(a) - parseInt(b);
             });
 
+            cohortSelect.innerHTML = '<option value="">-- 전체 --</option><option value="전체">전체</option>';
             sortedCohorts.forEach(cohort => {
                 const option = document.createElement('option');
                 option.value = cohort;
                 option.textContent = cohort;
+                if (cohort === selectedCohort) option.selected = true;
                 cohortSelect.appendChild(option);
             });
+            cohortSelect.disabled = !selectedType;
 
-            cohortSelect.disabled = false;
-            contentBody.textContent = '원하시는 기고문을 선택하시면 이곳에 전문이 표시됩니다.';
-        }
-
-        cohortSelect.addEventListener('change', function() {
-            const selectedCohort = this.value;
-            authorSelect.innerHTML = '<option value="">-- 기고자를 선택하세요 --</option>';
-            articleSelect.innerHTML = '<option value="">-- 기고문을 선택하세요 --</option>';
-            
-            authorSelect.disabled = !selectedCohort;
-            articleSelect.disabled = true;
-            metaInfo.style.display = 'none';
-            contentBody.className = 'placeholder-text';
-            contentBody.textContent = '원하시는 기고문을 선택하시면 이곳에 전문이 표시됩니다.';
-
-            if (!selectedCohort) return;
-
-            let filteredAuthors = [];
-            if (selectedCohort === "전체") {
-                filteredAuthors = [...new Set(articlesData.map(item => item.author))].filter(Boolean).sort();
-            } else {
-                filteredAuthors = [...new Set(articlesData.filter(item => item.cohort === selectedCohort).map(item => item.author))].filter(Boolean).sort();
+            // 기수가 풀에 없으면 초기화
+            if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") {
+                cohortSelect.value = "";
             }
 
-            filteredAuthors.forEach(author => {
+            // 3단계 기고자 목록 갱신
+            let authorPool = currentPool;
+            if (cohortSelect.value && cohortSelect.value !== "전체") {
+                authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
+            }
+            const sortedAuthors = [...new Set(authorPool.map(item => item.author))].filter(Boolean).sort();
+
+            authorSelect.innerHTML = '<option value="">-- 전체 --</option><option value="전체">전체</option>';
+            sortedAuthors.forEach(author => {
                 const option = document.createElement('option');
                 option.value = author;
                 option.textContent = author;
+                if (author === selectedAuthor) option.selected = true;
                 authorSelect.appendChild(option);
             });
-        });
+            authorSelect.disabled = !cohortSelect.value;
 
-        authorSelect.addEventListener('change', function() {
-            const selectedCohort = cohortSelect.value;
-            const selectedAuthor = this.value;
-            articleSelect.innerHTML = '<option value="">-- 기고문을 선택하세요 --</option>';
-            
-            articleSelect.disabled = !selectedAuthor;
-            metaInfo.style.display = 'none';
-            contentBody.className = 'placeholder-text';
-            contentBody.textContent = '원하시는 기고문을 선택하시면 이곳에 전문이 표시됩니다.';
-
-            if (!selectedAuthor) return;
-
-            let filteredArticles = [];
-            if (selectedCohort === "전체") {
-                filteredArticles = articlesData.filter(item => item.author === selectedAuthor);
-            } else {
-                filteredArticles = articlesData.filter(item => item.cohort === selectedCohort && item.author === selectedAuthor);
+            if (!sortedAuthors.includes(selectedAuthor) && selectedAuthor !== "전체") {
+                authorSelect.value = "";
             }
 
-            filteredArticles.forEach(article => {
-                const option = document.createElement('option');
-                option.value = article.id;
-                option.textContent = article.title;
-                articleSelect.appendChild(option);
-            });
-        });
+            // 최종 글 목록 렌더링
+            renderArticleList();
+        }
 
-        articleSelect.addEventListener('change', function() {
-            const selectedId = this.value;
-            if (!selectedId) {
-                metaInfo.style.display = 'none';
-                contentBody.className = 'placeholder-text';
-                contentBody.textContent = '원하시는 기고문을 선택하시면 이곳에 전문이 표시됩니다.';
+        // 하단 글 목록 렌더링
+        function renderArticleList() {
+            const selectedType = typeSelect.value;
+            const selectedCohort = cohortSelect.value;
+            const selectedAuthor = authorSelect.value;
+
+            if (!selectedType) {
+                listContainer.style.display = 'none';
                 return;
             }
 
-            const article = articlesData.find(item => item.id === selectedId);
+            let filtered = articlesData;
+            if (selectedType && selectedType !== "전체") {
+                filtered = filtered.filter(item => item.type === selectedType);
+            }
+            if (selectedCohort && selectedCohort !== "전체") {
+                filtered = filtered.filter(item => item.cohort === selectedCohort);
+            }
+            if (selectedAuthor && selectedAuthor !== "전체") {
+                filtered = filtered.filter(item => item.author === selectedAuthor);
+            }
+
+            articleList.innerHTML = '';
+            listTitle.textContent = `검색된 글 목록 (${filtered.length}건)`;
+
+            if (filtered.length === 0) {
+                articleList.innerHTML = '<li style="padding: 10px; color: #9ca3af; text-align: center;">조건에 일치하는 글이 없습니다.</li>';
+                listContainer.style.display = 'block';
+                return;
+            }
+
+            filtered.forEach(article => {
+                const li = document.createElement('li');
+                li.className = 'article-item';
+                li.textContent = `[${article.title}] (${article.cohort} / ${article.author} / ${article.vol})`;
+                li.addEventListener('click', function() {
+                    document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
+                    li.classList.add('active');
+                    showArticleDetail(article.id);
+                });
+                articleList.appendChild(li);
+            });
+
+            listContainer.style.display = 'block';
+        }
+
+        // 전문 뷰어 표시
+        function showArticleDetail(id) {
+            const article = articlesData.find(item => item.id === id);
             if (article) {
                 metaInfo.style.display = 'block';
                 metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type} | 관리번호: ${article.id}`;
                 contentBody.className = '';
                 contentBody.textContent = article.content;
             }
+        }
+
+        typeSelect.addEventListener('change', () => {
+            cohortSelect.value = "";
+            authorSelect.value = "";
+            updateFilters();
+            metaInfo.style.display = 'none';
+            contentBody.className = 'placeholder-text';
+            contentBody.textContent = '상단 조건들을 선택한 후 글 목록에서 항목을 클릭하세요.';
+        });
+
+        cohortSelect.addEventListener('change', () => {
+            authorSelect.value = "";
+            updateFilters();
+            metaInfo.style.display = 'none';
+            contentBody.className = 'placeholder-text';
+            contentBody.textContent = '상단 조건들을 선택한 후 글 목록에서 항목을 클릭하세요.';
+        });
+
+        authorSelect.addEventListener('change', () => {
+            renderArticleList();
+            metaInfo.style.display = 'none';
+            contentBody.className = 'placeholder-text';
+            contentBody.textContent = '상단 조건들을 선택한 후 글 목록에서 항목을 클릭하세요.';
         });
 
         loadSheetData();
