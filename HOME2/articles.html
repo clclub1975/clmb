@@ -1,4 +1,4 @@
-<!-- v3.5: 초고속 파싱 엔진(Index Slicing) 및 DOM 렌더링 최적화 적용 -->
+<!-- v3.6: 글 목록 간격 최적화 및 모바일 모달(Modal) 뷰어 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -50,6 +50,7 @@
         .home-btn:hover {
             background-color: #e5e7eb;
         }
+        
         /* 3열 필터 레이아웃 */
         .filter-container {
             display: grid;
@@ -89,6 +90,7 @@
             background-color: #f3f4f6;
             cursor: not-allowed;
         }
+        
         /* 하단 글 목록 리스트 스타일 */
         .list-container {
             background: #ffffff;
@@ -110,15 +112,16 @@
             list-style: none;
             padding: 0;
             margin: 0;
-            max-height: 250px;
+            max-height: 300px;
             overflow-y: auto;
         }
+        /* v3.6: 글 목록 간격 촘촘하게 최적화 */
         .article-item {
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 5px 10px; /* 기존 8px 12px에서 축소 */
+            border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.15s;
-            margin-bottom: 4px;
+            margin-bottom: 2px; /* 기존 4px에서 축소 */
             border: 1px solid transparent;
             font-size: 14px;
             white-space: nowrap;
@@ -135,13 +138,18 @@
             color: #1d4ed8;
             font-weight: 600;
         }
-        /* 전문 출력 영역 */
-        #articleViewer {
+
+        /* 전문 출력 영역 (PC 기본 스타일) */
+        .viewer-content-box {
             background: #ffffff;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             border: 1px solid #e5e7eb;
+            position: relative;
+        }
+        .close-btn {
+            display: none; /* PC에서는 닫기 버튼 숨김 */
         }
         .meta-info {
             font-size: 14px;
@@ -164,7 +172,8 @@
             text-align: center;
             padding: 40px 0;
         }
-        /* 반응형: PC와 모바일 모두 3열 유지 및 모바일 최적화 */
+
+        /* v3.6 반응형: 모바일 모달 및 3열 유지 */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -183,8 +192,51 @@
                 padding: 6px 4px;
                 font-size: 12px;
             }
+            
+            /* 모바일 모달(Modal) 창 스타일 적용 */
             #articleViewer {
+                display: none; /* 평소에는 숨김 */
+                position: fixed;
+                top: 0; 
+                left: 0; 
+                width: 100%; 
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.6);
+                z-index: 9999;
                 padding: 15px;
+                box-sizing: border-box;
+                align-items: center;
+                justify-content: center;
+            }
+            #articleViewer.open {
+                display: flex; /* 목록 클릭 시 모달 열림 */
+            }
+            .viewer-content-box {
+                width: 100%;
+                max-height: 90vh; /* 화면 높이의 90%까지만 커짐 */
+                overflow-y: auto; /* 내용이 길면 내부 스크롤 */
+                padding: 20px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            }
+            /* 모달 닫기 버튼 활성화 */
+            .close-btn {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 15px;
+                color: #374151;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #e5e7eb;
+                cursor: pointer;
+                font-weight: 600;
+                position: sticky;
+                top: 0;
+                background: #fff;
+            }
+            .close-icon {
+                color: #ef4444;
+                font-size: 18px;
             }
         }
     </style>
@@ -196,7 +248,7 @@
         <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.5</span></h1>
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v3.6</span></h1>
     <p class="subtitle">글 종류, 기수, 기고자 조건을 선택하여 해당 글 목록을 확인하세요.</p>
 
     <!-- 3열 배치형 필터 박스 -->
@@ -227,10 +279,18 @@
         <ul class="article-list" id="articleList"></ul>
     </div>
 
-    <!-- 기고문 전문 출력 영역 -->
+    <!-- 기고문 전문 출력 영역 (모바일에서는 모달로 변환됨) -->
     <div id="articleViewer">
-        <div class="meta-info" id="metaInfo"></div>
-        <div id="contentBody" class="placeholder-text">데이터를 불러오는 중입니다. 잠시만 기다려주세요.</div>
+        <div class="viewer-content-box">
+            <!-- 모달 닫기 버튼 (PC에서는 숨김 처리) -->
+            <div id="closeModalBtn" class="close-btn">
+                <span>기록 보기</span>
+                <span class="close-icon">✕ 닫기</span>
+            </div>
+            
+            <div class="meta-info" id="metaInfo"></div>
+            <div id="contentBody" class="placeholder-text">데이터를 불러오는 중입니다. 잠시만 기다려주세요.</div>
+        </div>
     </div>
 
     <script>
@@ -246,15 +306,20 @@
         const articleList = document.getElementById('articleList');
         const metaInfo = document.getElementById('metaInfo');
         const contentBody = document.getElementById('contentBody');
+        const articleViewer = document.getElementById('articleViewer');
+        const closeModalBtn = document.getElementById('closeModalBtn');
 
-        // v3.5 초고속 CSV 파싱 엔진 (문자열 결합 대신 Index Slicing 사용)
+        // 모달 닫기 이벤트 리스너
+        closeModalBtn.addEventListener('click', () => {
+            articleViewer.classList.remove('open');
+        });
+
+        // v3.5 초고속 CSV 파싱 엔진 유지
         function fastParseCSV(text) {
             const articles = [];
             let start = 0;
             let inQuotes = false;
             let row = [];
-
-            // CSV 문자열의 끝에 줄바꿈이 없으면 추가하여 처리 보장
             if (!text.endsWith('\n')) text += '\n';
 
             for (let i = 0; i < text.length; i++) {
@@ -262,34 +327,22 @@
                     inQuotes = !inQuotes;
                 } else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
                     let val = text.substring(start, i);
-                    
-                    // \r\n (윈도우 줄바꿈) 호환 처리
                     if (val.endsWith('\r')) val = val.slice(0, -1);
-                    
-                    // 쌍따옴표 묶임 제거 및 내부 쌍따옴표 이스케이프 해제
                     if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
                         val = val.substring(1, val.length - 1).replace(/""/g, '"');
                     }
-                    
                     row.push(val.trim());
                     
                     if (text[i] === '\n') {
-                        // 헤더(첫 줄)나 빈 행 스킵 ('관리 ID' 또는 '관리번호' 등으로 시작하면 제외)
                         if (row.length >= 8 && row[0] !== '' && !row[0].includes('관리 ID')) {
                             articles.push({
-                                id: row[0],
-                                vol: row[1],
-                                date: row[2],
-                                cohort: row[3],
-                                author: row[4],
-                                type: row[5],
-                                title: row[6],
-                                content: row[7]
+                                id: row[0], vol: row[1], date: row[2], cohort: row[3], 
+                                author: row[4], type: row[5], title: row[6], content: row[7]
                             });
                         }
                         row = [];
                     }
-                    start = i + 1; // 다음 셀의 시작점 갱신
+                    start = i + 1;
                 }
             }
             return articles;
@@ -299,10 +352,7 @@
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
-                
-                // 파싱 엔진 교체
                 articlesData = fastParseCSV(csvText);
-                
                 initDropdowns();
                 contentBody.textContent = '상단에서 조건을 선택하시거나 글 목록에서 항목을 클릭하세요.';
             } catch (error) {
@@ -311,7 +361,6 @@
             }
         }
 
-        // 초기 드롭다운 설정 (DocumentFragment 활용하여 렌더링 부하 최소화)
         function initDropdowns() {
             typeSelect.innerHTML = '<option value="전체">전체</option>';
             const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
@@ -333,7 +382,6 @@
             updateFilters();
         }
 
-        // 연쇄 필터링 업데이트
         function updateFilters() {
             const selectedType = typeSelect.value;
             const selectedCohort = cohortSelect.value;
@@ -344,7 +392,6 @@
                 currentPool = currentPool.filter(item => item.type === selectedType);
             }
 
-            // 기수 목록 갱신
             const validCohorts = currentPool.map(item => item.cohort).filter(c => c && (/^\d+기$/.test(c) || c === '기록 없음'));
             const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
                 if (a === "기록 없음") return 1;
@@ -367,7 +414,6 @@
                 cohortSelect.value = "전체";
             }
 
-            // 기고자 목록 갱신
             let authorPool = currentPool;
             if (cohortSelect.value && cohortSelect.value !== "전체") {
                 authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
@@ -392,7 +438,6 @@
             renderArticleList();
         }
 
-        // 하단 글 목록 초고속 렌더링
         function renderArticleList() {
             const selectedType = typeSelect.value;
             const selectedCohort = cohortSelect.value;
@@ -428,6 +473,9 @@
                     document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
                     li.classList.add('active');
                     showArticleDetail(article.id);
+                    
+                    // v3.6: 글 클릭 시 모바일용 모달 열기
+                    articleViewer.classList.add('open');
                 });
                 listFragment.appendChild(li);
             });
@@ -436,7 +484,6 @@
             listContainer.style.display = 'block';
         }
 
-        // 전문 뷰어 표시
         function showArticleDetail(id) {
             const article = articlesData.find(item => item.id === id);
             if (article) {
@@ -447,29 +494,25 @@
             }
         }
 
-        // 이벤트 리스너 등록
-        typeSelect.addEventListener('change', () => {
+        // 조건 변경 시 열려있던 모달을 닫고 초기화
+        const resetViewer = () => {
             updateFilters();
+            articleViewer.classList.remove('open');
             metaInfo.style.display = 'none';
             contentBody.className = 'placeholder-text';
             contentBody.textContent = '목록에서 글을 선택하시면 전문이 표시됩니다.';
-        });
+        };
 
-        cohortSelect.addEventListener('change', () => {
-            updateFilters();
-            metaInfo.style.display = 'none';
-            contentBody.className = 'placeholder-text';
-            contentBody.textContent = '목록에서 글을 선택하시면 전문이 표시됩니다.';
-        });
-
+        typeSelect.addEventListener('change', resetViewer);
+        cohortSelect.addEventListener('change', resetViewer);
         authorSelect.addEventListener('change', () => {
             renderArticleList();
+            articleViewer.classList.remove('open');
             metaInfo.style.display = 'none';
             contentBody.className = 'placeholder-text';
             contentBody.textContent = '목록에서 글을 선택하시면 전문이 표시됩니다.';
         });
 
-        // 초기 데이터 로딩 실행
         loadSheetData();
     </script>
 </body>
