@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v4.2: 질문창 플레이스홀더 및 기본 질의 "촛불회의 정체성을 파악해줘." 환원, 프롬프트 최적화 및 버전 v4.2 갱신 -->
+    <!-- v4.3: 화면 우측 하단 양방향 플로팅 액션 버튼(FAB) 추가로 모바일 스크롤 트랩 해결 및 버전 v4.3 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v4.2</title>
+    <title>촛불회 연혁 살펴보기 v4.3</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -481,7 +481,7 @@
             line-height: 1.5;
         }
 
-        /* 📌 [v4.2] 질문 입력창: "촛불회의 정체성을 파악해줘."로 환원 */
+        /* 질문 입력창 */
         .input-group {
             display: flex;
             gap: 8px;
@@ -687,10 +687,47 @@
             line-height: 1;
         }
 
+        /* 📌 [v4.3 핵심] 화면 우측 하단 양방향 플로팅 액션 버튼(FAB) */
+        .fab-quick-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 20px;
+            z-index: 999;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 30px;
+            padding: 11px 18px;
+            font-size: 13.5px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .fab-quick-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+        }
+        .fab-quick-btn:active {
+            transform: translateY(0);
+        }
+        .fab-quick-btn.to-top {
+            background-color: #475569;
+        }
+        .fab-quick-btn.to-top:hover {
+            background-color: #334155;
+        }
+
         /* 📱 모바일 최적화 (4열 × 4행 레이아웃 유지) */
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
+                padding-bottom: 80px; /* 플로팅 버튼 여백 */
             }
             h1 {
                 font-size: 1.5rem;
@@ -764,6 +801,13 @@
             .input-wrapper textarea {
                 min-height: 72px;
             }
+            /* 모바일 FAB 위치 및 크기 조절 */
+            .fab-quick-btn {
+                bottom: 18px;
+                right: 14px;
+                padding: 9px 15px;
+                font-size: 12.5px;
+            }
         }
     </style>
 </head>
@@ -775,12 +819,12 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v4.2</span>
+    <span class="version">v4.3</span>
 </div>
 
 <div class="chat-container">
     <!-- 1. 섹션 헤더 -->
-    <div class="section-header">
+    <div id="historyTopAnchor" class="section-header">
         <h3>📖 촛불회 연혁 내용 보기</h3>
     </div>
 
@@ -820,7 +864,7 @@
     </div>
 
     <!-- 5. AI를 이용한 연혁 분석 섹션 -->
-    <div class="ai-analysis-section">
+    <div id="aiSectionAnchor" class="ai-analysis-section">
         <div class="section-header">
             <h3>🤖 AI를 이용한 연혁 분석</h3>
         </div>
@@ -863,7 +907,7 @@
             </div>
         </div>
 
-        <!-- 📌 [v4.2] 질문 입력창: "촛불회의 정체성을 파악해줘." 환원 -->
+        <!-- 질문 입력창 -->
         <div class="input-group">
             <div class="input-wrapper">
                 <textarea id="userQuery" placeholder="예: 촛불회의 정체성을 파악해줘.&#10;    (이 질문은 '한 줄 요약' 항목에 체크한 후 실행하는 예시입니다)" oninput="autoResize(this); toggleClearButton();" onkeydown="handleKeyDown(event)"></textarea>
@@ -895,6 +939,12 @@
         </div>
     </div>
 </div>
+
+<!-- 📌 [v4.3] 스마트 플로팅 액션 버튼 (FAB) -->
+<button type="button" id="fabQuickBtn" class="fab-quick-btn" onclick="handleFabClick()" title="AI 분석 영역으로 이동">
+    <span id="fabIcon">🤖</span>
+    <span id="fabText">AI 분석 바로가기 ↓</span>
+</button>
 
 <script>
     const $ = id => document.getElementById(id);
@@ -954,6 +1004,9 @@
             }
         };
 
+        // 스크롤 위치 감지하여 플로팅 버튼 전환
+        window.addEventListener('scroll', updateFabState, { passive: true });
+
         // 구글 시트 '교정본' CSV 실시간 로드
         fetch(SHEET_CORRECT_CSV_URL)
             .then(res => {
@@ -968,6 +1021,42 @@
                 $("historyContentBox").innerHTML = `<span style="color:red;">[구글 시트 연동 실패]<br>${err.message}</span>`;
             });
     };
+
+    // 📌 [v4.3] 플로팅 버튼 상태 업데이트 (스크롤 위치에 따라 AI 분석 ↔ 연혁 본문 전환)
+    function updateFabState() {
+        const fab = $("fabQuickBtn");
+        const fabIcon = $("fabIcon");
+        const fabText = $("fabText");
+        const aiSec = $("aiSectionAnchor");
+        if (!aiSec) return;
+
+        const rect = aiSec.getBoundingClientRect();
+        // AI 분석 섹션이 화면 상단에 절반 이상 들어왔을 경우
+        if (rect.top <= 200) {
+            fab.classList.add("to-top");
+            fabIcon.innerText = "📖";
+            fabText.innerText = "연혁 목록 위로 ↑";
+            fab.title = "연혁 내용 보기로 이동";
+        } else {
+            fab.classList.remove("to-top");
+            fabIcon.innerText = "🤖";
+            fabText.innerText = "AI 분석 바로가기 ↓";
+            fab.title = "AI 분석 영역으로 이동";
+        }
+    }
+
+    // 📌 [v4.3] 플로팅 버튼 클릭 동작
+    function handleFabClick() {
+        const fab = $("fabQuickBtn");
+        if (fab.classList.contains("to-top")) {
+            // 상단 연혁 본문으로 부드럽게 스크롤
+            $("historyTopAnchor").scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            // 하단 AI 분석 입력창으로 부드럽게 스크롤
+            $("aiSectionAnchor").scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setTimeout(() => $("userQuery").focus(), 400);
+        }
+    }
 
     // 단일 연혁 뷰어 렌더링 함수
     function renderFilteredHistory(targetScrollLabel = null) {
@@ -1244,7 +1333,7 @@
             $("apiDelBtn").style.display = "none";
             $("apiSaveBtn").disabled = false;
             $("apiSaveBtn").classList.remove("api-wait-btn");
-            badge.innerText = "⚠️ 키 미설정 상태";
+            badge.innerText = "⚠️️ 키 미설정 상태";
             Object.assign(badge.style, { color: "#c0392b", background: "#fadbd8" });
 
             apiContent.style.display = "block";
@@ -1400,7 +1489,6 @@
         }
 
         let queryInput = $("userQuery");
-        // 📌 [v4.2] 기본 질문을 '촛불회의 정체성을 파악해줘.'로 설정
         let query = queryInput.value.trim() || "촛불회의 정체성을 파악해줘.";
         if (!queryInput.value.trim()) {
             queryInput.value = query;
@@ -1442,7 +1530,6 @@
                 ? `[이전 대화 기록 및 분석 컨텍스트]\n${conversationHistory.map(h => `${h.q}\n${h.a}`).join("\n\n")}\n[지침] 이전 대화에서 다룬 내용을 바탕으로 심층 비교 및 연속 분석을 수행하세요.` 
                 : "";
                 
-            // 📌 [v4.2] 개념 분석과 통계 집계의 균형을 맞춘 최적화 프롬프트
             const promptText = `당신은 촛불회 50년 역사 기록을 정밀하게 분석하고 알기 쉽게 전달하는 전문 역사 안내자입니다.
 아래에 제공된 [촛불회 공식 연혁 기록]을 유일한 근거 데이터로 삼아 사용자의 질문에 답해 주세요.
 
@@ -1557,4 +1644,3 @@ ${contextPrompt}
 
 </body>
 </html>
- 
