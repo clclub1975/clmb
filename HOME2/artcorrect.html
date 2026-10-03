@@ -1,10 +1,10 @@
-<!-- artcorrect.html v0.0 : 기고문 교정 전용 페이지 (PC 최적화) -->
+<!-- artcorrect.html v0.1 : 기고문 교정 전용 페이지 (PC 최적화) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기고문 교정 편집기</title>
+    <title>기고문 교정</title>
     <style>
         body {
             font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
@@ -13,7 +13,7 @@
             display: flex; justify-content: center;
             color: #334155;
         }
-        /* 메인 컨테이너 (모달처럼 중앙에 배치) */
+        /* 메인 컨테이너 */
         .editor-container {
             background: #fff; border-radius: 8px; width: 100%; max-width: 900px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -25,8 +25,13 @@
             background: #fff; display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #e2e8f0; padding: 15px 20px;
         }
-        .editor-title { font-size: 18px; font-weight: 700; color: #1e293b; }
-        .editor-id-badge { background: #f1f5f9; padding: 4px 10px; border-radius: 4px; font-size: 13px; color: #64748b; font-weight: 600; border: 1px solid #e2e8f0; }
+        .editor-title { font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center; }
+        .version-badge { font-size: 14px; font-weight: 500; color: #64748b; margin-left: 8px; }
+        .btn-close {
+            background: transparent; border: none; font-size: 15px; color: #64748b; 
+            font-weight: 600; cursor: pointer; padding: 4px 8px; transition: color 0.15s;
+        }
+        .btn-close:hover { color: #ef4444; }
 
         /* 상단 컨트롤 바 */
         .editor-controls {
@@ -35,17 +40,6 @@
         }
         .controls-left, .controls-right { display: flex; align-items: center; gap: 10px; }
         
-        .editor-input-wrap { font-size: 14px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; }
-        .editor-input { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; width: 120px; font-size: 14px; }
-        .editor-input:focus { border-color: #3b82f6; outline: none; }
-
-        /* 툴팁 */
-        .help-tip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; outline: none; }
-        .help-badge { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background-color: #94a3b8; color: #ffffff; font-size: 11px; font-weight: 700; }
-        .help-tip-wrap:hover .help-badge { background-color: #2563eb; }
-        .help-tooltip { visibility: hidden; opacity: 0; position: absolute; top: 135%; left: 0; width: 240px; white-space: normal; background-color: #1e293b; color: #ffffff; padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); z-index: 1000; pointer-events: none; transition: opacity 0.2s ease; }
-        .help-tip-wrap:hover .help-tooltip { visibility: visible; opacity: 1; }
-
         /* 액션 버튼 */
         .btn-action { padding: 7px 14px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
         .btn-save-stay { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
@@ -68,8 +62,21 @@
             box-sizing: border-box; background: #fdfdfd; line-height: 1.6;
         }
         .edit-input-inline:focus, .edit-textarea-inline:focus { border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .edit-textarea-inline { resize: vertical; min-height: 300px; } /* 본문용 높이 */
+        .edit-textarea-inline { resize: vertical; min-height: 300px; } 
         
+        /* v0.1: 가로 한 줄 배치(Inline) 항목용 스타일 */
+        .edit-li-inline {
+            display: flex; align-items: center; margin-bottom: 12px;
+        }
+        .edit-li-inline .edit-label { margin-bottom: 0; width: 90px; flex-shrink: 0; }
+        .edit-li-inline .edit-field-wrap { display: flex; align-items: center; flex: 1; }
+        .thin-input {
+            width: 150px; padding: 2px 8px; height: 26px; font-size: 14px; 
+            border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;
+        }
+        .thin-input:focus { border-color: #3b82f6; outline: none; }
+        .edit-li-inline .restore-toolbar { margin-top: 0; margin-left: 10px; }
+
         /* 3단계 복원 툴바 */
         .restore-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 6px; }
         .btn-restore { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
@@ -88,25 +95,17 @@
     <div class="editor-container">
         <!-- 헤더 -->
         <div class="editor-header">
-            <span class="editor-title">✏️ 기고문 교정 에디터</span>
-            <span class="editor-id-badge" id="display-id">관리번호: 불러오는 중...</span>
+            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.1</span></span>
+            <button type="button" class="btn-close" onclick="window.close()">✕ 닫기</button>
         </div>
 
         <!-- 상단 컨트롤 -->
         <div class="editor-controls">
             <div class="controls-left">
-                <label class="editor-input-wrap">교정자:
-                    <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
-                </label>
-                <div class="help-tip-wrap" tabindex="0">
-                    <span class="help-badge">?</span>
-                    <div class="help-tooltip">
-                        이름을 지운 상태에서 [저장/종료]를 누르면 교정 전 상태로 복원됩니다.
-                    </div>
-                </div>
+                <!-- 저장/계속 좌측 이동 -->
+                <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
             </div>
             <div class="controls-right">
-                <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
                 <button type="button" class="btn-action btn-save-exit" id="btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
             </div>
         </div>
@@ -123,22 +122,19 @@
     </div>
 
     <script>
-        // 향후 구글 앱스 스크립트 웹앱 URL을 입력할 곳
         const gasWebAppUrl = '여기에_GAS_웹앱_URL을_입력하세요'; 
         
-        // 원본 구글 시트 CSV 링크 (데이터 로드용)
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
+        // v0.1: 신규 CSV 주소 적용
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=1160907663&single=true&output=csv';
 
         let currentArticle = null;
         let isDirty = false;
         let isSaving = false;
-        let editFieldState = {}; // { [key]: { currentSaved: '', pureOriginal: '', history: [] } }
+        let editFieldState = {}; 
 
         function markAsDirty() { isDirty = true; }
 
-        // --- 1. 초기화 및 데이터 로드 ---
         async function initEditor() {
-            // URL 파라미터에서 id 추출 (예: artcorrect.html?id=CL001-01)
             const urlParams = new URLSearchParams(window.location.search);
             const targetId = urlParams.get('id');
 
@@ -166,46 +162,52 @@
 
         // --- 2. 편집 UI 동적 렌더링 ---
         function renderEditorUI(article) {
-            document.getElementById('display-id').textContent = `관리번호: ${article.id}`;
-            editFieldState = {}; // 상태 초기화
+            editFieldState = {};
 
             let html = '<ul class="edit-ul">';
-            // 단문 필드 (Input)
-            html += renderEditFieldItem('type', '1. 글 종류', article.type, false);
-            html += renderEditFieldItem('cohort', '2. 기수', article.cohort, false);
-            html += renderEditFieldItem('author', '3. 기고자', article.author, false);
-            html += renderEditFieldItem('vol', '4. 발행 권호', article.vol, false);
-            html += renderEditFieldItem('date', '5. 발행 일자', article.date, false);
-            html += renderEditFieldItem('title', '6. 제목', article.title, false);
-            // 장문 필드 (Textarea)
-            html += renderEditFieldItem('content', '7. 기고문 본문', article.content, true);
+            // v0.1: 가로 한 줄 배치 항목 (inline)
+            html += renderEditFieldItem('type', '1. 글 종류', article.type, 'inline');
+            html += renderEditFieldItem('cohort', '2. 기수', article.cohort, 'inline');
+            html += renderEditFieldItem('author', '3. 기고자', article.author, 'inline');
+            // v0.1: 발행 권호, 일자 제외
+            
+            // 기존 폼 (block, textarea)
+            html += renderEditFieldItem('title', '4. 제목', article.title, 'block');
+            html += renderEditFieldItem('content', '5. 기고문 본문', article.content, 'textarea');
             html += '</ul>';
 
             document.getElementById('editor-body-box').innerHTML = html;
         }
 
-        // --- 3. 개별 필드 HTML 생성 및 3단계 스택 추적 렌더러 ---
-        function renderEditFieldItem(key, label, currentVal, isTextarea) {
-            // 초기 상태 등록
+        // --- 3. 개별 필드 HTML 생성 (모드 분리) ---
+        function renderEditFieldItem(key, label, currentVal, mode) {
             editFieldState[key] = {
                 currentSaved: currentVal,
-                pureOriginal: currentVal, // 추후 버전 관리가 생기면 최초 원문을 따로 매핑 가능
+                pureOriginal: currentVal, 
                 history: [currentVal]
             };
 
-            const inputHtml = isTextarea
-                ? `<textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>`
-                : `<input type="text" id="edit_${key}" class="edit-input-inline" value="${currentVal}" oninput="handleFieldInput('${key}')">`;
+            let inputHtml = '';
+            let liClass = 'edit-li';
+
+            if (mode === 'textarea') {
+                inputHtml = `<textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>`;
+            } else if (mode === 'inline') {
+                liClass = 'edit-li-inline';
+                inputHtml = `<input type="text" id="edit_${key}" class="thin-input" value="${currentVal}" oninput="handleFieldInput('${key}')">`;
+            } else {
+                inputHtml = `<input type="text" id="edit_${key}" class="edit-input-inline" value="${currentVal}" oninput="handleFieldInput('${key}')">`;
+            }
 
             return `
-                <li class="edit-li">
+                <li class="${liClass}">
                     <strong class="edit-label">${label}</strong>
                     <div class="edit-field-wrap">
                         ${inputHtml}
                         <div class="restore-toolbar">
                             <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 방금 취소</button>
                             <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장 상태로</button>
-                            <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문으로 복원</button>
+                            <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문 복원</button>
                         </div>
                     </div>
                 </li>
@@ -218,7 +220,6 @@
             const el = document.getElementById(`edit_${key}`);
             if (!el) return;
             
-            // Textarea 자동 크기 조절 방어 로직 (필요시 구현)
             if(el.tagName === 'TEXTAREA') {
                 el.style.height = 'auto';
                 el.style.height = (el.scrollHeight) + 'px';
@@ -228,7 +229,7 @@
                 const stack = editFieldState[key].history;
                 if (stack[stack.length - 1] !== el.value) {
                     stack.push(el.value);
-                    if (stack.length > 50) stack.shift(); // 스택 50개 제한
+                    if (stack.length > 50) stack.shift(); 
                 }
             }
         }
@@ -238,8 +239,8 @@
             if (!el || !editFieldState[key]) return;
             const stack = editFieldState[key].history;
             if (stack.length > 1) {
-                stack.pop(); // 현재 상태 제거
-                el.value = stack[stack.length - 1]; // 이전 상태 적용
+                stack.pop(); 
+                el.value = stack[stack.length - 1]; 
                 markAsDirty();
             } else {
                 alert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
@@ -269,49 +270,30 @@
         // --- 5. 저장 액션 제어 ---
         async function handleSaveAction(actionType) {
             if (isSaving || !currentArticle) return;
-            const editorName = document.getElementById('editor-name-input').value.trim();
-
-            if (actionType === 'exit' && !editorName) {
-                if(confirm("교정자 이름을 비우고 저장하면 '교정 전 상태'로 표시됩니다.\n진행하시겠습니까?")) {
-                    executePostSave('교정', '', actionType);
-                }
-                return;
-            }
-
-            if (!editorName) {
-                alert('교정자 이름을 입력해 주세요.');
-                document.getElementById('editor-name-input').focus();
-                return;
-            }
 
             if (actionType === 'finish') {
-                if(confirm(`[${editorName}] 교정자님, 이 작업을 '완료' 처리하시겠습니까?`)) {
-                    executePostSave('완료', editorName, actionType);
+                if(confirm(`이 작업을 '완료' 처리하시겠습니까?`)) {
+                    executePostSave('완료', actionType);
                 }
             } else {
-                executePostSave('진행', editorName, actionType);
+                executePostSave('진행', actionType);
             }
         }
 
-        async function executePostSave(statusText, editorName, actionType) {
+        async function executePostSave(statusText, actionType) {
             isSaving = true;
             document.body.style.cursor = 'wait';
 
-            // 현재 에디터에 작성된 각 항목 데이터 수집
             const payload = {
                 id: currentArticle.id,
                 status: statusText,
-                editorName: editorName,
                 type: document.getElementById('edit_type').value,
                 cohort: document.getElementById('edit_cohort').value,
                 author: document.getElementById('edit_author').value,
-                vol: document.getElementById('edit_vol').value,
-                date: document.getElementById('edit_date').value,
                 title: document.getElementById('edit_title').value,
                 content: document.getElementById('edit_content').value
             };
 
-            // [테스트용 콘솔 로그] 실제 GAS 연동 전 데이터가 잘 묶였는지 확인
             console.log("저장될 페이로드 데이터:", payload);
 
             try {
@@ -326,22 +308,19 @@
                 });
                 */
 
-                // 로컬 상태 강제 동기화 (저장 완료 처리)
                 for (let key in editFieldState) {
                     const el = document.getElementById(`edit_${key}`);
                     if (el) editFieldState[key].currentSaved = el.value;
                 }
                 isDirty = false;
 
-                const alertMsg = !editorName 
-                    ? "교정 전 상태로 복원 요청되었습니다.\n(반영까지 수 분 소요될 수 있습니다.)"
-                    : `[${editorName}] 교정자의 수정내용이 성공적으로 전송되었습니다.`;
+                const alertMsg = "수정내용이 성공적으로 전송되었습니다.";
 
                 if (actionType === 'stay') {
                     alert(alertMsg);
                 } else {
                     alert(alertMsg + "\n창을 닫습니다.");
-                    window.close(); // 종료 액션 시 창 닫기
+                    window.close(); 
                 }
             } catch (err) {
                 alert("구글 시트 저장 도중 통신 오류가 발생했습니다.");
@@ -351,7 +330,6 @@
             }
         }
 
-        // 창 닫기 시 미저장 방지
         window.addEventListener('beforeunload', (event) => {
             if (isDirty) {
                 event.preventDefault();
@@ -359,7 +337,6 @@
             }
         });
 
-        // 초고속 CSV 파싱
         function fastParseCSV(text) {
             const articles = [];
             let start = 0, inQuotes = false, row = [];
@@ -386,7 +363,6 @@
             return articles;
         }
 
-        // 실행
         window.onload = initEditor;
     </script>
 </body>
