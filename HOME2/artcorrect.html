@@ -1,0 +1,393 @@
+<!-- artcorrect.html v0.0 : 기고문 교정 전용 페이지 (PC 최적화) -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기고문 교정 편집기</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
+            background-color: #e2e8f0;
+            margin: 0; padding: 40px 20px;
+            display: flex; justify-content: center;
+            color: #334155;
+        }
+        /* 메인 컨테이너 (모달처럼 중앙에 배치) */
+        .editor-container {
+            background: #fff; border-radius: 8px; width: 100%; max-width: 900px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        
+        /* 헤더 */
+        .editor-header {
+            background: #fff; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #e2e8f0; padding: 15px 20px;
+        }
+        .editor-title { font-size: 18px; font-weight: 700; color: #1e293b; }
+        .editor-id-badge { background: #f1f5f9; padding: 4px 10px; border-radius: 4px; font-size: 13px; color: #64748b; font-weight: 600; border: 1px solid #e2e8f0; }
+
+        /* 상단 컨트롤 바 */
+        .editor-controls {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px;
+        }
+        .controls-left, .controls-right { display: flex; align-items: center; gap: 10px; }
+        
+        .editor-input-wrap { font-size: 14px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; }
+        .editor-input { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; width: 120px; font-size: 14px; }
+        .editor-input:focus { border-color: #3b82f6; outline: none; }
+
+        /* 툴팁 */
+        .help-tip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; outline: none; }
+        .help-badge { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background-color: #94a3b8; color: #ffffff; font-size: 11px; font-weight: 700; }
+        .help-tip-wrap:hover .help-badge { background-color: #2563eb; }
+        .help-tooltip { visibility: hidden; opacity: 0; position: absolute; top: 135%; left: 0; width: 240px; white-space: normal; background-color: #1e293b; color: #ffffff; padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); z-index: 1000; pointer-events: none; transition: opacity 0.2s ease; }
+        .help-tip-wrap:hover .help-tooltip { visibility: visible; opacity: 1; }
+
+        /* 액션 버튼 */
+        .btn-action { padding: 7px 14px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+        .btn-save-stay { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+        .btn-save-stay:hover { background: #e2e8f0; }
+        .btn-save-exit { background: #3b82f6; color: #fff; }
+        .btn-save-exit:hover { background: #2563eb; }
+        
+        /* 본문 에디터 영역 */
+        .editor-body { padding: 25px; overflow-y: auto; background: #fff; min-height: 400px; }
+        
+        /* 개별 편집 필드 리스트 */
+        .edit-ul { list-style: none; padding: 0; margin: 0; }
+        .edit-li { margin-bottom: 25px; }
+        .edit-label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #334155; }
+        .edit-field-wrap { position: relative; }
+        
+        .edit-input-inline, .edit-textarea-inline {
+            width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
+            font-size: 15px; font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; 
+            box-sizing: border-box; background: #fdfdfd; line-height: 1.6;
+        }
+        .edit-input-inline:focus, .edit-textarea-inline:focus { border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .edit-textarea-inline { resize: vertical; min-height: 300px; } /* 본문용 높이 */
+        
+        /* 3단계 복원 툴바 */
+        .restore-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 6px; }
+        .btn-restore { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+        .btn-restore:hover { background-color: #f1f5f9; color: #1e293b; }
+
+        /* 하단 완료 영역 */
+        .editor-footer { background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; }
+        .btn-finish-large { background: #10b981; color: #fff; border: none; padding: 12px 40px; font-size: 16px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3); }
+        .btn-finish-large:hover { background: #059669; }
+
+        .loading-text { text-align: center; padding: 50px; color: #64748b; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="editor-container">
+        <!-- 헤더 -->
+        <div class="editor-header">
+            <span class="editor-title">✏️ 기고문 교정 에디터</span>
+            <span class="editor-id-badge" id="display-id">관리번호: 불러오는 중...</span>
+        </div>
+
+        <!-- 상단 컨트롤 -->
+        <div class="editor-controls">
+            <div class="controls-left">
+                <label class="editor-input-wrap">교정자:
+                    <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
+                </label>
+                <div class="help-tip-wrap" tabindex="0">
+                    <span class="help-badge">?</span>
+                    <div class="help-tooltip">
+                        이름을 지운 상태에서 [저장/종료]를 누르면 교정 전 상태로 복원됩니다.
+                    </div>
+                </div>
+            </div>
+            <div class="controls-right">
+                <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
+                <button type="button" class="btn-action btn-save-exit" id="btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
+            </div>
+        </div>
+
+        <!-- 에디터 본문 (동적 렌더링) -->
+        <div class="editor-body" id="editor-body-box">
+            <div class="loading-text">구글 시트에서 데이터를 불러오고 있습니다...</div>
+        </div>
+
+        <!-- 하단 교정 완료 -->
+        <div class="editor-footer">
+            <button type="button" class="btn-finish-large" id="btn-finish-large" onclick="handleSaveAction('finish')">✓ 교정 완료</button>
+        </div>
+    </div>
+
+    <script>
+        // 향후 구글 앱스 스크립트 웹앱 URL을 입력할 곳
+        const gasWebAppUrl = '여기에_GAS_웹앱_URL을_입력하세요'; 
+        
+        // 원본 구글 시트 CSV 링크 (데이터 로드용)
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
+
+        let currentArticle = null;
+        let isDirty = false;
+        let isSaving = false;
+        let editFieldState = {}; // { [key]: { currentSaved: '', pureOriginal: '', history: [] } }
+
+        function markAsDirty() { isDirty = true; }
+
+        // --- 1. 초기화 및 데이터 로드 ---
+        async function initEditor() {
+            // URL 파라미터에서 id 추출 (예: artcorrect.html?id=CL001-01)
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetId = urlParams.get('id');
+
+            if (!targetId) {
+                document.getElementById('editor-body-box').innerHTML = '<div class="loading-text" style="color:#ef4444;">오류: 글 관리번호(ID)가 전달되지 않았습니다.</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const csvText = await response.text();
+                const articles = fastParseCSV(csvText);
+                
+                currentArticle = articles.find(item => item.id === targetId);
+                
+                if (currentArticle) {
+                    renderEditorUI(currentArticle);
+                } else {
+                    document.getElementById('editor-body-box').innerHTML = `<div class="loading-text" style="color:#ef4444;">오류: 관리번호 [${targetId}]에 해당하는 글을 찾을 수 없습니다.</div>`;
+                }
+            } catch (error) {
+                document.getElementById('editor-body-box').innerHTML = '<div class="loading-text" style="color:#ef4444;">데이터를 불러오는 데 실패했습니다. 네트워크를 확인해주세요.</div>';
+            }
+        }
+
+        // --- 2. 편집 UI 동적 렌더링 ---
+        function renderEditorUI(article) {
+            document.getElementById('display-id').textContent = `관리번호: ${article.id}`;
+            editFieldState = {}; // 상태 초기화
+
+            let html = '<ul class="edit-ul">';
+            // 단문 필드 (Input)
+            html += renderEditFieldItem('type', '1. 글 종류', article.type, false);
+            html += renderEditFieldItem('cohort', '2. 기수', article.cohort, false);
+            html += renderEditFieldItem('author', '3. 기고자', article.author, false);
+            html += renderEditFieldItem('vol', '4. 발행 권호', article.vol, false);
+            html += renderEditFieldItem('date', '5. 발행 일자', article.date, false);
+            html += renderEditFieldItem('title', '6. 제목', article.title, false);
+            // 장문 필드 (Textarea)
+            html += renderEditFieldItem('content', '7. 기고문 본문', article.content, true);
+            html += '</ul>';
+
+            document.getElementById('editor-body-box').innerHTML = html;
+        }
+
+        // --- 3. 개별 필드 HTML 생성 및 3단계 스택 추적 렌더러 ---
+        function renderEditFieldItem(key, label, currentVal, isTextarea) {
+            // 초기 상태 등록
+            editFieldState[key] = {
+                currentSaved: currentVal,
+                pureOriginal: currentVal, // 추후 버전 관리가 생기면 최초 원문을 따로 매핑 가능
+                history: [currentVal]
+            };
+
+            const inputHtml = isTextarea
+                ? `<textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>`
+                : `<input type="text" id="edit_${key}" class="edit-input-inline" value="${currentVal}" oninput="handleFieldInput('${key}')">`;
+
+            return `
+                <li class="edit-li">
+                    <strong class="edit-label">${label}</strong>
+                    <div class="edit-field-wrap">
+                        ${inputHtml}
+                        <div class="restore-toolbar">
+                            <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 방금 취소</button>
+                            <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장 상태로</button>
+                            <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문으로 복원</button>
+                        </div>
+                    </div>
+                </li>
+            `;
+        }
+
+        // --- 4. 복원 알고리즘 로직 ---
+        function handleFieldInput(key) {
+            markAsDirty();
+            const el = document.getElementById(`edit_${key}`);
+            if (!el) return;
+            
+            // Textarea 자동 크기 조절 방어 로직 (필요시 구현)
+            if(el.tagName === 'TEXTAREA') {
+                el.style.height = 'auto';
+                el.style.height = (el.scrollHeight) + 'px';
+            }
+
+            if (editFieldState[key]) {
+                const stack = editFieldState[key].history;
+                if (stack[stack.length - 1] !== el.value) {
+                    stack.push(el.value);
+                    if (stack.length > 50) stack.shift(); // 스택 50개 제한
+                }
+            }
+        }
+
+        function undoField(key) {
+            const el = document.getElementById(`edit_${key}`);
+            if (!el || !editFieldState[key]) return;
+            const stack = editFieldState[key].history;
+            if (stack.length > 1) {
+                stack.pop(); // 현재 상태 제거
+                el.value = stack[stack.length - 1]; // 이전 상태 적용
+                markAsDirty();
+            } else {
+                alert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
+            }
+        }
+
+        function restoreSaved(key) {
+            const el = document.getElementById(`edit_${key}`);
+            if (!el || !editFieldState[key]) return;
+            const targetVal = editFieldState[key].currentSaved;
+            if (el.value === targetVal) return alert('이미 최근 저장된 상태와 동일합니다.');
+            editFieldState[key].history.push(targetVal);
+            el.value = targetVal;
+            markAsDirty();
+        }
+
+        function restoreOriginal(key) {
+            const el = document.getElementById(`edit_${key}`);
+            if (!el || !editFieldState[key]) return;
+            const origVal = editFieldState[key].pureOriginal;
+            if (el.value === origVal) return alert('이미 순수 원문 내용과 동일합니다.');
+            editFieldState[key].history.push(origVal);
+            el.value = origVal;
+            markAsDirty();
+        }
+
+        // --- 5. 저장 액션 제어 ---
+        async function handleSaveAction(actionType) {
+            if (isSaving || !currentArticle) return;
+            const editorName = document.getElementById('editor-name-input').value.trim();
+
+            if (actionType === 'exit' && !editorName) {
+                if(confirm("교정자 이름을 비우고 저장하면 '교정 전 상태'로 표시됩니다.\n진행하시겠습니까?")) {
+                    executePostSave('교정', '', actionType);
+                }
+                return;
+            }
+
+            if (!editorName) {
+                alert('교정자 이름을 입력해 주세요.');
+                document.getElementById('editor-name-input').focus();
+                return;
+            }
+
+            if (actionType === 'finish') {
+                if(confirm(`[${editorName}] 교정자님, 이 작업을 '완료' 처리하시겠습니까?`)) {
+                    executePostSave('완료', editorName, actionType);
+                }
+            } else {
+                executePostSave('진행', editorName, actionType);
+            }
+        }
+
+        async function executePostSave(statusText, editorName, actionType) {
+            isSaving = true;
+            document.body.style.cursor = 'wait';
+
+            // 현재 에디터에 작성된 각 항목 데이터 수집
+            const payload = {
+                id: currentArticle.id,
+                status: statusText,
+                editorName: editorName,
+                type: document.getElementById('edit_type').value,
+                cohort: document.getElementById('edit_cohort').value,
+                author: document.getElementById('edit_author').value,
+                vol: document.getElementById('edit_vol').value,
+                date: document.getElementById('edit_date').value,
+                title: document.getElementById('edit_title').value,
+                content: document.getElementById('edit_content').value
+            };
+
+            // [테스트용 콘솔 로그] 실제 GAS 연동 전 데이터가 잘 묶였는지 확인
+            console.log("저장될 페이로드 데이터:", payload);
+
+            try {
+                // 향후 GAS 웹앱 URL이 세팅되면 주석을 해제하여 사용
+                /*
+                await fetch(gasWebAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                */
+
+                // 로컬 상태 강제 동기화 (저장 완료 처리)
+                for (let key in editFieldState) {
+                    const el = document.getElementById(`edit_${key}`);
+                    if (el) editFieldState[key].currentSaved = el.value;
+                }
+                isDirty = false;
+
+                const alertMsg = !editorName 
+                    ? "교정 전 상태로 복원 요청되었습니다.\n(반영까지 수 분 소요될 수 있습니다.)"
+                    : `[${editorName}] 교정자의 수정내용이 성공적으로 전송되었습니다.`;
+
+                if (actionType === 'stay') {
+                    alert(alertMsg);
+                } else {
+                    alert(alertMsg + "\n창을 닫습니다.");
+                    window.close(); // 종료 액션 시 창 닫기
+                }
+            } catch (err) {
+                alert("구글 시트 저장 도중 통신 오류가 발생했습니다.");
+            } finally {
+                isSaving = false;
+                document.body.style.cursor = 'default';
+            }
+        }
+
+        // 창 닫기 시 미저장 방지
+        window.addEventListener('beforeunload', (event) => {
+            if (isDirty) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        });
+
+        // 초고속 CSV 파싱
+        function fastParseCSV(text) {
+            const articles = [];
+            let start = 0, inQuotes = false, row = [];
+            if (!text.endsWith('\n')) text += '\n';
+
+            for (let i = 0; i < text.length; i++) {
+                if (text[i] === '"') inQuotes = !inQuotes;
+                else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
+                    let val = text.substring(start, i);
+                    if (val.endsWith('\r')) val = val.slice(0, -1);
+                    if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
+                        val = val.substring(1, val.length - 1).replace(/""/g, '"');
+                    }
+                    row.push(val.trim());
+                    if (text[i] === '\n') {
+                        if (row.length >= 8 && row[0] !== '' && !row[0].includes('관리 ID')) {
+                            articles.push({ id: row[0], vol: row[1], date: row[2], cohort: row[3], author: row[4], type: row[5], title: row[6], content: row[7] });
+                        }
+                        row = [];
+                    }
+                    start = i + 1;
+                }
+            }
+            return articles;
+        }
+
+        // 실행
+        window.onload = initEditor;
+    </script>
+</body>
+</html>
