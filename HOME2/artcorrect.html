@@ -1,4 +1,4 @@
-<!-- artcorrect.html v0.1 : 기고문 교정 전용 페이지 (PC 최적화) -->
+<!-- artcorrect.html v0.2 : 레이아웃 고도화 (인라인 제목, 취소 라벨 변경, 하단 툴바 배치, 버튼 색상 통일) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -40,46 +40,61 @@
         }
         .controls-left, .controls-right { display: flex; align-items: center; gap: 10px; }
         
-        /* 액션 버튼 */
-        .btn-action { padding: 7px 14px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
-        .btn-save-stay { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
-        .btn-save-stay:hover { background: #e2e8f0; }
-        .btn-save-exit { background: #3b82f6; color: #fff; }
-        .btn-save-exit:hover { background: #2563eb; }
+        /* v0.2: 액션 버튼 색상 지정 (저장/계속에도 인디고/블루 계열 색상 부여) */
+        .btn-action { 
+            padding: 7px 16px; font-size: 13px; font-weight: 600; border-radius: 4px; 
+            cursor: pointer; border: none; transition: all 0.15s; color: #fff;
+        }
+        .btn-save-stay { background: #4f46e5; }
+        .btn-save-stay:hover { background: #4338ca; }
+        .btn-save-exit { background: #2563eb; }
+        .btn-save-exit:hover { background: #1d4ed8; }
         
         /* 본문 에디터 영역 */
         .editor-body { padding: 25px; overflow-y: auto; background: #fff; min-height: 400px; }
         
         /* 개별 편집 필드 리스트 */
         .edit-ul { list-style: none; padding: 0; margin: 0; }
-        .edit-li { margin-bottom: 25px; }
+        .edit-li { margin-bottom: 20px; }
         .edit-label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #334155; }
-        .edit-field-wrap { position: relative; }
+        .edit-field-wrap { display: flex; flex-direction: column; width: 100%; }
         
-        .edit-input-inline, .edit-textarea-inline {
+        .edit-textarea-inline {
             width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
             font-size: 15px; font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; 
-            box-sizing: border-box; background: #fdfdfd; line-height: 1.6;
+            box-sizing: border-box; background: #fdfdfd; line-height: 1.6; resize: vertical; min-height: 300px;
         }
-        .edit-input-inline:focus, .edit-textarea-inline:focus { border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .edit-textarea-inline { resize: vertical; min-height: 300px; } 
+        .edit-textarea-inline:focus { 
+            border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
+        }
         
-        /* v0.1: 가로 한 줄 배치(Inline) 항목용 스타일 */
+        /* v0.2: 한 줄 배치(Inline) 항목용 스타일 (글 종류, 기수, 기고자, 제목) */
         .edit-li-inline {
-            display: flex; align-items: center; margin-bottom: 12px;
+            display: flex; flex-direction: column; margin-bottom: 16px;
         }
-        .edit-li-inline .edit-label { margin-bottom: 0; width: 90px; flex-shrink: 0; }
-        .edit-li-inline .edit-field-wrap { display: flex; align-items: center; flex: 1; }
+        .inline-row {
+            display: flex; align-items: center; width: 100%;
+        }
+        .edit-li-inline .edit-label { 
+            margin-bottom: 0; width: 90px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: #334155;
+        }
         .thin-input {
-            width: 150px; padding: 2px 8px; height: 26px; font-size: 14px; 
-            border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;
+            flex: 1; padding: 4px 8px; height: 30px; font-size: 14px; 
+            border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; background: #fdfdfd;
         }
-        .thin-input:focus { border-color: #3b82f6; outline: none; }
-        .edit-li-inline .restore-toolbar { margin-top: 0; margin-left: 10px; }
+        .thin-input.short-input {
+            max-width: 200px; /* 글 종류, 기수, 기고자는 적당한 너비 유지 */
+        }
+        .thin-input:focus { border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
 
-        /* 3단계 복원 툴바 */
-        .restore-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 6px; }
-        .btn-restore { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+        /* v0.2: 요약문 교정창처럼 교정창 바로 아래 우측으로 배치된 복원 툴바 */
+        .restore-toolbar { 
+            display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 5px; 
+        }
+        .btn-restore { 
+            background: #ffffff; border: 1px solid #cbd5e1; color: #475569; font-size: 12px; 
+            font-weight: 600; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: background 0.15s; 
+        }
         .btn-restore:hover { background-color: #f1f5f9; color: #1e293b; }
 
         /* 하단 완료 영역 */
@@ -95,14 +110,14 @@
     <div class="editor-container">
         <!-- 헤더 -->
         <div class="editor-header">
-            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.1</span></span>
+            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.2</span></span>
             <button type="button" class="btn-close" onclick="window.close()">✕ 닫기</button>
         </div>
 
         <!-- 상단 컨트롤 -->
         <div class="editor-controls">
             <div class="controls-left">
-                <!-- 저장/계속 좌측 이동 -->
+                <!-- 저장/계속 버튼 색상 입힘 -->
                 <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
             </div>
             <div class="controls-right">
@@ -123,8 +138,6 @@
 
     <script>
         const gasWebAppUrl = '여기에_GAS_웹앱_URL을_입력하세요'; 
-        
-        // v0.1: 신규 CSV 주소 적용
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=1160907663&single=true&output=csv';
 
         let currentArticle = null;
@@ -160,26 +173,27 @@
             }
         }
 
-        // --- 2. 편집 UI 동적 렌더링 ---
+        // --- 편집 UI 동적 렌더링 ---
         function renderEditorUI(article) {
             editFieldState = {};
 
             let html = '<ul class="edit-ul">';
-            // v0.1: 가로 한 줄 배치 항목 (inline)
-            html += renderEditFieldItem('type', '1. 글 종류', article.type, 'inline');
-            html += renderEditFieldItem('cohort', '2. 기수', article.cohort, 'inline');
-            html += renderEditFieldItem('author', '3. 기고자', article.author, 'inline');
-            // v0.1: 발행 권호, 일자 제외
+            // 글 종류, 기수, 기고자 (인라인 형태, 고정 너비)
+            html += renderEditFieldItem('type', '1. 글 종류', article.type, 'inline-short');
+            html += renderEditFieldItem('cohort', '2. 기수', article.cohort, 'inline-short');
+            html += renderEditFieldItem('author', '3. 기고자', article.author, 'inline-short');
             
-            // 기존 폼 (block, textarea)
-            html += renderEditFieldItem('title', '4. 제목', article.title, 'block');
+            // v0.2: 제목도 한 줄(인라인 형태)로 배치하되 가로 공간을 채우도록 처리
+            html += renderEditFieldItem('title', '4. 제목', article.title, 'inline-full');
+            
+            // 본문 (Textarea)
             html += renderEditFieldItem('content', '5. 기고문 본문', article.content, 'textarea');
             html += '</ul>';
 
             document.getElementById('editor-body-box').innerHTML = html;
         }
 
-        // --- 3. 개별 필드 HTML 생성 (모드 분리) ---
+        // --- 개별 필드 HTML 생성 (복원 툴바를 입력창 아래 우측으로 배치) ---
         function renderEditFieldItem(key, label, currentVal, mode) {
             editFieldState[key] = {
                 currentSaved: currentVal,
@@ -187,40 +201,45 @@
                 history: [currentVal]
             };
 
-            let inputHtml = '';
-            let liClass = 'edit-li';
+            const toolbarHtml = `
+                <div class="restore-toolbar">
+                    <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 취소</button>
+                    <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장 상태로</button>
+                    <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문 복원</button>
+                </div>
+            `;
 
             if (mode === 'textarea') {
-                inputHtml = `<textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>`;
-            } else if (mode === 'inline') {
-                liClass = 'edit-li-inline';
-                inputHtml = `<input type="text" id="edit_${key}" class="thin-input" value="${currentVal}" oninput="handleFieldInput('${key}')">`;
-            } else {
-                inputHtml = `<input type="text" id="edit_${key}" class="edit-input-inline" value="${currentVal}" oninput="handleFieldInput('${key}')">`;
-            }
-
-            return `
-                <li class="${liClass}">
-                    <strong class="edit-label">${label}</strong>
-                    <div class="edit-field-wrap">
-                        ${inputHtml}
-                        <div class="restore-toolbar">
-                            <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 방금 취소</button>
-                            <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장 상태로</button>
-                            <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문 복원</button>
+                return `
+                    <li class="edit-li">
+                        <strong class="edit-label">${label}</strong>
+                        <div class="edit-field-wrap">
+                            <textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>
+                            ${toolbarHtml}
                         </div>
-                    </div>
-                </li>
-            `;
+                    </li>
+                `;
+            } else {
+                const isShort = mode === 'inline-short' ? 'short-input' : '';
+                return `
+                    <li class="edit-li-inline">
+                        <div class="inline-row">
+                            <strong class="edit-label">${label}</strong>
+                            <input type="text" id="edit_${key}" class="thin-input ${isShort}" value="${currentVal}" oninput="handleFieldInput('${key}')">
+                        </div>
+                        ${toolbarHtml}
+                    </li>
+                `;
+            }
         }
 
-        // --- 4. 복원 알고리즘 로직 ---
+        // --- 복원 및 히스토리 스택 추적 로직 ---
         function handleFieldInput(key) {
             markAsDirty();
             const el = document.getElementById(`edit_${key}`);
             if (!el) return;
             
-            if(el.tagName === 'TEXTAREA') {
+            if (el.tagName === 'TEXTAREA') {
                 el.style.height = 'auto';
                 el.style.height = (el.scrollHeight) + 'px';
             }
@@ -267,7 +286,7 @@
             markAsDirty();
         }
 
-        // --- 5. 저장 액션 제어 ---
+        // --- 저장 액션 제어 ---
         async function handleSaveAction(actionType) {
             if (isSaving || !currentArticle) return;
 
@@ -297,7 +316,7 @@
             console.log("저장될 페이로드 데이터:", payload);
 
             try {
-                // 향후 GAS 웹앱 URL이 세팅되면 주석을 해제하여 사용
+                // 향후 GAS 연동 엔드포인트
                 /*
                 await fetch(gasWebAppUrl, {
                     method: 'POST',
