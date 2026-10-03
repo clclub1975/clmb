@@ -1,4 +1,4 @@
-<!-- artcorrect.html v0.5 : GAS 웹 앱 연동 및 실시간 구글 시트 저장 활성화 -->
+<!-- artcorrect.html v0.6 : 데이터 소스를 '기고문 교정본' 탭(gid=339193703)으로 일치화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -101,7 +101,7 @@
 
         .loading-text { text-align: center; padding: 50px; color: #64748b; font-size: 16px; }
 
-        /* 커스텀 다이얼로그(Alert / Confirm) 스타일 */
+        /* 커스텀 다이얼로그 스타일 */
         .custom-dialog-backdrop {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px);
@@ -140,7 +140,7 @@
     <div class="editor-container">
         <!-- 헤더 -->
         <div class="editor-header">
-            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.5</span></span>
+            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.6</span></span>
             <button type="button" class="btn-close" onclick="handleWindowClose()">✕ 닫기</button>
         </div>
 
@@ -175,9 +175,9 @@
     </div>
 
     <script>
-        // 발급해주신 Google Apps Script 배포 URL 연결
         const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbx5pbrNf8OqGhCGqo1FUe8YEzYZaFy0VoRXq5MJPXnjPpWVknrzh1ZPMS9-UHcyekzj/exec'; 
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=1160907663&single=true&output=csv';
+        // v0.6: 링크 주소 1 ('기고문 교정본' 탭 gid: 339193703)으로 수정
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
 
         let currentArticle = null;
         let isDirty = false;
@@ -186,7 +186,6 @@
 
         function markAsDirty() { isDirty = true; }
 
-        // 커스텀 다이얼로그 헬퍼 함수
         function showCustomAlert(message, icon = 'ℹ️', onConfirm = null) {
             const backdrop = document.getElementById('customDialogBackdrop');
             const iconEl = document.getElementById('dialogIcon');
@@ -238,7 +237,6 @@
             }
         }
 
-        // 초기화 및 데이터 로드
         async function initEditor() {
             const urlParams = new URLSearchParams(window.location.search);
             const targetId = urlParams.get('id');
@@ -265,7 +263,6 @@
             }
         }
 
-        // 편집 UI 동적 렌더링
         function renderEditorUI(article) {
             editFieldState = {};
 
@@ -280,7 +277,6 @@
             document.getElementById('editor-body-box').innerHTML = html;
         }
 
-        // 개별 필드 HTML 생성
         function renderEditFieldItem(key, label, currentVal, mode) {
             editFieldState[key] = {
                 currentSaved: currentVal,
@@ -319,7 +315,6 @@
             }
         }
 
-        // 복원 및 히스토리 스택 추적 로직
         function handleFieldInput(key) {
             markAsDirty();
             const el = document.getElementById(`edit_${key}`);
@@ -376,7 +371,6 @@
             markAsDirty();
         }
 
-        // 저장 액션 제어
         async function handleSaveAction(actionType) {
             if (isSaving || !currentArticle) return;
 
@@ -416,7 +410,6 @@
             };
 
             try {
-                // Google Apps Script 웹 앱으로 비동기 POST 전송
                 await fetch(gasWebAppUrl, {
                     method: 'POST',
                     mode: 'no-cors',
