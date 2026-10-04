@@ -1,4 +1,4 @@
-<!-- v15.9: [저장/종료] 확인창 문구를 "교정 전 상태로 표시됩니다"로 수정, 버전 v15.9 -->
+<!-- v15.10: 역대 교정자 콤마(,) 누적 보존(방안 1), 중복 방지, '교정자' 라벨 호버/터치 이력 툴팁, 방안 B 복원 지원, 버전 v15.10 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -178,7 +178,7 @@
             background-color: #fafafa;
         }
 
-        /* 슬라이드 원안 반영 통합 모달 스타일 */
+        /* 통합 모달 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -322,15 +322,59 @@
             gap: 5px;
             margin-left: auto;
         }
-        .editor-input-wrap {
+        
+        /* '교정자' 라벨 및 역대 교정자 툴팁 래퍼 */
+        .editor-label-wrap {
+            position: relative;
             display: inline-flex;
             align-items: center;
             font-size: 0.82rem;
             color: #334155;
             font-weight: 600;
-            height: 28px;
-            flex-shrink: 0;
+            cursor: pointer;
+            outline: none;
         }
+        .editor-label-text {
+            text-decoration: underline dotted #64748b;
+            text-underline-offset: 3px;
+        }
+        .history-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: 135%;
+            left: 0;
+            width: 220px;
+            white-space: normal;
+            word-break: keep-all;
+            background-color: #1e293b;
+            color: #ffffff;
+            text-align: left;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            font-weight: 500;
+            line-height: 1.45;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .history-tooltip::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 12px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #1e293b transparent;
+        }
+        .editor-label-wrap:hover .history-tooltip,
+        .editor-label-wrap:focus .history-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
         .editor-input {
             width: 75px;
             height: 28px;
@@ -340,7 +384,6 @@
             text-align: center;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
-            margin-left: 4px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -355,7 +398,6 @@
             position: relative;
             display: inline-flex;
             align-items: center;
-            margin-left: 4px;
             cursor: pointer;
             outline: none;
         }
@@ -578,6 +620,10 @@
             .help-tooltip::after {
                 left: 35px;
             }
+            .history-tooltip {
+                width: 200px;
+                left: 0;
+            }
         }
 
         .modal-footer-finish {
@@ -701,7 +747,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.9</span>
+                <span class="version">v15.10</span>
             </h1>
         </header>
 
@@ -756,9 +802,14 @@
                 </div>
                 <div class="controls-row-2" id="correct-controls-row-2">
                     <div class="row-2-left">
-                        <label class="editor-input-wrap">교정자:
-                            <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
-                        </label>
+                        <!-- '교정자' 라벨 및 역대 교정자 툴팁 -->
+                        <div class="editor-label-wrap" tabindex="0">
+                            <span class="editor-label-text">교정자:</span>
+                            <div class="history-tooltip" id="editor-history-tooltip">
+                                역대 교정자: 없음
+                            </div>
+                        </div>
+                        <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
                         <!-- 원문자(?) 안내 툴팁 -->
                         <div class="help-tip-wrap" tabindex="0">
                             <span class="help-badge">?</span>
@@ -801,7 +852,7 @@
         let originalRawRows = null; 
         let correctMap = {};
         let originalMap = {};
-        let correctMetaMap = {};
+        let correctMetaMap = {}; // { [num]: { status: '', editorFull: '', lastEditor: '' } }
         let globalPdfMap = {};
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
@@ -810,6 +861,17 @@
         let editFieldState = {};
 
         function markAsDirty() { isDirty = true; }
+
+        // 문자열에서 마지막 교정자 및 리스트 추출 유틸리티
+        function parseEditorList(editorStr) {
+            if (!editorStr) return [];
+            return editorStr.split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        function getLastEditor(editorStr) {
+            const list = parseEditorList(editorStr);
+            return list.length > 0 ? list[list.length - 1] : '';
+        }
 
         function showCustomAlert(messageHtml, callback) {
             const overlay = document.getElementById('custom-dialog-overlay');
@@ -1152,8 +1214,12 @@
                     if (matches && matches.length > 0) {
                         const num = parseInt(matches[0], 10);
                         const statusVal = cols[0] ? cols[0].trim() : '교정';
-                        const editorVal = cols[1] ? cols[1].trim() : '';
-                        correctMetaMap[num] = { status: statusVal, editor: editorVal };
+                        const rawEditor = cols[1] ? cols[1].trim() : '';
+                        correctMetaMap[num] = {
+                            status: statusVal,
+                            editorFull: rawEditor,
+                            lastEditor: getLastEditor(rawEditor)
+                        };
                     }
                 }
 
@@ -1189,7 +1255,7 @@
                     const year = parseInt(matchDate[1], 10);
                     const month = parseInt(matchDate[2], 10);
 
-                    const meta = correctMetaMap[issueNum] || { status: '교정', editor: '' };
+                    const meta = correctMetaMap[issueNum] || { status: '교정', editorFull: '', lastEditor: '' };
 
                     issueMap[`${year}-${month}`] = {
                         rawNum: issueNum,
@@ -1197,7 +1263,8 @@
                         hasLink: hasLink,
                         link: validLink,
                         status: meta.status,
-                        editor: meta.editor
+                        editorFull: meta.editorFull,
+                        lastEditor: meta.lastEditor
                     };
                 }
 
@@ -1217,7 +1284,7 @@
             }
         }
 
-        // v15.9: 캘린더 생성 (12개월 셀 전수 생성)
+        // v15.10: 캘린더 생성 (셀에는 마지막 교정자만 뱃지로 노출)
         function renderCalendarMatrix(issueMap) {
             const tbody = document.getElementById('calendar-body');
             tbody.innerHTML = '';
@@ -1265,16 +1332,17 @@
                             let displayText = '교정';
                             let isDone = false;
 
-                            const editor = (data.editor || '').trim();
+                            const lastEd = (data.lastEditor || '').trim();
                             const status = (data.status || '').trim();
 
+                            // 상태에 따른 텍스트 및 클래스 지정
                             if (status.includes('완료')) {
                                 statusClass = 'status-done';
-                                displayText = editor || '완료';
+                                displayText = lastEd || '완료';
                                 isDone = true;
-                            } else if (status.includes('진행') || editor !== '') {
+                            } else if (status.includes('진행') || (status !== '교정' && lastEd !== '')) {
                                 statusClass = 'status-progress';
-                                displayText = editor || '진행';
+                                displayText = lastEd || '진행';
                             } else {
                                 statusClass = 'status-correct';
                                 displayText = '교정';
@@ -1283,6 +1351,8 @@
                             if (isDone) {
                                 td.classList.add('cell-completed');
                             }
+
+                            const titleTip = `${status}${lastEd ? ' (' + lastEd + ')' : ''}`;
 
                             td.innerHTML = `
                                 <div class="cell-content">
@@ -1293,7 +1363,7 @@
                                         <span class="cell-summary">요약</span>
                                     </div>
                                     <div class="cell-block" onclick="openCorrectModal(${data.rawNum}, ${y}, ${m})">
-                                        <span class="cell-status ${statusClass}" id="status-span-${data.rawNum}" title="${status}${editor ? ' (' + editor + ')' : ''}">${displayText}</span>
+                                        <span class="cell-status ${statusClass}" id="status-span-${data.rawNum}" title="${titleTip}">${displayText}</span>
                                     </div>
                                 </div>
                             `;
@@ -1332,10 +1402,27 @@
             
             titleElem.textContent = `[요약 교정] ${year}년 ${month}월 - ${String(issueNum).padStart(3, '0')}호`;
             
-            const meta = correctMetaMap[issueNum];
+            const meta = correctMetaMap[issueNum] || { status: '교정', editorFull: '', lastEditor: '' };
             const editorInput = document.getElementById('editor-name-input');
+            const historyTip = document.getElementById('editor-history-tooltip');
+
+            // 1) 상태가 '교정'(미교정)이면 입력창을 빈칸으로 두고, 그 외는 마지막 교정자를 기본 입력
             if (editorInput) {
-                editorInput.value = (meta && meta.editor) ? meta.editor : '';
+                if (meta.status === '교정' || !meta.status) {
+                    editorInput.value = '';
+                } else {
+                    editorInput.value = meta.lastEditor || '';
+                }
+            }
+
+            // 2) '교정자' 라벨 툴팁에 역대 교정자 목록 포맷팅 표시
+            if (historyTip) {
+                const list = parseEditorList(meta.editorFull);
+                if (list.length > 0) {
+                    historyTip.innerHTML = `<strong>역대 교정자:</strong><br>${list.join(' &rarr; ')}`;
+                } else {
+                    historyTip.innerHTML = `역대 교정자: 없음`;
+                }
             }
 
             renderCurrentMode();
@@ -1400,35 +1487,58 @@
             return `<strong>[${editorName}] 교정자의 수정내용이 저장되었습니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
         }
 
-        // v15.9: [저장/종료] 확인창 문구 개선
+        // v15.10: 교정자 콤마(,) 누적 조합 계산 함수
+        function computeAccumulatedEditors(currentInput, previousFull) {
+            const list = parseEditorList(previousFull);
+            if (!currentInput) return list.join(', '); // 빈칸이면 기존 이력 유지 (방안 B)
+
+            // 기존 리스트의 마지막 교정자와 동일하면 추가하지 않음 (중복 누적 방지)
+            if (list.length > 0 && list[list.length - 1] === currentInput) {
+                return list.join(', ');
+            }
+
+            list.push(currentInput);
+            return list.join(', ');
+        }
+
         async function handleSaveAction(actionType) {
             if (isSaving) return;
 
             const editorName = document.getElementById('editor-name-input').value.trim();
+            const issueNum = currentIssueData.issueNum;
+            const meta = correctMetaMap[issueNum] || { status: '교정', editorFull: '', lastEditor: '' };
 
+            // [저장/종료] 시 교정자 이름이 비어 있는 경우 -> 방안 B: 이력 보존 + '교정'(미교정) 복원
             if (actionType === 'exit' && !editorName) {
                 showCustomConfirm(
                     "교정자 이름을 비우고 저장하면 <strong>교정 전 상태</strong>로 표시됩니다.<br>진행하시겠습니까?",
-                    () => executePostSave('교정', '', actionType)
+                    () => {
+                        // B열은 기존 누적 이력을 그대로 보존하여 전송
+                        executePostSave('교정', meta.editorFull, '', actionType);
+                    }
                 );
                 return;
             }
 
+            // 일반 저장/계속 또는 완료 시에는 이름 필수
             if (!editorName) {
                 showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
                 return;
             }
 
+            // 콤마 누적 조합 계산
+            const newAccumulated = computeAccumulatedEditors(editorName, meta.editorFull);
+
             if (actionType === 'finish') {
                 showCustomConfirm(`[${editorName}] 교정자님, 이 호수의 교정 작업을 '완료' 처리하시겠습니까?`, () => {
-                    executePostSave('완료', editorName, actionType);
+                    executePostSave('완료', newAccumulated, editorName, actionType);
                 });
             } else {
-                executePostSave('진행', editorName, actionType);
+                executePostSave('진행', newAccumulated, editorName, actionType);
             }
         }
 
-        async function executePostSave(statusText, editorName, actionType) {
+        async function executePostSave(statusText, editorPayload, activeEditorName, actionType) {
             isSaving = true;
 
             const btnStay = document.getElementById('btn-save-stay');
@@ -1455,7 +1565,7 @@
             const payload = {
                 issueNum: currentIssueData.issueNum,
                 status: statusText,
-                editorName: editorName,
+                editorName: editorPayload, // 누적 콤마 문자열 또는 빈칸 보존 문자열
                 pubDate: getVal('pubDate'),
                 summary: getVal('summary'),
                 exec: getVal('exec'),
@@ -1490,11 +1600,25 @@
                 }
                 isDirty = false;
 
+                // 로컬 메타데이터 갱신
                 correctMetaMap[currentIssueData.issueNum] = {
                     status: statusText,
-                    editor: editorName
+                    editorFull: editorPayload,
+                    lastEditor: getLastEditor(editorPayload)
                 };
 
+                // 모달창 내 '교정자' 라벨 툴팁 즉시 갱신
+                const historyTip = document.getElementById('editor-history-tooltip');
+                if (historyTip) {
+                    const list = parseEditorList(editorPayload);
+                    if (list.length > 0) {
+                        historyTip.innerHTML = `<strong>역대 교정자:</strong><br>${list.join(' &rarr; ')}`;
+                    } else {
+                        historyTip.innerHTML = `역대 교정자: 없음`;
+                    }
+                }
+
+                // 뒷배경 캘린더 셀 텍스트 및 스타일 갱신
                 const statusSpan = document.getElementById(`status-span-${currentIssueData.issueNum}`);
                 const cellTd = document.getElementById(`cell-td-${currentIssueData.year}-${currentIssueData.month}`);
 
@@ -1502,16 +1626,17 @@
                     statusSpan.classList.remove('status-correct', 'status-progress', 'status-done');
 
                     if (statusText === '완료') {
-                        statusSpan.textContent = editorName || '완료';
-                        statusSpan.title = `완료 (${editorName})`;
+                        statusSpan.textContent = activeEditorName || '완료';
+                        statusSpan.title = `완료 (${activeEditorName})`;
                         statusSpan.classList.add('status-done');
                         if (cellTd) cellTd.classList.add('cell-completed');
-                    } else if (statusText === '진행' || editorName !== '') {
-                        statusSpan.textContent = editorName || '진행';
-                        statusSpan.title = `진행 (${editorName})`;
+                    } else if (statusText === '진행' || activeEditorName !== '') {
+                        statusSpan.textContent = activeEditorName || '진행';
+                        statusSpan.title = `진행 (${activeEditorName})`;
                         statusSpan.classList.add('status-progress');
                         if (cellTd) cellTd.classList.remove('cell-completed');
                     } else {
+                        // 교정 전 상태 복원
                         statusSpan.textContent = '교정';
                         statusSpan.title = '교정';
                         statusSpan.classList.add('status-correct');
@@ -1519,7 +1644,7 @@
                     }
                 }
 
-                const alertHtml = getSuccessAlertHtml(editorName);
+                const alertHtml = getSuccessAlertHtml(activeEditorName);
 
                 if (actionType === 'stay') {
                     showCustomAlert(alertHtml);
@@ -1662,4 +1787,3 @@
     </script>
 </body>
 </html>
- 
