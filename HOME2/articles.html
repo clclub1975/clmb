@@ -1,4 +1,4 @@
-<!-- v4.3: 교정 전용 페이지(artcorrect.html) 진입을 위한 비밀 투명 버튼 추가 -->
+<!-- v4.4: PC 기고문 교정 모달(artcorrect.html iframe) 임베디드 오버레이 탑재 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -46,7 +46,6 @@
             background-color: #e5e7eb;
         }
         
-        /* 상단 탭 (Mode Switcher) 스타일 */
         .tab-container {
             display: flex;
             background: #e5e7eb;
@@ -74,7 +73,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* 3열 필터 레이아웃 */
         .filter-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -108,7 +106,6 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* 하단 글 목록 리스트 스타일 */
         .list-container {
             background: #ffffff;
             padding: 20px;
@@ -148,10 +145,7 @@
         .article-item:hover { background-color: #f3f4f6; border-color: #e5e7eb; }
         .article-item.active { background-color: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 600; }
 
-        /* 랜덤 선택용 메쉬 그리드 (Mesh Grid) 스타일 */
-        #viewGrid {
-            display: none; 
-        }
+        #viewGrid { display: none; }
         .grid-header-wrap {
             display: flex;
             justify-content: space-between;
@@ -175,9 +169,7 @@
             transition: all 0.2s ease;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .reset-btn:hover {
-            background-color: #f3f4f6;
-        }
+        .reset-btn:hover { background-color: #f3f4f6; }
         .grid-mesh {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(24px, 1fr)); 
@@ -206,7 +198,6 @@
             opacity: 0.5;
         }
 
-        /* 전문 출력 영역 (PC 기본 스타일) */
         .viewer-content-box {
             background: #ffffff;
             padding: 30px;
@@ -238,7 +229,6 @@
             padding: 40px 0;
         }
 
-        /* v4.3: 비밀 투명 버튼 스타일 */
         .secret-edit-btn {
             position: absolute;
             top: 0;
@@ -247,13 +237,38 @@
             height: 45px;
             background: transparent;
             border: none;
-            opacity: 0; /* 완전히 안 보이게 처리 */
+            opacity: 0;
             cursor: pointer;
             z-index: 50;
             outline: none;
         }
 
-        /* 반응형: 모바일 모달 및 화면 최적화 */
+        /* v4.4: 아카이브 배경 위에 띄우는 교정창 오버레이 모달 */
+        .correct-modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .correct-modal-backdrop.open {
+            display: flex;
+        }
+        .correct-modal-frame {
+            width: 100%;
+            max-width: 940px;
+            height: 90vh;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            background: #ffffff;
+        }
+
         @media (max-width: 768px) {
             body { padding: 10px; margin: 10px auto; }
             .tab-btn { font-size: 14px; padding: 10px 5px; }
@@ -263,7 +278,6 @@
             .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
             .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 10px; gap: 4px; }
             
-            /* 모바일 모달 창 */
             #articleViewer {
                 display: none;
                 position: fixed;
@@ -287,8 +301,6 @@
                 position: sticky; top: 0; background: #fff;
             }
             .close-icon { color: #ef4444; font-size: 18px; }
-            
-            /* 모바일에서는 비밀 버튼 숨김 (PC 전용으로 기획하셨으므로) */
             .secret-edit-btn { display: none; }
         }
     </style>
@@ -299,15 +311,13 @@
         <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
     </div>
 
-    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v4.3</span></h1>
+    <h1>촛불회보 기고문 아카이브 <span class="version-badge">v4.4</span></h1>
 
-    <!-- 상단 탭 버튼 영역 -->
     <div class="tab-container">
         <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
         <button id="tabGridBtn" class="tab-btn">랜덤 선택하기</button>
     </div>
 
-    <!-- [뷰 1] 세부조건 필터 뷰 -->
     <div id="viewFilter">
         <div class="filter-container">
             <div class="filter-group">
@@ -336,20 +346,17 @@
         </div>
     </div>
 
-    <!-- [뷰 2] 랜덤 메쉬 그리드 뷰 -->
     <div id="viewGrid">
         <div class="grid-header-wrap">
             <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기)</p>
             <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
         </div>
-        
         <div class="grid-mesh" id="gridMesh"></div>
     </div>
 
-    <!-- 모달(모바일) & 하단 뷰어(PC) 출력 영역 -->
     <div id="articleViewer">
         <div class="viewer-content-box">
-            <!-- v4.3 비밀 투명 버튼 -->
+            <!-- 비밀 투명 버튼 -->
             <button class="secret-edit-btn" onclick="openSecretEditor()" title="교정하기 (비밀 통로)"></button>
             
             <div id="closeModalBtn" class="close-btn">
@@ -361,13 +368,17 @@
         </div>
     </div>
 
+    <!-- v4.4: 교정 전용 모달 컨테이너 (배경 위에 띄움) -->
+    <div class="correct-modal-backdrop" id="correctModalBackdrop">
+        <iframe id="correctModalFrame" class="correct-modal-frame" src=""></iframe>
+    </div>
+
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
         
         let articlesData = [];
-        let currentArticleId = null; // v4.3: 현재 열람 중인 기고문의 ID 저장
+        let currentArticleId = null;
 
-        // DOM Elements
         const tabFilterBtn = document.getElementById('tabFilterBtn');
         const tabGridBtn = document.getElementById('tabGridBtn');
         const viewFilter = document.getElementById('viewFilter');
@@ -389,14 +400,24 @@
         const articleViewer = document.getElementById('articleViewer');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
-        // --- v4.3: 비밀 에디터 호출 함수 ---
+        const correctModalBackdrop = document.getElementById('correctModalBackdrop');
+        const correctModalFrame = document.getElementById('correctModalFrame');
+
+        // v4.4: 모달 방식으로 artcorrect.html 호출
         function openSecretEditor() {
-            if (!currentArticleId) return; // 글이 선택되지 않았으면 무시
-            // artcorrect.html 창을 띄우면서 URL 파라미터로 선택된 글의 ID를 넘김
-            window.open(`artcorrect.html?id=${currentArticleId}`, '_blank');
+            if (!currentArticleId) return;
+            correctModalFrame.src = `artcorrect.html?id=${currentArticleId}`;
+            correctModalBackdrop.classList.add('open');
         }
 
-        // --- 모달 및 History API (뒤로 가기) 제어 함수 ---
+        // artcorrect.html에서 '창 닫기' 요청을 보내면 수신하여 모달 닫기
+        window.addEventListener('message', (event) => {
+            if (event.data === 'closeCorrectModal') {
+                correctModalBackdrop.classList.remove('open');
+                correctModalFrame.src = '';
+            }
+        });
+
         function openMobileModal() {
             articleViewer.classList.add('open');
             if (window.innerWidth <= 768 && window.location.hash !== '#article') {
@@ -469,7 +490,7 @@
 
         function shuffleArray(array) {
             const arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
+            for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [arr[i], arr[j]] = [arr[j], arr[i]];
             }
@@ -610,7 +631,7 @@
         }
 
         function showArticleDetail(id) {
-            currentArticleId = id; // v4.3: 현재 ID 저장
+            currentArticleId = id;
             const article = articlesData.find(item => item.id === id);
             if (article) {
                 metaInfo.style.display = 'block';
@@ -623,7 +644,7 @@
         const resetViewer = () => {
             updateFilters();
             articleViewer.classList.remove('open');
-            currentArticleId = null; // 초기화 시 ID 리셋
+            currentArticleId = null;
             metaInfo.style.display = 'none';
             contentBody.className = 'placeholder-text';
             contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
@@ -640,7 +661,6 @@
             contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
         });
 
-        // 데이터 로드 실행
         loadSheetData();
     </script>
 </body>
