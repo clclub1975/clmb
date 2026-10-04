@@ -1,4 +1,4 @@
-<!-- artcorrect.html v0.7 : 교정자 입력창/안내 복원 및 저장/계속 버튼 우측 재배치 -->
+<!-- artcorrect.html v0.8 : 아카이브 오버레이 모달 프레임 맞춤 최적화 (창닫기 통신 탑재) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,35 +8,58 @@
     <style>
         body {
             font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
-            background-color: #e2e8f0;
-            margin: 0; padding: 40px 20px;
-            display: flex; justify-content: center;
+            background-color: transparent;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
             color: #334155;
+            height: 100vh;
+            overflow: hidden;
         }
-        /* 메인 컨테이너 */
+        /* 메인 컨테이너 (모달 내부 가득 차도록 설정) */
         .editor-container {
-            background: #fff; border-radius: 8px; width: 100%; max-width: 900px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; overflow: hidden;
+            background: #fff;
+            border-radius: 10px;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-sizing: border-box;
         }
         
         /* 헤더 */
         .editor-header {
-            background: #fff; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #e2e8f0; padding: 15px 20px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 24px;
         }
         .editor-title { font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center; }
         .version-badge { font-size: 14px; font-weight: 500; color: #64748b; margin-left: 8px; }
         .btn-close {
-            background: transparent; border: none; font-size: 15px; color: #64748b; 
-            font-weight: 600; cursor: pointer; padding: 4px 8px; transition: color 0.15s;
+            background: transparent;
+            border: none;
+            font-size: 15px;
+            color: #64748b;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.15s;
         }
         .btn-close:hover { color: #ef4444; }
 
         /* 상단 컨트롤 바 */
         .editor-controls {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
         }
         .controls-left, .controls-right { display: flex; align-items: center; gap: 10px; }
         
@@ -62,7 +85,7 @@
         .btn-save-exit:hover { background: #1d4ed8; }
         
         /* 본문 에디터 영역 */
-        .editor-body { padding: 25px; overflow-y: auto; background: #fff; min-height: 400px; }
+        .editor-body { padding: 24px; overflow-y: auto; background: #fff; flex: 1; }
         
         /* 개별 편집 필드 리스트 */
         .edit-ul { list-style: none; padding: 0; margin: 0; }
@@ -73,7 +96,7 @@
         .edit-textarea-inline {
             width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
             font-size: 15px; font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; 
-            box-sizing: border-box; background: #fdfdfd; line-height: 1.6; resize: vertical; min-height: 300px;
+            box-sizing: border-box; background: #fdfdfd; line-height: 1.6; resize: vertical; min-height: 280px;
         }
         .edit-textarea-inline:focus { 
             border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
@@ -106,8 +129,8 @@
         .btn-restore:hover { background-color: #f1f5f9; color: #1e293b; }
 
         /* 하단 완료 영역 */
-        .editor-footer { background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; }
-        .btn-finish-large { background: #10b981; color: #fff; border: none; padding: 12px 40px; font-size: 16px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3); }
+        .editor-footer { background: #f8fafc; padding: 16px 24px; text-align: center; border-top: 1px solid #e2e8f0; }
+        .btn-finish-large { background: #10b981; color: #fff; border: none; padding: 10px 40px; font-size: 15px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3); }
         .btn-finish-large:hover { background: #059669; }
 
         .loading-text { text-align: center; padding: 50px; color: #64748b; font-size: 16px; }
@@ -132,9 +155,7 @@
         .dialog-message {
             font-size: 15px; color: #1e293b; line-height: 1.55; margin-bottom: 20px; word-break: keep-all;
         }
-        .dialog-buttons {
-            display: flex; gap: 8px; justify-content: center;
-        }
+        .dialog-buttons { display: flex; gap: 8px; justify-content: center; }
         .dialog-btn {
             padding: 8px 18px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.15s;
         }
@@ -151,13 +172,12 @@
     <div class="editor-container">
         <!-- 헤더 -->
         <div class="editor-header">
-            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.7</span></span>
+            <span class="editor-title">✏️️ 기고문 교정 <span class="version-badge">v0.8</span></span>
             <button type="button" class="btn-close" onclick="handleWindowClose()">✕ 닫기</button>
         </div>
 
         <!-- 상단 컨트롤 바 -->
         <div class="editor-controls">
-            <!-- 좌측: 교정자 입력창 및 툴팁 복원 -->
             <div class="controls-left">
                 <label class="editor-input-wrap">교정자:
                     <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
@@ -169,14 +189,13 @@
                     </div>
                 </div>
             </div>
-            <!-- 우측: 저장/계속 및 저장/종료 나란히 배치 -->
             <div class="controls-right">
                 <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
                 <button type="button" class="btn-action btn-save-exit" id="btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
             </div>
         </div>
 
-        <!-- 에디터 본문 (동적 렌더링) -->
+        <!-- 에디터 본문 -->
         <div class="editor-body" id="editor-body-box">
             <div class="loading-text">구글 시트에서 데이터를 불러오고 있습니다...</div>
         </div>
@@ -187,7 +206,7 @@
         </div>
     </div>
 
-    <!-- 커스텀 알림/확인 모달 다이얼로그 -->
+    <!-- 커스텀 다이얼로그 -->
     <div class="custom-dialog-backdrop" id="customDialogBackdrop">
         <div class="custom-dialog-box" onclick="event.stopPropagation()">
             <div class="dialog-icon" id="dialogIcon">💬</div>
@@ -206,6 +225,15 @@
         let editFieldState = {}; 
 
         function markAsDirty() { isDirty = true; }
+
+        // 부모 창(articles.html)으로 모달 닫기 메시지 전송
+        function closeParentModal() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage('closeCorrectModal', '*');
+            } else {
+                window.close();
+            }
+        }
 
         function showCustomAlert(message, icon = 'ℹ️', onConfirm = null) {
             const backdrop = document.getElementById('customDialogBackdrop');
@@ -251,10 +279,10 @@
             if (isDirty) {
                 showCustomConfirm("수정 중인 내용이 저장되지 않았습니다.<br>창을 닫으시겠습니까?", '⚠️', () => {
                     isDirty = false;
-                    window.close();
+                    closeParentModal();
                 });
             } else {
-                window.close();
+                closeParentModal();
             }
         }
 
@@ -471,7 +499,7 @@
                     showCustomAlert(alertHtml, '✅');
                 } else {
                     showCustomAlert(alertHtml + "<br>편집창을 닫습니다.", '✅', () => {
-                        window.close();
+                        closeParentModal();
                     });
                 }
             } catch (err) {
