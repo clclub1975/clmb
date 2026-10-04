@@ -1,4 +1,4 @@
-<!-- artcorrect.html v0.6 : 데이터 소스를 '기고문 교정본' 탭(gid=339193703)으로 일치화 -->
+<!-- artcorrect.html v0.7 : 교정자 입력창/안내 복원 및 저장/계속 버튼 우측 재배치 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -40,6 +40,17 @@
         }
         .controls-left, .controls-right { display: flex; align-items: center; gap: 10px; }
         
+        /* 교정자 입력 및 툴팁 스타일 */
+        .editor-input-wrap { font-size: 14px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; }
+        .editor-input { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; width: 120px; font-size: 14px; }
+        .editor-input:focus { border-color: #3b82f6; outline: none; }
+
+        .help-tip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; outline: none; }
+        .help-badge { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background-color: #94a3b8; color: #ffffff; font-size: 11px; font-weight: 700; }
+        .help-tip-wrap:hover .help-badge { background-color: #2563eb; }
+        .help-tooltip { visibility: hidden; opacity: 0; position: absolute; top: 135%; left: 0; width: 240px; white-space: normal; background-color: #1e293b; color: #ffffff; padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); z-index: 1000; pointer-events: none; transition: opacity 0.2s ease; }
+        .help-tip-wrap:hover .help-tooltip { visibility: visible; opacity: 1; }
+
         /* 액션 버튼 */
         .btn-action { 
             padding: 7px 16px; font-size: 13px; font-weight: 600; border-radius: 4px; 
@@ -140,16 +151,27 @@
     <div class="editor-container">
         <!-- 헤더 -->
         <div class="editor-header">
-            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.6</span></span>
+            <span class="editor-title">✏️ 기고문 교정 <span class="version-badge">v0.7</span></span>
             <button type="button" class="btn-close" onclick="handleWindowClose()">✕ 닫기</button>
         </div>
 
-        <!-- 상단 컨트롤 -->
+        <!-- 상단 컨트롤 바 -->
         <div class="editor-controls">
+            <!-- 좌측: 교정자 입력창 및 툴팁 복원 -->
             <div class="controls-left">
-                <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
+                <label class="editor-input-wrap">교정자:
+                    <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
+                </label>
+                <div class="help-tip-wrap" tabindex="0">
+                    <span class="help-badge">?</span>
+                    <div class="help-tooltip">
+                        이름을 지운 상태에서 [저장/종료]를 누르면 교정 전 상태로 복원됩니다.
+                    </div>
+                </div>
             </div>
+            <!-- 우측: 저장/계속 및 저장/종료 나란히 배치 -->
             <div class="controls-right">
+                <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
                 <button type="button" class="btn-action btn-save-exit" id="btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
             </div>
         </div>
@@ -176,7 +198,6 @@
 
     <script>
         const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbx5pbrNf8OqGhCGqo1FUe8YEzYZaFy0VoRXq5MJPXnjPpWVknrzh1ZPMS9-UHcyekzj/exec'; 
-        // v0.6: 링크 주소 1 ('기고문 교정본' 탭 gid: 339193703)으로 수정
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
 
         let currentArticle = null;
@@ -373,12 +394,29 @@
 
         async function handleSaveAction(actionType) {
             if (isSaving || !currentArticle) return;
+            const editorName = document.getElementById('editor-name-input').value.trim();
+
+            if (actionType === 'exit' && !editorName) {
+                showCustomConfirm(
+                    "교정자 이름을 비우고 저장하면 <strong>'교정 전 상태'</strong>로 표시됩니다.<br>진행하시겠습니까?",
+                    '❓',
+                    () => executePostSave('교정', '', actionType)
+                );
+                return;
+            }
+
+            if (!editorName) {
+                showCustomAlert('교정자 이름을 입력해 주세요.', 'ℹ️', () => {
+                    document.getElementById('editor-name-input').focus();
+                });
+                return;
+            }
 
             if (actionType === 'finish') {
                 showCustomConfirm(
-                    "이 기고문 교정 작업을 <strong>'완료'</strong> 처리하시겠습니까?", 
+                    `[${editorName}] 교정자님, 이 작업을 <strong>'완료'</strong> 처리하시겠습니까?`, 
                     '✓', 
-                    () => executePostSave('완료', actionType),
+                    () => executePostSave('완료', editorName, actionType),
                     'dialog-btn-success',
                     '완료하기'
                 );
@@ -386,22 +424,23 @@
                 showCustomConfirm(
                     "수정 내용을 저장하고 <strong>창을 닫으시겠습니까?</strong>", 
                     '💾', 
-                    () => executePostSave('진행', actionType),
+                    () => executePostSave('진행', editorName, actionType),
                     'dialog-btn-primary',
                     '저장 후 종료'
                 );
             } else {
-                executePostSave('진행', actionType);
+                executePostSave('진행', editorName, actionType);
             }
         }
 
-        async function executePostSave(statusText, actionType) {
+        async function executePostSave(statusText, editorName, actionType) {
             isSaving = true;
             document.body.style.cursor = 'wait';
 
             const payload = {
                 id: currentArticle.id,
                 status: statusText,
+                editorName: editorName,
                 type: document.getElementById('edit_type').value,
                 cohort: document.getElementById('edit_cohort').value,
                 author: document.getElementById('edit_author').value,
@@ -424,10 +463,14 @@
                 }
                 isDirty = false;
 
+                const alertHtml = !editorName 
+                    ? "<strong>교정 전 상태로 복원 처리되었습니다.</strong>"
+                    : `<strong>[${editorName}]</strong> 교정자의 수정 내용이 저장되었습니다.`;
+
                 if (actionType === 'stay') {
-                    showCustomAlert("수정 내용이 구글 시트에 안전하게 저장되었습니다.", '✅');
+                    showCustomAlert(alertHtml, '✅');
                 } else {
-                    showCustomAlert("수정 내용이 저장되었습니다.<br>편집창을 닫습니다.", '✅', () => {
+                    showCustomAlert(alertHtml + "<br>편집창을 닫습니다.", '✅', () => {
                         window.close();
                     });
                 }
