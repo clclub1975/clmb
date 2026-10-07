@@ -1,10 +1,10 @@
-<!-- v4.7: '캘린더' 메뉴 카드 제거 및 남은 3개 메뉴 PC 3열 1행(3x1) 레이아웃 적용 -->
+<!-- v4.8: '기고문 전문 보기' 메뉴명을 '촛불회 50년, 그 삶의 기록'으로 변경 및 v4.8 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 50년사 아카이브 v4.7</title>
+    <title>촛불회 50년사 아카이브 v4.8</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -110,7 +110,7 @@
             color: var(--primary-color);
         }
 
-        /* PC 환경에서 3열 1행(3x1) 그리드 레이아웃 적용 */
+        /* PC 환경에서 3열 1행(3x1) 그리드 레이아웃 유지 */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -185,7 +185,6 @@
                 margin-top: -20px;
             }
 
-            /* 모바일 화면에서는 세로 1열(1x3)로 보기 편하게 배치 */
             .menu-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
@@ -213,13 +212,13 @@
 <body>
 
     <div class="dev-meta-bar">
-        <!-- v4.7: '캘린더' 메뉴 카드 제거 및 남은 3개 메뉴 PC 3열 1행(3x1) 레이아웃 적용 -->
+        <!-- v4.8: '기고문 전문 보기' 메뉴명을 '촛불회 50년, 그 삶의 기록'으로 변경 및 v4.8 버전 업그레이드 -->
     </div>
 
     <header>
         <div class="header-title-area">
             <h1><a href="HOME2/process.html" title="작업 프로세스로 이동">🕯️</a> 촛불회 50년사 아카이브</h1>
-            <span class="version-tag">v4.7</span>
+            <span class="version-tag">v4.8</span>
         </div>
         <p>1975년부터 이어온 반세기의 기록과 기억을 담다</p>
     </header>
@@ -245,7 +244,7 @@
 
             <a href="HOME2/articles.html" class="menu-card">
                 <div class="icon">📖</div>
-                <h2>기고문 전문 보기</h2>
+                <h2>촛불회 50년, 그 삶의 기록</h2>
                 <p>회원들의 손으로 직접 써 내려간 진솔한 기고문과 감동의 전문을 열람합니다.</p>
             </a>
         </div>
