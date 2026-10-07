@@ -190,4 +190,21 @@
         .grid-cell:hover {
             background-color: #60a5fa; 
             transform: scale(1.15);
-            box-shadow: 0 2px
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .grid-cell.read {
+            background-color: #2563eb; 
+            opacity: 0.5;
+        }
+
+        .viewer-content-box {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            position: relative;
+        }
+        .close-btn { display: none; }
+        .meta-info {
