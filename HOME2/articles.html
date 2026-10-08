@@ -1,4 +1,4 @@
-<!-- v5.5: 본문 로딩 속도 극대화를 위한 구글 Visualization API 직접 단건 쿼리(0.3초대) 전환 -->
+<!-- v6.0: artcorrect.html 교정 시스템을 articles.html 내부로 완전 통합 및 실시간 동기화 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -254,33 +254,199 @@
       z-index: 50;
       outline: none;
     }
-    .correct-modal-backdrop {
+
+    /* 통합 인라인 교정 모달 스타일 */
+    .editor-modal-backdrop {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(3px);
+      background-color: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
       z-index: 10000;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 15px;
       box-sizing: border-box;
     }
-    .correct-modal-backdrop.open {
+    .editor-modal-backdrop.open {
       display: flex;
     }
-    .correct-modal-frame {
+    .editor-window {
       width: 100%;
-      max-width: 940px;
-      height: 90vh;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      max-width: 900px;
+      max-height: 94vh;
       background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
     }
+    .editor-header {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .editor-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .editor-close-btn {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .editor-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .editor-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .editor-id-badge {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e40af;
+      background: #dbeafe;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .editor-user-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .editor-user-input {
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      width: 100px;
+    }
+    .editor-status-badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      color: #475569;
+      font-weight: 600;
+    }
+    .editor-status-badge.saved {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .editor-status-badge.saving {
+      background: #fef9c3;
+      color: #854d0e;
+    }
+    .editor-field-group {
+      margin-bottom: 16px;
+    }
+    .editor-field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .editor-field-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+    .editor-tool-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-tool {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #475569;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-tool:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .editor-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1e293b;
+      background: #fff;
+    }
+    .editor-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1e293b;
+      height: 240px;
+      line-height: 1.6;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .editor-footer {
+      padding: 12px 20px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-save {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+    .btn-save:hover {
+      background: #1d4ed8;
+    }
+    .btn-save:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
     @media (max-width: 768px) {
       body {
         padding: 10px;
@@ -364,6 +530,15 @@
       .secret-edit-btn {
         display: none;
       }
+      .editor-window {
+        max-height: 98vh;
+      }
+      .editor-body {
+        padding: 12px;
+      }
+      .editor-textarea {
+        height: 180px;
+      }
     }
   </style>
 </head>
@@ -373,7 +548,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v5.5</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v6.0</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -425,7 +600,7 @@
   <div id="articleViewer">
     <div class="viewer-content-box">
       <!-- 비밀 투명 버튼 -->
-      <button class="secret-edit-btn" onclick="openSecretEditor()" title="교정하기 (비밀 통로)"></button>
+      <button class="secret-edit-btn" onclick="openInlineEditor()" title="교정하기 (비밀 통로)"></button>
       <div id="closeModalBtn" class="close-btn">
         <span>기록 보기</span>
         <span class="close-icon">✕ 닫기</span>
@@ -435,22 +610,106 @@
     </div>
   </div>
 
-  <!-- 교정 전용 모달 컨테이너 -->
-  <div class="correct-modal-backdrop" id="correctModalBackdrop">
-    <iframe id="correctModalFrame" class="correct-modal-frame" src=""></iframe>
+  <!-- 통합 인라인 교정기 모달 -->
+  <div class="editor-modal-backdrop" id="editorModalBackdrop">
+    <div class="editor-window">
+      <div class="editor-header">
+        <div class="editor-title">✏️ 기고문 교정 관리자</div>
+        <button class="editor-close-btn" onclick="closeInlineEditor()">✕ 닫기</button>
+      </div>
+      <div class="editor-body">
+        <div class="editor-top-bar">
+          <div>
+            <span class="editor-id-badge" id="editIdBadge">ID: -</span>
+            <span class="editor-status-badge" id="editStatusBadge">교정대기</span>
+          </div>
+          <div class="editor-user-wrap">
+            <label for="editorUser">교정자:</label>
+            <input type="text" id="editorUser" class="editor-user-input" placeholder="성명">
+          </div>
+        </div>
+
+        <div class="editor-field-group">
+          <div class="editor-field-header">
+            <span class="editor-field-label">1. 글 종류</span>
+            <div class="editor-tool-btns">
+              <button class="btn-tool" onclick="revertField('type', 'origin')">📖 원본복원</button>
+              <button class="btn-tool" onclick="revertField('type', 'recent')">⟲ 최근저장값</button>
+            </div>
+          </div>
+          <input type="text" id="editType" class="editor-input">
+        </div>
+
+        <div class="editor-field-group">
+          <div class="editor-field-header">
+            <span class="editor-field-label">2. 기수</span>
+            <div class="editor-tool-btns">
+              <button class="btn-tool" onclick="revertField('cohort', 'origin')">📖 원본복원</button>
+              <button class="btn-tool" onclick="revertField('cohort', 'recent')">⟲ 최근저장값</button>
+            </div>
+          </div>
+          <input type="text" id="editCohort" class="editor-input">
+        </div>
+
+        <div class="editor-field-group">
+          <div class="editor-field-header">
+            <span class="editor-field-label">3. 기고자</span>
+            <div class="editor-tool-btns">
+              <button class="btn-tool" onclick="revertField('author', 'origin')">📖 원본복원</button>
+              <button class="btn-tool" onclick="revertField('author', 'recent')">⟲ 최근저장값</button>
+            </div>
+          </div>
+          <input type="text" id="editAuthor" class="editor-input">
+        </div>
+
+        <div class="editor-field-group">
+          <div class="editor-field-header">
+            <span class="editor-field-label">4. 글 제목</span>
+            <div class="editor-tool-btns">
+              <button class="btn-tool" onclick="revertField('title', 'origin')">📖 원본복원</button>
+              <button class="btn-tool" onclick="revertField('title', 'recent')">⟲ 최근저장값</button>
+            </div>
+          </div>
+          <input type="text" id="editTitle" class="editor-input">
+        </div>
+
+        <div class="editor-field-group">
+          <div class="editor-field-header">
+            <span class="editor-field-label">5. 기고문 본문</span>
+            <div class="editor-tool-btns">
+              <button class="btn-tool" onclick="revertField('content', 'origin')">📖 원본복원</button>
+              <button class="btn-tool" onclick="revertField('content', 'recent')">⟲ 최근저장값</button>
+            </div>
+          </div>
+          <textarea id="editContent" class="editor-textarea"></textarea>
+        </div>
+      </div>
+      <div class="editor-footer">
+        <button class="btn-save" id="btnSaveCorrect" onclick="saveCorrection()">✓ 교정 내용 저장</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // 마스터 DB 식별자 및 탭 정보
-    const SHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
-    const SHEET_GID = '1255939946';
+    // 마스터 DB 식별자 (교정본 & 원본)
+    const CORRECT_SHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
+    const CORRECT_SHEET_GID = '1255939946';
+    const ORIGIN_SHEET_ID = '1Nkc7CK9FlUb52q3vtzm98vnjiorLBvzmyP7L0eG09H4';
+    const ORIGIN_SHEET_GID = '1255939946';
 
-    // A~I열 목록용 메타데이터 엔드포인트
-    const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
+    // GAS 백엔드 저장 엔드포인트 URL
+    const GAS_SAVE_URL = 'https://script.google.com/macros/s/AKfycbyu8AtE2UooyXKUjRLLk0k_X41bhO8n_gLwS1CIjZ9goHS1qVLrmZr4BxiV7nuV6dCpIw/exec';
+
+    // A~I열 목록 메타데이터 엔드포인트
+    const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${CORRECT_SHEET_GID}&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
 
     let articlesData = [];
     let currentArticleId = null;
-    const contentCache = {}; // 받아온 본문 로컬 캐시
+    const contentCache = {}; // 본문 캐시
+
+    // 교정기 내부 보관 버퍼
+    let currentOriginalData = null;
+    let currentSavedData = null;
 
     const tabFilterBtn = document.getElementById('tabFilterBtn');
     const tabGridBtn = document.getElementById('tabGridBtn');
@@ -470,21 +729,151 @@
     const contentBody = document.getElementById('contentBody');
     const articleViewer = document.getElementById('articleViewer');
     const closeModalBtn = document.getElementById('closeModalBtn');
-    const correctModalBackdrop = document.getElementById('correctModalBackdrop');
-    const correctModalFrame = document.getElementById('correctModalFrame');
+    const editorModalBackdrop = document.getElementById('editorModalBackdrop');
 
-    function openSecretEditor() {
+    // 인라인 교정 모달 제어
+    async function openInlineEditor() {
       if (!currentArticleId) return;
-      correctModalFrame.src = `artcorrect.html?id=${encodeURIComponent(currentArticleId)}`;
-      correctModalBackdrop.classList.add('open');
+      const article = articlesData.find(item => item.id === currentArticleId);
+      if (!article) return;
+
+      document.getElementById('editIdBadge').textContent = `ID: ${article.id}`;
+      document.getElementById('editStatusBadge').textContent = article.status || '교정대기';
+      document.getElementById('editStatusBadge').className = 'editor-status-badge';
+      document.getElementById('editorUser').value = article.editor || localStorage.getItem('last_editor_name') || '';
+
+      document.getElementById('editType').value = article.type || '';
+      document.getElementById('editCohort').value = article.cohort || '';
+      document.getElementById('editAuthor').value = article.author || '';
+      document.getElementById('editTitle').value = article.title || '';
+      document.getElementById('editContent').value = contentCache[article.id] || '';
+
+      // 최근 저장값 보관
+      currentSavedData = {
+        type: article.type,
+        cohort: article.cohort,
+        author: article.author,
+        title: article.title,
+        content: contentCache[article.id] || ''
+      };
+
+      editorModalBackdrop.classList.add('open');
+
+      // 원본 데이터 비동기 병렬 프리패치
+      fetchOriginalData(article.id);
     }
 
-    window.addEventListener('message', (event) => {
-      if (event.data === 'closeCorrectModal') {
-        correctModalBackdrop.classList.remove('open');
-        correctModalFrame.src = '';
+    function closeInlineEditor() {
+      editorModalBackdrop.classList.remove('open');
+    }
+
+    async function fetchOriginalData(id) {
+      currentOriginalData = null;
+      try {
+        const q = encodeURIComponent(`SELECT F, G, H, I, J WHERE A = '${id}'`);
+        const res = await fetch(`https://docs.google.com/spreadsheets/d/${ORIGIN_SHEET_ID}/gviz/tq?tqx=out:json&gid=${ORIGIN_SHEET_GID}&tq=${q}`);
+        const text = await res.text();
+        const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+        if (match && match[1]) {
+          const rows = JSON.parse(match[1]).table.rows;
+          if (rows && rows.length > 0) {
+            const c = rows[0].c;
+            currentOriginalData = {
+              cohort: c[0] ? c[0].v : '',
+              author: c[1] ? c[1].v : '',
+              type: c[2] ? c[2].v : '',
+              title: c[3] ? c[3].v : '',
+              content: c[4] ? c[4].v : ''
+            };
+          }
+        }
+      } catch (err) {
+        console.warn('원본 데이터 로드 실패', err);
       }
-    });
+    }
+
+    function revertField(fieldKey, target) {
+      const source = target === 'origin' ? currentOriginalData : currentSavedData;
+      if (!source) {
+        alert(target === 'origin' ? '원본 데이터를 불러오는 중이거나 찾을 수 없습니다.' : '최근 저장값이 없습니다.');
+        return;
+      }
+      const elMap = {
+        type: document.getElementById('editType'),
+        cohort: document.getElementById('editCohort'),
+        author: document.getElementById('editAuthor'),
+        title: document.getElementById('editTitle'),
+        content: document.getElementById('editContent')
+      };
+      if (elMap[fieldKey] && source[fieldKey] !== undefined) {
+        elMap[fieldKey].value = source[fieldKey];
+      }
+    }
+
+    // 교정 저장 실행 (GAS POST)
+    async function saveCorrection() {
+      const editorName = document.getElementById('editorUser').value.trim();
+      if (!editorName) {
+        alert('교정자 성명을 입력해 주세요.');
+        document.getElementById('editorUser').focus();
+        return;
+      }
+      localStorage.setItem('last_editor_name', editorName);
+
+      const btnSave = document.getElementById('btnSaveCorrect');
+      const badge = document.getElementById('editStatusBadge');
+      btnSave.disabled = true;
+      btnSave.textContent = '저장 처리 중...';
+      badge.textContent = '저장중';
+      badge.className = 'editor-status-badge saving';
+
+      const payload = {
+        action: 'saveCorrection',
+        id: currentArticleId,
+        editor: editorName,
+        status: '교정완료',
+        type: document.getElementById('editType').value.trim(),
+        cohort: document.getElementById('editCohort').value.trim(),
+        author: document.getElementById('editAuthor').value.trim(),
+        title: document.getElementById('editTitle').value.trim(),
+        content: document.getElementById('editContent').value
+      };
+
+      try {
+        await fetch(GAS_SAVE_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        // 로컬 데이터 즉시 동기화
+        const target = articlesData.find(item => item.id === currentArticleId);
+        if (target) {
+          target.editor = payload.editor;
+          target.status = payload.status;
+          target.type = payload.type;
+          target.cohort = payload.cohort;
+          target.author = payload.author;
+          target.title = payload.title;
+        }
+        contentCache[currentArticleId] = payload.content;
+
+        // 메인 뷰어 갱신
+        showArticleDetail(currentArticleId);
+
+        badge.textContent = '교정완료';
+        badge.className = 'editor-status-badge saved';
+        alert('교정 내용이 정상적으로 저장되었습니다.');
+        closeInlineEditor();
+      } catch (err) {
+        alert('저장 통신 중 오류가 발생했습니다.');
+        badge.textContent = '저장실패';
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = '✓ 교정 내용 저장';
+      }
+    }
 
     function openMobileModal() {
       articleViewer.classList.add('open');
@@ -530,7 +919,6 @@
       readCells.forEach(cell => cell.classList.remove('read'));
     });
 
-    // CSV 파서 (A:관리ID, B:교정상황, C:교정자, D:통권호수, E:발행년월, F:기수, G:기고인, H:글종류, I:글제목)
     function fastParseCSV(text) {
       const articles = [];
       let start = 0, inQuotes = false, row = [];
@@ -615,7 +1003,6 @@
     }
 
     function initDropdowns() {
-      // 1. 통권 호수 초기화
       const vols = [...new Set(articlesData.map(item => item.vol))].filter(Boolean).sort((a, b) => {
         const numA = parseInt(a.replace(/[^0-9]/g, '')) || 0;
         const numB = parseInt(b.replace(/[^0-9]/g, '')) || 0;
@@ -628,7 +1015,6 @@
         volSelect.appendChild(option);
       });
 
-      // 2. 글 종류 초기화
       const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
       typeSelect.innerHTML = '<option value="전체">전체</option>';
       types.forEach(t => {
@@ -652,7 +1038,6 @@
       if (selectedVol && selectedVol !== "전체") currentPool = currentPool.filter(item => item.vol === selectedVol);
       if (selectedType && selectedType !== "전체") currentPool = currentPool.filter(item => item.type === selectedType);
 
-      // 3. 기수 목록 갱신
       const validCohorts = currentPool.map(item => item.cohort).filter(c => c && (/^\d+기$/.test(c) || c === '기록 없음' || c === '외부' || c === '촛불회'));
       const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
         const isNumA = /^\d+기$/.test(a);
@@ -674,7 +1059,6 @@
       cohortSelect.appendChild(cohortFragment);
       if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") cohortSelect.value = "전체";
 
-      // 4. 기고자 목록 갱신
       let authorPool = currentPool;
       if (cohortSelect.value && cohortSelect.value !== "전체") authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
 
@@ -732,7 +1116,6 @@
       listContainer.style.display = 'block';
     }
 
-    // Google Visualization API 직통 단건 쿼리 (0.2~0.4초 초고속 조회)
     async function showArticleDetail(id) {
       currentArticleId = id;
       const article = articlesData.find(item => item.id === id);
@@ -742,7 +1125,6 @@
       metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type}`;
       contentBody.className = '';
 
-      // 캐시에 본문이 이미 존재하는 경우 즉시 렌더링 (0초)
       if (contentCache[id]) {
         contentBody.textContent = contentCache[id];
         return;
@@ -751,14 +1133,12 @@
       contentBody.textContent = '본문을 불러오는 중입니다...';
 
       try {
-        // GAS를 거치지 않고 구글 시트 Visualization 직통 단건 쿼리 수행
         const query = encodeURIComponent(`SELECT J WHERE A = '${id}'`);
-        const queryUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${SHEET_GID}&tq=${query}`;
+        const queryUrl = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${CORRECT_SHEET_GID}&tq=${query}`;
         
         const response = await fetch(queryUrl);
         const rawText = await response.text();
 
-        // google.visualization.Query.setResponse(...) 형태의 JSONP 래퍼 제거
         const jsonMatch = rawText.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
         if (jsonMatch && jsonMatch[1]) {
           const resObj = JSON.parse(jsonMatch[1]);
@@ -803,4 +1183,3 @@
   </script>
 </body>
 </html>
- 
