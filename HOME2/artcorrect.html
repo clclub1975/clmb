@@ -1,10 +1,10 @@
-<!-- v1.4: 무수정 즉시 나가기 및 저장/종료 모달 닫기·인디케이터 타깃 정상화 -->
+<!-- v1.5: correct.html 커스텀 다이얼로그 이식 및 본문 독립 스크롤링 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>기고문 교정 v1.4</title>
+  <title>기고문 교정 v1.5</title>
   <style>
     * {
       box-sizing: border-box;
@@ -239,6 +239,8 @@
       background: #ffffff;
       box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
     }
+
+    /* 기고문 본문 독립 스크롤링 에디터 */
     .edit-textarea-inline {
       width: 100%;
       padding: 12px;
@@ -250,6 +252,8 @@
       line-height: 1.7;
       resize: vertical;
       min-height: 280px;
+      max-height: 420px;
+      overflow-y: auto;
     }
     .edit-textarea-inline:focus {
       border-color: #3b82f6;
@@ -360,6 +364,60 @@
       font-weight: 600;
     }
 
+    /* correct.html 스타일: 자체 커스텀 다이얼로그 (Alert & Confirm UI) */
+    .custom-dialog-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+      justify-content: center;
+      align-items: center;
+      z-index: 12000;
+    }
+    .custom-dialog-card {
+      background: #ffffff;
+      border-radius: 10px;
+      width: 88%;
+      max-width: 370px;
+      padding: 20px 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      animation: dialogPop 0.15s ease-out;
+    }
+    @keyframes dialogPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .custom-dialog-msg {
+      font-size: 0.92rem;
+      color: #1e293b;
+      line-height: 1.55;
+      margin-bottom: 18px;
+      word-break: keep-all;
+    }
+    .custom-dialog-btns {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .custom-dialog-btn {
+      flex: 1;
+      height: 34px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s ease;
+    }
+    .custom-dialog-btn:hover { opacity: 0.85; }
+    .dialog-btn-confirm { background-color: #2563eb; color: #ffffff; }
+    .dialog-btn-cancel { background-color: #e2e8f0; color: #475569; }
+
     /* 반응형 미디어 쿼리 */
     @media (max-width: 640px) {
       .editor-controls {
@@ -397,7 +455,7 @@
   <!-- 헤더 -->
   <div class="editor-header">
     <span class="editor-title">
-      ✏️ 기고문 교정 <span class="version-badge">v1.4</span>
+      ✏️ 기고문 교정 <span class="version-badge">v1.5</span>
     </span>
     <div class="header-actions">
       <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
@@ -439,6 +497,14 @@
   </div>
 </div>
 
+<!-- correct.html 기반 커스텀 다이얼로그 모달 -->
+<div class="custom-dialog-overlay" id="custom-dialog-overlay">
+  <div class="custom-dialog-card">
+    <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
+    <div class="custom-dialog-btns" id="custom-dialog-btns"></div>
+  </div>
+</div>
+
 <script>
   // 마스터 DB 설정 (R2_기고문전문(교정본))
   const SPREADSHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
@@ -451,11 +517,45 @@
   let currentArticle = null;
   let isDirty = false;
   let isNetworkBusy = false;
-  let pendingSaveTask = null; // 백그라운드 전송 중 추가 수정 시 대기할 최신 요청 큐
+  let pendingSaveTask = null;
   let editFieldState = {};
 
   function markAsDirty() {
     isDirty = true;
+  }
+
+  // correct.html 전용 커스텀 알림/확인창 함수
+  function showCustomAlert(messageHtml, callback) {
+    const overlay = document.getElementById('custom-dialog-overlay');
+    const msgElem = document.getElementById('custom-dialog-msg');
+    const btnsElem = document.getElementById('custom-dialog-btns');
+    msgElem.innerHTML = messageHtml;
+    btnsElem.innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
+    overlay.style.display = 'flex';
+    document.getElementById('btn-dialog-ok').onclick = function() {
+      overlay.style.display = 'none';
+      if (callback) callback();
+    };
+  }
+
+  function showCustomConfirm(messageHtml, onConfirm, onCancel) {
+    const overlay = document.getElementById('custom-dialog-overlay');
+    const msgElem = document.getElementById('custom-dialog-msg');
+    const btnsElem = document.getElementById('custom-dialog-btns');
+    msgElem.innerHTML = messageHtml;
+    btnsElem.innerHTML = `
+      <button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button>
+      <button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>
+    `;
+    overlay.style.display = 'flex';
+    document.getElementById('btn-dialog-yes').onclick = function() {
+      overlay.style.display = 'none';
+      if (onConfirm) onConfirm();
+    };
+    document.getElementById('btn-dialog-no').onclick = function() {
+      overlay.style.display = 'none';
+      if (onCancel) onCancel();
+    };
   }
 
   function showToast(message, bgColor) {
@@ -470,7 +570,6 @@
   }
 
   function updateSyncIndicator(isBusy, actionType) {
-    // 저장/계속 버튼일 때만 인디케이터 표시
     const btnStay = document.getElementById('btn-save-stay');
     if (!btnStay) return;
     if (isBusy && actionType === 'stay') {
@@ -483,14 +582,11 @@
   }
 
   function closeParentModal() {
-    // 1) 부모 iframe(articles.html 등)이 있을 경우 postMessage 전송
     if (window.parent && window.parent !== window) {
       window.parent.postMessage('closeCorrectModal', '*');
       return;
     }
-    // 2) 단독 팝업인 경우 window.close 시도
     window.close();
-    // 3) 단독 탭이라 브라우저 보안으로 안 닫히는 경우 오버레이 노출
     const overlay = document.getElementById('exit-overlay');
     if (overlay) overlay.style.display = 'flex';
   }
@@ -502,10 +598,10 @@
 
   function handleWindowClose() {
     if (isDirty) {
-      if (confirm('수정 중인 내용이 저장되지 않았습니다.\n창을 닫으시겠습니까?')) {
+      showCustomConfirm('수정 중인 내용이 저장되지 않았습니다.<br>창을 닫으시겠습니까?', () => {
         isDirty = false;
         closeParentModal();
-      }
+      });
     } else {
       closeParentModal();
     }
@@ -513,9 +609,17 @@
 
   // 본문 온디맨드 초고속 직통 쿼리 (gviz/tq + 안전한 JSON 파서 + contentCache)
   async function loadArticleById(targetId) {
-    if (isDirty && !confirm(`수정 중인 내용이 있습니다. [${targetId}] 글로 전환하시겠습니까?`)) {
+    if (isDirty) {
+      showCustomConfirm(`수정 중인 내용이 있습니다.<br>[${targetId}] 글로 전환하시겠습니까?`, () => {
+        isDirty = false;
+        proceedLoadArticle(targetId);
+      });
       return;
     }
+    proceedLoadArticle(targetId);
+  }
+
+  async function proceedLoadArticle(targetId) {
     highlightTestButton(targetId);
     document.getElementById('current-id-badge').textContent = `ID: ${targetId}`;
 
@@ -661,13 +765,17 @@
       el.value = stack[stack.length - 1];
       markAsDirty();
     } else {
-      alert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
+      showCustomAlert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
     }
   }
 
   function restoreSaved(key) {
     const el = document.getElementById(`edit_${key}`);
     if (!el || !editFieldState[key]) return;
+    if (el.value === editFieldState[key].currentSaved) {
+      showCustomAlert('이미 최근 저장된 상태와 동일합니다.');
+      return;
+    }
     el.value = editFieldState[key].currentSaved;
     markAsDirty();
   }
@@ -675,38 +783,51 @@
   function restoreOriginal(key) {
     const el = document.getElementById(`edit_${key}`);
     if (!el || !editFieldState[key]) return;
+    if (el.value === editFieldState[key].pureOriginal) {
+      showCustomAlert('이미 순수 원문 내용과 동일합니다.');
+      return;
+    }
     el.value = editFieldState[key].pureOriginal;
     markAsDirty();
   }
 
-  // 저장 및 종료 액션 처리 함수
+  // 저장 및 종료 액션 통합 처리 함수 (무수정 처리 일관화)
   function handleSaveAction(actionType) {
     if (!currentArticle) return;
 
-    // 1. 수정 내용이 전혀 없는 상태에서 '저장/종료'를 누르면 즉시 나가기
+    // 1. [무수정 처리 1: 저장/종료] 수정 사항이 없으면 서버 통신 없이 즉시 나가기
     if (actionType === 'exit' && !isDirty) {
       closeParentModal();
+      return;
+    }
+
+    // 2. [무수정 처리 2: 저장/계속] 수정 사항이 없으면 알림 후 중단
+    if (actionType === 'stay' && !isDirty) {
+      showCustomAlert('수정된 내용이 없습니다.');
       return;
     }
 
     const editorName = document.getElementById('editor-name-input').value.trim();
 
     if (!editorName) {
-      alert('교정자 이름을 입력해 주세요.');
-      document.getElementById('editor-name-input').focus();
+      showCustomAlert('교정자 이름을 입력해 주세요.', () => {
+        document.getElementById('editor-name-input').focus();
+      });
       return;
     }
 
     const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
     const confirmMessage = (actionType === 'finish')
-      ? `[${currentArticle.id}] 글을 '교정 완료' 상태로 등록하시겠습니까?`
-      : `[${currentArticle.id}] 글을 '교정 중' 상태로 저장하시겠습니까?`;
+      ? `[${currentArticle.id}] 글을 <strong>'교정 완료'</strong> 상태로 등록하시겠습니까?`
+      : `[${currentArticle.id}] 글을 <strong>'교정 중'</strong> 상태로 저장하시겠습니까?`;
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+    // 3. 커스텀 확인창 띄우기
+    showCustomConfirm(confirmMessage, () => {
+      executeSaveProcess(actionType, statusText, editorName);
+    });
+  }
 
-    // 전송할 페이로드 생성
+  function executeSaveProcess(actionType, statusText, editorName) {
     const payload = {
       id: currentArticle.id,
       status: statusText,
@@ -718,7 +839,7 @@
       content: document.getElementById('edit_content').value
     };
 
-    // [낙관적 즉시 반영]
+    // [낙관적 즉시 반영: 0.01초 처리]
     for (let k in editFieldState) {
       const el = document.getElementById(`edit_${k}`);
       if (el) editFieldState[k].currentSaved = el.value;
@@ -736,15 +857,12 @@
 
     isDirty = false;
 
-    // 화면 피드백 및 모달 제어
     if (actionType === 'stay') {
       showToast(`✓ [${currentArticle.id}] '${statusText}' 저장 반영되었습니다.`, '#2563eb');
     } else {
-      // '저장/종료' 또는 '교정 완료'는 즉시 창 닫기/종료 실행
       closeParentModal();
     }
 
-    // 백그라운드 전송 큐 처리
     if (isNetworkBusy) {
       pendingSaveTask = { payload: payload, actionType: actionType };
       return;
@@ -770,7 +888,6 @@
       isNetworkBusy = false;
       updateSyncIndicator(false, actionType);
 
-      // 전송 중 누적된 추가 수정건이 있다면 가장 최신 수정본을 이어 전송
       if (pendingSaveTask) {
         const next = pendingSaveTask;
         pendingSaveTask = null;
@@ -781,9 +898,9 @@
 
   function copyEntireCode() {
     navigator.clipboard.writeText(document.documentElement.outerHTML).then(() => {
-      alert('전체 HTML 소스코드가 클립보드에 복사되었습니다.');
+      showCustomAlert('전체 HTML 소스코드가 클립보드에 복사되었습니다.');
     }).catch(() => {
-      alert('클립보드 복사에 실패했습니다.');
+      showCustomAlert('클립보드 복사에 실패했습니다.');
     });
   }
 
