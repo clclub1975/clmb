@@ -1,549 +1,424 @@
-<!-- artcorrect.html v0.8 : 아카이브 오버레이 모달 프레임 맞춤 최적화 (창닫기 통신 탑재) -->
+<!-- v0.9: 통권 001호 3건 테스트 퀵 바 추가 및 구글 시트 Visualization 직통 단건 로드 최적화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기고문 교정</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
-            background-color: transparent;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            color: #334155;
-            height: 100vh;
-            overflow: hidden;
-        }
-        /* 메인 컨테이너 (모달 내부 가득 차도록 설정) */
-        .editor-container {
-            background: #fff;
-            border-radius: 10px;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-        
-        /* 헤더 */
-        .editor-header {
-            background: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 15px 24px;
-        }
-        .editor-title { font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center; }
-        .version-badge { font-size: 14px; font-weight: 500; color: #64748b; margin-left: 8px; }
-        .btn-close {
-            background: transparent;
-            border: none;
-            font-size: 15px;
-            color: #64748b;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 4px 8px;
-            transition: color 0.15s;
-        }
-        .btn-close:hover { color: #ef4444; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기고문 교정 v0.9</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      word-break: keep-all;
+    }
+    body {
+      font-family: 'Segoe UI', AppleSDGothicNeo, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: transparent;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      color: #334155;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .editor-container {
+      background: #ffffff;
+      border-radius: 10px;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* 헤더 */
+    .editor-header {
+      background: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 20px;
+      flex-shrink: 0;
+    }
+    .editor-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .version-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: #2563eb;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-copy-all {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      font-size: 13px;
+      color: #475569;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+      transition: all 0.15s;
+    }
+    .btn-copy-all:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .btn-close {
+      background: transparent;
+      border: none;
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 5px 8px;
+      transition: color 0.15s;
+    }
+    .btn-close:hover {
+      color: #ef4444;
+    }
 
-        /* 상단 컨트롤 바 */
-        .editor-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 12px 24px;
-        }
-        .controls-left, .controls-right { display: flex; align-items: center; gap: 10px; }
-        
-        /* 교정자 입력 및 툴팁 스타일 */
-        .editor-input-wrap { font-size: 14px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; }
-        .editor-input { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; width: 120px; font-size: 14px; }
-        .editor-input:focus { border-color: #3b82f6; outline: none; }
+    /* 임시 테스트 퀵 바 */
+    .test-toolbar {
+      background: #fefce8;
+      border-bottom: 1px solid #fef08a;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .test-badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: #854d0e;
+      background: #fef9c3;
+      border: 1px solid #fde047;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .test-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .test-btn:hover {
+      border-color: #3b82f6;
+      color: #2563eb;
+      background: #eff6ff;
+    }
+    .test-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
 
-        .help-tip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; outline: none; }
-        .help-badge { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background-color: #94a3b8; color: #ffffff; font-size: 11px; font-weight: 700; }
-        .help-tip-wrap:hover .help-badge { background-color: #2563eb; }
-        .help-tooltip { visibility: hidden; opacity: 0; position: absolute; top: 135%; left: 0; width: 240px; white-space: normal; background-color: #1e293b; color: #ffffff; padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); z-index: 1000; pointer-events: none; transition: opacity 0.2s ease; }
-        .help-tip-wrap:hover .help-tooltip { visibility: visible; opacity: 1; }
+    /* 상단 컨트롤 바 */
+    .editor-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 10px 20px;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .controls-left, .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .editor-input-wrap {
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .editor-input {
+      padding: 5px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      width: 110px;
+      font-size: 13px;
+    }
+    .editor-input:focus {
+      border-color: #3b82f6;
+      outline: none;
+    }
+    .article-meta-badge {
+      font-size: 12px;
+      color: #64748b;
+      background: #e2e8f0;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .btn-action {
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      color: #ffffff;
+    }
+    .btn-save-stay { background: #4f46e5; }
+    .btn-save-stay:hover { background: #4338ca; }
+    .btn-save-exit { background: #2563eb; }
+    .btn-save-exit:hover { background: #1d4ed8; }
 
-        /* 액션 버튼 */
-        .btn-action { 
-            padding: 7px 16px; font-size: 13px; font-weight: 600; border-radius: 4px; 
-            cursor: pointer; border: none; transition: all 0.15s; color: #fff;
-        }
-        .btn-save-stay { background: #4f46e5; }
-        .btn-save-stay:hover { background: #4338ca; }
-        .btn-save-exit { background: #2563eb; }
-        .btn-save-exit:hover { background: #1d4ed8; }
-        
-        /* 본문 에디터 영역 */
-        .editor-body { padding: 24px; overflow-y: auto; background: #fff; flex: 1; }
-        
-        /* 개별 편집 필드 리스트 */
-        .edit-ul { list-style: none; padding: 0; margin: 0; }
-        .edit-li { margin-bottom: 20px; }
-        .edit-label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #334155; }
-        .edit-field-wrap { display: flex; flex-direction: column; width: 100%; }
-        
-        .edit-textarea-inline {
-            width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
-            font-size: 15px; font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif; 
-            box-sizing: border-box; background: #fdfdfd; line-height: 1.6; resize: vertical; min-height: 280px;
-        }
-        .edit-textarea-inline:focus { 
-            border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
-        }
-        
-        /* 한 줄 배치(Inline) 항목용 스타일 */
-        .edit-li-inline {
-            display: flex; flex-direction: column; margin-bottom: 16px;
-        }
-        .inline-row {
-            display: flex; align-items: center; width: 100%;
-        }
-        .edit-li-inline .edit-label { 
-            margin-bottom: 0; width: 90px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: #334155;
-        }
-        .thin-input {
-            flex: 1; padding: 4px 8px; height: 30px; font-size: 14px; 
-            border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; background: #fdfdfd;
-        }
-        .thin-input:focus { border-color: #3b82f6; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    /* 본문 에디터 영역 */
+    .editor-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      background: #ffffff;
+      flex: 1;
+    }
+    .edit-ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .edit-li {
+      margin-bottom: 16px;
+    }
+    .edit-li-inline {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+    .inline-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 8px;
+    }
+    .edit-label {
+      width: 85px;
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .thin-input {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background: #fdfdfd;
+    }
+    .thin-input:focus {
+      border-color: #3b82f6;
+      outline: none;
+      background: #ffffff;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    }
+    .edit-textarea-inline {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fdfdfd;
+      line-height: 1.7;
+      resize: vertical;
+      min-height: 280px;
+    }
+    .edit-textarea-inline:focus {
+      border-color: #3b82f6;
+      outline: none;
+      background: #ffffff;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    }
+    .restore-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .btn-restore {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-restore:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
 
-        /* 복원 툴바 */
-        .restore-toolbar { 
-            display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 5px; 
-        }
-        .btn-restore { 
-            background: #ffffff; border: 1px solid #cbd5e1; color: #475569; font-size: 12px; 
-            font-weight: 600; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: background 0.15s; 
-        }
-        .btn-restore:hover { background-color: #f1f5f9; color: #1e293b; }
+    /* 하단 완료 영역 */
+    .editor-footer {
+      background: #f8fafc;
+      padding: 12px 20px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+    .btn-finish-large {
+      background: #10b981;
+      color: #ffffff;
+      border: none;
+      padding: 8px 36px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+    }
+    .btn-finish-large:hover {
+      background: #059669;
+    }
+    .loading-text {
+      text-align: center;
+      padding: 40px 10px;
+      color: #64748b;
+      font-size: 14px;
+    }
 
-        /* 하단 완료 영역 */
-        .editor-footer { background: #f8fafc; padding: 16px 24px; text-align: center; border-top: 1px solid #e2e8f0; }
-        .btn-finish-large { background: #10b981; color: #fff; border: none; padding: 10px 40px; font-size: 15px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3); }
-        .btn-finish-large:hover { background: #059669; }
-
-        .loading-text { text-align: center; padding: 50px; color: #64748b; font-size: 16px; }
-
-        /* 커스텀 다이얼로그 스타일 */
-        .custom-dialog-backdrop {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px);
-            z-index: 9999; justify-content: center; align-items: center;
-        }
-        .custom-dialog-backdrop.open { display: flex; }
-        .custom-dialog-box {
-            background: #ffffff; border-radius: 12px; width: 90%; max-width: 380px;
-            padding: 24px 20px 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            text-align: center; animation: dialogPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes dialogPop {
-            0% { transform: scale(0.92); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .dialog-icon { font-size: 32px; margin-bottom: 10px; display: inline-block; }
-        .dialog-message {
-            font-size: 15px; color: #1e293b; line-height: 1.55; margin-bottom: 20px; word-break: keep-all;
-        }
-        .dialog-buttons { display: flex; gap: 8px; justify-content: center; }
-        .dialog-btn {
-            padding: 8px 18px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.15s;
-        }
-        .dialog-btn-primary { background: #2563eb; color: #fff; flex: 1; }
-        .dialog-btn-primary:hover { background: #1d4ed8; }
-        .dialog-btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; flex: 1; }
-        .dialog-btn-secondary:hover { background: #e2e8f0; }
-        .dialog-btn-success { background: #10b981; color: #fff; flex: 1; }
-        .dialog-btn-success:hover { background: #059669; }
-    </style>
+    /* 반응형 미디어 쿼리 */
+    @media (max-width: 640px) {
+      .editor-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-left, .controls-right {
+        justify-content: space-between;
+      }
+      .inline-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .edit-label {
+        width: 100%;
+        margin-bottom: 4px;
+      }
+      .thin-input {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <div class="editor-container">
-        <!-- 헤더 -->
-        <div class="editor-header">
-            <span class="editor-title">✏️️ 기고문 교정 <span class="version-badge">v0.8</span></span>
-            <button type="button" class="btn-close" onclick="handleWindowClose()">✕ 닫기</button>
-        </div>
-
-        <!-- 상단 컨트롤 바 -->
-        <div class="editor-controls">
-            <div class="controls-left">
-                <label class="editor-input-wrap">교정자:
-                    <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
-                </label>
-                <div class="help-tip-wrap" tabindex="0">
-                    <span class="help-badge">?</span>
-                    <div class="help-tooltip">
-                        이름을 지운 상태에서 [저장/종료]를 누르면 교정 전 상태로 복원됩니다.
-                    </div>
-                </div>
-            </div>
-            <div class="controls-right">
-                <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
-                <button type="button" class="btn-action btn-save-exit" id="btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
-            </div>
-        </div>
-
-        <!-- 에디터 본문 -->
-        <div class="editor-body" id="editor-body-box">
-            <div class="loading-text">구글 시트에서 데이터를 불러오고 있습니다...</div>
-        </div>
-
-        <!-- 하단 교정 완료 -->
-        <div class="editor-footer">
-            <button type="button" class="btn-finish-large" id="btn-finish-large" onclick="handleSaveAction('finish')">✓ 교정 완료</button>
-        </div>
+<div class="editor-container">
+  <!-- 헤더 -->
+  <div class="editor-header">
+    <span class="editor-title">
+      ✏️ 기고문 교정 <span class="version-badge">v0.9</span>
+    </span>
+    <div class="header-actions">
+      <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
+      <button type="button" class="btn-close" onclick="handleWindowClose()">✕ 닫기</button>
     </div>
+  </div>
 
-    <!-- 커스텀 다이얼로그 -->
-    <div class="custom-dialog-backdrop" id="customDialogBackdrop">
-        <div class="custom-dialog-box" onclick="event.stopPropagation()">
-            <div class="dialog-icon" id="dialogIcon">💬</div>
-            <div class="dialog-message" id="dialogMessage">내용</div>
-            <div class="dialog-buttons" id="dialogButtons"></div>
-        </div>
+  <!-- 임시 테스트 퀵 바 (통권 001호 3건) -->
+  <div class="test-toolbar" id="test-toolbar">
+    <span class="test-badge">임시 테스트: 통권 001호</span>
+    <button type="button" class="test-btn" onclick="loadArticleById('CL001-01')">CL001-01</button>
+    <button type="button" class="test-btn" onclick="loadArticleById('CL001-02')">CL001-02</button>
+    <button type="button" class="test-btn" onclick="loadArticleById('CL001-03')">CL001-03</button>
+  </div>
+
+  <!-- 상단 컨트롤 바 -->
+  <div class="editor-controls">
+    <div class="controls-left">
+      <span class="article-meta-badge" id="current-id-badge">ID: 미선택</span>
+      <label class="editor-input-wrap">
+        교정자:
+        <input type="text" id="editor-name-input" class="editor-input" placeholder="성명 입력" oninput="markAsDirty()">
+      </label>
     </div>
+    <div class="controls-right">
+      <button type="button" class="btn-action btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
+      <button type="button" class="btn-action btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
+    </div>
+  </div>
 
-    <script>
-        const gasWebAppUrl = 'https://script.google.com/macros/s/AKfycbx5pbrNf8OqGhCGqo1FUe8YEzYZaFy0VoRXq5MJPXnjPpWVknrzh1ZPMS9-UHcyekzj/exec'; 
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCB2tSuKXLH-2oeMVcSZ59yVgjmkTVxS4941EUpNhsVI1c3cNI2Cl73UJ1Sl533YgjOuqAUPATfyVv/pub?gid=339193703&single=true&output=csv';
+  <!-- 에디터 본문 -->
+  <div class="editor-body" id="editor-body-box">
+    <div class="loading-text">상단의 테스트 버튼(CL001-01 ~ 03)을 누르거나 글 ID를 호출해주세요.</div>
+  </div>
 
-        let currentArticle = null;
-        let isDirty = false;
-        let isSaving = false;
-        let editFieldState = {}; 
+  <!-- 하단 교정 완료 -->
+  <div class="editor-footer">
+    <button type="button" class="btn-finish-large" onclick="handleSaveAction('finish')">✓ 교정 완료</button>
+  </div>
+</div>
 
-        function markAsDirty() { isDirty = true; }
+<script>
+  // 마스터 DB 설정 (R2_기고문전문(교정본))
+  const SPREADSHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
+  const SHEET_TAB_NAME = '교정본';
+  const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx5pbrNf8OqGhCGqo1FUe8YEzYZaFy0VoRXq5MJPXnjPpWVknrzh1ZPMS9-UHcyekzj/exec';
 
-        // 부모 창(articles.html)으로 모달 닫기 메시지 전송
-        function closeParentModal() {
-            if (window.parent && window.parent !== window) {
-                window.parent.postMessage('closeCorrectModal', '*');
-            } else {
-                window.close();
-            }
-        }
+  let currentArticle = null;
+  let isDirty = false;
+  let isSaving = false;
+  let editFieldState = {};
 
-        function showCustomAlert(message, icon = 'ℹ️', onConfirm = null) {
-            const backdrop = document.getElementById('customDialogBackdrop');
-            const iconEl = document.getElementById('dialogIcon');
-            const msgEl = document.getElementById('dialogMessage');
-            const btnsEl = document.getElementById('dialogButtons');
+  function markAsDirty() {
+    isDirty = true;
+  }
 
-            iconEl.textContent = icon;
-            msgEl.innerHTML = message;
-            btnsEl.innerHTML = '<button class="dialog-btn dialog-btn-primary" id="dialogOkBtn">확인</button>';
+  function closeParentModal() {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage('closeCorrectModal', '*');
+    } else {
+      window.close();
+    }
+  }
 
-            backdrop.classList.add('open');
-            document.getElementById('dialogOkBtn').onclick = () => {
-                backdrop.classList.remove('open');
-                if (onConfirm) onConfirm();
-            };
-        }
+  function handleWindowClose() {
+    if (isDirty) {
+      if (confirm('수정 중인 내용이 저장되지 않았습니다.\n창을 닫으시겠습니까?')) {
+        isDirty = false;
+        closeParentModal();
+      }
+    } else {
+      closeParentModal();
+    }
+  }
 
-        function showCustomConfirm(message, icon = '❓', onConfirm = null, confirmBtnClass = 'dialog-btn-primary', confirmText = '확인') {
-            const backdrop = document.getElementById('customDialogBackdrop');
-            const iconEl = document.getElementById('dialogIcon');
-            const msgEl = document.getElementById('dialogMessage');
-            const btnsEl = document.getElementById('dialogButtons');
+  // Google Sheets Visualization API 직통 단건 쿼리 fetch
+  async function loadArticleById(targetId) {
+    if (isDirty && !confirm(`수정 중인 내용이 있습니다. [${targetId}] 글로 전환하시겠습니까?`)) {
+      return;
+    }
+    highlightTestButton(targetId);
+    document.getElementById('current-id-badge').textContent = `ID: ${targetId}`;
+    document.getElementById('editor-body-box').innerHTML = `<div class="loading-text">[${targetId}] 글을 시트에서 초고속 불러오는 중...</div>`;
 
-            iconEl.textContent = icon;
-            msgEl.innerHTML = message;
-            btnsEl.innerHTML = `
-                <button class="dialog-btn dialog-btn-secondary" id="dialogCancelBtn">취소</button>
-                <button class="dialog-btn ${confirmBtnClass}" id="dialogConfirmBtn">${confirmText}</button>
-            `;
-
-            backdrop.classList.add('open');
-            document.getElementById('dialogCancelBtn').onclick = () => {
-                backdrop.classList.remove('open');
-            };
-            document.getElementById('dialogConfirmBtn').onclick = () => {
-                backdrop.classList.remove('open');
-                if (onConfirm) onConfirm();
-            };
-        }
-
-        function handleWindowClose() {
-            if (isDirty) {
-                showCustomConfirm("수정 중인 내용이 저장되지 않았습니다.<br>창을 닫으시겠습니까?", '⚠️', () => {
-                    isDirty = false;
-                    closeParentModal();
-                });
-            } else {
-                closeParentModal();
-            }
-        }
-
-        async function initEditor() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const targetId = urlParams.get('id');
-
-            if (!targetId) {
-                document.getElementById('editor-body-box').innerHTML = '<div class="loading-text" style="color:#ef4444;">오류: 글 관리번호(ID)가 전달되지 않았습니다.</div>';
-                return;
-            }
-
-            try {
-                const response = await fetch(SHEET_CSV_URL);
-                const csvText = await response.text();
-                const articles = fastParseCSV(csvText);
-                
-                currentArticle = articles.find(item => item.id === targetId);
-                
-                if (currentArticle) {
-                    renderEditorUI(currentArticle);
-                } else {
-                    document.getElementById('editor-body-box').innerHTML = `<div class="loading-text" style="color:#ef4444;">오류: 관리번호 [${targetId}]에 해당하는 글을 찾을 수 없습니다.</div>`;
-                }
-            } catch (error) {
-                document.getElementById('editor-body-box').innerHTML = '<div class="loading-text" style="color:#ef4444;">데이터를 불러오는 데 실패했습니다. 네트워크를 확인해주세요.</div>';
-            }
-        }
-
-        function renderEditorUI(article) {
-            editFieldState = {};
-
-            let html = '<ul class="edit-ul">';
-            html += renderEditFieldItem('type', '1. 글 종류', article.type, 'inline');
-            html += renderEditFieldItem('cohort', '2. 기수', article.cohort, 'inline');
-            html += renderEditFieldItem('author', '3. 기고자', article.author, 'inline');
-            html += renderEditFieldItem('title', '4. 제목', article.title, 'inline');
-            html += renderEditFieldItem('content', '5. 기고문 본문', article.content, 'textarea');
-            html += '</ul>';
-
-            document.getElementById('editor-body-box').innerHTML = html;
-        }
-
-        function renderEditFieldItem(key, label, currentVal, mode) {
-            editFieldState[key] = {
-                currentSaved: currentVal,
-                pureOriginal: currentVal, 
-                history: [currentVal]
-            };
-
-            const toolbarHtml = `
-                <div class="restore-toolbar">
-                    <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 취소</button>
-                    <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장 상태로</button>
-                    <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문 복원</button>
-                </div>
-            `;
-
-            if (mode === 'textarea') {
-                return `
-                    <li class="edit-li">
-                        <strong class="edit-label">${label}</strong>
-                        <div class="edit-field-wrap">
-                            <textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>
-                            ${toolbarHtml}
-                        </div>
-                    </li>
-                `;
-            } else {
-                return `
-                    <li class="edit-li-inline">
-                        <div class="inline-row">
-                            <strong class="edit-label">${label}</strong>
-                            <input type="text" id="edit_${key}" class="thin-input" value="${currentVal}" oninput="handleFieldInput('${key}')">
-                        </div>
-                        ${toolbarHtml}
-                    </li>
-                `;
-            }
-        }
-
-        function handleFieldInput(key) {
-            markAsDirty();
-            const el = document.getElementById(`edit_${key}`);
-            if (!el) return;
-            
-            if (el.tagName === 'TEXTAREA') {
-                el.style.height = 'auto';
-                el.style.height = (el.scrollHeight) + 'px';
-            }
-
-            if (editFieldState[key]) {
-                const stack = editFieldState[key].history;
-                if (stack[stack.length - 1] !== el.value) {
-                    stack.push(el.value);
-                    if (stack.length > 50) stack.shift(); 
-                }
-            }
-        }
-
-        function undoField(key) {
-            const el = document.getElementById(`edit_${key}`);
-            if (!el || !editFieldState[key]) return;
-            const stack = editFieldState[key].history;
-            if (stack.length > 1) {
-                stack.pop(); 
-                el.value = stack[stack.length - 1]; 
-                markAsDirty();
-            } else {
-                showCustomAlert('더 이상 되돌릴 이전 입력 내용이 없습니다.', 'ℹ️');
-            }
-        }
-
-        function restoreSaved(key) {
-            const el = document.getElementById(`edit_${key}`);
-            if (!el || !editFieldState[key]) return;
-            const targetVal = editFieldState[key].currentSaved;
-            if (el.value === targetVal) {
-                return showCustomAlert('이미 최근 저장된 내용과 동일합니다.', 'ℹ️');
-            }
-            editFieldState[key].history.push(targetVal);
-            el.value = targetVal;
-            markAsDirty();
-        }
-
-        function restoreOriginal(key) {
-            const el = document.getElementById(`edit_${key}`);
-            if (!el || !editFieldState[key]) return;
-            const origVal = editFieldState[key].pureOriginal;
-            if (el.value === origVal) {
-                return showCustomAlert('이미 순수 원문 내용과 동일합니다.', 'ℹ️');
-            }
-            editFieldState[key].history.push(origVal);
-            el.value = origVal;
-            markAsDirty();
-        }
-
-        async function handleSaveAction(actionType) {
-            if (isSaving || !currentArticle) return;
-            const editorName = document.getElementById('editor-name-input').value.trim();
-
-            if (actionType === 'exit' && !editorName) {
-                showCustomConfirm(
-                    "교정자 이름을 비우고 저장하면 <strong>'교정 전 상태'</strong>로 표시됩니다.<br>진행하시겠습니까?",
-                    '❓',
-                    () => executePostSave('교정', '', actionType)
-                );
-                return;
-            }
-
-            if (!editorName) {
-                showCustomAlert('교정자 이름을 입력해 주세요.', 'ℹ️', () => {
-                    document.getElementById('editor-name-input').focus();
-                });
-                return;
-            }
-
-            if (actionType === 'finish') {
-                showCustomConfirm(
-                    `[${editorName}] 교정자님, 이 작업을 <strong>'완료'</strong> 처리하시겠습니까?`, 
-                    '✓', 
-                    () => executePostSave('완료', editorName, actionType),
-                    'dialog-btn-success',
-                    '완료하기'
-                );
-            } else if (actionType === 'exit') {
-                showCustomConfirm(
-                    "수정 내용을 저장하고 <strong>창을 닫으시겠습니까?</strong>", 
-                    '💾', 
-                    () => executePostSave('진행', editorName, actionType),
-                    'dialog-btn-primary',
-                    '저장 후 종료'
-                );
-            } else {
-                executePostSave('진행', editorName, actionType);
-            }
-        }
-
-        async function executePostSave(statusText, editorName, actionType) {
-            isSaving = true;
-            document.body.style.cursor = 'wait';
-
-            const payload = {
-                id: currentArticle.id,
-                status: statusText,
-                editorName: editorName,
-                type: document.getElementById('edit_type').value,
-                cohort: document.getElementById('edit_cohort').value,
-                author: document.getElementById('edit_author').value,
-                title: document.getElementById('edit_title').value,
-                content: document.getElementById('edit_content').value
-            };
-
-            try {
-                await fetch(gasWebAppUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                for (let key in editFieldState) {
-                    const el = document.getElementById(`edit_${key}`);
-                    if (el) editFieldState[key].currentSaved = el.value;
-                }
-                isDirty = false;
-
-                const alertHtml = !editorName 
-                    ? "<strong>교정 전 상태로 복원 처리되었습니다.</strong>"
-                    : `<strong>[${editorName}]</strong> 교정자의 수정 내용이 저장되었습니다.`;
-
-                if (actionType === 'stay') {
-                    showCustomAlert(alertHtml, '✅');
-                } else {
-                    showCustomAlert(alertHtml + "<br>편집창을 닫습니다.", '✅', () => {
-                        closeParentModal();
-                    });
-                }
-            } catch (err) {
-                showCustomAlert("구글 시트 저장 도중 통신 오류가 발생했습니다.", '⚠️');
-            } finally {
-                isSaving = false;
-                document.body.style.cursor = 'default';
-            }
-        }
-
-        window.addEventListener('beforeunload', (event) => {
-            if (isDirty) {
-                event.preventDefault();
-                event.returnValue = '';
-            }
-        });
-
-        function fastParseCSV(text) {
-            const articles = [];
-            let start = 0, inQuotes = false, row = [];
-            if (!text.endsWith('\n')) text += '\n';
-
-            for (let i = 0; i < text.length; i++) {
-                if (text[i] === '"') inQuotes = !inQuotes;
-                else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
-                    let val = text.substring(start, i);
-                    if (val.endsWith('\r')) val = val.slice(0, -1);
-                    if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
-                        val = val.substring(1, val.length - 1).replace(/""/g, '"');
-                    }
-                    row.push(val.trim());
-                    if (text[i] === '\n') {
-                        if (row.length >= 8 && row[0] !== '' && !row[0].includes('관리 ID')) {
-                            articles.push({ id: row[0], vol: row[1], date: row[2], cohort: row[3], author: row[4], type: row[5], title: row[6], content: row[7] });
-                        }
-                        row = [];
-                    }
-                    start = i + 1;
-                }
-            }
-            return articles;
-        }
-
-        window.onload = initEditor;
-    </script>
-</body>
-</html>
+    const query = encodeURIComponent(`SELECT A, B, C, D, E, F, G, H, I, J WHERE A = '${targetId}'`);
+    const endpoint
