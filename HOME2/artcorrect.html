@@ -1,10 +1,10 @@
-<!-- v1.3: 최신 요청 보증 순차 큐 및 저장 상태 인디케이터 적용으로 동시 저장 충돌 완벽 방지 -->
+<!-- v1.4: 무수정 즉시 나가기 및 저장/종료 모달 닫기·인디케이터 타깃 정상화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>기고문 교정 v1.3</title>
+  <title>기고문 교정 v1.4</title>
   <style>
     * {
       box-sizing: border-box;
@@ -331,6 +331,35 @@
       100% { opacity: 0; transform: translateY(-8px); }
     }
 
+    /* 단독 테스트 시 모달 닫기 대체 오버레이 */
+    .exit-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      color: #ffffff;
+      z-index: 10000;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .exit-overlay h3 { margin-bottom: 10px; font-size: 18px; }
+    .exit-overlay p { color: #cbd5e1; font-size: 14px; margin-bottom: 20px; }
+    .exit-btn-resume {
+      background: #3b82f6;
+      border: none;
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
     /* 반응형 미디어 쿼리 */
     @media (max-width: 640px) {
       .editor-controls {
@@ -358,10 +387,17 @@
 <div class="editor-container">
   <div id="toast-alert" class="toast-popup"></div>
 
+  <!-- 단독 테스트 환경용 나가기 완료 오버레이 -->
+  <div id="exit-overlay" class="exit-overlay">
+    <h3>교정 창이 종료되었습니다</h3>
+    <p>부모 화면(articles.html)에 정상 종료 신호가 전송되었습니다.<br>(단독 탭인 경우 브라우저 탭을 직접 닫으시면 됩니다.)</p>
+    <button type="button" class="exit-btn-resume" onclick="resumeEditor()">다시 편집창으로 돌아가기</button>
+  </div>
+
   <!-- 헤더 -->
   <div class="editor-header">
     <span class="editor-title">
-      ✏️ 기고문 교정 <span class="version-badge">v1.3</span>
+      ✏️ 기고문 교정 <span class="version-badge">v1.4</span>
     </span>
     <div class="header-actions">
       <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
@@ -433,10 +469,11 @@
     }, 2800);
   }
 
-  function updateSyncIndicator(isBusy) {
+  function updateSyncIndicator(isBusy, actionType) {
+    // 저장/계속 버튼일 때만 인디케이터 표시
     const btnStay = document.getElementById('btn-save-stay');
     if (!btnStay) return;
-    if (isBusy) {
+    if (isBusy && actionType === 'stay') {
       btnStay.textContent = '⏳ 동기화 중...';
       btnStay.style.opacity = '0.75';
     } else {
@@ -446,11 +483,21 @@
   }
 
   function closeParentModal() {
+    // 1) 부모 iframe(articles.html 등)이 있을 경우 postMessage 전송
     if (window.parent && window.parent !== window) {
       window.parent.postMessage('closeCorrectModal', '*');
-    } else {
-      window.close();
+      return;
     }
+    // 2) 단독 팝업인 경우 window.close 시도
+    window.close();
+    // 3) 단독 탭이라 브라우저 보안으로 안 닫히는 경우 오버레이 노출
+    const overlay = document.getElementById('exit-overlay');
+    if (overlay) overlay.style.display = 'flex';
+  }
+
+  function resumeEditor() {
+    const overlay = document.getElementById('exit-overlay');
+    if (overlay) overlay.style.display = 'none';
   }
 
   function handleWindowClose() {
@@ -632,9 +679,16 @@
     markAsDirty();
   }
 
-  // 낙관적 UI 업데이트 및 최신 요청 보증 순차 큐 전송
+  // 저장 및 종료 액션 처리 함수
   function handleSaveAction(actionType) {
     if (!currentArticle) return;
+
+    // 1. 수정 내용이 전혀 없는 상태에서 '저장/종료'를 누르면 즉시 나가기
+    if (actionType === 'exit' && !isDirty) {
+      closeParentModal();
+      return;
+    }
+
     const editorName = document.getElementById('editor-name-input').value.trim();
 
     if (!editorName) {
@@ -652,7 +706,7 @@
       return;
     }
 
-    // 1. 현재 에디터 최신 페이로드 생성
+    // 전송할 페이로드 생성
     const payload = {
       id: currentArticle.id,
       status: statusText,
@@ -664,7 +718,7 @@
       content: document.getElementById('edit_content').value
     };
 
-    // 2. [낙관적 즉시 반영: 0.01초 처리]
+    // [낙관적 즉시 반영]
     for (let k in editFieldState) {
       const el = document.getElementById(`edit_${k}`);
       if (el) editFieldState[k].currentSaved = el.value;
@@ -682,26 +736,27 @@
 
     isDirty = false;
 
+    // 화면 피드백 및 모달 제어
     if (actionType === 'stay') {
       showToast(`✓ [${currentArticle.id}] '${statusText}' 저장 반영되었습니다.`, '#2563eb');
     } else {
+      // '저장/종료' 또는 '교정 완료'는 즉시 창 닫기/종료 실행
       closeParentModal();
     }
 
-    // 3. [동시성 방어 순차 큐 전송 로직]
+    // 백그라운드 전송 큐 처리
     if (isNetworkBusy) {
-      // 이미 백그라운드 전송 중이면 버리지 않고 대기열에 최신본을 보관
-      pendingSaveTask = payload;
+      pendingSaveTask = { payload: payload, actionType: actionType };
       return;
     }
 
-    dispatchSaveRequest(payload);
+    dispatchSaveRequest(payload, actionType);
   }
 
   // 실제 백그라운드 HTTP 전송 및 순차 큐 해소 함수
-  function dispatchSaveRequest(payload) {
+  function dispatchSaveRequest(payload, actionType) {
     isNetworkBusy = true;
-    updateSyncIndicator(true);
+    updateSyncIndicator(true, actionType);
 
     fetch(GAS_WEBAPP_URL, {
       method: 'POST',
@@ -713,13 +768,13 @@
       showToast(`⚠️ [${payload.id}] 시트 동기화 중 통신 지연이 발생했습니다.`, '#ef4444');
     }).finally(() => {
       isNetworkBusy = false;
-      updateSyncIndicator(false);
+      updateSyncIndicator(false, actionType);
 
       // 전송 중 누적된 추가 수정건이 있다면 가장 최신 수정본을 이어 전송
       if (pendingSaveTask) {
-        const nextTask = pendingSaveTask;
+        const next = pendingSaveTask;
         pendingSaveTask = null;
-        dispatchSaveRequest(nextTask);
+        dispatchSaveRequest(next.payload, next.actionType);
       }
     });
   }
