@@ -1,10 +1,10 @@
-<!-- v1.1: 정식 배포 GAS 웹 앱 URL 연동 및 상태값(교정 중/교정 완료) 분기 저장 정책 반영 -->
+<!-- v1.2: 낙관적 UI 업데이트(체감 0초 즉시 저장) 및 백그라운드 비동기 통신 최적화 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>기고문 교정 v1.1</title>
+  <title>기고문 교정 v1.2</title>
   <style>
     * {
       box-sizing: border-box;
@@ -29,6 +29,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      position: relative;
     }
     /* 헤더 */
     .editor-header {
@@ -307,6 +308,29 @@
       font-size: 14px;
     }
 
+    /* 토스트 알림창 */
+    .toast-popup {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      display: none;
+      animation: fadeInOut 2.8s ease forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-8px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-8px); }
+    }
+
     /* 반응형 미디어 쿼리 */
     @media (max-width: 640px) {
       .editor-controls {
@@ -332,10 +356,12 @@
 </head>
 <body>
 <div class="editor-container">
+  <div id="toast-alert" class="toast-popup"></div>
+
   <!-- 헤더 -->
   <div class="editor-header">
     <span class="editor-title">
-      ✏️ 기고문 교정 <span class="version-badge">v1.1</span>
+      ✏️ 기고문 교정 <span class="version-badge">v1.2</span>
     </span>
     <div class="header-actions">
       <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
@@ -388,11 +414,22 @@
   const contentCache = {};
   let currentArticle = null;
   let isDirty = false;
-  let isSaving = false;
+  let isSubmitting = false;
   let editFieldState = {};
 
   function markAsDirty() {
     isDirty = true;
+  }
+
+  function showToast(message, bgColor) {
+    const toast = document.getElementById('toast-alert');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.style.background = bgColor || '#1e293b';
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 2800);
   }
 
   function closeParentModal() {
@@ -443,7 +480,7 @@
       const response = await fetch(endpoint);
       const text = await response.text();
 
-      // 안전한 JSON 구조체 추출기 (indexOf('{') ~ lastIndexOf('}'))
+      // 안전한 JSON 구조체 추출기
       const startIdx = text.indexOf('{');
       const endIdx = text.lastIndexOf('}');
       if (startIdx === -1 || endIdx === -1) {
@@ -475,7 +512,6 @@
         content: getVal(9)    // J: 기고문 전문
       };
 
-      // 캐시 저장
       contentCache[targetId] = JSON.parse(JSON.stringify(articleData));
       currentArticle = articleData;
 
@@ -583,18 +619,17 @@
     markAsDirty();
   }
 
-  async function handleSaveAction(actionType) {
-    if (isSaving || !currentArticle) return;
+  // 낙관적 UI 업데이트(체감 0초 즉시 처리) 및 비동기 백그라운드 저장
+  function handleSaveAction(actionType) {
+    if (isSubmitting || !currentArticle) return;
     const editorName = document.getElementById('editor-name-input').value.trim();
 
-    // 교정자 성명 필수 확인
     if (!editorName) {
       alert('교정자 이름을 입력해 주세요.');
       document.getElementById('editor-name-input').focus();
       return;
     }
 
-    // 상태값 정책: 완료 클릭 시 '교정 완료', 단순 저장은 '교정 중'
     const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
     const confirmMessage = (actionType === 'finish')
       ? `[${currentArticle.id}] 글을 '교정 완료' 상태로 등록하시겠습니까?`
@@ -604,9 +639,9 @@
       return;
     }
 
-    isSaving = true;
-    document.body.style.cursor = 'wait';
+    isSubmitting = true;
 
+    // 1. 전송할 데이터 취합
     const payload = {
       id: currentArticle.id,
       status: statusText,
@@ -618,44 +653,45 @@
       content: document.getElementById('edit_content').value
     };
 
-    try {
-      await fetch(GAS_WEBAPP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      // 현재 입력값을 최근 저장값으로 갱신
-      for (let k in editFieldState) {
-        const el = document.getElementById(`edit_${k}`);
-        if (el) editFieldState[k].currentSaved = el.value;
-      }
-
-      // 메모리 캐시 최신화
-      if (contentCache[currentArticle.id]) {
-        contentCache[currentArticle.id].status = statusText;
-        contentCache[currentArticle.id].editor = editorName;
-        contentCache[currentArticle.id].type = payload.type;
-        contentCache[currentArticle.id].cohort = payload.cohort;
-        contentCache[currentArticle.id].author = payload.author;
-        contentCache[currentArticle.id].title = payload.title;
-        contentCache[currentArticle.id].content = payload.content;
-      }
-
-      isDirty = false;
-      alert(`[${currentArticle.id}] '${statusText}' 상태로 저장이 완료되었습니다.`);
-
-      // 저장/종료 또는 교정 완료 시 부모 모달 닫기
-      if (actionType !== 'stay') {
-        closeParentModal();
-      }
-    } catch (e) {
-      alert('저장 중 통신 오류가 발생했습니다.');
-    } finally {
-      isSaving = false;
-      document.body.style.cursor = 'default';
+    // 2. [낙관적 즉시 반영: 0.01초 처리]
+    // 2-1) 최근 저장값 상태 갱신
+    for (let k in editFieldState) {
+      const el = document.getElementById(`edit_${k}`);
+      if (el) editFieldState[k].currentSaved = el.value;
     }
+
+    // 2-2) 브라우저 캐시 즉시 최신화
+    if (contentCache[currentArticle.id]) {
+      contentCache[currentArticle.id].status = statusText;
+      contentCache[currentArticle.id].editor = editorName;
+      contentCache[currentArticle.id].type = payload.type;
+      contentCache[currentArticle.id].cohort = payload.cohort;
+      contentCache[currentArticle.id].author = payload.author;
+      contentCache[currentArticle.id].title = payload.title;
+      contentCache[currentArticle.id].content = payload.content;
+    }
+
+    isDirty = false;
+
+    // 2-3) 화면 피드백 및 모달 제어 즉시 수행
+    if (actionType === 'stay') {
+      showToast(`✓ [${currentArticle.id}] '${statusText}' 저장 반영되었습니다.`, '#2563eb');
+    } else {
+      closeParentModal();
+    }
+
+    // 3. [백그라운드 비동기 통신: 사용자 대기 없음]
+    fetch(GAS_WEBAPP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => {
+      console.error('시트 저장 통신 실패:', err);
+      showToast(`⚠️ [${payload.id}] 시트 동기화 중 통신 지연이 발생했습니다.`, '#ef4444');
+    }).finally(() => {
+      isSubmitting = false;
+    });
   }
 
   function copyEntireCode() {
