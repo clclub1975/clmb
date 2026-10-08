@@ -1,10 +1,10 @@
-<!-- v1.2: 낙관적 UI 업데이트(체감 0초 즉시 저장) 및 백그라운드 비동기 통신 최적화 적용 -->
+<!-- v1.3: 최신 요청 보증 순차 큐 및 저장 상태 인디케이터 적용으로 동시 저장 충돌 완벽 방지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>기고문 교정 v1.2</title>
+  <title>기고문 교정 v1.3</title>
   <style>
     * {
       box-sizing: border-box;
@@ -361,7 +361,7 @@
   <!-- 헤더 -->
   <div class="editor-header">
     <span class="editor-title">
-      ✏️ 기고문 교정 <span class="version-badge">v1.2</span>
+      ✏️ 기고문 교정 <span class="version-badge">v1.3</span>
     </span>
     <div class="header-actions">
       <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
@@ -387,8 +387,8 @@
       </label>
     </div>
     <div class="controls-right">
-      <button type="button" class="btn-action btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
-      <button type="button" class="btn-action btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
+      <button type="button" id="btn-save-stay" class="btn-action btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
+      <button type="button" id="btn-save-exit" class="btn-action btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
     </div>
   </div>
 
@@ -399,7 +399,7 @@
 
   <!-- 하단 교정 완료 -->
   <div class="editor-footer">
-    <button type="button" class="btn-finish-large" onclick="handleSaveAction('finish')">✓ 교정 완료</button>
+    <button type="button" id="btn-finish-large" class="btn-finish-large" onclick="handleSaveAction('finish')">✓ 교정 완료</button>
   </div>
 </div>
 
@@ -414,7 +414,8 @@
   const contentCache = {};
   let currentArticle = null;
   let isDirty = false;
-  let isSubmitting = false;
+  let isNetworkBusy = false;
+  let pendingSaveTask = null; // 백그라운드 전송 중 추가 수정 시 대기할 최신 요청 큐
   let editFieldState = {};
 
   function markAsDirty() {
@@ -430,6 +431,18 @@
     setTimeout(() => {
       toast.style.display = 'none';
     }, 2800);
+  }
+
+  function updateSyncIndicator(isBusy) {
+    const btnStay = document.getElementById('btn-save-stay');
+    if (!btnStay) return;
+    if (isBusy) {
+      btnStay.textContent = '⏳ 동기화 중...';
+      btnStay.style.opacity = '0.75';
+    } else {
+      btnStay.textContent = '저장/계속';
+      btnStay.style.opacity = '1';
+    }
   }
 
   function closeParentModal() {
@@ -619,9 +632,9 @@
     markAsDirty();
   }
 
-  // 낙관적 UI 업데이트(체감 0초 즉시 처리) 및 비동기 백그라운드 저장
+  // 낙관적 UI 업데이트 및 최신 요청 보증 순차 큐 전송
   function handleSaveAction(actionType) {
-    if (isSubmitting || !currentArticle) return;
+    if (!currentArticle) return;
     const editorName = document.getElementById('editor-name-input').value.trim();
 
     if (!editorName) {
@@ -639,9 +652,7 @@
       return;
     }
 
-    isSubmitting = true;
-
-    // 1. 전송할 데이터 취합
+    // 1. 현재 에디터 최신 페이로드 생성
     const payload = {
       id: currentArticle.id,
       status: statusText,
@@ -654,13 +665,11 @@
     };
 
     // 2. [낙관적 즉시 반영: 0.01초 처리]
-    // 2-1) 최근 저장값 상태 갱신
     for (let k in editFieldState) {
       const el = document.getElementById(`edit_${k}`);
       if (el) editFieldState[k].currentSaved = el.value;
     }
 
-    // 2-2) 브라우저 캐시 즉시 최신화
     if (contentCache[currentArticle.id]) {
       contentCache[currentArticle.id].status = statusText;
       contentCache[currentArticle.id].editor = editorName;
@@ -673,14 +682,27 @@
 
     isDirty = false;
 
-    // 2-3) 화면 피드백 및 모달 제어 즉시 수행
     if (actionType === 'stay') {
       showToast(`✓ [${currentArticle.id}] '${statusText}' 저장 반영되었습니다.`, '#2563eb');
     } else {
       closeParentModal();
     }
 
-    // 3. [백그라운드 비동기 통신: 사용자 대기 없음]
+    // 3. [동시성 방어 순차 큐 전송 로직]
+    if (isNetworkBusy) {
+      // 이미 백그라운드 전송 중이면 버리지 않고 대기열에 최신본을 보관
+      pendingSaveTask = payload;
+      return;
+    }
+
+    dispatchSaveRequest(payload);
+  }
+
+  // 실제 백그라운드 HTTP 전송 및 순차 큐 해소 함수
+  function dispatchSaveRequest(payload) {
+    isNetworkBusy = true;
+    updateSyncIndicator(true);
+
     fetch(GAS_WEBAPP_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -690,7 +712,15 @@
       console.error('시트 저장 통신 실패:', err);
       showToast(`⚠️ [${payload.id}] 시트 동기화 중 통신 지연이 발생했습니다.`, '#ef4444');
     }).finally(() => {
-      isSubmitting = false;
+      isNetworkBusy = false;
+      updateSyncIndicator(false);
+
+      // 전송 중 누적된 추가 수정건이 있다면 가장 최신 수정본을 이어 전송
+      if (pendingSaveTask) {
+        const nextTask = pendingSaveTask;
+        pendingSaveTask = null;
+        dispatchSaveRequest(nextTask);
+      }
     });
   }
 
