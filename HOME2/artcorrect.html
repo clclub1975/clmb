@@ -1,10 +1,10 @@
-<!-- v0.9: 통권 001호 3건 테스트 퀵 바 추가 및 구글 시트 Visualization 직통 단건 로드 최적화 -->
+<!-- v1.0: articles.html 직통 쿼리 및 contentCache 메모리 캐싱 이식, 파싱 안전성 강화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>기고문 교정 v0.9</title>
+  <title>기고문 교정 v1.0</title>
   <style>
     * {
       box-sizing: border-box;
@@ -335,7 +335,7 @@
   <!-- 헤더 -->
   <div class="editor-header">
     <span class="editor-title">
-      ✏️ 기고문 교정 <span class="version-badge">v0.9</span>
+      ✏️ 기고문 교정 <span class="version-badge">v1.0</span>
     </span>
     <div class="header-actions">
       <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
@@ -383,6 +383,8 @@
   const SHEET_TAB_NAME = '교정본';
   const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx5pbrNf8OqGhCGqo1FUe8YEzYZaFy0VoRXq5MJPXnjPpWVknrzh1ZPMS9-UHcyekzj/exec';
 
+  // 메모리 캐싱 및 상태 객체
+  const contentCache = {};
   let currentArticle = null;
   let isDirty = false;
   let isSaving = false;
@@ -411,14 +413,262 @@
     }
   }
 
-  // Google Sheets Visualization API 직통 단건 쿼리 fetch
+  // 본문 온디맨드 초고속 직통 쿼리 (gviz/tq + 안전한 JSON 파서 + contentCache)
   async function loadArticleById(targetId) {
     if (isDirty && !confirm(`수정 중인 내용이 있습니다. [${targetId}] 글로 전환하시겠습니까?`)) {
       return;
     }
     highlightTestButton(targetId);
     document.getElementById('current-id-badge').textContent = `ID: ${targetId}`;
+
+    // 1. 메모리 캐시 확인 (0초 즉시 렌더링)
+    if (contentCache[targetId]) {
+      currentArticle = JSON.parse(JSON.stringify(contentCache[targetId]));
+      if (currentArticle.editor) {
+        document.getElementById('editor-name-input').value = currentArticle.editor;
+      }
+      renderEditorUI(currentArticle);
+      isDirty = false;
+      return;
+    }
+
+    // 2. 구글 고속 캐시 CDN 직통 단건 쿼리 (0.2~0.4초 초고속 fetch)
     document.getElementById('editor-body-box').innerHTML = `<div class="loading-text">[${targetId}] 글을 시트에서 초고속 불러오는 중...</div>`;
 
     const query = encodeURIComponent(`SELECT A, B, C, D, E, F, G, H, I, J WHERE A = '${targetId}'`);
-    const endpoint
+    const endpoint = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_TAB_NAME)}&tq=${query}`;
+
+    try {
+      const response = await fetch(endpoint);
+      const text = await response.text();
+
+      // 안전한 JSON 구조체 추출기 (indexOf('{') ~ lastIndexOf('}'))
+      const startIdx = text.indexOf('{');
+      const endIdx = text.lastIndexOf('}');
+      if (startIdx === -1 || endIdx === -1) {
+        throw new Error('시트 응답 구조가 유효하지 않습니다.');
+      }
+
+      const jsonStr = text.substring(startIdx, endIdx + 1);
+      const json = JSON.parse(jsonStr);
+      const rows = json.table ? json.table.rows : [];
+
+      if (!rows || rows.length === 0) {
+        document.getElementById('editor-body-box').innerHTML = `<div class="loading-text" style="color:#ef4444;">오류: [${targetId}] 데이터를 시트에서 찾을 수 없습니다.</div>`;
+        return;
+      }
+
+      const r = rows[0].c;
+      const getVal = (idx) => (r && r[idx] && r[idx].v !== null && r[idx].v !== undefined) ? String(r[idx].v) : '';
+
+      const articleData = {
+        id: getVal(0),        // A: 관리 ID
+        status: getVal(1),    // B: 교정상황
+        editor: getVal(2),    // C: 교정자
+        vol: getVal(3),       // D: 통권 호수
+        pubDate: getVal(4),   // E: 발행년월
+        cohort: getVal(5),    // F: 기수
+        author: getVal(6),    // G: 기고자
+        type: getVal(7),      // H: 글 종류
+        title: getVal(8),     // I: 글 제목
+        content: getVal(9)    // J: 기고문 전문
+      };
+
+      // 캐시 저장
+      contentCache[targetId] = JSON.parse(JSON.stringify(articleData));
+      currentArticle = articleData;
+
+      if (currentArticle.editor) {
+        document.getElementById('editor-name-input').value = currentArticle.editor;
+      }
+      renderEditorUI(currentArticle);
+      isDirty = false;
+    } catch (err) {
+      console.error(err);
+      document.getElementById('editor-body-box').innerHTML = `<div class="loading-text" style="color:#ef4444;">글 로드 실패: 네트워크 상태를 확인해주세요.</div>`;
+    }
+  }
+
+  function highlightTestButton(id) {
+    document.querySelectorAll('.test-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim() === id);
+    });
+  }
+
+  function renderEditorUI(article) {
+    editFieldState = {};
+    let html = '<ul class="edit-ul">';
+    html += renderEditFieldItem('type', '1. 글 종류', article.type, 'inline');
+    html += renderEditFieldItem('cohort', '2. 기수', article.cohort, 'inline');
+    html += renderEditFieldItem('author', '3. 기고자', article.author, 'inline');
+    html += renderEditFieldItem('title', '4. 제목', article.title, 'inline');
+    html += renderEditFieldItem('content', '5. 기고문 본문', article.content, 'textarea');
+    html += '</ul>';
+    document.getElementById('editor-body-box').innerHTML = html;
+  }
+
+  function renderEditFieldItem(key, label, currentVal, mode) {
+    editFieldState[key] = {
+      currentSaved: currentVal,
+      pureOriginal: currentVal,
+      history: [currentVal]
+    };
+    const toolbarHtml = `
+      <div class="restore-toolbar">
+        <button type="button" class="btn-restore" onclick="undoField('${key}')">↺ 취소</button>
+        <button type="button" class="btn-restore" onclick="restoreSaved('${key}')">⟲ 최근 저장값</button>
+        <button type="button" class="btn-restore" onclick="restoreOriginal('${key}')">📖 원문 복원</button>
+      </div>
+    `;
+
+    if (mode === 'textarea') {
+      return `
+        <li class="edit-li">
+          <strong class="edit-label">${label}</strong>
+          <div style="width:100%;">
+            <textarea id="edit_${key}" class="edit-textarea-inline" oninput="handleFieldInput('${key}')">${currentVal}</textarea>
+            ${toolbarHtml}
+          </div>
+        </li>
+      `;
+    } else {
+      return `
+        <li class="edit-li-inline">
+          <div class="inline-row">
+            <strong class="edit-label">${label}</strong>
+            <input type="text" id="edit_${key}" class="thin-input" value="${currentVal}" oninput="handleFieldInput('${key}')">
+          </div>
+          ${toolbarHtml}
+        </li>
+      `;
+    }
+  }
+
+  function handleFieldInput(key) {
+    markAsDirty();
+    const el = document.getElementById(`edit_${key}`);
+    if (!el || !editFieldState[key]) return;
+    const stack = editFieldState[key].history;
+    if (stack[stack.length - 1] !== el.value) {
+      stack.push(el.value);
+      if (stack.length > 50) stack.shift();
+    }
+  }
+
+  function undoField(key) {
+    const el = document.getElementById(`edit_${key}`);
+    if (!el || !editFieldState[key]) return;
+    const stack = editFieldState[key].history;
+    if (stack.length > 1) {
+      stack.pop();
+      el.value = stack[stack.length - 1];
+      markAsDirty();
+    } else {
+      alert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
+    }
+  }
+
+  function restoreSaved(key) {
+    const el = document.getElementById(`edit_${key}`);
+    if (!el || !editFieldState[key]) return;
+    el.value = editFieldState[key].currentSaved;
+    markAsDirty();
+  }
+
+  function restoreOriginal(key) {
+    const el = document.getElementById(`edit_${key}`);
+    if (!el || !editFieldState[key]) return;
+    el.value = editFieldState[key].pureOriginal;
+    markAsDirty();
+  }
+
+  async function handleSaveAction(actionType) {
+    if (isSaving || !currentArticle) return;
+    const editorName = document.getElementById('editor-name-input').value.trim();
+
+    if (!editorName && actionType !== 'exit') {
+      alert('교정자 이름을 입력해 주세요.');
+      document.getElementById('editor-name-input').focus();
+      return;
+    }
+
+    let statusText = '진행';
+    if (actionType === 'finish') statusText = '완료';
+    if (!editorName) statusText = '교정';
+
+    if (!confirm(`[${currentArticle.id}] 글을 ${actionType === 'finish' ? '교정 완료' : '저장'} 처리하시겠습니까?`)) {
+      return;
+    }
+
+    isSaving = true;
+    document.body.style.cursor = 'wait';
+
+    const payload = {
+      id: currentArticle.id,
+      status: statusText,
+      editorName: editorName,
+      type: document.getElementById('edit_type').value,
+      cohort: document.getElementById('edit_cohort').value,
+      author: document.getElementById('edit_author').value,
+      title: document.getElementById('edit_title').value,
+      content: document.getElementById('edit_content').value
+    };
+
+    try {
+      await fetch(GAS_WEBAPP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      for (let k in editFieldState) {
+        const el = document.getElementById(`edit_${k}`);
+        if (el) editFieldState[k].currentSaved = el.value;
+      }
+
+      // 저장 성공 시 캐시 최신화
+      if (contentCache[currentArticle.id]) {
+        contentCache[currentArticle.id].status = statusText;
+        contentCache[currentArticle.id].editor = editorName;
+        contentCache[currentArticle.id].type = payload.type;
+        contentCache[currentArticle.id].cohort = payload.cohort;
+        contentCache[currentArticle.id].author = payload.author;
+        contentCache[currentArticle.id].title = payload.title;
+        contentCache[currentArticle.id].content = payload.content;
+      }
+
+      isDirty = false;
+      alert(`[${currentArticle.id}] 저장이 성공적으로 완료되었습니다.`);
+
+      if (actionType !== 'stay') {
+        closeParentModal();
+      }
+    } catch (e) {
+      alert('저장 중 통신 오류가 발생했습니다.');
+    } finally {
+      isSaving = false;
+      document.body.style.cursor = 'default';
+    }
+  }
+
+  function copyEntireCode() {
+    navigator.clipboard.writeText(document.documentElement.outerHTML).then(() => {
+      alert('전체 HTML 소스코드가 클립보드에 복사되었습니다.');
+    }).catch(() => {
+      alert('클립보드 복사에 실패했습니다.');
+    });
+  }
+
+  window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('id');
+    if (targetId) {
+      loadArticleById(targetId);
+    } else {
+      loadArticleById('CL001-01');
+    }
+  };
+</script>
+</body>
+</html>
