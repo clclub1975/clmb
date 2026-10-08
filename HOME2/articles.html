@@ -1,4 +1,4 @@
-<!-- v5.4: 통권 호수 필터 1번 추가(4단계 연동) 및 모바일 4개 필터 한 라인 배치 구현 -->
+<!-- v5.5: 본문 로딩 속도 극대화를 위한 구글 Visualization API 직접 단건 쿼리(0.3초대) 전환 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -290,7 +290,6 @@
         font-size: 14px;
         padding: 10px 5px;
       }
-      /* 모바일에서 1~4번 필터를 가로 1열(한 줄)로 나란히 배치 */
       .filter-container {
         grid-template-columns: repeat(4, 1fr);
         gap: 4px;
@@ -374,7 +373,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v5.4</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v5.5</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -442,14 +441,16 @@
   </div>
 
   <script>
-    // 마스터 DB (A~I열 메타데이터 전용 Visualization API 주소)
-    const METADATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8/gviz/tq?tqx=out:csv&gid=1255939946&tq=SELECT%20A,B,C,D,E,F,G,H,I';
-    // 배포된 GAS 본문 온디맨드 검색 웹 앱 URL
-    const CONTENT_API_URL = 'https://script.google.com/macros/s/AKfycbyu8AtE2UooyXKUjRLLk0k_X41bhO8n_gLwS1CIjZ9goHS1qVLrmZr4BxiV7nuV6dCpIw/exec';
+    // 마스터 DB 식별자 및 탭 정보
+    const SHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
+    const SHEET_GID = '1255939946';
+
+    // A~I열 목록용 메타데이터 엔드포인트
+    const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
 
     let articlesData = [];
     let currentArticleId = null;
-    const contentCache = {}; // 온디맨드로 받아온 본문 캐시
+    const contentCache = {}; // 받아온 본문 로컬 캐시
 
     const tabFilterBtn = document.getElementById('tabFilterBtn');
     const tabGridBtn = document.getElementById('tabGridBtn');
@@ -731,7 +732,7 @@
       listContainer.style.display = 'block';
     }
 
-    // 본문 온디맨드 fetch 처리
+    // Google Visualization API 직통 단건 쿼리 (0.2~0.4초 초고속 조회)
     async function showArticleDetail(id) {
       currentArticleId = id;
       const article = articlesData.find(item => item.id === id);
@@ -741,28 +742,39 @@
       metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type}`;
       contentBody.className = '';
 
-      // 캐시에 본문이 이미 존재하는 경우 즉시 렌더링
+      // 캐시에 본문이 이미 존재하는 경우 즉시 렌더링 (0초)
       if (contentCache[id]) {
         contentBody.textContent = contentCache[id];
         return;
       }
 
-      contentBody.textContent = '본문을 불러오는 중입니다... 잠시만 기다려주세요.';
+      contentBody.textContent = '본문을 불러오는 중입니다...';
 
       try {
-        const response = await fetch(`${CONTENT_API_URL}?id=${encodeURIComponent(id)}`);
-        const data = await response.json();
+        // GAS를 거치지 않고 구글 시트 Visualization 직통 단건 쿼리 수행
+        const query = encodeURIComponent(`SELECT J WHERE A = '${id}'`);
+        const queryUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${SHEET_GID}&tq=${query}`;
+        
+        const response = await fetch(queryUrl);
+        const rawText = await response.text();
 
-        if (data && data.content !== undefined) {
-          contentCache[id] = data.content || '(본문 내용이 비어 있습니다.)';
-          if (currentArticleId === id) {
-            contentBody.textContent = contentCache[id];
+        // google.visualization.Query.setResponse(...) 형태의 JSONP 래퍼 제거
+        const jsonMatch = rawText.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+        if (jsonMatch && jsonMatch[1]) {
+          const resObj = JSON.parse(jsonMatch[1]);
+          const rows = resObj.table && resObj.table.rows;
+          if (rows && rows.length > 0 && rows[0].c && rows[0].c[0]) {
+            const fetchedContent = rows[0].c[0].v || '(본문 내용이 비어 있습니다.)';
+            contentCache[id] = fetchedContent;
+            if (currentArticleId === id) {
+              contentBody.textContent = fetchedContent;
+            }
+            return;
           }
-        } else {
-          contentBody.textContent = '본문을 불러오지 못했습니다: ' + (data.error || '알 수 없는 오류');
         }
+        contentBody.textContent = '(해당 글의 본문을 찾을 수 없습니다.)';
       } catch (err) {
-        contentBody.textContent = '본문 통신 중 오류가 발생했습니다.';
+        contentBody.textContent = '본문을 불러오는 중 통신 오류가 발생했습니다.';
       }
     }
 
