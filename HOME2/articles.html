@@ -1,4 +1,4 @@
-<!-- v5.3: 검색된 글 목록 줄 간격 축소 및 본문 메타정보 관리번호 노출 생략 -->
+<!-- v5.4: 통권 호수 필터 1번 추가(4단계 연동) 및 모바일 4개 필터 한 라인 배치 구현 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -73,8 +73,8 @@
     }
     .filter-container {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
       background: #ffffff;
       padding: 20px;
       border-radius: 8px;
@@ -88,15 +88,16 @@
       font-weight: 600;
       display: block;
       margin-bottom: 8px;
-      font-size: 14px;
+      font-size: 13px;
       color: #4b5563;
+      white-space: nowrap;
     }
     select {
       width: 100%;
-      padding: 10px 12px;
+      padding: 9px 10px;
       border-radius: 6px;
       border: 1px solid #d1d5db;
-      font-size: 15px;
+      font-size: 14px;
       background-color: #fff;
       transition: border-color 0.15s ease-in-out;
     }
@@ -289,18 +290,22 @@
         font-size: 14px;
         padding: 10px 5px;
       }
+      /* 모바일에서 1~4번 필터를 가로 1열(한 줄)로 나란히 배치 */
       .filter-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        padding: 10px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        padding: 8px 6px;
       }
       label {
-        font-size: 11px;
-        margin-bottom: 4px;
+        font-size: 10px;
+        margin-bottom: 3px;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
       select {
-        padding: 6px 4px;
-        font-size: 12px;
+        padding: 5px 2px;
+        font-size: 11px;
+        height: 32px;
       }
       .grid-header-wrap {
         flex-direction: column;
@@ -369,7 +374,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v5.3</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v5.4</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -379,19 +384,25 @@
   <div id="viewFilter">
     <div class="filter-container">
       <div class="filter-group">
-        <label for="typeSelect">1. 글 종류</label>
-        <select id="typeSelect" disabled>
+        <label for="volSelect">1. 통권 호수</label>
+        <select id="volSelect" disabled>
           <option value="전체">데이터 로딩 중...</option>
         </select>
       </div>
       <div class="filter-group">
-        <label for="cohortSelect">2. 기수</label>
+        <label for="typeSelect">2. 글 종류</label>
+        <select id="typeSelect" disabled>
+          <option value="전체">전체</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="cohortSelect">3. 기수</label>
         <select id="cohortSelect" disabled>
           <option value="전체">전체</option>
         </select>
       </div>
       <div class="filter-group">
-        <label for="authorSelect">3. 기고자</label>
+        <label for="authorSelect">4. 기고자</label>
         <select id="authorSelect" disabled>
           <option value="전체">전체</option>
         </select>
@@ -444,6 +455,7 @@
     const tabGridBtn = document.getElementById('tabGridBtn');
     const viewFilter = document.getElementById('viewFilter');
     const viewGrid = document.getElementById('viewGrid');
+    const volSelect = document.getElementById('volSelect');
     const typeSelect = document.getElementById('typeSelect');
     const cohortSelect = document.getElementById('cohortSelect');
     const authorSelect = document.getElementById('authorSelect');
@@ -602,29 +614,44 @@
     }
 
     function initDropdowns() {
-      typeSelect.innerHTML = '<option value="전체">전체</option>';
-      const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
-      const fragment = document.createDocumentFragment();
-      types.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = type;
-        fragment.appendChild(option);
+      // 1. 통권 호수 초기화
+      const vols = [...new Set(articlesData.map(item => item.vol))].filter(Boolean).sort((a, b) => {
+        const numA = parseInt(a.replace(/[^0-9]/g, '')) || 0;
+        const numB = parseInt(b.replace(/[^0-9]/g, '')) || 0;
+        return numA - numB;
       });
-      typeSelect.appendChild(fragment);
-      typeSelect.value = "전체";
-      typeSelect.disabled = cohortSelect.disabled = authorSelect.disabled = false;
+      volSelect.innerHTML = '<option value="전체">전체</option>';
+      vols.forEach(v => {
+        const option = document.createElement('option');
+        option.value = option.textContent = v;
+        volSelect.appendChild(option);
+      });
+
+      // 2. 글 종류 초기화
+      const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
+      typeSelect.innerHTML = '<option value="전체">전체</option>';
+      types.forEach(t => {
+        const option = document.createElement('option');
+        option.value = option.textContent = t;
+        typeSelect.appendChild(option);
+      });
+
+      volSelect.disabled = typeSelect.disabled = cohortSelect.disabled = authorSelect.disabled = false;
+      volSelect.value = typeSelect.value = cohortSelect.value = authorSelect.value = "전체";
       updateFilters();
     }
 
     function updateFilters() {
+      const selectedVol = volSelect.value;
       const selectedType = typeSelect.value;
       const selectedCohort = cohortSelect.value;
       const selectedAuthor = authorSelect.value;
 
       let currentPool = articlesData;
+      if (selectedVol && selectedVol !== "전체") currentPool = currentPool.filter(item => item.vol === selectedVol);
       if (selectedType && selectedType !== "전체") currentPool = currentPool.filter(item => item.type === selectedType);
 
+      // 3. 기수 목록 갱신
       const validCohorts = currentPool.map(item => item.cohort).filter(c => c && (/^\d+기$/.test(c) || c === '기록 없음' || c === '외부' || c === '촛불회'));
       const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
         const isNumA = /^\d+기$/.test(a);
@@ -646,6 +673,7 @@
       cohortSelect.appendChild(cohortFragment);
       if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") cohortSelect.value = "전체";
 
+      // 4. 기고자 목록 갱신
       let authorPool = currentPool;
       if (cohortSelect.value && cohortSelect.value !== "전체") authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
 
@@ -665,11 +693,13 @@
     }
 
     function renderArticleList() {
+      const selectedVol = volSelect.value;
       const selectedType = typeSelect.value;
       const selectedCohort = cohortSelect.value;
       const selectedAuthor = authorSelect.value;
 
       let filtered = articlesData;
+      if (selectedVol && selectedVol !== "전체") filtered = filtered.filter(item => item.vol === selectedVol);
       if (selectedType && selectedType !== "전체") filtered = filtered.filter(item => item.type === selectedType);
       if (selectedCohort && selectedCohort !== "전체") filtered = filtered.filter(item => item.cohort === selectedCohort);
       if (selectedAuthor && selectedAuthor !== "전체") filtered = filtered.filter(item => item.author === selectedAuthor);
@@ -708,7 +738,6 @@
       if (!article) return;
 
       metaInfo.style.display = 'block';
-      // 관리번호는 화면 노출에서 제외하고 메타정보만 표시
       metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type}`;
       contentBody.className = '';
 
@@ -746,6 +775,7 @@
       contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
     };
 
+    volSelect.addEventListener('change', resetViewer);
     typeSelect.addEventListener('change', resetViewer);
     cohortSelect.addEventListener('change', resetViewer);
     authorSelect.addEventListener('change', () => {
