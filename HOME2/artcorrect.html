@@ -1,10 +1,10 @@
-<!-- v1.5: correct.html 커스텀 다이얼로그 이식 및 본문 독립 스크롤링 적용 -->
+<!-- v1.6: [R2_기고문전문(원본)] 단건 쿼리 연동 및 온디맨드 원문 복원 기능 탑재 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>기고문 교정 v1.5</title>
+  <title>기고문 교정 v1.6</title>
   <style>
     * {
       box-sizing: border-box;
@@ -455,7 +455,7 @@
   <!-- 헤더 -->
   <div class="editor-header">
     <span class="editor-title">
-      ✏️ 기고문 교정 <span class="version-badge">v1.5</span>
+      ✏️ 기고문 교정 <span class="version-badge">v1.6</span>
     </span>
     <div class="header-actions">
       <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
@@ -506,14 +506,19 @@
 </div>
 
 <script>
-  // 마스터 DB 설정 (R2_기고문전문(교정본))
-  const SPREADSHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
-  const SHEET_TAB_NAME = '교정본';
-  // 실제 배포된 정식 GAS 웹 앱 엔드포인트 URL
+  // 1. 마스터 DB 설정 (교정본 & 원본)
+  const SPREADSHEET_ID_CORRECT = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8'; // R2_기고문전문(교정본)
+  const SHEET_TAB_CORRECT = '교정본';
+
+  const SPREADSHEET_ID_ORIGINAL = '1Nkc7CK9FlUb52q3vtzm98vnjiorLBvzmyP7L0eG09H4'; // R2_기고문전문(원본)
+  const SHEET_TAB_ORIGINAL = '원본';
+
+  // 2. 실제 배포된 정식 GAS 웹 앱 엔드포인트 URL
   const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyu8AtE2UooyXKUjRLLk0k_X41bhO8n_gLwS1CIjZ9goHS1qVLrmZr4BxiV7nuV6dCpIw/exec';
 
   // 메모리 캐싱 및 상태 객체
   const contentCache = {};
+  const originalCache = {}; // 원본 시트 데이터 캐시
   let currentArticle = null;
   let isDirty = false;
   let isNetworkBusy = false;
@@ -524,7 +529,7 @@
     isDirty = true;
   }
 
-  // correct.html 전용 커스텀 알림/확인창 함수
+  // 커스텀 다이얼로그 함수
   function showCustomAlert(messageHtml, callback) {
     const overlay = document.getElementById('custom-dialog-overlay');
     const msgElem = document.getElementById('custom-dialog-msg');
@@ -607,7 +612,49 @@
     }
   }
 
-  // 본문 온디맨드 초고속 직통 쿼리 (gviz/tq + 안전한 JSON 파서 + contentCache)
+  // [R2_기고문전문(원본)] 시트 단건 초고속 온디맨드 쿼리
+  async function fetchOriginalArticle(targetId) {
+    if (originalCache[targetId]) {
+      return originalCache[targetId];
+    }
+    const query = encodeURIComponent(`SELECT A, B, C, D, E, F, G, H WHERE A = '${targetId}'`);
+    const endpoint = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID_ORIGINAL}/gviz/tq?sheet=${encodeURIComponent(SHEET_TAB_ORIGINAL)}&tq=${query}`;
+
+    try {
+      const response = await fetch(endpoint);
+      const text = await response.text();
+      const startIdx = text.indexOf('{');
+      const endIdx = text.lastIndexOf('}');
+      if (startIdx === -1 || endIdx === -1) return null;
+
+      const json = JSON.parse(text.substring(startIdx, endIdx + 1));
+      const rows = json.table ? json.table.rows : [];
+      if (!rows || rows.length === 0) return null;
+
+      const r = rows[0].c;
+      const getVal = (idx) => (r && r[idx] && r[idx].v !== null && r[idx].v !== undefined) ? String(r[idx].v) : '';
+
+      // 원본 시트 컬럼 규격:
+      // A: 관리 ID, B: 통권, C: 발행년월, D: 기수, E: 기고자, F: 글 종류, G: 글 제목, H: 기고문 전문
+      const origData = {
+        id: getVal(0),
+        vol: getVal(1),
+        pubDate: getVal(2),
+        cohort: getVal(3),  // D열
+        author: getVal(4),  // E열
+        type: getVal(5),    // F열
+        title: getVal(6),   // G열
+        content: getVal(7)  // H열
+      };
+      originalCache[targetId] = origData;
+      return origData;
+    } catch (e) {
+      console.warn(`[${targetId}] 원본 시트 로드 실패:`, e);
+      return null;
+    }
+  }
+
+  // 본문 온디맨드 초고속 직통 쿼리 (교정본 + 원본 병렬 로드)
   async function loadArticleById(targetId) {
     if (isDirty) {
       showCustomConfirm(`수정 중인 내용이 있습니다.<br>[${targetId}] 글로 전환하시겠습니까?`, () => {
@@ -629,30 +676,32 @@
       if (currentArticle.editor) {
         document.getElementById('editor-name-input').value = currentArticle.editor;
       }
-      renderEditorUI(currentArticle);
+      renderEditorUI(currentArticle, originalCache[targetId] || null);
       isDirty = false;
       return;
     }
 
-    // 2. 구글 고속 캐시 CDN 직통 단건 쿼리 (0.2~0.4초 초고속 fetch)
+    // 2. 구글 캐시 직통 단건 쿼리 (교정본 + 원본 병렬 fetch)
     document.getElementById('editor-body-box').innerHTML = `<div class="loading-text">[${targetId}] 글을 시트에서 초고속 불러오는 중...</div>`;
 
     const query = encodeURIComponent(`SELECT A, B, C, D, E, F, G, H, I, J WHERE A = '${targetId}'`);
-    const endpoint = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_TAB_NAME)}&tq=${query}`;
+    const endpointCorrect = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID_CORRECT}/gviz/tq?sheet=${encodeURIComponent(SHEET_TAB_CORRECT)}&tq=${query}`;
 
     try {
-      const response = await fetch(endpoint);
-      const text = await response.text();
+      // 교정본 쿼리와 원본 쿼리를 병렬로 동시 수행 (0.2~0.4초 소요)
+      const [respCorrect, origData] = await Promise.all([
+        fetch(endpointCorrect),
+        fetchOriginalArticle(targetId)
+      ]);
 
-      // 안전한 JSON 구조체 추출기
+      const text = await respCorrect.text();
       const startIdx = text.indexOf('{');
       const endIdx = text.lastIndexOf('}');
       if (startIdx === -1 || endIdx === -1) {
         throw new Error('시트 응답 구조가 유효하지 않습니다.');
       }
 
-      const jsonStr = text.substring(startIdx, endIdx + 1);
-      const json = JSON.parse(jsonStr);
+      const json = JSON.parse(text.substring(startIdx, endIdx + 1));
       const rows = json.table ? json.table.rows : [];
 
       if (!rows || rows.length === 0) {
@@ -682,7 +731,7 @@
       if (currentArticle.editor) {
         document.getElementById('editor-name-input').value = currentArticle.editor;
       }
-      renderEditorUI(currentArticle);
+      renderEditorUI(currentArticle, origData);
       isDirty = false;
     } catch (err) {
       console.error(err);
@@ -696,22 +745,27 @@
     });
   }
 
-  function renderEditorUI(article) {
+  function renderEditorUI(article, origData) {
     editFieldState = {};
+    const getOrig = (key) => {
+      if (origData && origData[key] !== undefined) return origData[key];
+      return article[key]; // 원본 시트 지연 응답 시 교정본 초기값을 fallback으로 설정
+    };
+
     let html = '<ul class="edit-ul">';
-    html += renderEditFieldItem('type', '1. 글 종류', article.type, 'inline');
-    html += renderEditFieldItem('cohort', '2. 기수', article.cohort, 'inline');
-    html += renderEditFieldItem('author', '3. 기고자', article.author, 'inline');
-    html += renderEditFieldItem('title', '4. 제목', article.title, 'inline');
-    html += renderEditFieldItem('content', '5. 기고문 본문', article.content, 'textarea');
+    html += renderEditFieldItem('type', '1. 글 종류', article.type, getOrig('type'), 'inline');
+    html += renderEditFieldItem('cohort', '2. 기수', article.cohort, getOrig('cohort'), 'inline');
+    html += renderEditFieldItem('author', '3. 기고자', article.author, getOrig('author'), 'inline');
+    html += renderEditFieldItem('title', '4. 제목', article.title, getOrig('title'), 'inline');
+    html += renderEditFieldItem('content', '5. 기고문 본문', article.content, getOrig('content'), 'textarea');
     html += '</ul>';
     document.getElementById('editor-body-box').innerHTML = html;
   }
 
-  function renderEditFieldItem(key, label, currentVal, mode) {
+  function renderEditFieldItem(key, label, currentVal, origVal, mode) {
     editFieldState[key] = {
       currentSaved: currentVal,
-      pureOriginal: currentVal,
+      pureOriginal: origVal,
       history: [currentVal]
     };
     const toolbarHtml = `
@@ -780,14 +834,26 @@
     markAsDirty();
   }
 
-  function restoreOriginal(key) {
+  // [📖 원문 복원] 원본 시트 데이터 즉시 적용 (미로드 시 온디맨드 fetch)
+  async function restoreOriginal(key) {
     const el = document.getElementById(`edit_${key}`);
-    if (!el || !editFieldState[key]) return;
-    if (el.value === editFieldState[key].pureOriginal) {
+    if (!el || !editFieldState[key] || !currentArticle) return;
+
+    // 원본 데이터가 아직 채워지지 않은 경우 온디맨드로 즉시 fetch
+    if (!originalCache[currentArticle.id]) {
+      showToast('📖 원본 시트에서 원문 데이터를 불러오는 중...', '#475569');
+      const origData = await fetchOriginalArticle(currentArticle.id);
+      if (origData && origData[key] !== undefined) {
+        editFieldState[key].pureOriginal = origData[key];
+      }
+    }
+
+    const origVal = editFieldState[key].pureOriginal;
+    if (el.value === origVal) {
       showCustomAlert('이미 순수 원문 내용과 동일합니다.');
       return;
     }
-    el.value = editFieldState[key].pureOriginal;
+    el.value = origVal;
     markAsDirty();
   }
 
