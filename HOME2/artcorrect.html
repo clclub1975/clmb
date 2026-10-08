@@ -1,10 +1,10 @@
-<!-- v1.0: articles.html 직통 쿼리 및 contentCache 메모리 캐싱 이식, 파싱 안전성 강화 -->
+<!-- v1.1: 정식 배포 GAS 웹 앱 URL 연동 및 상태값(교정 중/교정 완료) 분기 저장 정책 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>기고문 교정 v1.0</title>
+  <title>기고문 교정 v1.1</title>
   <style>
     * {
       box-sizing: border-box;
@@ -335,7 +335,7 @@
   <!-- 헤더 -->
   <div class="editor-header">
     <span class="editor-title">
-      ✏️ 기고문 교정 <span class="version-badge">v1.0</span>
+      ✏️ 기고문 교정 <span class="version-badge">v1.1</span>
     </span>
     <div class="header-actions">
       <button type="button" class="btn-copy-all" onclick="copyEntireCode()">전체 소스 복사</button>
@@ -381,7 +381,8 @@
   // 마스터 DB 설정 (R2_기고문전문(교정본))
   const SPREADSHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
   const SHEET_TAB_NAME = '교정본';
-  const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx5pbrNf8OqGhCGqo1FUe8YEzYZaFy0VoRXq5MJPXnjPpWVknrzh1ZPMS9-UHcyekzj/exec';
+  // 실제 배포된 정식 GAS 웹 앱 엔드포인트 URL
+  const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyu8AtE2UooyXKUjRLLk0k_X41bhO8n_gLwS1CIjZ9goHS1qVLrmZr4BxiV7nuV6dCpIw/exec';
 
   // 메모리 캐싱 및 상태 객체
   const contentCache = {};
@@ -586,17 +587,20 @@
     if (isSaving || !currentArticle) return;
     const editorName = document.getElementById('editor-name-input').value.trim();
 
-    if (!editorName && actionType !== 'exit') {
+    // 교정자 성명 필수 확인
+    if (!editorName) {
       alert('교정자 이름을 입력해 주세요.');
       document.getElementById('editor-name-input').focus();
       return;
     }
 
-    let statusText = '진행';
-    if (actionType === 'finish') statusText = '완료';
-    if (!editorName) statusText = '교정';
+    // 상태값 정책: 완료 클릭 시 '교정 완료', 단순 저장은 '교정 중'
+    const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
+    const confirmMessage = (actionType === 'finish')
+      ? `[${currentArticle.id}] 글을 '교정 완료' 상태로 등록하시겠습니까?`
+      : `[${currentArticle.id}] 글을 '교정 중' 상태로 저장하시겠습니까?`;
 
-    if (!confirm(`[${currentArticle.id}] 글을 ${actionType === 'finish' ? '교정 완료' : '저장'} 처리하시겠습니까?`)) {
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -622,12 +626,13 @@
         body: JSON.stringify(payload)
       });
 
+      // 현재 입력값을 최근 저장값으로 갱신
       for (let k in editFieldState) {
         const el = document.getElementById(`edit_${k}`);
         if (el) editFieldState[k].currentSaved = el.value;
       }
 
-      // 저장 성공 시 캐시 최신화
+      // 메모리 캐시 최신화
       if (contentCache[currentArticle.id]) {
         contentCache[currentArticle.id].status = statusText;
         contentCache[currentArticle.id].editor = editorName;
@@ -639,8 +644,9 @@
       }
 
       isDirty = false;
-      alert(`[${currentArticle.id}] 저장이 성공적으로 완료되었습니다.`);
+      alert(`[${currentArticle.id}] '${statusText}' 상태로 저장이 완료되었습니다.`);
 
+      // 저장/종료 또는 교정 완료 시 부모 모달 닫기
       if (actionType !== 'stay') {
         closeParentModal();
       }
