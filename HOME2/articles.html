@@ -1,4 +1,4 @@
-<!-- v5.1: 구글 시트 Visualization API 탭 지정 안정화 및 CSV 파싱 헤더 필터링 보강 -->
+<!-- v5.2: 잘려나간 자바스크립트 로직 완본 복구 및 정상 렌더링 수정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -180,3 +180,583 @@
     .reset-btn:hover {
       background-color: #f3f4f6;
     }
+    .grid-mesh {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+      gap: 6px;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+    }
+    .grid-cell {
+      aspect-ratio: 1 / 1;
+      background-color: #cbd5e1;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+    .grid-cell:hover {
+      background-color: #60a5fa;
+      transform: scale(1.15);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+    .grid-cell.read {
+      background-color: #2563eb;
+      opacity: 0.5;
+    }
+    .viewer-content-box {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      position: relative;
+    }
+    .close-btn {
+      display: none;
+    }
+    .meta-info {
+      font-size: 14px;
+      color: #4b5563;
+      background-color: #f3f4f6;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2563eb;
+      display: none;
+    }
+    #contentBody {
+      white-space: pre-wrap;
+      font-size: 16px;
+      color: #1f2937;
+      line-height: 1.8;
+      min-height: 120px;
+    }
+    .placeholder-text {
+      color: #9ca3af;
+      text-align: center;
+      padding: 40px 0;
+    }
+    .secret-edit-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 45px;
+      height: 45px;
+      background: transparent;
+      border: none;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 50;
+      outline: none;
+    }
+    .correct-modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(3px);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .correct-modal-backdrop.open {
+      display: flex;
+    }
+    .correct-modal-frame {
+      width: 100%;
+      max-width: 940px;
+      height: 90vh;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      background: #ffffff;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+        margin: 10px auto;
+      }
+      .tab-btn {
+        font-size: 14px;
+        padding: 10px 5px;
+      }
+      .filter-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 10px;
+      }
+      label {
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+      select {
+        padding: 6px 4px;
+        font-size: 12px;
+      }
+      .grid-header-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .grid-mesh {
+        grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+        padding: 10px;
+        gap: 4px;
+      }
+      #articleViewer {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        padding: 15px;
+        box-sizing: border-box;
+        align-items: center;
+        justify-content: center;
+      }
+      #articleViewer.open {
+        display: flex;
+      }
+      .viewer-content-box {
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      }
+      .close-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 15px;
+        color: #374151;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e5e7eb;
+        cursor: pointer;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        background: #fff;
+      }
+      .close-icon {
+        color: #ef4444;
+        font-size: 18px;
+      }
+      .secret-edit-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="home-btn-container">
+    <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
+  </div>
+
+  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v5.2</span></h1>
+
+  <div class="tab-container">
+    <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
+    <button id="tabGridBtn" class="tab-btn">랜덤 선택하기</button>
+  </div>
+
+  <div id="viewFilter">
+    <div class="filter-container">
+      <div class="filter-group">
+        <label for="typeSelect">1. 글 종류</label>
+        <select id="typeSelect" disabled>
+          <option value="전체">데이터 로딩 중...</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="cohortSelect">2. 기수</label>
+        <select id="cohortSelect" disabled>
+          <option value="전체">전체</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="authorSelect">3. 기고자</label>
+        <select id="authorSelect" disabled>
+          <option value="전체">전체</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="list-container" id="listContainer" style="display:none;">
+      <h3 id="listTitle">검색된 글 목록</h3>
+      <ul class="article-list" id="articleList"></ul>
+    </div>
+  </div>
+
+  <div id="viewGrid">
+    <div class="grid-header-wrap">
+      <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기)</p>
+      <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
+    </div>
+    <div class="grid-mesh" id="gridMesh"></div>
+  </div>
+
+  <div id="articleViewer">
+    <div class="viewer-content-box">
+      <!-- 비밀 투명 버튼 -->
+      <button class="secret-edit-btn" onclick="openSecretEditor()" title="교정하기 (비밀 통로)"></button>
+      <div id="closeModalBtn" class="close-btn">
+        <span>기록 보기</span>
+        <span class="close-icon">✕ 닫기</span>
+      </div>
+      <div class="meta-info" id="metaInfo"></div>
+      <div id="contentBody" class="placeholder-text">데이터를 불러오는 중입니다. 잠시만 기다려주세요.</div>
+    </div>
+  </div>
+
+  <!-- 교정 전용 모달 컨테이너 -->
+  <div class="correct-modal-backdrop" id="correctModalBackdrop">
+    <iframe id="correctModalFrame" class="correct-modal-frame" src=""></iframe>
+  </div>
+
+  <script>
+    // 마스터 DB (A~I열 메타데이터 전용 Visualization API 주소)
+    const METADATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8/gviz/tq?tqx=out:csv&gid=1255939946&tq=SELECT%20A,B,C,D,E,F,G,H,I';
+    // 배포된 GAS 본문 온디맨드 검색 웹 앱 URL
+    const CONTENT_API_URL = 'https://script.google.com/macros/s/AKfycbyu8AtE2UooyXKUjRLLk0k_X41bhO8n_gLwS1CIjZ9goHS1qVLrmZr4BxiV7nuV6dCpIw/exec';
+
+    let articlesData = [];
+    let currentArticleId = null;
+    const contentCache = {}; // 온디맨드로 받아온 본문 캐시
+
+    const tabFilterBtn = document.getElementById('tabFilterBtn');
+    const tabGridBtn = document.getElementById('tabGridBtn');
+    const viewFilter = document.getElementById('viewFilter');
+    const viewGrid = document.getElementById('viewGrid');
+    const typeSelect = document.getElementById('typeSelect');
+    const cohortSelect = document.getElementById('cohortSelect');
+    const authorSelect = document.getElementById('authorSelect');
+    const listContainer = document.getElementById('listContainer');
+    const listTitle = document.getElementById('listTitle');
+    const articleList = document.getElementById('articleList');
+    const gridMesh = document.getElementById('gridMesh');
+    const gridTotalCount = document.getElementById('gridTotalCount');
+    const resetGridBtn = document.getElementById('resetGridBtn');
+    const metaInfo = document.getElementById('metaInfo');
+    const contentBody = document.getElementById('contentBody');
+    const articleViewer = document.getElementById('articleViewer');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const correctModalBackdrop = document.getElementById('correctModalBackdrop');
+    const correctModalFrame = document.getElementById('correctModalFrame');
+
+    function openSecretEditor() {
+      if (!currentArticleId) return;
+      correctModalFrame.src = `artcorrect.html?id=${encodeURIComponent(currentArticleId)}`;
+      correctModalBackdrop.classList.add('open');
+    }
+
+    window.addEventListener('message', (event) => {
+      if (event.data === 'closeCorrectModal') {
+        correctModalBackdrop.classList.remove('open');
+        correctModalFrame.src = '';
+      }
+    });
+
+    function openMobileModal() {
+      articleViewer.classList.add('open');
+      if (window.innerWidth <= 768 && window.location.hash !== '#article') {
+        window.history.pushState({ modal: 'open' }, '', '#article');
+      }
+    }
+
+    function closeMobileModal() {
+      if (window.location.hash === '#article') {
+        window.history.back();
+      } else {
+        articleViewer.classList.remove('open');
+      }
+    }
+
+    window.addEventListener('popstate', () => {
+      if (articleViewer.classList.contains('open')) {
+        articleViewer.classList.remove('open');
+      }
+    });
+
+    tabFilterBtn.addEventListener('click', () => {
+      tabFilterBtn.classList.add('active');
+      tabGridBtn.classList.remove('active');
+      viewFilter.style.display = 'block';
+      viewGrid.style.display = 'none';
+    });
+
+    tabGridBtn.addEventListener('click', () => {
+      tabGridBtn.classList.add('active');
+      tabFilterBtn.classList.remove('active');
+      viewGrid.style.display = 'block';
+      viewFilter.style.display = 'none';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      closeMobileModal();
+    });
+
+    resetGridBtn.addEventListener('click', () => {
+      const readCells = document.querySelectorAll('.grid-cell.read');
+      readCells.forEach(cell => cell.classList.remove('read'));
+    });
+
+    // CSV 파서 (A:관리ID, B:교정상황, C:교정자, D:통권호수, E:발행년월, F:기수, G:기고인, H:글종류, I:글제목)
+    function fastParseCSV(text) {
+      const articles = [];
+      let start = 0, inQuotes = false, row = [];
+      if (!text.endsWith('\n')) text += '\n';
+
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === '"') inQuotes = !inQuotes;
+        else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
+          let val = text.substring(start, i);
+          if (val.endsWith('\r')) val = val.slice(0, -1);
+          if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
+            val = val.substring(1, val.length - 1).replace(/""/g, '"');
+          }
+          row.push(val.trim());
+          if (text[i] === '\n') {
+            if (row.length >= 7 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
+              articles.push({
+                id: row[0] || '',
+                status: row[1] || '',
+                editor: row[2] || '',
+                vol: row[3] || '',
+                date: row[4] || '',
+                cohort: row[5] || '',
+                author: row[6] || '',
+                type: row[7] || '',
+                title: row[8] || ''
+              });
+            }
+            row = [];
+          }
+          start = i + 1;
+        }
+      }
+      return articles;
+    }
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    async function loadSheetData() {
+      try {
+        const response = await fetch(METADATA_CSV_URL);
+        const csvText = await response.text();
+        articlesData = fastParseCSV(csvText);
+
+        if (articlesData.length === 0) {
+          contentBody.textContent = '불러온 데이터가 없습니다. 시트 설정을 확인해 주세요.';
+          return;
+        }
+
+        initDropdowns();
+        initBlindGrid();
+        contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
+      } catch (error) {
+        contentBody.textContent = '목록 데이터를 불러오는 데 실패했습니다.';
+      }
+    }
+
+    function initBlindGrid() {
+      gridMesh.innerHTML = '';
+      gridTotalCount.textContent = articlesData.length;
+      const shuffledArticles = shuffleArray(articlesData);
+      const fragment = document.createDocumentFragment();
+
+      shuffledArticles.forEach(article => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.addEventListener('click', function() {
+          this.classList.add('read');
+          showArticleDetail(article.id);
+          openMobileModal();
+        });
+        fragment.appendChild(cell);
+      });
+      gridMesh.appendChild(fragment);
+    }
+
+    function initDropdowns() {
+      typeSelect.innerHTML = '<option value="전체">전체</option>';
+      const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
+      const fragment = document.createDocumentFragment();
+      types.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        fragment.appendChild(option);
+      });
+      typeSelect.appendChild(fragment);
+      typeSelect.value = "전체";
+      typeSelect.disabled = cohortSelect.disabled = authorSelect.disabled = false;
+      updateFilters();
+    }
+
+    function updateFilters() {
+      const selectedType = typeSelect.value;
+      const selectedCohort = cohortSelect.value;
+      const selectedAuthor = authorSelect.value;
+
+      let currentPool = articlesData;
+      if (selectedType && selectedType !== "전체") currentPool = currentPool.filter(item => item.type === selectedType);
+
+      const validCohorts = currentPool.map(item => item.cohort).filter(c => c && (/^\d+기$/.test(c) || c === '기록 없음' || c === '외부' || c === '촛불회'));
+      const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
+        const isNumA = /^\d+기$/.test(a);
+        const isNumB = /^\d+기$/.test(b);
+        if (isNumA && isNumB) return parseInt(a) - parseInt(b);
+        if (isNumA) return -1;
+        if (isNumB) return 1;
+        return a.localeCompare(b);
+      });
+
+      cohortSelect.innerHTML = '<option value="전체">전체</option>';
+      const cohortFragment = document.createDocumentFragment();
+      sortedCohorts.forEach(cohort => {
+        const option = document.createElement('option');
+        option.value = option.textContent = cohort;
+        if (cohort === selectedCohort) option.selected = true;
+        cohortFragment.appendChild(option);
+      });
+      cohortSelect.appendChild(cohortFragment);
+      if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") cohortSelect.value = "전체";
+
+      let authorPool = currentPool;
+      if (cohortSelect.value && cohortSelect.value !== "전체") authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
+
+      const sortedAuthors = [...new Set(authorPool.map(item => item.author))].filter(Boolean).sort();
+      authorSelect.innerHTML = '<option value="전체">전체</option>';
+      const authorFragment = document.createDocumentFragment();
+      sortedAuthors.forEach(author => {
+        const option = document.createElement('option');
+        option.value = option.textContent = author;
+        if (author === selectedAuthor) option.selected = true;
+        authorFragment.appendChild(option);
+      });
+      authorSelect.appendChild(authorFragment);
+      if (!sortedAuthors.includes(selectedAuthor) && selectedAuthor !== "전체") authorSelect.value = "전체";
+
+      renderArticleList();
+    }
+
+    function renderArticleList() {
+      const selectedType = typeSelect.value;
+      const selectedCohort = cohortSelect.value;
+      const selectedAuthor = authorSelect.value;
+
+      let filtered = articlesData;
+      if (selectedType && selectedType !== "전체") filtered = filtered.filter(item => item.type === selectedType);
+      if (selectedCohort && selectedCohort !== "전체") filtered = filtered.filter(item => item.cohort === selectedCohort);
+      if (selectedAuthor && selectedAuthor !== "전체") filtered = filtered.filter(item => item.author === selectedAuthor);
+
+      articleList.innerHTML = '';
+      listTitle.textContent = `검색된 글 목록 (${filtered.length}건)`;
+
+      if (filtered.length === 0) {
+        articleList.innerHTML = '<li style="padding: 10px; color: #9ca3af; text-align: center;">조건에 일치하는 글이 없습니다.</li>';
+        listContainer.style.display = 'block';
+        return;
+      }
+
+      const listFragment = document.createDocumentFragment();
+      filtered.forEach(article => {
+        const li = document.createElement('li');
+        li.className = 'article-item';
+        li.textContent = `[${article.title}] - ${article.author}`;
+        li.title = `[${article.title}] - ${article.author} (${article.cohort}, ${article.vol})`;
+        li.addEventListener('click', function() {
+          document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
+          li.classList.add('active');
+          showArticleDetail(article.id);
+          openMobileModal();
+        });
+        listFragment.appendChild(li);
+      });
+      articleList.appendChild(listFragment);
+      listContainer.style.display = 'block';
+    }
+
+    // 본문 온디맨드 fetch 처리
+    async function showArticleDetail(id) {
+      currentArticleId = id;
+      const article = articlesData.find(item => item.id === id);
+      if (!article) return;
+
+      metaInfo.style.display = 'block';
+      metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type} | 관리번호: ${article.id}`;
+      contentBody.className = '';
+
+      // 캐시에 본문이 이미 존재하는 경우 즉시 렌더링
+      if (contentCache[id]) {
+        contentBody.textContent = contentCache[id];
+        return;
+      }
+
+      contentBody.textContent = '본문을 불러오는 중입니다... 잠시만 기다려주세요.';
+
+      try {
+        const response = await fetch(`${CONTENT_API_URL}?id=${encodeURIComponent(id)}`);
+        const data = await response.json();
+
+        if (data && data.content !== undefined) {
+          contentCache[id] = data.content || '(본문 내용이 비어 있습니다.)';
+          if (currentArticleId === id) {
+            contentBody.textContent = contentCache[id];
+          }
+        } else {
+          contentBody.textContent = '본문을 불러오지 못했습니다: ' + (data.error || '알 수 없는 오류');
+        }
+      } catch (err) {
+        contentBody.textContent = '본문 통신 중 오류가 발생했습니다.';
+      }
+    }
+
+    const resetViewer = () => {
+      updateFilters();
+      articleViewer.classList.remove('open');
+      currentArticleId = null;
+      metaInfo.style.display = 'none';
+      contentBody.className = 'placeholder-text';
+      contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
+    };
+
+    typeSelect.addEventListener('change', resetViewer);
+    cohortSelect.addEventListener('change', resetViewer);
+    authorSelect.addEventListener('change', () => {
+      renderArticleList();
+      articleViewer.classList.remove('open');
+      currentArticleId = null;
+      metaInfo.style.display = 'none';
+      contentBody.className = 'placeholder-text';
+      contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
+    });
+
+    loadSheetData();
+  </script>
+</body>
+</html>
