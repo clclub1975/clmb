@@ -1,4 +1,4 @@
-<!-- v6.9: 기고문 교정 모달 헤더의 '통권 ###호'에 회보 원본 PDF 하이퍼링크(새 탭 열기) 연동 -->
+<!-- v6.10: 기고문 교정 모달의 1번 '글 종류'를 articles.html 2번 필터와 실시간 동기화되는 드롭다운(select)으로 전환 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -386,7 +386,6 @@
       font-weight: bold;
       color: #1e293b;
     }
-    /* 통권 호수 원본 PDF 하이퍼링크 스타일 */
     .pdf-vol-link {
       color: #2563eb;
       font-weight: bold;
@@ -696,7 +695,7 @@
     .btn-finish-large:hover { background-color: #15803d; }
     .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* artcorrect.html 기반: 커스텀 다이얼로그 (Alert & Confirm UI) */
+    /* 커스텀 다이얼로그 (Alert & Confirm UI) */
     .custom-dialog-overlay {
       display: none;
       position: fixed;
@@ -810,7 +809,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.9</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.10</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -912,7 +911,10 @@
           <li class="edit-li">
             <strong class="edit-label">1. 글 종류:</strong>
             <div class="edit-field-wrap">
-              <input type="text" id="edit_type" class="edit-textarea-inline" oninput="handleFieldInput('type')">
+              <!-- articles.html 2번 필터와 동적 동기화되는 드롭다운 -->
+              <select id="edit_type" class="edit-textarea-inline" onchange="handleFieldInput('type')">
+                <option value="">글 종류 선택</option>
+              </select>
               <div class="restore-toolbar">
                 <button type="button" class="btn-restore" onclick="undoField('type')">↺ 방금 취소</button>
                 <button type="button" class="btn-restore" onclick="restoreSaved('type')">⟲ 최근 저장 상태로</button>
@@ -978,7 +980,7 @@
     </div>
   </div>
 
-  <!-- artcorrect.html 기반: 커스텀 다이얼로그 모달 -->
+  <!-- 커스텀 다이얼로그 모달 -->
   <div class="custom-dialog-overlay" id="custom-dialog-overlay">
     <div class="custom-dialog-card">
       <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
@@ -996,15 +998,13 @@
     const ORIGIN_SHEET_GID = '1255939946';
     const GAS_SAVE_URL = 'https://script.google.com/macros/s/AKfycbyu8AtE2UooyXKUjRLLk0k_X41bhO8n_gLwS1CIjZ9goHS1qVLrmZr4BxiV7nuV6dCpIw/exec';
     const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${CORRECT_SHEET_GID}&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
-    
-    // correct.html 기준 회보 원본 PDF 매핑 CSV 엔드포인트
     const PDF_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
 
     let articlesData = [];
     let currentArticleId = null;
     const contentCache = {};
     const originalCache = {};
-    const globalPdfMap = {}; // 호수별 PDF 링크 맵
+    const globalPdfMap = {};
 
     let isDirty = false;
     let isNetworkBusy = false;
@@ -1030,6 +1030,7 @@
     const articleViewer = document.getElementById('articleViewer');
     const editorModalBackdrop = document.getElementById('editorModalBackdrop');
     const viewerStatusBadge = document.getElementById('viewerStatusBadge');
+    const editTypeSelect = document.getElementById('edit_type');
 
     function markAsDirty() { isDirty = true; }
 
@@ -1043,7 +1044,6 @@
       return list.length > 0 ? list[list.length - 1] : '';
     }
 
-    /* 회보 PDF 매핑 CSV 로더 */
     async function loadPdfMapData() {
       try {
         const resp = await fetch(PDF_CSV_URL);
@@ -1081,7 +1081,6 @@
       return ret;
     }
 
-    /* artcorrect.html 기반 커스텀 다이얼로그 시스템 */
     function showCustomAlert(messageHtml, callback) {
       const overlay = document.getElementById('custom-dialog-overlay');
       const msgElem = document.getElementById('custom-dialog-msg');
@@ -1170,7 +1169,6 @@
       }
     });
 
-    /* 모달 타이틀 생성: '통권 ###호'를 PDF 하이퍼링크로 감쌈 */
     function updateEditModalTitle(article, statusOverride) {
       const st = (statusOverride !== undefined ? statusOverride : (article.status || '')).trim();
       let statusText = '교정 전';
@@ -1180,7 +1178,6 @@
         statusText = '교정 중';
       }
 
-      // 호수 숫자 파싱
       const volStr = article.vol || '';
       const numMatch = volStr.match(/(\d+)/);
       const issueNum = numMatch ? parseInt(numMatch[0], 10) : 0;
@@ -1192,6 +1189,33 @@
       }
 
       document.getElementById('correctModalTitle').innerHTML = `[기고문 교정: ${statusText}] ${volHtml} - ${article.id}`;
+    }
+
+    // articles.html 2번 필터(typeSelect)로부터 교정 모달 드롭다운 동적 동기화
+    function syncEditTypeDropdown(currentSelectedValue) {
+      editTypeSelect.innerHTML = '';
+      const typeOptions = Array.from(typeSelect.options)
+        .map(opt => opt.value)
+        .filter(val => val && val !== '전체');
+
+      // 만약 기존 데이터에 드롭다운 목록 외의 값이 있을 경우를 대비하여 보존
+      if (currentSelectedValue && !typeOptions.includes(currentSelectedValue)) {
+        typeOptions.unshift(currentSelectedValue);
+      }
+
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.textContent = '글 종류 선택';
+      editTypeSelect.appendChild(defaultOpt);
+
+      typeOptions.forEach(typeVal => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = typeVal;
+        if (typeVal === currentSelectedValue) opt.selected = true;
+        editTypeSelect.appendChild(opt);
+      });
+
+      editTypeSelect.value = currentSelectedValue || '';
     }
 
     async function openInlineEditor() {
@@ -1213,6 +1237,9 @@
       } else {
         historyTip.innerHTML = `역대 교정자: 없음`;
       }
+
+      // 글 종류 드롭다운 동적 생성 및 현재 값 바인딩
+      syncEditTypeDropdown(article.type || '');
 
       initFieldState('type', article.type || '');
       initFieldState('cohort', article.cohort || '');
@@ -1346,7 +1373,6 @@
       return list.join(', ');
     }
 
-    /* 저장 및 동기화 처리 */
     function handleSaveAction(actionType) {
       if (!currentArticleId) return;
 
@@ -1754,7 +1780,7 @@
     });
 
     loadSheetData();
-    loadPdfMapData(); // PDF 매핑 데이터 비동기 초기화
+    loadPdfMapData();
   </script>
 </body>
 </html>
