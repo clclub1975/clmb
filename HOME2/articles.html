@@ -1,4 +1,4 @@
-<!-- v6.6: 기고문 교정 모달 상단 불필요한 줄 제거 및 교정상황 배지 포함 단일 라인 슬림화(모바일 1열 최적화) -->
+<!-- v6.7: 교정상황을 헤더 타이틀([기고문 교정: 상태])로 통합, artcorrect.html 저장/완료 버튼 규약 100% 동기화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -380,8 +380,9 @@
       gap: 10px;
       flex-wrap: wrap;
     }
+    /* 검은색 텍스트로 자연스럽게 표시되는 타이틀 */
     .modal-title {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: bold;
       color: #1e293b;
     }
@@ -397,13 +398,13 @@
       color: #ef4444;
     }
 
-    /* 단일 라인으로 슬림화된 상단 컨트롤 바 */
+    /* 여백이 확보된 깔끔한 단일 조작 컨트롤 바 */
     .modal-controls {
       display: flex;
       flex-direction: column;
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
-      padding: 6px 12px;
+      padding: 8px 14px;
     }
     .controls-row-unified {
       display: flex;
@@ -411,39 +412,29 @@
       align-items: center;
       width: 100%;
       background: #f1f5f9;
-      padding: 4px 6px;
+      padding: 5px 8px;
       border-radius: 6px;
       white-space: nowrap;
       box-sizing: border-box;
-      gap: 6px;
+      gap: 8px;
     }
     .row-unified-left {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       position: relative;
     }
     .row-unified-right {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       margin-left: auto;
-    }
-    .editor-status-badge {
-      font-size: 0.76rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #cbd5e1;
-      display: inline-flex;
-      align-items: center;
-      white-space: nowrap;
     }
     .editor-label-wrap {
       position: relative;
       display: inline-flex;
       align-items: center;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: #334155;
       font-weight: 600;
       cursor: pointer;
@@ -489,11 +480,11 @@
       opacity: 1;
     }
     .editor-input {
-      width: 58px;
-      height: 26px;
-      line-height: 26px;
-      padding: 0 3px;
-      font-size: 0.8rem;
+      width: 70px;
+      height: 28px;
+      line-height: 28px;
+      padding: 0 4px;
+      font-size: 0.82rem;
       text-align: center;
       border: 1px solid #cbd5e1;
       border-radius: 4px;
@@ -501,6 +492,10 @@
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
+    }
+    .editor-input:focus {
+      border-color: #2563eb;
+      outline: none;
     }
     .editor-input::placeholder {
       text-align: center;
@@ -515,14 +510,14 @@
     }
     .help-badge {
       display: inline-block;
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
+      width: 17px;
+      height: 17px;
+      line-height: 17px;
       text-align: center;
       border-radius: 50%;
       background-color: #94a3b8;
       color: #ffffff;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 700;
       user-select: none;
     }
@@ -568,10 +563,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      height: 26px;
+      height: 28px;
       border: none;
-      padding: 0 7px;
-      font-size: 0.78rem;
+      padding: 0 10px;
+      font-size: 0.8rem;
       font-weight: 600;
       border-radius: 4px;
       cursor: pointer;
@@ -704,19 +699,19 @@
       .viewer-title { font-size: 15px; }
       .btn-go-correct { font-size: 11px; padding: 0 6px; height: 26px; }
       .modal-container-toggle { width: 100%; height: 96vh; }
+      .modal-title { font-size: 0.92rem; }
       .edit-li { flex-direction: column; align-items: flex-start; }
       .edit-label { flex: none; max-width: 100%; margin-bottom: 4px; padding-top: 0; }
       .edit-field-wrap { width: 100%; }
 
-      /* 모바일 환경 단일 라인 초슬림화 */
-      .modal-controls { padding: 4px 6px; }
-      .controls-row-unified { padding: 3px 4px; gap: 3px; }
-      .row-unified-left { gap: 3px; }
-      .editor-status-badge { font-size: 0.7rem; padding: 1px 4px; }
-      .editor-label-wrap { font-size: 0.72rem; }
-      .editor-input { width: 50px; height: 24px; font-size: 0.75rem; }
-      .help-badge { width: 14px; height: 14px; line-height: 14px; font-size: 0.65rem; }
-      .btn-action { height: 24px; padding: 0 5px; font-size: 0.72rem; }
+      /* 모바일 환경 최적화 */
+      .modal-controls { padding: 5px 8px; }
+      .controls-row-unified { padding: 4px 6px; gap: 5px; }
+      .row-unified-left { gap: 4px; }
+      .editor-label-wrap { font-size: 0.78rem; }
+      .editor-input { width: 56px; height: 26px; font-size: 0.78rem; }
+      .help-badge { width: 15px; height: 15px; line-height: 15px; font-size: 0.68rem; }
+      .btn-action { height: 26px; padding: 0 6px; font-size: 0.74rem; }
       .help-tooltip { width: 200px; left: -20px; }
       .history-tooltip { width: 200px; left: 0; }
     }
@@ -728,7 +723,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.6</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.7</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -798,17 +793,16 @@
     <div class="modal-container-toggle" onclick="event.stopPropagation()">
       <div class="modal-header-toggle">
         <div class="modal-header-left">
-          <span class="modal-title" id="correctModalTitle">[기고문 교정]</span>
+          <!-- 교정상황을 헤더 타이틀에 검은색으로 통합 표기 -->
+          <span class="modal-title" id="correctModalTitle">[기고문 교정: 교정 전]</span>
         </div>
         <button class="modal-close" onclick="cancelAndCloseEditor()">&times;</button>
       </div>
 
-      <!-- 상단 단일 통합 컨트롤 바 -->
+      <!-- 상단 컨트롤 바 (교정자 입력 & 저장 버튼) -->
       <div class="modal-controls">
         <div class="controls-row-unified">
           <div class="row-unified-left">
-            <!-- 교정 상황 배지 (맨 앞 배치) -->
-            <span class="editor-status-badge status-correct" id="editModalStatusBadge">교정 전</span>
             <div class="editor-label-wrap" tabindex="0">
               <span class="editor-label-text">교정자:</span>
               <div class="history-tooltip" id="editorHistoryTooltip">역대 교정자: 없음</div>
@@ -933,7 +927,6 @@
     const articleViewer = document.getElementById('articleViewer');
     const editorModalBackdrop = document.getElementById('editorModalBackdrop');
     const viewerStatusBadge = document.getElementById('viewerStatusBadge');
-    const editModalStatusBadge = document.getElementById('editModalStatusBadge');
 
     function markAsDirty() { isDirty = true; }
 
@@ -981,32 +974,25 @@
       }
     });
 
+    // 헤더 타이틀 문자열 갱신 함수
+    function updateEditModalTitle(article, statusOverride) {
+      const st = (statusOverride !== undefined ? statusOverride : (article.status || '')).trim();
+      let statusText = '교정 전';
+      if (st.includes('완료')) {
+        statusText = '교정 완료';
+      } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
+        statusText = '교정 중';
+      }
+      document.getElementById('correctModalTitle').textContent = `[기고문 교정: ${statusText}] ${article.vol} - ${article.id}`;
+    }
+
     async function openInlineEditor() {
       if (!currentArticleId) return;
       const article = articlesData.find(item => item.id === currentArticleId);
       if (!article) return;
 
       isDirty = false;
-      document.getElementById('correctModalTitle').textContent = `[기고문 교정] ${article.vol} - ${article.id}`;
-      
-      // 상태 배지 매핑
-      const st = (article.status || '').trim();
-      let badgeText = '교정 전';
-      let badgeClass = 'status-correct';
-
-      if (st.includes('완료')) {
-        badgeText = '교정 완료';
-        badgeClass = 'status-done';
-      } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
-        badgeText = '교정 중';
-        badgeClass = 'status-progress';
-      } else {
-        badgeText = '교정 전';
-        badgeClass = 'status-correct';
-      }
-
-      editModalStatusBadge.textContent = badgeText;
-      editModalStatusBadge.className = `editor-status-badge ${badgeClass}`;
+      updateEditModalTitle(article);
 
       const lastEd = getLastEditor(article.editor);
       const editorInput = document.getElementById('editorNameInput');
@@ -1131,33 +1117,43 @@
       return list.join(', ');
     }
 
+    // artcorrect.html 규약 100% 동일 저장 처리 함수
     async function handleSaveAction(actionType) {
-      if (isSaving) return;
-      const editorName = document.getElementById('editorNameInput').value.trim();
-      const article = articlesData.find(item => item.id === currentArticleId);
-      const prevEditorFull = article ? article.editor : '';
+      if (isSaving || !currentArticleId) return;
 
-      if (actionType === 'exit' && !editorName) {
-        if (confirm("교정자 이름을 비우고 저장하면 교정 전 상태로 표시됩니다. 진행하시겠습니까?")) {
-          executePostSave('교정', prevEditorFull, '', actionType);
-        }
+      // 1. [무수정 방어 1: 저장/종료] 수정 사항이 없으면 서버 통신 없이 즉시 나가기
+      if (actionType === 'exit' && !isDirty) {
+        editorModalBackdrop.classList.remove('open');
         return;
       }
 
+      // 2. [무수정 방어 2: 저장/계속] 수정 사항이 없으면 알림 후 중단
+      if (actionType === 'stay' && !isDirty) {
+        alert('수정된 내용이 없습니다.');
+        return;
+      }
+
+      // 3. 교정자 이름 검증
+      const editorName = document.getElementById('editorNameInput').value.trim();
       if (!editorName) {
         alert('교정자 이름을 입력해 주세요.');
         document.getElementById('editorNameInput').focus();
         return;
       }
 
+      const article = articlesData.find(item => item.id === currentArticleId);
+      const prevEditorFull = article ? article.editor : '';
       const newAccumulated = computeAccumulatedEditors(editorName, prevEditorFull);
+
+      // 4. 상태 텍스트 매핑 및 확인창(Confirm) 규약
+      const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
       if (actionType === 'finish') {
-        if (confirm(`[${editorName}] 교정자님, 이 글의 교정 작업을 '완료' 처리하시겠습니까?`)) {
-          executePostSave('완료', newAccumulated, editorName, actionType);
+        if (!confirm(`[${currentArticleId}] 글을 '교정 완료' 상태로 등록하시겠습니까?`)) {
+          return;
         }
-      } else {
-        executePostSave('진행', newAccumulated, editorName, actionType);
       }
+
+      executePostSave(statusText, newAccumulated, editorName, actionType);
     }
 
     async function executePostSave(statusText, editorPayload, activeEditorName, actionType) {
@@ -1212,19 +1208,7 @@
           editFieldState['title'].currentSaved = payload.title;
           editFieldState['content'].currentSaved = payload.content;
 
-          // 모달 내 상태 배지도 즉시 동기화
-          const st = payload.status;
-          let badgeText = '교정 전';
-          let badgeClass = 'status-correct';
-          if (st.includes('완료')) {
-            badgeText = '교정 완료';
-            badgeClass = 'status-done';
-          } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
-            badgeText = '교정 중';
-            badgeClass = 'status-progress';
-          }
-          editModalStatusBadge.textContent = badgeText;
-          editModalStatusBadge.className = `editor-status-badge ${badgeClass}`;
+          if (target) updateEditModalTitle(target, payload.status);
         } else {
           editorModalBackdrop.classList.remove('open');
         }
