@@ -1,4 +1,4 @@
-<!-- v6.8: artcorrect.html의 커스텀 다이얼로그(Alert/Confirm) 및 비동기 백그라운드 동기화(⏳ 동기화 중...) UX 완벽 이식 -->
+<!-- v6.9: 기고문 교정 모달 헤더의 '통권 ###호'에 회보 원본 PDF 하이퍼링크(새 탭 열기) 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -385,6 +385,18 @@
       font-size: 1.02rem;
       font-weight: bold;
       color: #1e293b;
+    }
+    /* 통권 호수 원본 PDF 하이퍼링크 스타일 */
+    .pdf-vol-link {
+      color: #2563eb;
+      font-weight: bold;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.15s ease;
+      cursor: pointer;
+    }
+    .pdf-vol-link:hover {
+      color: #1d4ed8;
     }
     .modal-close {
       background: none;
@@ -798,7 +810,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.8</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.9</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -984,11 +996,15 @@
     const ORIGIN_SHEET_GID = '1255939946';
     const GAS_SAVE_URL = 'https://script.google.com/macros/s/AKfycbyu8AtE2UooyXKUjRLLk0k_X41bhO8n_gLwS1CIjZ9goHS1qVLrmZr4BxiV7nuV6dCpIw/exec';
     const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${CORRECT_SHEET_GID}&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
+    
+    // correct.html 기준 회보 원본 PDF 매핑 CSV 엔드포인트
+    const PDF_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
 
     let articlesData = [];
     let currentArticleId = null;
     const contentCache = {};
     const originalCache = {};
+    const globalPdfMap = {}; // 호수별 PDF 링크 맵
 
     let isDirty = false;
     let isNetworkBusy = false;
@@ -1025,6 +1041,44 @@
     function getLastEditor(editorStr) {
       const list = parseEditorList(editorStr);
       return list.length > 0 ? list[list.length - 1] : '';
+    }
+
+    /* 회보 PDF 매핑 CSV 로더 */
+    async function loadPdfMapData() {
+      try {
+        const resp = await fetch(PDF_CSV_URL);
+        const text = await resp.text();
+        const rows = fastParseArrayCSV(text);
+        for (let j = 1; j < rows.length; j++) {
+          const pCols = rows[j];
+          if (pCols.length < 3) continue;
+          const colName = pCols[0] || '';
+          const colLink = pCols[2] || '';
+          const matches = colName.match(/(\d+)/g);
+          if (!matches || matches.length === 0) continue;
+          let issueNum = parseInt(matches[0], 10);
+          if (colName.includes('100+1')) issueNum = 101;
+          if (colLink && colLink.startsWith('http')) {
+            globalPdfMap[issueNum] = colLink;
+            globalPdfMap[String(issueNum)] = colLink;
+            globalPdfMap[String(issueNum).padStart(3, '0')] = colLink;
+          }
+        }
+      } catch (err) {
+        console.warn('PDF 매핑 데이터 로드 실패:', err);
+      }
+    }
+
+    function fastParseArrayCSV(text) {
+      let p = '', row = [''], ret = [row], i = 0, r = 0, s = true;
+      for (let l of text) {
+        if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
+        else if (',' === l && s) l = row[++r] = '';
+        else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
+        else row[r] += l;
+        p = l;
+      }
+      return ret;
     }
 
     /* artcorrect.html 기반 커스텀 다이얼로그 시스템 */
@@ -1116,6 +1170,7 @@
       }
     });
 
+    /* 모달 타이틀 생성: '통권 ###호'를 PDF 하이퍼링크로 감쌈 */
     function updateEditModalTitle(article, statusOverride) {
       const st = (statusOverride !== undefined ? statusOverride : (article.status || '')).trim();
       let statusText = '교정 전';
@@ -1124,7 +1179,19 @@
       } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
         statusText = '교정 중';
       }
-      document.getElementById('correctModalTitle').textContent = `[기고문 교정: ${statusText}] ${article.vol} - ${article.id}`;
+
+      // 호수 숫자 파싱
+      const volStr = article.vol || '';
+      const numMatch = volStr.match(/(\d+)/);
+      const issueNum = numMatch ? parseInt(numMatch[0], 10) : 0;
+      const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum)] || globalPdfMap[String(issueNum).padStart(3, '0')];
+
+      let volHtml = volStr;
+      if (pdfUrl && pdfUrl.startsWith('http')) {
+        volHtml = `<a href="${pdfUrl}" target="_blank" class="pdf-vol-link" title="회보 원본 PDF 열기 (새 탭)">${volStr}</a>`;
+      }
+
+      document.getElementById('correctModalTitle').innerHTML = `[기고문 교정: ${statusText}] ${volHtml} - ${article.id}`;
     }
 
     async function openInlineEditor() {
@@ -1279,23 +1346,20 @@
       return list.join(', ');
     }
 
-    /* artcorrect.html 규약 100% 동일 저장 처리 */
+    /* 저장 및 동기화 처리 */
     function handleSaveAction(actionType) {
       if (!currentArticleId) return;
 
-      // 1. [무수정 처리 1: 저장/종료] 수정 사항이 없으면 서버 통신 없이 즉시 나가기
       if (actionType === 'exit' && !isDirty) {
         editorModalBackdrop.classList.remove('open');
         return;
       }
 
-      // 2. [무수정 처리 2: 저장/계속] 수정 사항이 없으면 알림 후 중단
       if (actionType === 'stay' && !isDirty) {
         showCustomAlert('수정된 내용이 없습니다.');
         return;
       }
 
-      // 3. 교정자 이름 검증
       const editorName = document.getElementById('editorNameInput').value.trim();
       if (!editorName) {
         showCustomAlert('교정자 이름을 입력해 주세요.', () => {
@@ -1309,7 +1373,6 @@
         ? `[${currentArticleId}] 글을 <strong>'교정 완료'</strong> 상태로 등록하시겠습니까?`
         : `[${currentArticleId}] 글을 <strong>'교정 중'</strong> 상태로 저장하시겠습니까?`;
 
-      // 4. 커스텀 확인창 띄우기
       showCustomConfirm(confirmMessage, () => {
         executeSaveProcess(actionType, statusText, editorName);
       });
@@ -1332,7 +1395,6 @@
         content: document.getElementById('edit_content').value
       };
 
-      // [낙관적 즉시 반영: 0.01초 처리]
       for (let k in editFieldState) {
         const el = document.getElementById(`edit_${k}`);
         if (el) editFieldState[k].currentSaved = el.value;
@@ -1340,7 +1402,6 @@
       isDirty = false;
       localStorage.setItem('last_editor_name', editorName);
 
-      // 로컬 메모리 캐시 및 상위 뷰어 즉시 동기화
       if (article) {
         article.editor = payload.editor;
         article.status = payload.status;
@@ -1358,7 +1419,6 @@
         editorModalBackdrop.classList.remove('open');
       }
 
-      // 백그라운드 GAS 비동기 전송 큐잉
       dispatchSaveRequest(payload, actionType);
     }
 
@@ -1694,6 +1754,7 @@
     });
 
     loadSheetData();
+    loadPdfMapData(); // PDF 매핑 데이터 비동기 초기화
   </script>
 </body>
 </html>
