@@ -1,4 +1,4 @@
-<!-- v6.10: 기고문 교정 모달의 1번 '글 종류'를 articles.html 2번 필터와 실시간 동기화되는 드롭다운(select)으로 전환 -->
+<!-- v6.11: 기고문 교정 모달 1번 글 종류 드롭다운에서 '글 종류 선택' 기본 라인 제거 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -809,7 +809,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.10</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.11</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -911,10 +911,8 @@
           <li class="edit-li">
             <strong class="edit-label">1. 글 종류:</strong>
             <div class="edit-field-wrap">
-              <!-- articles.html 2번 필터와 동적 동기화되는 드롭다운 -->
-              <select id="edit_type" class="edit-textarea-inline" onchange="handleFieldInput('type')">
-                <option value="">글 종류 선택</option>
-              </select>
+              <!-- '글 종류 선택' 기본 라인 없이 순수 목록으로 구성되는 드롭다운 -->
+              <select id="edit_type" class="edit-textarea-inline" onchange="handleFieldInput('type')"></select>
               <div class="restore-toolbar">
                 <button type="button" class="btn-restore" onclick="undoField('type')">↺ 방금 취소</button>
                 <button type="button" class="btn-restore" onclick="restoreSaved('type')">⟲ 최근 저장 상태로</button>
@@ -1191,22 +1189,17 @@
       document.getElementById('correctModalTitle').innerHTML = `[기고문 교정: ${statusText}] ${volHtml} - ${article.id}`;
     }
 
-    // articles.html 2번 필터(typeSelect)로부터 교정 모달 드롭다운 동적 동기화
+    // articles.html 2번 필터(typeSelect)로부터 교정 모달 드롭다운 동적 동기화 ('글 종류 선택' 기본 라인 제외)
     function syncEditTypeDropdown(currentSelectedValue) {
       editTypeSelect.innerHTML = '';
       const typeOptions = Array.from(typeSelect.options)
         .map(opt => opt.value)
         .filter(val => val && val !== '전체');
 
-      // 만약 기존 데이터에 드롭다운 목록 외의 값이 있을 경우를 대비하여 보존
+      // 기존 데이터에 예외적인 값이 있을 경우 보존
       if (currentSelectedValue && !typeOptions.includes(currentSelectedValue)) {
         typeOptions.unshift(currentSelectedValue);
       }
-
-      const defaultOpt = document.createElement('option');
-      defaultOpt.value = '';
-      defaultOpt.textContent = '글 종류 선택';
-      editTypeSelect.appendChild(defaultOpt);
 
       typeOptions.forEach(typeVal => {
         const opt = document.createElement('option');
@@ -1215,7 +1208,11 @@
         editTypeSelect.appendChild(opt);
       });
 
-      editTypeSelect.value = currentSelectedValue || '';
+      if (currentSelectedValue) {
+        editTypeSelect.value = currentSelectedValue;
+      } else if (typeOptions.length > 0) {
+        editTypeSelect.value = typeOptions[0];
+      }
     }
 
     async function openInlineEditor() {
@@ -1241,7 +1238,7 @@
       // 글 종류 드롭다운 동적 생성 및 현재 값 바인딩
       syncEditTypeDropdown(article.type || '');
 
-      initFieldState('type', article.type || '');
+      initFieldState('type', editTypeSelect.value || article.type || '');
       initFieldState('cohort', article.cohort || '');
       initFieldState('author', article.author || '');
       initFieldState('title', article.title || '');
