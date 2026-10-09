@@ -1,4 +1,4 @@
-<!-- v6.7: 교정상황을 헤더 타이틀([기고문 교정: 상태])로 통합, artcorrect.html 저장/완료 버튼 규약 100% 동기화 -->
+<!-- v6.8: artcorrect.html의 커스텀 다이얼로그(Alert/Confirm) 및 비동기 백그라운드 동기화(⏳ 동기화 중...) UX 완벽 이식 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -364,6 +364,7 @@
       overflow: hidden;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       border: 1px solid #cbd5e1;
+      position: relative;
     }
     .modal-header-toggle {
       background: #fff;
@@ -380,7 +381,6 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-    /* 검은색 텍스트로 자연스럽게 표시되는 타이틀 */
     .modal-title {
       font-size: 1.02rem;
       font-weight: bold;
@@ -398,7 +398,6 @@
       color: #ef4444;
     }
 
-    /* 여백이 확보된 깔끔한 단일 조작 컨트롤 바 */
     .modal-controls {
       display: flex;
       flex-direction: column;
@@ -570,10 +569,10 @@
       font-weight: 600;
       border-radius: 4px;
       cursor: pointer;
-      transition: opacity 0.2s ease;
+      transition: all 0.2s ease;
       white-space: nowrap;
     }
-    .btn-action:hover { opacity: 0.85; }
+    .btn-action:hover { opacity: 0.88; }
     .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-save-stay { background-color: #0284c7; color: white; }
     .btn-save-exit { background-color: #475569; color: white; }
@@ -685,6 +684,83 @@
     .btn-finish-large:hover { background-color: #15803d; }
     .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    /* artcorrect.html 기반: 커스텀 다이얼로그 (Alert & Confirm UI) */
+    .custom-dialog-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+      justify-content: center;
+      align-items: center;
+      z-index: 12000;
+    }
+    .custom-dialog-card {
+      background: #ffffff;
+      border-radius: 10px;
+      width: 88%;
+      max-width: 370px;
+      padding: 20px 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      animation: dialogPop 0.15s ease-out;
+    }
+    @keyframes dialogPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .custom-dialog-msg {
+      font-size: 0.92rem;
+      color: #1e293b;
+      line-height: 1.55;
+      margin-bottom: 18px;
+      word-break: keep-all;
+    }
+    .custom-dialog-btns {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .custom-dialog-btn {
+      flex: 1;
+      height: 34px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s ease;
+    }
+    .custom-dialog-btn:hover { opacity: 0.85; }
+    .dialog-btn-confirm { background-color: #2563eb; color: #ffffff; }
+    .dialog-btn-cancel { background-color: #e2e8f0; color: #475569; }
+
+    /* 상단 토스트 알림창 */
+    .toast-popup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 15000;
+      display: none;
+      animation: fadeInOut 2.8s ease forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-8px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-8px); }
+    }
+
     @media (max-width: 768px) {
       body { padding: 10px; margin: 10px auto; }
       .tab-btn { font-size: 14px; padding: 10px 5px; }
@@ -704,7 +780,6 @@
       .edit-label { flex: none; max-width: 100%; margin-bottom: 4px; padding-top: 0; }
       .edit-field-wrap { width: 100%; }
 
-      /* 모바일 환경 최적화 */
       .modal-controls { padding: 5px 8px; }
       .controls-row-unified { padding: 4px 6px; gap: 5px; }
       .row-unified-left { gap: 4px; }
@@ -723,7 +798,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.7</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.8</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -793,7 +868,6 @@
     <div class="modal-container-toggle" onclick="event.stopPropagation()">
       <div class="modal-header-toggle">
         <div class="modal-header-left">
-          <!-- 교정상황을 헤더 타이틀에 검은색으로 통합 표기 -->
           <span class="modal-title" id="correctModalTitle">[기고문 교정: 교정 전]</span>
         </div>
         <button class="modal-close" onclick="cancelAndCloseEditor()">&times;</button>
@@ -892,6 +966,17 @@
     </div>
   </div>
 
+  <!-- artcorrect.html 기반: 커스텀 다이얼로그 모달 -->
+  <div class="custom-dialog-overlay" id="custom-dialog-overlay">
+    <div class="custom-dialog-card">
+      <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
+      <div class="custom-dialog-btns" id="custom-dialog-btns"></div>
+    </div>
+  </div>
+
+  <!-- 상단 토스트 알림창 -->
+  <div id="toast-alert" class="toast-popup"></div>
+
   <script>
     const CORRECT_SHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
     const CORRECT_SHEET_GID = '1255939946';
@@ -903,9 +988,11 @@
     let articlesData = [];
     let currentArticleId = null;
     const contentCache = {};
+    const originalCache = {};
 
     let isDirty = false;
-    let isSaving = false;
+    let isNetworkBusy = false;
+    let pendingSaveTask = null;
     let editFieldState = {};
 
     const tabFilterBtn = document.getElementById('tabFilterBtn');
@@ -938,6 +1025,61 @@
     function getLastEditor(editorStr) {
       const list = parseEditorList(editorStr);
       return list.length > 0 ? list[list.length - 1] : '';
+    }
+
+    /* artcorrect.html 기반 커스텀 다이얼로그 시스템 */
+    function showCustomAlert(messageHtml, callback) {
+      const overlay = document.getElementById('custom-dialog-overlay');
+      const msgElem = document.getElementById('custom-dialog-msg');
+      const btnsElem = document.getElementById('custom-dialog-btns');
+      msgElem.innerHTML = messageHtml;
+      btnsElem.innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
+      overlay.style.display = 'flex';
+      document.getElementById('btn-dialog-ok').onclick = function() {
+        overlay.style.display = 'none';
+        if (callback) callback();
+      };
+    }
+
+    function showCustomConfirm(messageHtml, onConfirm, onCancel) {
+      const overlay = document.getElementById('custom-dialog-overlay');
+      const msgElem = document.getElementById('custom-dialog-msg');
+      const btnsElem = document.getElementById('custom-dialog-btns');
+      msgElem.innerHTML = messageHtml;
+      btnsElem.innerHTML = `
+        <button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button>
+        <button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>
+      `;
+      overlay.style.display = 'flex';
+      document.getElementById('btn-dialog-yes').onclick = function() {
+        overlay.style.display = 'none';
+        if (onConfirm) onConfirm();
+      };
+      document.getElementById('btn-dialog-no').onclick = function() {
+        overlay.style.display = 'none';
+        if (onCancel) onCancel();
+      };
+    }
+
+    function showToast(message, bgColor) {
+      const toast = document.getElementById('toast-alert');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.style.background = bgColor || '#1e293b';
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2800);
+    }
+
+    function updateSyncIndicator(isBusy, actionType) {
+      const btnStay = document.getElementById('btnSaveStay');
+      if (!btnStay) return;
+      if (isBusy && actionType === 'stay') {
+        btnStay.textContent = '⏳ 동기화 중...';
+        btnStay.style.opacity = '0.75';
+      } else {
+        btnStay.textContent = '저장/계속';
+        btnStay.style.opacity = '1';
+      }
     }
 
     function openViewerModal() {
@@ -974,7 +1116,6 @@
       }
     });
 
-    // 헤더 타이틀 문자열 갱신 함수
     function updateEditModalTitle(article, statusOverride) {
       const st = (statusOverride !== undefined ? statusOverride : (article.status || '')).trim();
       let statusText = '교정 전';
@@ -1027,6 +1168,10 @@
     }
 
     async function fetchOriginalData(id) {
+      if (originalCache[id]) {
+        applyOriginalCache(id);
+        return;
+      }
       try {
         const q = encodeURIComponent(`SELECT F, G, H, I, J WHERE A = '${id}'`);
         const res = await fetch(`https://docs.google.com/spreadsheets/d/${ORIGIN_SHEET_ID}/gviz/tq?tqx=out:json&gid=${ORIGIN_SHEET_GID}&tq=${q}`);
@@ -1036,11 +1181,14 @@
           const rows = JSON.parse(match[1]).table.rows;
           if (rows && rows.length > 0) {
             const c = rows[0].c;
-            if (editFieldState['cohort']) editFieldState['cohort'].pureOriginal = c[0] ? c[0].v : '';
-            if (editFieldState['author']) editFieldState['author'].pureOriginal = c[1] ? c[1].v : '';
-            if (editFieldState['type']) editFieldState['type'].pureOriginal = c[2] ? c[2].v : '';
-            if (editFieldState['title']) editFieldState['title'].pureOriginal = c[3] ? c[3].v : '';
-            if (editFieldState['content']) editFieldState['content'].pureOriginal = c[4] ? c[4].v : '';
+            originalCache[id] = {
+              cohort: c[0] ? c[0].v : '',
+              author: c[1] ? c[1].v : '',
+              type: c[2] ? c[2].v : '',
+              title: c[3] ? c[3].v : '',
+              content: c[4] ? c[4].v : ''
+            };
+            applyOriginalCache(id);
           }
         }
       } catch (err) {
@@ -1048,11 +1196,23 @@
       }
     }
 
+    function applyOriginalCache(id) {
+      const orig = originalCache[id];
+      if (!orig) return;
+      for (const k in orig) {
+        if (editFieldState[k]) editFieldState[k].pureOriginal = orig[k];
+      }
+    }
+
     function cancelAndCloseEditor() {
       if (isDirty) {
-        if (!confirm('작성 중인 교정 내용이 저장되지 않았습니다. 창을 닫으시겠습니까?')) return;
+        showCustomConfirm('수정 중인 내용이 저장되지 않았습니다.<br>창을 닫으시겠습니까?', () => {
+          isDirty = false;
+          editorModalBackdrop.classList.remove('open');
+        });
+      } else {
+        editorModalBackdrop.classList.remove('open');
       }
-      editorModalBackdrop.classList.remove('open');
     }
 
     function handleFieldInput(key) {
@@ -1075,7 +1235,7 @@
         el.value = stack[stack.length - 1];
         markAsDirty();
       } else {
-        alert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
+        showCustomAlert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
       }
     }
 
@@ -1084,7 +1244,7 @@
       if (!el || !editFieldState[key]) return;
       const targetVal = editFieldState[key].currentSaved;
       if (el.value === targetVal) {
-        alert('이미 최근 저장된 상태와 동일합니다.');
+        showCustomAlert('이미 최근 저장된 상태와 동일합니다.');
         return;
       }
       editFieldState[key].history.push(targetVal);
@@ -1092,16 +1252,18 @@
       markAsDirty();
     }
 
-    function restoreOriginal(key) {
+    async function restoreOriginal(key) {
       const el = document.getElementById(`edit_${key}`);
-      if (!el || !editFieldState[key]) return;
-      const origVal = editFieldState[key].pureOriginal;
-      if (!origVal) {
-        alert('순수 원문 내용을 불러오는 중이거나 찾을 수 없습니다.');
-        return;
+      if (!el || !editFieldState[key] || !currentArticleId) return;
+
+      if (!originalCache[currentArticleId]) {
+        showToast('📖 원본 시트에서 원문 데이터를 불러오는 중...', '#475569');
+        await fetchOriginalData(currentArticleId);
       }
+
+      const origVal = editFieldState[key].pureOriginal;
       if (el.value === origVal) {
-        alert('이미 순수 원문 내용과 동일합니다.');
+        showCustomAlert('이미 순수 원문 내용과 동일합니다.');
         return;
       }
       editFieldState[key].history.push(origVal);
@@ -1117,57 +1279,52 @@
       return list.join(', ');
     }
 
-    // artcorrect.html 규약 100% 동일 저장 처리 함수
-    async function handleSaveAction(actionType) {
-      if (isSaving || !currentArticleId) return;
+    /* artcorrect.html 규약 100% 동일 저장 처리 */
+    function handleSaveAction(actionType) {
+      if (!currentArticleId) return;
 
-      // 1. [무수정 방어 1: 저장/종료] 수정 사항이 없으면 서버 통신 없이 즉시 나가기
+      // 1. [무수정 처리 1: 저장/종료] 수정 사항이 없으면 서버 통신 없이 즉시 나가기
       if (actionType === 'exit' && !isDirty) {
         editorModalBackdrop.classList.remove('open');
         return;
       }
 
-      // 2. [무수정 방어 2: 저장/계속] 수정 사항이 없으면 알림 후 중단
+      // 2. [무수정 처리 2: 저장/계속] 수정 사항이 없으면 알림 후 중단
       if (actionType === 'stay' && !isDirty) {
-        alert('수정된 내용이 없습니다.');
+        showCustomAlert('수정된 내용이 없습니다.');
         return;
       }
 
       // 3. 교정자 이름 검증
       const editorName = document.getElementById('editorNameInput').value.trim();
       if (!editorName) {
-        alert('교정자 이름을 입력해 주세요.');
-        document.getElementById('editorNameInput').focus();
+        showCustomAlert('교정자 이름을 입력해 주세요.', () => {
+          document.getElementById('editorNameInput').focus();
+        });
         return;
       }
 
+      const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
+      const confirmMessage = (actionType === 'finish')
+        ? `[${currentArticleId}] 글을 <strong>'교정 완료'</strong> 상태로 등록하시겠습니까?`
+        : `[${currentArticleId}] 글을 <strong>'교정 중'</strong> 상태로 저장하시겠습니까?`;
+
+      // 4. 커스텀 확인창 띄우기
+      showCustomConfirm(confirmMessage, () => {
+        executeSaveProcess(actionType, statusText, editorName);
+      });
+    }
+
+    function executeSaveProcess(actionType, statusText, editorName) {
       const article = articlesData.find(item => item.id === currentArticleId);
       const prevEditorFull = article ? article.editor : '';
       const newAccumulated = computeAccumulatedEditors(editorName, prevEditorFull);
 
-      // 4. 상태 텍스트 매핑 및 확인창(Confirm) 규약
-      const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
-      if (actionType === 'finish') {
-        if (!confirm(`[${currentArticleId}] 글을 '교정 완료' 상태로 등록하시겠습니까?`)) {
-          return;
-        }
-      }
-
-      executePostSave(statusText, newAccumulated, editorName, actionType);
-    }
-
-    async function executePostSave(statusText, editorPayload, activeEditorName, actionType) {
-      isSaving = true;
-      const btnStay = document.getElementById('btnSaveStay');
-      const btnExit = document.getElementById('btnSaveExit');
-      const btnFinish = document.getElementById('btnFinishLarge');
-      btnStay.disabled = btnExit.disabled = btnFinish.disabled = true;
-
       const payload = {
         action: 'saveCorrection',
         id: currentArticleId,
-        editor: editorPayload,
         status: statusText,
+        editor: newAccumulated,
         type: document.getElementById('edit_type').value.trim(),
         cohort: document.getElementById('edit_cohort').value.trim(),
         author: document.getElementById('edit_author').value.trim(),
@@ -1175,49 +1332,68 @@
         content: document.getElementById('edit_content').value
       };
 
-      try {
-        await fetch(GAS_SAVE_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (activeEditorName) localStorage.setItem('last_editor_name', activeEditorName);
-
-        const target = articlesData.find(item => item.id === currentArticleId);
-        if (target) {
-          target.editor = payload.editor;
-          target.status = payload.status;
-          target.type = payload.type;
-          target.cohort = payload.cohort;
-          target.author = payload.author;
-          target.title = payload.title;
-        }
-        contentCache[currentArticleId] = payload.content;
-
-        showArticleDetail(currentArticleId);
-
-        isDirty = false;
-        alert(`교정 내용이 정상적으로 저장되었습니다.`);
-
-        if (actionType === 'stay') {
-          editFieldState['type'].currentSaved = payload.type;
-          editFieldState['cohort'].currentSaved = payload.cohort;
-          editFieldState['author'].currentSaved = payload.author;
-          editFieldState['title'].currentSaved = payload.title;
-          editFieldState['content'].currentSaved = payload.content;
-
-          if (target) updateEditModalTitle(target, payload.status);
-        } else {
-          editorModalBackdrop.classList.remove('open');
-        }
-      } catch (err) {
-        alert('저장 통신 중 오류가 발생했습니다.');
-      } finally {
-        isSaving = false;
-        btnStay.disabled = btnExit.disabled = btnFinish.disabled = false;
+      // [낙관적 즉시 반영: 0.01초 처리]
+      for (let k in editFieldState) {
+        const el = document.getElementById(`edit_${k}`);
+        if (el) editFieldState[k].currentSaved = el.value;
       }
+      isDirty = false;
+      localStorage.setItem('last_editor_name', editorName);
+
+      // 로컬 메모리 캐시 및 상위 뷰어 즉시 동기화
+      if (article) {
+        article.editor = payload.editor;
+        article.status = payload.status;
+        article.type = payload.type;
+        article.cohort = payload.cohort;
+        article.author = payload.author;
+        article.title = payload.title;
+      }
+      contentCache[currentArticleId] = payload.content;
+      showArticleDetail(currentArticleId);
+
+      if (actionType === 'stay') {
+        if (article) updateEditModalTitle(article, payload.status);
+      } else {
+        editorModalBackdrop.classList.remove('open');
+      }
+
+      // 백그라운드 GAS 비동기 전송 큐잉
+      dispatchSaveRequest(payload, actionType);
+    }
+
+    function dispatchSaveRequest(payload, actionType) {
+      if (isNetworkBusy) {
+        pendingSaveTask = { payload: payload, actionType: actionType };
+        return;
+      }
+
+      isNetworkBusy = true;
+      updateSyncIndicator(true, actionType);
+
+      fetch(GAS_SAVE_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        showToast('✓ 구글 시트 동기화가 완료되었습니다.', '#059669');
+      })
+      .catch((err) => {
+        console.error('백그라운드 동기화 실패:', err);
+        showToast('⚠️ 네트워크 동기화 지연 (재시도 대기)', '#d97706');
+      })
+      .finally(() => {
+        isNetworkBusy = false;
+        updateSyncIndicator(false, actionType);
+
+        if (pendingSaveTask) {
+          const nextTask = pendingSaveTask;
+          pendingSaveTask = null;
+          dispatchSaveRequest(nextTask.payload, nextTask.actionType);
+        }
+      });
     }
 
     tabFilterBtn.addEventListener('click', () => {
