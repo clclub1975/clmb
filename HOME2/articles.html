@@ -1,10 +1,10 @@
-<!-- v6.2: correct.html 규격과 100% 동일한 컨트롤 바, 복원 툴바, 저장/완료 버튼 레이아웃 이식 -->
+<!-- v6.3: 페이지 타이틀(기록들) 변경, 4번 라벨(글쓴이) 변경, 모달 헤더(글 보기) 및 심플 '×' 닫기 버튼 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>촛불회 50년, 그 삶의 기록</title>
+  <title>촛불회 50년, 그 삶의 기록들</title>
   <style>
     body {
       font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
@@ -249,23 +249,25 @@
       margin-bottom: 18px;
       padding-bottom: 12px;
       border-bottom: 1px solid #e2e8f0;
-      cursor: pointer;
       font-weight: 700;
       position: sticky;
       top: 0;
       background: #ffffff;
       z-index: 10;
     }
-    .close-icon {
-      color: #ef4444;
-      font-size: 15px;
-      padding: 4px 10px;
-      background: #fee2e2;
-      border-radius: 6px;
-      transition: background 0.15s;
+    .modal-close-icon {
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      line-height: 1;
+      color: #64748b;
+      cursor: pointer;
+      padding: 0 4px;
+      transition: color 0.15s ease, transform 0.15s ease;
     }
-    .close-icon:hover {
-      background: #fecaca;
+    .modal-close-icon:hover {
+      color: #ef4444;
+      transform: scale(1.15);
     }
     .meta-info {
       font-size: 14px;
@@ -781,7 +783,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록 <span class="version-badge">v6.2</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.3</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -809,7 +811,7 @@
         </select>
       </div>
       <div class="filter-group">
-        <label for="authorSelect">4. 기고자</label>
+        <label for="authorSelect">4. 글쓴이</label>
         <select id="authorSelect" disabled>
           <option value="전체">전체</option>
         </select>
@@ -834,9 +836,9 @@
   <div id="articleViewer" onclick="handleViewerBackdropClick(event)">
     <div class="viewer-content-box" onclick="event.stopPropagation()">
       <button class="secret-edit-btn" onclick="openInlineEditor()" title="교정하기 (비밀 통로)"></button>
-      <div id="closeModalBtn" class="close-btn" onclick="closeViewerModal()">
-        <span>기록 보기</span>
-        <span class="close-icon">✕ 닫기</span>
+      <div id="closeModalBtn" class="close-btn">
+        <span>글 보기</span>
+        <button type="button" class="modal-close-icon" onclick="closeViewerModal()" title="닫기">&times;</button>
       </div>
       <div class="meta-info" id="metaInfo"></div>
       <div id="contentBody" class="placeholder-text">데이터를 불러오는 중입니다. 잠시만 기다려주세요.</div>
@@ -1133,7 +1135,6 @@
         correctRow2.style.display = 'flex';
         footerFinish.style.display = 'flex';
 
-        // 입력 폼 복원
         contentBox.innerHTML = `
           <ul class="edit-ul">
             <li class="edit-li">
@@ -1334,14 +1335,12 @@
         }
         contentCache[currentArticleId] = payload.content;
 
-        // 메인 뷰어 갱신
         showArticleDetail(currentArticleId);
 
         isDirty = false;
         alert(`교정 내용이 정상적으로 저장되었습니다.`);
 
         if (actionType === 'stay') {
-          // 저장 상태 갱신
           editFieldState['type'].currentSaved = payload.type;
           editFieldState['cohort'].currentSaved = payload.cohort;
           editFieldState['author'].currentSaved = payload.author;
