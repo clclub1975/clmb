@@ -1,4 +1,4 @@
-<!-- v7.0: '랜덤 선택하기' 메쉬 화면에 PC/모바일 반응형 스크롤 플로팅 위치 인디케이터(📍 현재 보고 있는 순번 범위) 탑재 -->
+<!-- v7.1: '랜덤 선택하기' 메쉬 인디케이터 양방향 분리(상단 좌측 시작 / 하단 우측 끝) 및 상·하단 셀 가림 방지 여백 확보 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -187,10 +187,11 @@
       grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
       gap: 6px;
       background: #ffffff;
-      padding: 20px;
+      padding: 20px 20px 56px 20px; /* 하단 56px 여백으로 마지막 줄 배지 가림 방지 */
       border-radius: 8px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       border: 1px solid #e5e7eb;
+      margin-top: 15px;
     }
     .grid-cell {
       aspect-ratio: 1 / 1;
@@ -210,23 +211,39 @@
       opacity: 0.5;
     }
 
-    /* 플로팅 순번 위치 인디케이터 (HUD) */
-    .grid-position-badge {
+    /* 플로팅 순번 위치 인디케이터 (상단 좌측 시작 / 하단 우측 끝) */
+    .grid-badge-start {
       display: none;
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      top: 18px;
+      left: 18px;
       background: rgba(15, 23, 42, 0.85);
       color: #ffffff;
-      padding: 7px 14px;
+      padding: 6px 13px;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       box-shadow: 0 4px 14px rgba(0,0,0,0.25);
       backdrop-filter: blur(4px);
       z-index: 50;
       pointer-events: none;
-      transition: opacity 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+    .grid-badge-end {
+      display: none;
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(15, 23, 42, 0.85);
+      color: #ffffff;
+      padding: 6px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      pointer-events: none;
       letter-spacing: 0.3px;
     }
 
@@ -800,10 +817,11 @@
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
       .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 10px; gap: 4px; }
+      .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 14px 10px 56px 10px; gap: 4px; margin-top: 10px; }
       
-      /* 모바일 플로팅 인디케이터 */
-      .grid-position-badge { bottom: 16px; right: 16px; font-size: 11px; padding: 5px 11px; }
+      /* 모바일 플로팅 인디케이터 (상단 좌측 / 하단 우측) */
+      .grid-badge-start { top: 12px; left: 12px; font-size: 11px; padding: 5px 11px; }
+      .grid-badge-end { bottom: 12px; right: 12px; font-size: 11px; padding: 5px 11px; }
 
       #articleViewer { padding: 10px; }
       .viewer-content-box { padding: 18px; max-height: 92vh; }
@@ -834,7 +852,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v7.0</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v7.1</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -883,8 +901,9 @@
     <div class="grid-mesh" id="gridMesh"></div>
   </div>
 
-  <!-- 반응형 플로팅 위치 인디케이터 -->
-  <div id="gridPositionBadge" class="grid-position-badge">📍 1 ~ 160 / 0</div>
+  <!-- 양방향 플로팅 위치 인디케이터 (상단 좌측 시작 / 하단 우측 끝) -->
+  <div id="gridStartBadge" class="grid-badge-start">📍 1</div>
+  <div id="gridEndBadge" class="grid-badge-end">160 📍</div>
 
   <!-- PC/모바일 공통 본문 뷰어 팝업 모달 -->
   <div id="articleViewer" onclick="handleViewerBackdropClick(event)">
@@ -1050,7 +1069,8 @@
     const gridMesh = document.getElementById('gridMesh');
     const gridTotalCount = document.getElementById('gridTotalCount');
     const resetGridBtn = document.getElementById('resetGridBtn');
-    const gridPositionBadge = document.getElementById('gridPositionBadge');
+    const gridStartBadge = document.getElementById('gridStartBadge');
+    const gridEndBadge = document.getElementById('gridEndBadge');
     const metaInfo = document.getElementById('metaInfo');
     const contentBody = document.getElementById('contentBody');
     const articleViewer = document.getElementById('articleViewer');
@@ -1509,7 +1529,8 @@
       tabGridBtn.classList.remove('active');
       viewFilter.style.display = 'block';
       viewGrid.style.display = 'none';
-      gridPositionBadge.style.display = 'none';
+      gridStartBadge.style.display = 'none';
+      gridEndBadge.style.display = 'none';
     });
 
     tabGridBtn.addEventListener('click', () => {
@@ -1517,7 +1538,8 @@
       tabFilterBtn.classList.remove('active');
       viewGrid.style.display = 'block';
       viewFilter.style.display = 'none';
-      gridPositionBadge.style.display = 'block';
+      gridStartBadge.style.display = 'block';
+      gridEndBadge.style.display = 'block';
       updateGridPosition();
     });
 
@@ -1612,7 +1634,7 @@
       updateGridPosition();
     }
 
-    /* 화면 뷰포트 기준 메쉬 순번 범위 실시간 계산 */
+    /* 화면 뷰포트 기준 메쉬 순번(시작 번호 / 끝 번호) 실시간 계산 */
     let isScrollTicking = false;
     function updateGridPosition() {
       if (viewGrid.style.display !== 'block' || articlesData.length === 0) return;
@@ -1624,7 +1646,6 @@
       const vh = window.innerHeight;
       const meshRect = gridMesh.getBoundingClientRect();
 
-      // 그리드 상/하단 여백 기반 첫/마지막 노출 인덱스 계산
       let firstVisible = 1;
       let lastVisible = total;
 
@@ -1637,7 +1658,8 @@
         if (lastVisible < firstVisible) lastVisible = firstVisible;
       }
 
-      gridPositionBadge.textContent = `📍 ${firstVisible.toLocaleString()} ~ ${lastVisible.toLocaleString()} / ${total.toLocaleString()}`;
+      gridStartBadge.textContent = `📍 ${firstVisible.toLocaleString()}`;
+      gridEndBadge.textContent = `${lastVisible.toLocaleString()} 📍`;
     }
 
     window.addEventListener('scroll', () => {
