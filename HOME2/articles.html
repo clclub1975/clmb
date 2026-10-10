@@ -1,4 +1,4 @@
-<!-- v6.11: 기고문 교정 모달 1번 글 종류 드롭다운에서 '글 종류 선택' 기본 라인 제거 -->
+<!-- v7.0: '랜덤 선택하기' 메쉬 화면에 PC/모바일 반응형 스크롤 플로팅 위치 인디케이터(📍 현재 보고 있는 순번 범위) 탑재 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -154,6 +154,7 @@
     }
     #viewGrid {
       display: none;
+      position: relative;
     }
     .grid-header-wrap {
       display: flex;
@@ -207,6 +208,26 @@
     .grid-cell.read {
       background-color: #2563eb;
       opacity: 0.5;
+    }
+
+    /* 플로팅 순번 위치 인디케이터 (HUD) */
+    .grid-position-badge {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      color: #ffffff;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      letter-spacing: 0.3px;
     }
 
     /* 본문 뷰어: PC/모바일 공통 오버레이 팝업 모달 */
@@ -780,6 +801,10 @@
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
       .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
       .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 10px; gap: 4px; }
+      
+      /* 모바일 플로팅 인디케이터 */
+      .grid-position-badge { bottom: 16px; right: 16px; font-size: 11px; padding: 5px 11px; }
+
       #articleViewer { padding: 10px; }
       .viewer-content-box { padding: 18px; max-height: 92vh; }
       .viewer-header-left { gap: 6px; }
@@ -809,7 +834,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v6.11</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v7.0</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -857,6 +882,9 @@
     </div>
     <div class="grid-mesh" id="gridMesh"></div>
   </div>
+
+  <!-- 반응형 플로팅 위치 인디케이터 -->
+  <div id="gridPositionBadge" class="grid-position-badge">📍 1 ~ 160 / 0</div>
 
   <!-- PC/모바일 공통 본문 뷰어 팝업 모달 -->
   <div id="articleViewer" onclick="handleViewerBackdropClick(event)">
@@ -911,7 +939,6 @@
           <li class="edit-li">
             <strong class="edit-label">1. 글 종류:</strong>
             <div class="edit-field-wrap">
-              <!-- '글 종류 선택' 기본 라인 없이 순수 목록으로 구성되는 드롭다운 -->
               <select id="edit_type" class="edit-textarea-inline" onchange="handleFieldInput('type')"></select>
               <div class="restore-toolbar">
                 <button type="button" class="btn-restore" onclick="undoField('type')">↺ 방금 취소</button>
@@ -1023,6 +1050,7 @@
     const gridMesh = document.getElementById('gridMesh');
     const gridTotalCount = document.getElementById('gridTotalCount');
     const resetGridBtn = document.getElementById('resetGridBtn');
+    const gridPositionBadge = document.getElementById('gridPositionBadge');
     const metaInfo = document.getElementById('metaInfo');
     const contentBody = document.getElementById('contentBody');
     const articleViewer = document.getElementById('articleViewer');
@@ -1189,14 +1217,12 @@
       document.getElementById('correctModalTitle').innerHTML = `[기고문 교정: ${statusText}] ${volHtml} - ${article.id}`;
     }
 
-    // articles.html 2번 필터(typeSelect)로부터 교정 모달 드롭다운 동적 동기화 ('글 종류 선택' 기본 라인 제외)
     function syncEditTypeDropdown(currentSelectedValue) {
       editTypeSelect.innerHTML = '';
       const typeOptions = Array.from(typeSelect.options)
         .map(opt => opt.value)
         .filter(val => val && val !== '전체');
 
-      // 기존 데이터에 예외적인 값이 있을 경우 보존
       if (currentSelectedValue && !typeOptions.includes(currentSelectedValue)) {
         typeOptions.unshift(currentSelectedValue);
       }
@@ -1235,7 +1261,6 @@
         historyTip.innerHTML = `역대 교정자: 없음`;
       }
 
-      // 글 종류 드롭다운 동적 생성 및 현재 값 바인딩
       syncEditTypeDropdown(article.type || '');
 
       initFieldState('type', editTypeSelect.value || article.type || '');
@@ -1484,6 +1509,7 @@
       tabGridBtn.classList.remove('active');
       viewFilter.style.display = 'block';
       viewGrid.style.display = 'none';
+      gridPositionBadge.style.display = 'none';
     });
 
     tabGridBtn.addEventListener('click', () => {
@@ -1491,6 +1517,8 @@
       tabFilterBtn.classList.remove('active');
       viewGrid.style.display = 'block';
       viewFilter.style.display = 'none';
+      gridPositionBadge.style.display = 'block';
+      updateGridPosition();
     });
 
     resetGridBtn.addEventListener('click', () => {
@@ -1568,9 +1596,11 @@
       const shuffledArticles = shuffleArray(articlesData);
       const fragment = document.createDocumentFragment();
 
-      shuffledArticles.forEach(article => {
+      shuffledArticles.forEach((article, index) => {
         const cell = document.createElement('div');
         cell.className = 'grid-cell';
+        cell.dataset.index = index + 1;
+        cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기`;
         cell.addEventListener('click', function() {
           this.classList.add('read');
           showArticleDetail(article.id);
@@ -1579,7 +1609,50 @@
         fragment.appendChild(cell);
       });
       gridMesh.appendChild(fragment);
+      updateGridPosition();
     }
+
+    /* 화면 뷰포트 기준 메쉬 순번 범위 실시간 계산 */
+    let isScrollTicking = false;
+    function updateGridPosition() {
+      if (viewGrid.style.display !== 'block' || articlesData.length === 0) return;
+      
+      const cells = gridMesh.children;
+      const total = cells.length;
+      if (total === 0) return;
+
+      const vh = window.innerHeight;
+      const meshRect = gridMesh.getBoundingClientRect();
+
+      // 그리드 상/하단 여백 기반 첫/마지막 노출 인덱스 계산
+      let firstVisible = 1;
+      let lastVisible = total;
+
+      if (meshRect.height > 0) {
+        const topRatio = Math.max(0, Math.min(1, (-meshRect.top) / meshRect.height));
+        const bottomRatio = Math.max(0, Math.min(1, (vh - meshRect.top) / meshRect.height));
+
+        firstVisible = Math.max(1, Math.floor(topRatio * total) + 1);
+        lastVisible = Math.min(total, Math.ceil(bottomRatio * total));
+        if (lastVisible < firstVisible) lastVisible = firstVisible;
+      }
+
+      gridPositionBadge.textContent = `📍 ${firstVisible.toLocaleString()} ~ ${lastVisible.toLocaleString()} / ${total.toLocaleString()}`;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!isScrollTicking) {
+        window.requestAnimationFrame(() => {
+          updateGridPosition();
+          isScrollTicking = false;
+        });
+        isScrollTicking = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      updateGridPosition();
+    });
 
     function initDropdowns() {
       const vols = [...new Set(articlesData.map(item => item.vol))].filter(Boolean).sort((a, b) => {
@@ -1781,4 +1854,3 @@
   </script>
 </body>
 </html>
- 
