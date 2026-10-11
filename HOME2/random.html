@@ -1,10 +1,10 @@
-<!-- v0.3: 좌상단/우하단 인디케이터를 메쉬 영역 내부에 sticky 안착시키고 뷰포트 행 기반 정밀 셀 번호 계산 로직 적용 -->
+<!-- v0.4: 인디케이터 배지 폰트/크기 시인성 확대 및 1번/2515번 메쉬 가림 방지 상·하단 더미 스페이서 레인 구축 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>랜덤 선택하기 서브모듈 테스트 [v0.3]</title>
+  <title>랜덤 선택하기 서브모듈 테스트 [v0.4]</title>
   <style>
     /* 서브모듈 독립 실행용 기본 래퍼 스타일 */
     body {
@@ -68,31 +68,38 @@
       border: 1px solid #e5e7eb;
       border-radius: 8px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      padding: 16px 20px 48px 20px;
+      padding: 14px 20px 20px 20px;
     }
 
-    /* 1. 상단 좌측 시작 인디케이터 (메쉬 영역 좌측 상단 sticky 고정) */
+    /* 상단 시작 메쉬(1번) 가림 방지 더미 스페이서 */
+    .dummy-spacer-top {
+      height: 34px;
+      width: 100%;
+    }
+
+    /* 1. 상단 좌측 시작 인디케이터 */
     .sticky-indicator-top {
       position: sticky;
       top: 14px;
       z-index: 30;
-      height: 0; /* 레이아웃 밀림 방지 */
+      height: 0;
       display: flex;
       justify-content: flex-start;
       pointer-events: none;
-      margin-bottom: 8px;
+      transform: translateY(-34px); /* 더미 스페이서 영역 안쪽에 안착 */
     }
     .grid-badge-start {
-      background: rgba(15, 23, 42, 0.88);
+      background: rgba(15, 23, 42, 0.92);
       color: #ffffff;
-      padding: 5px 12px;
-      border-radius: 18px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.15);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.2);
       backdrop-filter: blur(4px);
+      pointer-events: auto;
     }
 
     .grid-mesh {
@@ -118,37 +125,47 @@
       opacity: 0.5;
     }
 
-    /* 2. 하단 우측 끝 인디케이터 (메쉬 영역 우측 하단 sticky 고정) */
+    /* 하단 종료 메쉬(2,515번) 가림 방지 더미 스페이서 */
+    .dummy-spacer-bottom {
+      height: 38px;
+      width: 100%;
+    }
+
+    /* 2. 하단 우측 끝 인디케이터 */
     .sticky-indicator-bottom {
       position: sticky;
       bottom: 16px;
       z-index: 30;
-      height: 0; /* 레이아웃 밀림 방지 */
+      height: 0;
       display: flex;
       justify-content: flex-end;
       pointer-events: none;
-      margin-top: -10px;
+      transform: translateY(-38px); /* 하단 더미 스페이서 영역 안쪽에 안착 */
     }
     .grid-badge-end {
-      background: rgba(15, 23, 42, 0.88);
+      background: rgba(15, 23, 42, 0.92);
       color: #ffffff;
-      padding: 5px 12px;
-      border-radius: 18px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.15);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.2);
       backdrop-filter: blur(4px);
-      transform: translateY(-26px); /* 여백 안쪽으로 살짝 안착 */
+      pointer-events: auto;
     }
 
     @media (max-width: 768px) {
       .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 8px; }
       .grid-header { font-size: 12px; }
-      .grid-mesh-wrapper { padding: 12px 10px 48px 10px; }
+      .grid-mesh-wrapper { padding: 10px 10px 16px 10px; }
+      .dummy-spacer-top { height: 30px; }
+      .dummy-spacer-bottom { height: 34px; }
+      .sticky-indicator-top { transform: translateY(-30px); }
+      .sticky-indicator-bottom { transform: translateY(-34px); }
       .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); gap: 4px; }
-      .grid-badge-start, .grid-badge-end { font-size: 11px; padding: 4px 10px; }
+      .grid-badge-start, .grid-badge-end { font-size: 12px; padding: 5px 11px; }
     }
     /* === [MODULE-STYLE: RANDOM-GRID END] === */
   </style>
@@ -156,30 +173,36 @@
 <body>
 
   <div class="test-header-bar">
-    <strong>🛠️ 랜덤 선택하기 [v0.3] 서브모듈 단독 테스트 모드</strong>
+    <strong>🛠️ 랜덤 선택하기 [v0.4] 서브모듈 단독 테스트 모드</strong>
     <span>(디버깅 완료 후 articles.html에 1:1 병합 예정)</span>
   </div>
 
   <!-- === [MODULE-HTML: RANDOM-GRID START] === -->
   <div id="viewGrid">
     <div class="grid-header-wrap">
-      <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기) <strong style="color:#2563eb;">[v0.3]</strong></p>
+      <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기) <strong style="color:#2563eb;">[v0.4]</strong></p>
       <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
     </div>
 
     <!-- 메쉬 박스 컨테이너 -->
     <div class="grid-mesh-wrapper" id="gridMeshWrapper">
+      <!-- 1번 메쉬 가림 방지 상단 더미 스페이서 -->
+      <div class="dummy-spacer-top"></div>
+
       <!-- 스크롤 시에도 메쉬 좌상단에 뜨는 시작 인디케이터 -->
       <div class="sticky-indicator-top">
         <span id="gridStartBadge" class="grid-badge-start">📍 1</span>
       </div>
 
-      <!-- 메쉬 격자 그리드 -->
+      <!-- 실제 메쉬 격자 그리드 (2,515개) -->
       <div class="grid-mesh" id="gridMesh"></div>
+
+      <!-- 2,515번 메쉬 가림 방지 하단 더미 스페이서 -->
+      <div class="dummy-spacer-bottom"></div>
 
       <!-- 스크롤 시에도 메쉬 우하단에 뜨는 끝 인디케이터 -->
       <div class="sticky-indicator-bottom">
-        <span id="gridEndBadge" class="grid-badge-end">160 📍</span>
+        <span id="gridEndBadge" class="grid-badge-end">2,515 📍</span>
       </div>
     </div>
   </div>
@@ -246,7 +269,6 @@
         cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기`;
         cell.addEventListener('click', function() {
           this.classList.add('read');
-          // 부모 모달 연동 체크 및 Fallback
           if (typeof showArticleDetail === 'function') {
             showArticleDetail(article.id);
             if (typeof openViewerModal === 'function') openViewerModal();
@@ -258,7 +280,6 @@
       });
       gridMesh.appendChild(fragment);
       
-      // 렌더링 완료 후 초기 위치 계산
       requestAnimationFrame(updateGridPosition);
     }
 
@@ -273,7 +294,7 @@
       const firstCellRect = cells[0].getBoundingClientRect();
       const meshRect = gridMesh.getBoundingClientRect();
 
-      // 1. 현재 화면 너비 기준 1개 행(Row)에 들어가는 컬럼 수 실시간 산출
+      // 1. 현재 화면 너비 기준 1행 컬럼 수 산출
       let cols = 0;
       const firstTop = firstCellRect.top;
       for (let i = 0; i < Math.min(total, 60); i++) {
@@ -286,19 +307,17 @@
       if (cols <= 0) cols = 1;
 
       // 2. 셀 높이 + 간격(Row Pitch) 산출
-      let rowHeight = 30; // 기본 추정치
+      let rowHeight = 30;
       if (total > cols) {
         rowHeight = cells[cols].getBoundingClientRect().top - firstCellRect.top;
       }
       if (rowHeight <= 0) rowHeight = 30;
 
-      // 3. 브라우저 뷰포트(화면 상단/하단)에 노출된 행 번호 계산
-      // 메쉬 상단이 화면 위로 스크롤되어 올라간 거리
+      // 3. 브라우저 뷰포트에 노출된 실제 셀 행 계산 (더미 영역 배제)
       const scrolledTopDist = Math.max(0, -meshRect.top);
       const startRow = Math.floor(scrolledTopDist / rowHeight);
       const firstVisible = Math.max(1, (startRow * cols) + 1);
 
-      // 화면 하단(vh)에 도달한 행 번호
       const visibleHeightToBottom = Math.max(0, vh - meshRect.top);
       const endRow = Math.ceil(visibleHeightToBottom / rowHeight);
       const lastVisible = Math.min(total, Math.max(firstVisible, endRow * cols));
