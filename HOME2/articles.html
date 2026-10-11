@@ -1,4 +1,4 @@
-<!-- v7.1: '랜덤 선택하기' 메쉬 인디케이터 양방향 분리(상단 좌측 시작 / 하단 우측 끝) 및 상·하단 셀 가림 방지 여백 확보 -->
+<!-- v7.2: '랜덤 선택하기' 메쉬 그리드 및 위치 인디케이터 구역을 표준 모듈 블록(RANDOM-GRID)으로 샌드박스 격리 구조화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -152,6 +152,8 @@
       color: #1d4ed8;
       font-weight: 600;
     }
+
+    /* === [MODULE-STYLE: RANDOM-GRID START] === */
     #viewGrid {
       display: none;
       position: relative;
@@ -187,7 +189,7 @@
       grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
       gap: 6px;
       background: #ffffff;
-      padding: 20px 20px 56px 20px; /* 하단 56px 여백으로 마지막 줄 배지 가림 방지 */
+      padding: 20px 20px 56px 20px;
       border-radius: 8px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       border: 1px solid #e5e7eb;
@@ -210,8 +212,6 @@
       background-color: #2563eb;
       opacity: 0.5;
     }
-
-    /* 플로팅 순번 위치 인디케이터 (상단 좌측 시작 / 하단 우측 끝) */
     .grid-badge-start {
       display: none;
       position: fixed;
@@ -246,6 +246,7 @@
       pointer-events: none;
       letter-spacing: 0.3px;
     }
+    /* === [MODULE-STYLE: RANDOM-GRID END] === */
 
     /* 본문 뷰어: PC/모바일 공통 오버레이 팝업 모달 */
     #articleViewer {
@@ -816,12 +817,13 @@
       .filter-container { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 6px; }
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
+      
+      /* === [MODULE-STYLE: RANDOM-GRID MOBILE START] === */
       .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
       .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 14px 10px 56px 10px; gap: 4px; margin-top: 10px; }
-      
-      /* 모바일 플로팅 인디케이터 (상단 좌측 / 하단 우측) */
       .grid-badge-start { top: 12px; left: 12px; font-size: 11px; padding: 5px 11px; }
       .grid-badge-end { bottom: 12px; right: 12px; font-size: 11px; padding: 5px 11px; }
+      /* === [MODULE-STYLE: RANDOM-GRID MOBILE END] === */
 
       #articleViewer { padding: 10px; }
       .viewer-content-box { padding: 18px; max-height: 92vh; }
@@ -852,7 +854,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v7.1</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v7.2</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -893,6 +895,7 @@
     </div>
   </div>
 
+  <!-- === [MODULE-HTML: RANDOM-GRID START] === -->
   <div id="viewGrid">
     <div class="grid-header-wrap">
       <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기)</p>
@@ -904,6 +907,7 @@
   <!-- 양방향 플로팅 위치 인디케이터 (상단 좌측 시작 / 하단 우측 끝) -->
   <div id="gridStartBadge" class="grid-badge-start">📍 1</div>
   <div id="gridEndBadge" class="grid-badge-end">160 📍</div>
+  <!-- === [MODULE-HTML: RANDOM-GRID END] === -->
 
   <!-- PC/모바일 공통 본문 뷰어 팝업 모달 -->
   <div id="articleViewer" onclick="handleViewerBackdropClick(event)">
@@ -1066,11 +1070,6 @@
     const listContainer = document.getElementById('listContainer');
     const listTitle = document.getElementById('listTitle');
     const articleList = document.getElementById('articleList');
-    const gridMesh = document.getElementById('gridMesh');
-    const gridTotalCount = document.getElementById('gridTotalCount');
-    const resetGridBtn = document.getElementById('resetGridBtn');
-    const gridStartBadge = document.getElementById('gridStartBadge');
-    const gridEndBadge = document.getElementById('gridEndBadge');
     const metaInfo = document.getElementById('metaInfo');
     const contentBody = document.getElementById('contentBody');
     const articleViewer = document.getElementById('articleViewer');
@@ -1529,8 +1528,8 @@
       tabGridBtn.classList.remove('active');
       viewFilter.style.display = 'block';
       viewGrid.style.display = 'none';
-      gridStartBadge.style.display = 'none';
-      gridEndBadge.style.display = 'none';
+      if (typeof gridStartBadge !== 'undefined' && gridStartBadge) gridStartBadge.style.display = 'none';
+      if (typeof gridEndBadge !== 'undefined' && gridEndBadge) gridEndBadge.style.display = 'none';
     });
 
     tabGridBtn.addEventListener('click', () => {
@@ -1538,14 +1537,9 @@
       tabFilterBtn.classList.remove('active');
       viewGrid.style.display = 'block';
       viewFilter.style.display = 'none';
-      gridStartBadge.style.display = 'block';
-      gridEndBadge.style.display = 'block';
-      updateGridPosition();
-    });
-
-    resetGridBtn.addEventListener('click', () => {
-      const readCells = document.querySelectorAll('.grid-cell.read');
-      readCells.forEach(cell => cell.classList.remove('read'));
+      if (typeof gridStartBadge !== 'undefined' && gridStartBadge) gridStartBadge.style.display = 'block';
+      if (typeof gridEndBadge !== 'undefined' && gridEndBadge) gridEndBadge.style.display = 'block';
+      if (typeof updateGridPosition === 'function') updateGridPosition();
     });
 
     function fastParseCSV(text) {
@@ -1605,14 +1599,29 @@
         }
 
         initDropdowns();
-        initBlindGrid();
+        if (typeof initBlindGrid === 'function') initBlindGrid();
         contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
       } catch (error) {
         contentBody.textContent = '목록 데이터를 불러오는 데 실패했습니다.';
       }
     }
 
+    // === [MODULE-SCRIPT: RANDOM-GRID START] ===
+    const gridMesh = document.getElementById('gridMesh');
+    const gridTotalCount = document.getElementById('gridTotalCount');
+    const resetGridBtn = document.getElementById('resetGridBtn');
+    const gridStartBadge = document.getElementById('gridStartBadge');
+    const gridEndBadge = document.getElementById('gridEndBadge');
+
+    if (resetGridBtn) {
+      resetGridBtn.addEventListener('click', () => {
+        const readCells = document.querySelectorAll('.grid-cell.read');
+        readCells.forEach(cell => cell.classList.remove('read'));
+      });
+    }
+
     function initBlindGrid() {
+      if (!gridMesh || !gridTotalCount) return;
       gridMesh.innerHTML = '';
       gridTotalCount.textContent = articlesData.length;
       const shuffledArticles = shuffleArray(articlesData);
@@ -1625,8 +1634,8 @@
         cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기`;
         cell.addEventListener('click', function() {
           this.classList.add('read');
-          showArticleDetail(article.id);
-          openViewerModal();
+          if (typeof showArticleDetail === 'function') showArticleDetail(article.id);
+          if (typeof openViewerModal === 'function') openViewerModal();
         });
         fragment.appendChild(cell);
       });
@@ -1634,10 +1643,10 @@
       updateGridPosition();
     }
 
-    /* 화면 뷰포트 기준 메쉬 순번(시작 번호 / 끝 번호) 실시간 계산 */
     let isScrollTicking = false;
     function updateGridPosition() {
-      if (viewGrid.style.display !== 'block' || articlesData.length === 0) return;
+      if (!viewGrid || viewGrid.style.display !== 'block' || articlesData.length === 0) return;
+      if (!gridMesh) return;
       
       const cells = gridMesh.children;
       const total = cells.length;
@@ -1658,8 +1667,8 @@
         if (lastVisible < firstVisible) lastVisible = firstVisible;
       }
 
-      gridStartBadge.textContent = `📍 ${firstVisible.toLocaleString()}`;
-      gridEndBadge.textContent = `${lastVisible.toLocaleString()} 📍`;
+      if (gridStartBadge) gridStartBadge.textContent = `📍 ${firstVisible.toLocaleString()}`;
+      if (gridEndBadge) gridEndBadge.textContent = `${lastVisible.toLocaleString()} 📍`;
     }
 
     window.addEventListener('scroll', () => {
@@ -1675,6 +1684,7 @@
     window.addEventListener('resize', () => {
       updateGridPosition();
     });
+    // === [MODULE-SCRIPT: RANDOM-GRID END] ===
 
     function initDropdowns() {
       const vols = [...new Set(articlesData.map(item => item.vol))].filter(Boolean).sort((a, b) => {
