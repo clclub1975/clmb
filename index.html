@@ -1,10 +1,10 @@
-<!-- v4.12: 모바일 환경에서 '촛불회 50년,'과 '그 삶의 기록들' 사이에 줄바꿈 적용 및 v4.12 버전 업그레이드 -->
+<!-- v4.13: v4.12 코드 최적화 정리 및 전체 구조 정비 완료 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 50년사 아카이브 v4.12</title>
+    <title>촛불회 50년사 아카이브 v4.13</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -157,7 +157,6 @@
             line-height: 1.4;
         }
 
-        /* 기본 상태에서는 줄바꿈 숨김 */
         .mobile-br {
             display: none;
         }
@@ -190,7 +189,6 @@
                 margin-top: -20px;
             }
 
-            /* 모바일 화면에서도 3열 배치가 유지되도록 설정 */
             .menu-grid {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 8px;
@@ -215,7 +213,6 @@
                 line-height: 1.3;
             }
 
-            /* 모바일 환경에서만 줄바꿈 활성화 */
             .mobile-br {
                 display: inline;
             }
@@ -225,13 +222,13 @@
 <body>
 
     <div class="dev-meta-bar">
-        <!-- v4.12: 모바일 환경에서 '촛불회 50년,'과 '그 삶의 기록들' 사이에 줄바꿈 적용 및 v4.12 버전 업그레이드 -->
+        <!-- v4.13: v4.12 코드 최적화 정리 및 전체 구조 정비 완료 -->
     </div>
 
     <header>
         <div class="header-title-area">
             <h1><a href="HOME2/process.html" title="작업 프로세스로 이동">🕯️</a> 촛불회 50년사 아카이브</h1>
-            <span class="version-tag">v4.12</span>
+            <span class="version-tag">v4.13</span>
         </div>
         <p>1975년부터 이어온 반세기의 기록과 기억을 담다</p>
     </header>
