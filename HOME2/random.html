@@ -1,10 +1,10 @@
-<!-- v0.9: 최상위 viewGrid 토글 클래스 바인딩 및 테두리 solid 속성 강제 부여로 교정상황 감지·표시 버그 완벽 수정 -->
+<!-- v0.10: '랜덤 셔플' 선택적 토글(OFF시 시트 순서 정렬) 추가 및 모바일 상단 안내문구 줄바꿈 센터링 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>랜덤 선택하기 서브모듈 테스트 [v0.9]</title>
+  <title>랜덤 선택하기 서브모듈 테스트 [v0.10]</title>
   <style>
     /* 서브모듈 독립 실행용 기본 래퍼 스타일 */
     body {
@@ -50,14 +50,22 @@
       color: #1e293b;
       letter-spacing: -0.3px;
     }
+    .grid-intro-count {
+      display: inline;
+    }
 
-    /* 2. 하단 컨트롤 바 (교정 상황 보기 좌측 / 읽음 초기화 우측) */
+    /* 2. 하단 컨트롤 바 (교정 상황 보기 좌측 / 랜덤 셔플 & 읽음 초기화 우측) */
     .grid-control-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
       gap: 10px;
+    }
+    .grid-control-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .status-toggle-wrap {
       display: inline-flex;
@@ -223,10 +231,13 @@
     }
 
     @media (max-width: 768px) {
-      .grid-intro-banner p { font-size: 13px; }
-      .grid-control-bar { gap: 8px; }
-      .status-toggle-wrap { font-size: 12px; padding: 5px 9px; }
-      .reset-btn { font-size: 12px; padding: 5px 10px; }
+      .grid-intro-banner p { font-size: 13px; line-height: 1.5; }
+      /* 모바일에서 이야기 총 개수 줄바꿈 및 중앙 정렬 */
+      .grid-intro-count { display: block; margin-top: 3px; }
+      .grid-control-bar { gap: 6px; }
+      .status-toggle-wrap { font-size: 11.5px; padding: 5px 8px; gap: 5px; }
+      .status-toggle-wrap input[type="checkbox"] { width: 14px; height: 14px; }
+      .reset-btn { font-size: 11.5px; padding: 5px 8px; }
       .grid-mesh-wrapper { padding: 10px 10px 16px 10px; }
       .sticky-indicator-top { top: 8px; margin-bottom: 8px; }
       .sticky-indicator-bottom { bottom: 10px; margin-top: 8px; }
@@ -244,7 +255,7 @@
 <body>
 
   <div class="test-header-bar">
-    <strong>🛠️ 랜덤 선택하기 [v0.9] 서브모듈 단독 테스트 모드</strong>
+    <strong>🛠️ 랜덤 선택하기 [v0.10] 서브모듈 단독 테스트 모드</strong>
     <span>(디버깅 완료 후 articles.html에 1:1 병합 예정)</span>
   </div>
 
@@ -252,16 +263,27 @@
   <div id="viewGrid">
     <!-- 1. 독립 중앙 라인 안내 배너 -->
     <div class="grid-intro-banner">
-      <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v0.9]</strong></p>
+      <p>
+        ✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요.
+        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v0.10]</strong></span>
+      </p>
     </div>
 
-    <!-- 2. 컨트롤 바 (좌측: 교정 상황 보기 / 우측: 읽음 초기화) -->
+    <!-- 2. 컨트롤 바 (좌측: 교정 상황 보기 / 우측: 랜덤 셔플 & 읽음 초기화) -->
     <div class="grid-control-bar">
       <label class="status-toggle-wrap">
         <input type="checkbox" id="toggleStatusCheck">
         <span>교정 상황 보기</span>
       </label>
-      <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
+
+      <div class="grid-control-right">
+        <!-- 랜덤 셔플 선택 체크박스 (기본값: 해제 / 해제 시 시트 순서 정렬) -->
+        <label class="status-toggle-wrap">
+          <input type="checkbox" id="toggleShuffleCheck">
+          <span>랜덤 셔플</span>
+        </label>
+        <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
+      </div>
     </div>
 
     <!-- 3. 메쉬 박스 컨테이너 -->
@@ -348,7 +370,7 @@
         const res = await fetch(METADATA_CSV_URL);
         const text = await res.text();
         articlesData = fastParseCSV(text);
-        initBlindGrid();
+        renderMeshGrid();
       } catch (e) {
         console.error('테스트 데이터 로드 실패:', e);
       }
@@ -359,6 +381,7 @@
     const gridTotalCount = document.getElementById('gridTotalCount');
     const resetGridBtn = document.getElementById('resetGridBtn');
     const toggleStatusCheck = document.getElementById('toggleStatusCheck');
+    const toggleShuffleCheck = document.getElementById('toggleShuffleCheck');
     const gridStartBadge = document.getElementById('gridStartBadge');
     const gridEndBadge = document.getElementById('gridEndBadge');
     const viewGrid = document.getElementById('viewGrid');
@@ -378,14 +401,25 @@
       });
     }
 
-    function initBlindGrid() {
+    // 랜덤 셔플 토글 이벤트: 변경 시 그리드 재렌더링
+    if (toggleShuffleCheck) {
+      toggleShuffleCheck.addEventListener('change', () => {
+        renderMeshGrid();
+      });
+    }
+
+    function renderMeshGrid() {
       if (!gridMesh || !gridTotalCount) return;
       gridMesh.innerHTML = '';
       gridTotalCount.textContent = articlesData.length;
-      const shuffledArticles = shuffleArray(articlesData);
+
+      // toggleShuffleCheck 체크 여부에 따라 셔플 또는 시트 원본 순서 유지
+      const shouldShuffle = toggleShuffleCheck && toggleShuffleCheck.checked;
+      const displayArticles = shouldShuffle ? shuffleArray(articlesData) : articlesData;
+
       const fragment = document.createDocumentFragment();
 
-      shuffledArticles.forEach((article, index) => {
+      displayArticles.forEach((article, index) => {
         const cell = document.createElement('div');
         cell.className = 'grid-cell';
         cell.dataset.index = index + 1;
