@@ -1,0 +1,275 @@
+<!-- v0.0: '랜덤 선택하기' 메쉬 그리드 및 위치 인디케이터 기능 독립 테스트용 서브모듈 (추후 articles.html과 1:1 재병합 전제) -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>랜덤 선택하기 서브모듈 테스트 [v0.0]</title>
+  <style>
+    /* 서브모듈 독립 실행용 기본 래퍼 스타일 */
+    body {
+      font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 15px;
+      background-color: #f9fafb;
+      color: #333;
+    }
+    .test-header-bar {
+      padding: 10px 14px;
+      background: #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* === [MODULE-STYLE: RANDOM-GRID START] === */
+    #viewGrid {
+      display: block; /* 단독 테스트 모드이므로 항상 표시 */
+      position: relative;
+    }
+    .grid-header-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .grid-header {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+    }
+    .reset-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+      background-color: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #4b5563;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .reset-btn:hover {
+      background-color: #f3f4f6;
+    }
+    .grid-mesh {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+      gap: 6px;
+      background: #ffffff;
+      padding: 20px 20px 56px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      margin-top: 15px;
+    }
+    .grid-cell {
+      aspect-ratio: 1 / 1;
+      background-color: #cbd5e1;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+    .grid-cell:hover {
+      background-color: #60a5fa;
+      transform: scale(1.15);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+    .grid-cell.read {
+      background-color: #2563eb;
+      opacity: 0.5;
+    }
+    .grid-badge-start {
+      display: block;
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      background: rgba(15, 23, 42, 0.85);
+      color: #ffffff;
+      padding: 6px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      pointer-events: none;
+      letter-spacing: 0.3px;
+    }
+    .grid-badge-end {
+      display: block;
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(15, 23, 42, 0.85);
+      color: #ffffff;
+      padding: 6px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      pointer-events: none;
+      letter-spacing: 0.3px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 14px 10px 56px 10px; gap: 4px; margin-top: 10px; }
+      .grid-badge-start { top: 12px; left: 12px; font-size: 11px; padding: 5px 11px; }
+      .grid-badge-end { bottom: 12px; right: 12px; font-size: 11px; padding: 5px 11px; }
+    }
+    /* === [MODULE-STYLE: RANDOM-GRID END] === */
+  </style>
+</head>
+<body>
+
+  <div class="test-header-bar">
+    <strong>🛠️ random.html [v0.0] 단독 테스트 모드</strong>
+    <span>(디버깅 완료 후 articles.html에 1:1 병합 예정)</span>
+  </div>
+
+  <!-- === [MODULE-HTML: RANDOM-GRID START] === -->
+  <div id="viewGrid">
+    <div class="grid-header-wrap">
+      <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기)</p>
+      <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
+    </div>
+    <div class="grid-mesh" id="gridMesh"></div>
+  </div>
+
+  <!-- 양방향 플로팅 위치 인디케이터 (상단 좌측 시작 / 하단 우측 끝) -->
+  <div id="gridStartBadge" class="grid-badge-start">📍 1</div>
+  <div id="gridEndBadge" class="grid-badge-end">160 📍</div>
+  <!-- === [MODULE-HTML: RANDOM-GRID END] === -->
+
+  <script>
+    // 독립 실행용 데이터 로더
+    const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8/gviz/tq?tqx=out:csv&gid=1255939946&tq=SELECT%20A`;
+    let articlesData = [];
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    async function loadTestModuleData() {
+      try {
+        const res = await fetch(METADATA_CSV_URL);
+        const text = await res.text();
+        const lines = text.split('\n');
+        articlesData = [];
+        for (let i = 1; i < lines.length; i++) {
+          const id = lines[i].replace(/["\r]/g, '').trim();
+          if (id && id !== 'A' && !id.includes('ID')) {
+            articlesData.push({ id: id });
+          }
+        }
+        initBlindGrid();
+      } catch (e) {
+        console.error('테스트 데이터 로드 실패:', e);
+      }
+    }
+
+    // === [MODULE-SCRIPT: RANDOM-GRID START] ===
+    const gridMesh = document.getElementById('gridMesh');
+    const gridTotalCount = document.getElementById('gridTotalCount');
+    const resetGridBtn = document.getElementById('resetGridBtn');
+    const gridStartBadge = document.getElementById('gridStartBadge');
+    const gridEndBadge = document.getElementById('gridEndBadge');
+    const viewGrid = document.getElementById('viewGrid');
+
+    if (resetGridBtn) {
+      resetGridBtn.addEventListener('click', () => {
+        const readCells = document.querySelectorAll('.grid-cell.read');
+        readCells.forEach(cell => cell.classList.remove('read'));
+      });
+    }
+
+    function initBlindGrid() {
+      if (!gridMesh || !gridTotalCount) return;
+      gridMesh.innerHTML = '';
+      gridTotalCount.textContent = articlesData.length;
+      const shuffledArticles = shuffleArray(articlesData);
+      const fragment = document.createDocumentFragment();
+
+      shuffledArticles.forEach((article, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.dataset.index = index + 1;
+        cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기`;
+        cell.addEventListener('click', function() {
+          this.classList.add('read');
+          // 부모 모달 연동 체크 및 Fallback
+          if (typeof showArticleDetail === 'function') {
+            showArticleDetail(article.id);
+            if (typeof openViewerModal === 'function') openViewerModal();
+          } else {
+            console.log(`[독립 테스트 모드] 셀 클릭: ID=${article.id}, 순번=${index + 1}`);
+          }
+        });
+        fragment.appendChild(cell);
+      });
+      gridMesh.appendChild(fragment);
+      updateGridPosition();
+    }
+
+    let isScrollTicking = false;
+    function updateGridPosition() {
+      if (!viewGrid || viewGrid.style.display !== 'block' || articlesData.length === 0) return;
+      if (!gridMesh) return;
+      
+      const cells = gridMesh.children;
+      const total = cells.length;
+      if (total === 0) return;
+
+      const vh = window.innerHeight;
+      const meshRect = gridMesh.getBoundingClientRect();
+
+      let firstVisible = 1;
+      let lastVisible = total;
+
+      if (meshRect.height > 0) {
+        const topRatio = Math.max(0, Math.min(1, (-meshRect.top) / meshRect.height));
+        const bottomRatio = Math.max(0, Math.min(1, (vh - meshRect.top) / meshRect.height));
+
+        firstVisible = Math.max(1, Math.floor(topRatio * total) + 1);
+        lastVisible = Math.min(total, Math.ceil(bottomRatio * total));
+        if (lastVisible < firstVisible) lastVisible = firstVisible;
+      }
+
+      if (gridStartBadge) gridStartBadge.textContent = `📍 ${firstVisible.toLocaleString()}`;
+      if (gridEndBadge) gridEndBadge.textContent = `${lastVisible.toLocaleString()} 📍`;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!isScrollTicking) {
+        window.requestAnimationFrame(() => {
+          updateGridPosition();
+          isScrollTicking = false;
+        });
+        isScrollTicking = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      updateGridPosition();
+    });
+    // === [MODULE-SCRIPT: RANDOM-GRID END] ===
+
+    loadTestModuleData();
+  </script>
+</body>
+</html>
