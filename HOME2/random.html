@@ -1,10 +1,10 @@
-<!-- v0.7: 상단 안내문구 독립 중앙정렬 분리, 컨트롤바 좌우배치, 공백정제 및 교정자 기반 교정중(녹색 테두리) 판별 로직 수정 -->
+<!-- v0.8: articles.html의 fastParseCSV 엔진 및 교정상태 판별 로직을 1:1 이식하여 교정상황 감지 오류 전면 해결 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>랜덤 선택하기 서브모듈 테스트 [v0.7]</title>
+  <title>랜덤 선택하기 서브모듈 테스트 [v0.8]</title>
   <style>
     /* 서브모듈 독립 실행용 기본 래퍼 스타일 */
     body {
@@ -175,7 +175,7 @@
       opacity: 0.65;
     }
 
-    /* 교정 상황 보기 활성화 시 */
+    /* 교정 상황 보기 활성화 시 테두리 색상 */
     .show-status .cell-status-wait {
       border-color: #ef4444 !important; /* 교정 전: 빨강 */
     }
@@ -241,7 +241,7 @@
 <body>
 
   <div class="test-header-bar">
-    <strong>🛠️ 랜덤 선택하기 [v0.7] 서브모듈 단독 테스트 모드</strong>
+    <strong>🛠️ 랜덤 선택하기 [v0.8] 서브모듈 단독 테스트 모드</strong>
     <span>(디버깅 완료 후 articles.html에 1:1 병합 예정)</span>
   </div>
 
@@ -249,7 +249,7 @@
   <div id="viewGrid">
     <!-- 1. 독립 중앙 라인 안내 배너 -->
     <div class="grid-intro-banner">
-      <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v0.7]</strong></p>
+      <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v0.8]</strong></p>
     </div>
 
     <!-- 2. 컨트롤 바 (좌측: 교정 상황 보기 / 우측: 읽음 초기화) -->
@@ -280,8 +280,8 @@
   <!-- === [MODULE-HTML: RANDOM-GRID END] === -->
 
   <script>
-    // R2_기고문전문(교정본) 시트의 A열(ID), B열(교정상황), C열(교정자) 쿼리
-    const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8/gviz/tq?tqx=out:csv&gid=1255939946&tq=SELECT%20A,B,C`;
+    // R2_기고문전문(교정본) 시트의 A열~I열 쿼리 (articles.html과 동일 표준)
+    const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8/gviz/tq?tqx=out:csv&gid=1255939946&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
     let articlesData = [];
 
     function shuffleArray(array) {
@@ -293,37 +293,43 @@
       return arr;
     }
 
-    // CSV 파싱 헬퍼 (A, B, C 열 추출)
-    function parseSimpleCsv(text) {
-      const rows = [];
-      const lines = text.split('\n');
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        
-        let cols = [];
-        let inQuotes = false, token = '';
-        for (let ch of line) {
-          if (ch === '"') { inQuotes = !inQuotes; }
-          else if (ch === ',' && !inQuotes) {
-            cols.push(token.replace(/^"|"$/g, '').trim());
-            token = '';
-          } else {
-            token += ch;
-          }
-        }
-        cols.push(token.replace(/^"|"$/g, '').trim());
+    // articles.html에서 1:1 이식한 검증된 fastParseCSV 엔진
+    function fastParseCSV(text) {
+      const articles = [];
+      let start = 0, inQuotes = false, row = [];
+      if (!text.endsWith('\n')) text += '\n';
 
-        const id = cols[0] || '';
-        if (id && id !== 'A' && !id.includes('ID') && !id.includes('관리 ID')) {
-          rows.push({
-            id: id,
-            status: cols[1] || '',
-            editor: cols[2] || ''
-          });
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === '"') {
+          inQuotes = !inQuotes;
+        } else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
+          let val = text.substring(start, i);
+          if (val.endsWith('\r')) val = val.slice(0, -1);
+          if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
+            val = val.substring(1, val.length - 1).replace(/""/g, '"');
+          }
+          row.push(val.trim());
+
+          if (text[i] === '\n') {
+            if (row.length >= 3 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
+              articles.push({
+                id: row[0] || '',
+                status: row[1] || '',
+                editor: row[2] || '',
+                vol: row[3] || '',
+                date: row[4] || '',
+                cohort: row[5] || '',
+                author: row[6] || '',
+                type: row[7] || '',
+                title: row[8] || ''
+              });
+            }
+            row = [];
+          }
+          start = i + 1;
         }
       }
-      return rows;
+      return articles;
     }
 
     // 성을 제외한 이름 1~2자 추출 헬퍼
@@ -341,7 +347,7 @@
       try {
         const res = await fetch(METADATA_CSV_URL);
         const text = await res.text();
-        articlesData = parseSimpleCsv(text);
+        articlesData = fastParseCSV(text);
         initBlindGrid();
       } catch (e) {
         console.error('테스트 데이터 로드 실패:', e);
@@ -386,24 +392,22 @@
         cell.className = 'grid-cell';
         cell.dataset.index = index + 1;
 
-        // 정밀 공백 정제 및 다중 키워드 교정상태 판별식
-        const cleanSt = (article.status || '').replace(/\s+/g, '');
-        const hasEditor = Boolean((article.editor || '').trim());
-
+        // articles.html과 100% 동일한 상태 판별 로직
+        const st = (article.status || '').trim();
         let statusClass = 'cell-status-wait'; // 교정 전 (빨강)
         let statusLabel = '교정 전';
 
-        if (cleanSt.includes('완료')) {
+        if (st.includes('완료')) {
           statusClass = 'cell-status-done'; // 교정 완료 (검정)
           statusLabel = '교정 완료';
-        } else if (cleanSt.includes('중') || cleanSt.includes('진행') || hasEditor) {
+        } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
           statusClass = 'cell-status-doing'; // 교정 중 (녹색)
           statusLabel = '교정 중';
         }
 
         cell.classList.add(statusClass);
 
-        // 성 제외 교정자 이름
+        // 성 제외 교정자 이름 생성
         const shortName = getShortEditorName(article.editor);
         if (shortName) {
           const nameSpan = document.createElement('span');
@@ -412,9 +416,10 @@
           cell.appendChild(nameSpan);
         }
 
-        // 툴팁(hover) 구성
+        // 마우스 호버 툴팁(title)
         const editorText = article.editor ? ` / 교정자: ${article.editor}` : '';
-        cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기 [${article.id}]\n(상태: ${statusLabel}${editorText})`;
+        const titleText = article.title ? ` - [${article.title}]` : '';
+        cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기 [${article.id}]${titleText}\n(상태: ${statusLabel}${editorText})`;
 
         cell.addEventListener('click', function() {
           this.classList.add('read');
@@ -422,7 +427,7 @@
             showArticleDetail(article.id);
             if (typeof openViewerModal === 'function') openViewerModal();
           } else {
-            console.log(`[독립 테스트 모드] 셀 클릭: ID=${article.id}, 순번=${index + 1}, 상태=${statusLabel}`);
+            console.log(`[셀 클릭] ID=${article.id}, 순번=${index + 1}, 상태=${statusLabel}`);
           }
         });
         fragment.appendChild(cell);
