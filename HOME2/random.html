@@ -1,10 +1,10 @@
-<!-- v0.8: articles.html의 fastParseCSV 엔진 및 교정상태 판별 로직을 1:1 이식하여 교정상황 감지 오류 전면 해결 -->
+<!-- v0.9: 최상위 viewGrid 토글 클래스 바인딩 및 테두리 solid 속성 강제 부여로 교정상황 감지·표시 버그 완벽 수정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>랜덤 선택하기 서브모듈 테스트 [v0.8]</title>
+  <title>랜덤 선택하기 서브모듈 테스트 [v0.9]</title>
   <style>
     /* 서브모듈 독립 실행용 기본 래퍼 스타일 */
     body {
@@ -175,15 +175,15 @@
       opacity: 0.65;
     }
 
-    /* 교정 상황 보기 활성화 시 테두리 색상 */
+    /* 교정 상황 보기 활성화 시 (show-status 클래스 적용 시) */
     .show-status .cell-status-wait {
-      border-color: #ef4444 !important; /* 교정 전: 빨강 */
+      border: 2px solid #ef4444 !important; /* 교정 전: 빨강 */
     }
     .show-status .cell-status-doing {
-      border-color: #16a34a !important; /* 교정 중: 녹색 */
+      border: 2px solid #16a34a !important; /* 교정 중: 녹색 */
     }
     .show-status .cell-status-done {
-      border-color: #0f172a !important; /* 교정 완료: 검정 */
+      border: 2px solid #0f172a !important; /* 교정 완료: 검정 */
     }
     .grid-cell-name {
       display: none;
@@ -231,7 +231,10 @@
       .sticky-indicator-top { top: 8px; margin-bottom: 8px; }
       .sticky-indicator-bottom { bottom: 10px; margin-top: 8px; }
       .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); gap: 4px; }
-      .grid-cell { font-size: 8px; border-width: 1.5px; }
+      .grid-cell { font-size: 8px; }
+      .show-status .cell-status-wait { border-width: 1.5px !important; }
+      .show-status .cell-status-doing { border-width: 1.5px !important; }
+      .show-status .cell-status-done { border-width: 1.5px !important; }
       .grid-badge-start, .grid-badge-end { height: 28px; font-size: 12px; padding: 0 10px; border-radius: 14px; }
       .show-status .grid-cell-name { display: none; }
     }
@@ -241,7 +244,7 @@
 <body>
 
   <div class="test-header-bar">
-    <strong>🛠️ 랜덤 선택하기 [v0.8] 서브모듈 단독 테스트 모드</strong>
+    <strong>🛠️ 랜덤 선택하기 [v0.9] 서브모듈 단독 테스트 모드</strong>
     <span>(디버깅 완료 후 articles.html에 1:1 병합 예정)</span>
   </div>
 
@@ -249,7 +252,7 @@
   <div id="viewGrid">
     <!-- 1. 독립 중앙 라인 안내 배너 -->
     <div class="grid-intro-banner">
-      <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v0.8]</strong></p>
+      <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v0.9]</strong></p>
     </div>
 
     <!-- 2. 컨트롤 바 (좌측: 교정 상황 보기 / 우측: 읽음 초기화) -->
@@ -280,7 +283,6 @@
   <!-- === [MODULE-HTML: RANDOM-GRID END] === -->
 
   <script>
-    // R2_기고문전문(교정본) 시트의 A열~I열 쿼리 (articles.html과 동일 표준)
     const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8/gviz/tq?tqx=out:csv&gid=1255939946&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
     let articlesData = [];
 
@@ -293,7 +295,6 @@
       return arr;
     }
 
-    // articles.html에서 1:1 이식한 검증된 fastParseCSV 엔진
     function fastParseCSV(text) {
       const articles = [];
       let start = 0, inQuotes = false, row = [];
@@ -311,7 +312,7 @@
           row.push(val.trim());
 
           if (text[i] === '\n') {
-            if (row.length >= 3 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
+            if (row.length >= 2 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
               articles.push({
                 id: row[0] || '',
                 status: row[1] || '',
@@ -332,7 +333,6 @@
       return articles;
     }
 
-    // 성을 제외한 이름 1~2자 추출 헬퍼
     function getShortEditorName(editorStr) {
       if (!editorStr) return '';
       const parts = editorStr.split(',').map(s => s.trim()).filter(Boolean);
@@ -372,11 +372,9 @@
 
     if (toggleStatusCheck) {
       toggleStatusCheck.addEventListener('change', (e) => {
-        if (e.target.checked) {
-          gridMesh.classList.add('show-status');
-        } else {
-          gridMesh.classList.remove('show-status');
-        }
+        const isChecked = e.target.checked;
+        if (viewGrid) viewGrid.classList.toggle('show-status', isChecked);
+        if (gridMesh) gridMesh.classList.toggle('show-status', isChecked);
       });
     }
 
@@ -392,22 +390,23 @@
         cell.className = 'grid-cell';
         cell.dataset.index = index + 1;
 
-        // articles.html과 100% 동일한 상태 판별 로직
-        const st = (article.status || '').trim();
+        // 공백 정제 및 articles.html과 동일한 상태 판별
+        const st = (article.status || '').replace(/\s+/g, '');
+        const hasEditor = Boolean((article.editor || '').trim());
+
         let statusClass = 'cell-status-wait'; // 교정 전 (빨강)
         let statusLabel = '교정 전';
 
         if (st.includes('완료')) {
           statusClass = 'cell-status-done'; // 교정 완료 (검정)
           statusLabel = '교정 완료';
-        } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
+        } else if (st.includes('진행') || st.includes('중') || hasEditor) {
           statusClass = 'cell-status-doing'; // 교정 중 (녹색)
           statusLabel = '교정 중';
         }
 
         cell.classList.add(statusClass);
 
-        // 성 제외 교정자 이름 생성
         const shortName = getShortEditorName(article.editor);
         if (shortName) {
           const nameSpan = document.createElement('span');
@@ -416,7 +415,6 @@
           cell.appendChild(nameSpan);
         }
 
-        // 마우스 호버 툴팁(title)
         const editorText = article.editor ? ` / 교정자: ${article.editor}` : '';
         const titleText = article.title ? ` - [${article.title}]` : '';
         cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기 [${article.id}]${titleText}\n(상태: ${statusLabel}${editorText})`;
