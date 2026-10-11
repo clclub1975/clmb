@@ -1,4 +1,4 @@
-<!-- v8.1: 전체 코드 구조 최적화(Refactoring), CSS 미디어 쿼리 통합 및 JS 논리적 구역(9개 섹션) 분리 정리 -->
+<!-- v8.2: '교정 전' 상태 시 교정자 자동입력 방지(빈칸 처리) 및 교정 모달 본문 textarea 폰트/줄간격 포맷을 읽기 모달과 100% 동일하게 일치 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -262,12 +262,20 @@
     .edit-label { flex: 0 0 92px; max-width: 92px; font-size: 0.88rem; color: #0f172a; font-weight: 700; padding-top: 5px; word-break: keep-all; }
     .edit-field-wrap { flex: 1; display: flex; flex-direction: column; width: calc(100% - 92px); }
     
-    .edit-textarea-inline, .edit-textarea-full {
+    /* 인라인 입력 필드 포맷 */
+    .edit-textarea-inline {
       width: 100%; box-sizing: border-box; padding: 7px 10px; font-size: 0.9rem; line-height: 1.5; color: #1e293b;
       background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; font-family: inherit; transition: border-color 0.15s ease, background-color 0.15s ease;
     }
-    .edit-textarea-inline:focus, .edit-textarea-full:focus { background-color: #ffffff; border-color: #2563eb; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
-    .edit-textarea-full { min-height: 200px; resize: vertical; }
+    .edit-textarea-inline:focus { background-color: #ffffff; border-color: #2563eb; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+    
+    /* 본문(textarea) 포맷 - 읽기 뷰어창과 100% 동일한 폰트 및 여백 적용 */
+    .edit-textarea-full {
+      width: 100%; box-sizing: border-box; padding: 20px; font-size: 16px; line-height: 1.8; color: #1f2937;
+      background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; font-family: inherit; transition: border-color 0.15s ease, background-color 0.15s ease;
+      min-height: 320px; resize: vertical; white-space: pre-wrap;
+    }
+    .edit-textarea-full:focus { background-color: #ffffff; border-color: #2563eb; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
     
     .restore-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 5px; margin-top: 4px; }
     .btn-restore {
@@ -362,6 +370,8 @@
       .btn-action { height: 26px; padding: 0 6px; font-size: 0.74rem; }
       .help-tooltip { width: 200px; left: -20px; }
       .history-tooltip { width: 200px; left: 0; }
+      /* 모바일 환경에서도 edit-textarea-full 은 가독성 유지되도록 약간의 패딩만 줄임 */
+      .edit-textarea-full { padding: 12px; font-size: 15px; line-height: 1.7; }
     }
   </style>
 </head>
@@ -371,7 +381,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.1</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.2</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -409,7 +419,7 @@
   <div id="viewGrid">
     <div class="grid-intro-banner">
       <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요.
-        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v8.1]</strong></span>
+        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v8.2]</strong></span>
       </p>
     </div>
 
@@ -995,7 +1005,19 @@
       const article = articlesData.find(i => i.id === currentArticleId); if (!article) return;
       isDirty = false; updateEditModalTitle(article);
       
-      els.editorNameInput.value = getLastEditor(article.editor) || localStorage.getItem('last_editor_name') || '';
+      const st = (article.status || '').trim();
+      let isWaitStatus = true;
+      if (st.includes('완료') || st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
+        isWaitStatus = false;
+      }
+      
+      // 교정 전 상태인 경우 교정자 입력칸 무조건 빈칸 처리 (이전 기록 무시)
+      if (isWaitStatus) {
+        els.editorNameInput.value = '';
+      } else {
+        els.editorNameInput.value = getLastEditor(article.editor) || localStorage.getItem('last_editor_name') || '';
+      }
+
       const list = parseEditorList(article.editor);
       els.editorHistoryTooltip.innerHTML = list.length > 0 ? `<strong>역대 교정자:</strong><br>${list.join(' → ')}` : `역대 교정자: 없음`;
       
