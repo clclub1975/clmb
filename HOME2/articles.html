@@ -1,4 +1,4 @@
-<!-- v8.0: random.html(v0.10) 서브모듈 완전 통합 - 상단안내배너, 교정상황보기(3색테두리/이름), 선택적 랜덤셔플 및 sticky 인디케이터 결합 -->
+<!-- v8.1: 전체 코드 구조 최적화(Refactoring), CSS 미디어 쿼리 통합 및 JS 논리적 구역(9개 섹션) 분리 정리 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>촛불회 50년, 그 삶의 기록들</title>
   <style>
+    /* =========================================
+       1. 기본 및 공통 스타일
+       ========================================= */
     body {
       font-family: 'Segoe UI', AppleSDGothicNeo, sans-serif;
       max-width: 1000px;
@@ -16,936 +19,310 @@
       background-color: #f9fafb;
       word-break: keep-all;
     }
-    h1 {
-      text-align: center;
-      color: #1f2937;
-      margin-bottom: 25px;
-    }
-    .version-badge {
-      font-size: 14px;
-      font-weight: normal;
-      color: #6b7280;
-      margin-left: 8px;
-    }
-    .home-btn-container {
-      margin-bottom: 20px;
-    }
+    h1 { text-align: center; color: #1f2937; margin-bottom: 25px; }
+    .version-badge { font-size: 14px; font-weight: normal; color: #6b7280; margin-left: 8px; }
+    .home-btn-container { margin-bottom: 20px; }
     .home-btn {
-      display: inline-block;
-      padding: 8px 16px;
-      background-color: #f3f4f6;
-      color: #374151;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      border: 1px solid #d1d5db;
-      transition: background-color 0.15s;
+      display: inline-block; padding: 8px 16px; background-color: #f3f4f6; color: #374151;
+      text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+      border: 1px solid #d1d5db; transition: background-color 0.15s;
     }
-    .home-btn:hover {
-      background-color: #e5e7eb;
-    }
+    .home-btn:hover { background-color: #e5e7eb; }
+
+    /* =========================================
+       2. 탭 및 레이아웃 뼈대
+       ========================================= */
     .tab-container {
-      display: flex;
-      background: #e5e7eb;
-      padding: 6px;
-      border-radius: 10px;
-      margin-bottom: 25px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      display: flex; background: #e5e7eb; padding: 6px; border-radius: 10px;
+      margin-bottom: 25px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
     .tab-btn {
-      flex: 1;
-      text-align: center;
-      padding: 14px 10px;
-      border: none;
-      background: transparent;
-      font-size: 16px;
-      font-weight: 600;
-      color: #6b7280;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      flex: 1; text-align: center; padding: 14px 10px; border: none; background: transparent;
+      font-size: 16px; font-weight: 600; color: #6b7280; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;
     }
-    .tab-btn.active {
-      background: #ffffff;
-      color: #2563eb;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+    .tab-btn.active { background: #ffffff; color: #2563eb; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+    /* =========================================
+       3. 필터 및 리스트 뷰 (viewFilter)
+       ========================================= */
     .filter-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      margin-bottom: 25px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px;
     }
-    .filter-group {
-      width: 100%;
-    }
-    label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: #4b5563;
-      white-space: nowrap;
-    }
+    .filter-group { width: 100%; }
+    label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 13px; color: #4b5563; white-space: nowrap; }
     select {
-      width: 100%;
-      padding: 9px 10px;
-      border-radius: 6px;
-      border: 1px solid #d1d5db;
-      font-size: 14px;
-      background-color: #fff;
-      transition: border-color 0.15s ease-in-out;
+      width: 100%; padding: 9px 10px; border-radius: 6px; border: 1px solid #d1d5db;
+      font-size: 14px; background-color: #fff; transition: border-color 0.15s ease-in-out;
     }
-    select:focus {
-      border-color: #2563eb;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
+    select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    
     .list-container {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      margin-bottom: 25px;
-      border: 1px solid #e5e7eb;
+      background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      margin-bottom: 25px; border: 1px solid #e5e7eb;
     }
-    .list-container h3 {
-      margin-top: 0;
-      font-size: 16px;
-      color: #1f2937;
-      margin-bottom: 12px;
-      border-bottom: 2px solid #f3f4f6;
-      padding-bottom: 8px;
-    }
-    .article-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      max-height: 300px;
-      overflow-y: auto;
-    }
+    .list-container h3 { margin-top: 0; font-size: 16px; color: #1f2937; margin-bottom: 12px; border-bottom: 2px solid #f3f4f6; padding-bottom: 8px; }
+    .article-list { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
     .article-item {
-      padding: 2px 6px;
-      margin-bottom: 1px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.15s;
-      border: 1px solid transparent;
-      font-size: 14px;
-      line-height: 1.4;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      padding: 2px 6px; margin-bottom: 1px; border-radius: 4px; cursor: pointer; transition: background-color 0.15s;
+      border: 1px solid transparent; font-size: 14px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .article-item:hover {
-      background-color: #f3f4f6;
-      border-color: #e5e7eb;
-    }
-    .article-item.active {
-      background-color: #eff6ff;
-      border-color: #bfdbfe;
-      color: #1d4ed8;
-      font-weight: 600;
-    }
+    .article-item:hover { background-color: #f3f4f6; border-color: #e5e7eb; }
+    .article-item.active { background-color: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 600; }
 
-    /* === [MODULE-STYLE: RANDOM-GRID START] === */
-    #viewGrid {
-      display: none;
-      position: relative;
-    }
-
-    /* 1. 상단 안내 문구 독립 센터 라인 */
+    /* =========================================
+       4. 랜덤 메쉬 그리드 뷰 (viewGrid)
+       ========================================= */
+    #viewGrid { display: none; position: relative; }
+    
     .grid-intro-banner {
-      text-align: center;
-      margin-bottom: 14px;
-      padding: 8px 12px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      text-align: center; margin-bottom: 14px; padding: 8px 12px; background: #ffffff;
+      border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
-    .grid-intro-banner p {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 600;
-      color: #1e293b;
-      letter-spacing: -0.3px;
-    }
-    .grid-intro-count {
-      display: inline;
-    }
-
-    /* 2. 컨트롤 바 (교정 상황 보기 좌측 / 랜덤 셔플 & 읽음 초기화 우측) */
-    .grid-control-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      gap: 10px;
-    }
-    .grid-control-right {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .grid-intro-banner p { margin: 0; font-size: 15px; font-weight: 600; color: #1e293b; letter-spacing: -0.3px; }
+    .grid-intro-count { display: inline; }
+    
+    .grid-control-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; }
+    .grid-control-right { display: inline-flex; align-items: center; gap: 8px; }
+    
     .status-toggle-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: #ffffff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      font-size: 13px;
-      font-weight: 600;
-      color: #1e293b;
-      cursor: pointer;
-      user-select: none;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      transition: background 0.15s;
+      display: inline-flex; align-items: center; gap: 7px; background: #ffffff; padding: 6px 12px;
+      border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600;
+      color: #1e293b; cursor: pointer; user-select: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.15s;
     }
-    .status-toggle-wrap:hover {
-      background: #f1f5f9;
-    }
-    .status-toggle-wrap input[type="checkbox"] {
-      cursor: pointer;
-      width: 16px;
-      height: 16px;
-      accent-color: #2563eb;
-    }
+    .status-toggle-wrap:hover { background: #f1f5f9; }
+    .status-toggle-wrap input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb; }
+    
     .reset-btn {
-      padding: 6px 14px;
-      font-size: 13px;
-      background-color: #ffffff;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      cursor: pointer;
-      color: #4b5563;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      white-space: nowrap;
+      padding: 6px 14px; font-size: 13px; background-color: #ffffff; border: 1px solid #d1d5db;
+      border-radius: 6px; cursor: pointer; color: #4b5563; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: nowrap;
     }
-    .reset-btn:hover {
-      background-color: #f3f4f6;
-    }
+    .reset-btn:hover { background-color: #f3f4f6; }
 
-    /* 메쉬 컨테이너 및 sticky 인디케이터 포지셔닝 래퍼 */
     .grid-mesh-wrapper {
-      position: relative;
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      padding: 12px 20px 20px 20px;
+      position: relative; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 12px 20px 20px 20px;
     }
-
-    /* 상단 좌측 시작 인디케이터 라인 */
-    .sticky-indicator-top {
-      position: sticky;
-      top: 12px;
-      z-index: 30;
-      display: flex;
-      justify-content: flex-start;
-      margin-bottom: 10px;
-      pointer-events: none;
-    }
-    .grid-badge-start {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 32px;
-      background: rgba(15, 23, 42, 0.92);
-      color: #ffffff;
-      padding: 0 14px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.2);
-      backdrop-filter: blur(4px);
-      pointer-events: auto;
-      box-sizing: border-box;
-    }
-
-    .grid-mesh {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
-      gap: 6px;
-    }
+    .grid-mesh { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 6px; }
     .grid-cell {
-      aspect-ratio: 1 / 1;
-      background-color: #cbd5e1;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: transform 0.1s, background-color 0.2s, border-color 0.2s;
-      border: 2px solid transparent;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 9.5px;
-      font-weight: 700;
-      color: #1e293b;
-      line-height: 1;
-      user-select: none;
-      overflow: hidden;
+      aspect-ratio: 1 / 1; background-color: #cbd5e1; border-radius: 4px; cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s, border-color 0.2s; border: 2px solid transparent;
+      box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+      font-size: 9.5px; font-weight: 700; color: #1e293b; line-height: 1; user-select: none; overflow: hidden;
     }
-    .grid-cell:hover {
-      background-color: #60a5fa;
-      transform: scale(1.15);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: 2;
-    }
-    .grid-cell.read {
-      background-color: #93c5fd;
-      opacity: 0.65;
+    .grid-cell:hover { background-color: #60a5fa; transform: scale(1.15); box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 2; }
+    .grid-cell.read { background-color: #93c5fd; opacity: 0.65; }
+    
+    /* 교정 상황 보기 활성화 시 테두리 색상 */
+    .show-status .cell-status-wait { border: 2px solid #ef4444 !important; }
+    .show-status .cell-status-doing { border: 2px solid #16a34a !important; }
+    .show-status .cell-status-done { border: 2px solid #0f172a !important; }
+    .grid-cell-name { display: none; }
+    .show-status .grid-cell-name { display: block; }
+
+    /* Sticky 배지 (시작/끝 표시) */
+    .sticky-indicator-top { position: sticky; top: 12px; z-index: 30; display: flex; justify-content: flex-start; margin-bottom: 10px; pointer-events: none; }
+    .sticky-indicator-bottom { position: sticky; bottom: 14px; z-index: 30; display: flex; justify-content: flex-end; margin-top: 10px; pointer-events: none; }
+    .grid-badge-start, .grid-badge-end {
+      display: inline-flex; align-items: center; justify-content: center; height: 32px;
+      background: rgba(15, 23, 42, 0.92); color: #ffffff; padding: 0 14px; border-radius: 16px;
+      font-size: 14px; font-weight: 700; line-height: 1; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px); pointer-events: auto; box-sizing: border-box;
     }
 
-    /* 교정 상황 보기 활성화 시 */
-    .show-status .cell-status-wait {
-      border: 2px solid #ef4444 !important; /* 교정 전: 빨강 */
-    }
-    .show-status .cell-status-doing {
-      border: 2px solid #16a34a !important; /* 교정 중: 녹색 */
-    }
-    .show-status .cell-status-done {
-      border: 2px solid #0f172a !important; /* 교정 완료: 검정 */
-    }
-    .grid-cell-name {
-      display: none;
-    }
-    .show-status .grid-cell-name {
-      display: block;
-    }
-
-    /* 하단 우측 끝 인디케이터 라인 */
-    .sticky-indicator-bottom {
-      position: sticky;
-      bottom: 14px;
-      z-index: 30;
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 10px;
-      pointer-events: none;
-    }
-    .grid-badge-end {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 32px;
-      background: rgba(15, 23, 42, 0.92);
-      color: #ffffff;
-      padding: 0 14px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.2);
-      backdrop-filter: blur(4px);
-      pointer-events: auto;
-      box-sizing: border-box;
-    }
-    /* === [MODULE-STYLE: RANDOM-GRID END] === */
-
-    /* 본문 뷰어: PC/모바일 공통 오버레이 팝업 모달 */
+    /* =========================================
+       5. 공통 뷰어 팝업 모달
+       ========================================= */
     #articleViewer {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(4px);
-      z-index: 9999;
-      padding: 20px;
-      box-sizing: border-box;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999;
+      padding: 20px; box-sizing: border-box; align-items: center; justify-content: center;
     }
-    #articleViewer.open {
-      display: flex;
-    }
+    #articleViewer.open { display: flex; }
     .viewer-content-box {
-      width: 100%;
-      max-width: 860px;
-      max-height: 88vh;
-      overflow-y: auto;
-      padding: 28px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      border: 1px solid #e2e8f0;
-      position: relative;
+      width: 100%; max-width: 860px; max-height: 88vh; overflow-y: auto; padding: 28px;
+      background: #ffffff; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      border: 1px solid #e2e8f0; position: relative;
     }
     .viewer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #e2e8f0;
-      position: sticky;
-      top: 0;
-      background: #ffffff;
-      z-index: 10;
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; background: #ffffff; z-index: 10;
     }
-    .viewer-header-left {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .viewer-title {
-      font-size: 17px;
-      color: #1e293b;
-      font-weight: 700;
-    }
+    .viewer-header-left { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .viewer-title { font-size: 17px; color: #1e293b; font-weight: 700; }
+    
+    /* 뷰어/에디터 상태 배지 공통 색상 */
     .viewer-status-badge {
-      font-size: 12px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      display: inline-flex;
-      align-items: center;
+      font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+      background: #f1f5f9; border: 1px solid #e2e8f0; display: inline-flex; align-items: center;
     }
-    .status-correct {
-      color: #dc2626 !important;
-      border-color: #fecaca;
-      background: #fef2f2;
-    }
-    .status-progress {
-      color: #16a34a !important;
-      border-color: #bbf7d0;
-      background: #f0fdf4;
-    }
-    .status-done {
-      color: #1e293b !important;
-      border-color: #cbd5e1;
-      background: #f8fafc;
-    }
+    .status-correct { color: #dc2626 !important; border-color: #fecaca; background: #fef2f2; }
+    .status-progress { color: #16a34a !important; border-color: #bbf7d0; background: #f0fdf4; }
+    .status-done { color: #1e293b !important; border-color: #cbd5e1; background: #f8fafc; }
+    
     .btn-go-correct {
-      height: 28px;
-      padding: 0 10px;
-      font-size: 12px;
-      font-weight: 700;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      color: #2563eb;
-      border-radius: 6px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      transition: all 0.15s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      height: 28px; padding: 0 10px; font-size: 12px; font-weight: 700; border: 1px solid #cbd5e1;
+      background: #ffffff; color: #2563eb; border-radius: 6px; cursor: pointer; display: inline-flex;
+      align-items: center; transition: all 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .btn-go-correct:hover {
-      background: #f8fafc;
-      border-color: #93c5fd;
-      color: #1d4ed8;
-    }
+    .btn-go-correct:hover { background: #f8fafc; border-color: #93c5fd; color: #1d4ed8; }
+    
     .modal-close-icon {
-      background: none;
-      border: none;
-      font-size: 1.6rem;
-      line-height: 1;
-      color: #64748b;
-      cursor: pointer;
-      padding: 0 4px;
-      transition: color 0.15s ease, transform 0.15s ease;
+      background: none; border: none; font-size: 1.6rem; line-height: 1; color: #64748b;
+      cursor: pointer; padding: 0 4px; transition: color 0.15s ease, transform 0.15s ease;
     }
-    .modal-close-icon:hover {
-      color: #ef4444;
-      transform: scale(1.15);
-    }
+    .modal-close-icon:hover { color: #ef4444; transform: scale(1.15); }
+    
     .meta-info {
-      font-size: 14px;
-      color: #4b5563;
-      background-color: #f3f4f6;
-      padding: 12px 16px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      border-left: 4px solid #2563eb;
-      display: none;
+      font-size: 14px; color: #4b5563; background-color: #f3f4f6; padding: 12px 16px;
+      border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #2563eb; display: none;
     }
-    #contentBody {
-      white-space: pre-wrap;
-      font-size: 16px;
-      color: #1f2937;
-      line-height: 1.8;
-      min-height: 120px;
-    }
-    .placeholder-text {
-      color: #9ca3af;
-      text-align: center;
-      padding: 40px 0;
-    }
+    #contentBody { white-space: pre-wrap; font-size: 16px; color: #1f2937; line-height: 1.8; min-height: 120px; }
+    .placeholder-text { color: #9ca3af; text-align: center; padding: 40px 0; }
 
-    /* 인라인 교정 모달 스타일 */
+    /* =========================================
+       6. 인라인 에디터 모달 (교정)
+       ========================================= */
     .editor-modal-backdrop {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(2px);
-      z-index: 10000;
-      justify-content: center;
-      align-items: center;
-      padding: 12px;
-      box-sizing: border-box;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.55); backdrop-filter: blur(2px); z-index: 10000;
+      justify-content: center; align-items: center; padding: 12px; box-sizing: border-box;
     }
-    .editor-modal-backdrop.open {
-      display: flex;
-    }
+    .editor-modal-backdrop.open { display: flex; }
     .modal-container-toggle {
-      background: #fff;
-      border-radius: 8px;
-      width: 94%;
-      max-width: 900px;
-      height: 90vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      border: 1px solid #cbd5e1;
-      position: relative;
+      background: #fff; border-radius: 8px; width: 94%; max-width: 900px; height: 90vh;
+      display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      border: 1px solid #cbd5e1; position: relative;
     }
     .modal-header-toggle {
-      background: #fff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 10px 18px;
-      z-index: 10;
+      background: #fff; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #e2e8f0; padding: 10px 18px; z-index: 10;
     }
-    .modal-header-left {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .modal-title {
-      font-size: 1.02rem;
-      font-weight: bold;
-      color: #1e293b;
-    }
-    .pdf-vol-link {
-      color: #2563eb;
-      font-weight: bold;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      transition: color 0.15s ease;
-      cursor: pointer;
-    }
-    .pdf-vol-link:hover {
-      color: #1d4ed8;
-    }
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.4rem;
-      cursor: pointer;
-      color: #64748b;
-      line-height: 1;
-    }
-    .modal-close:hover {
-      color: #ef4444;
-    }
-    .modal-controls {
-      display: flex;
-      flex-direction: column;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 8px 14px;
-    }
+    .modal-header-left { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .modal-title { font-size: 1.02rem; font-weight: bold; color: #1e293b; }
+    .pdf-vol-link { color: #2563eb; font-weight: bold; text-decoration: underline; text-underline-offset: 3px; transition: color 0.15s ease; cursor: pointer; }
+    .pdf-vol-link:hover { color: #1d4ed8; }
+    .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #64748b; line-height: 1; }
+    .modal-close:hover { color: #ef4444; }
+    
+    .modal-controls { display: flex; flex-direction: column; background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 14px; }
     .controls-row-unified {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      background: #f1f5f9;
-      padding: 5px 8px;
-      border-radius: 6px;
-      white-space: nowrap;
-      box-sizing: border-box;
-      gap: 8px;
+      display: flex; justify-content: space-between; align-items: center; width: 100%;
+      background: #f1f5f9; padding: 5px 8px; border-radius: 6px; white-space: nowrap; box-sizing: border-box; gap: 8px;
     }
-    .row-unified-left {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      position: relative;
-    }
-    .row-unified-right {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-left: auto;
-    }
-    .editor-label-wrap {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      font-size: 0.85rem;
-      color: #334155;
-      font-weight: 600;
-      cursor: pointer;
-      outline: none;
-    }
-    .editor-label-text {
-      text-decoration: underline dotted #64748b;
-      text-underline-offset: 3px;
-    }
-    .history-tooltip {
-      visibility: hidden;
-      opacity: 0;
-      position: absolute;
-      top: 135%;
-      left: 0;
-      width: 220px;
-      white-space: normal;
-      word-break: keep-all;
-      background-color: #1e293b;
-      color: #ffffff;
-      text-align: left;
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 0.76rem;
-      font-weight: 500;
-      line-height: 1.45;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
-      pointer-events: none;
-      transition: opacity 0.2s ease, visibility 0.2s ease;
-    }
-    .history-tooltip::after {
-      content: "";
-      position: absolute;
-      bottom: 100%;
-      left: 12px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: transparent transparent #1e293b transparent;
-    }
-    .editor-label-wrap:hover .history-tooltip,
-    .editor-label-wrap:focus .history-tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
+    .row-unified-left, .row-unified-right { display: inline-flex; align-items: center; gap: 6px; }
+    .row-unified-left { position: relative; }
+    .row-unified-right { margin-left: auto; }
+    
+    .editor-label-wrap { position: relative; display: inline-flex; align-items: center; font-size: 0.85rem; color: #334155; font-weight: 600; cursor: pointer; outline: none; }
+    .editor-label-text { text-decoration: underline dotted #64748b; text-underline-offset: 3px; }
     .editor-input {
-      width: 70px;
-      height: 28px;
-      line-height: 28px;
-      padding: 0 4px;
-      font-size: 0.82rem;
-      text-align: center;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
+      width: 70px; height: 28px; line-height: 28px; padding: 0 4px; font-size: 0.82rem; text-align: center;
+      border: 1px solid #cbd5e1; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
     }
-    .editor-input:focus {
-      border-color: #2563eb;
-      outline: none;
+    .editor-input:focus { border-color: #2563eb; outline: none; }
+    .editor-input::placeholder { text-align: center; color: #94a3b8; }
+    
+    /* 툴팁 공통 (도움말, 역사) */
+    .history-tooltip, .help-tooltip {
+      visibility: hidden; opacity: 0; position: absolute; top: 135%; left: 0; width: 220px;
+      white-space: normal; word-break: keep-all; background-color: #1e293b; color: #ffffff; text-align: left;
+      padding: 8px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 500; line-height: 1.45;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 1000; pointer-events: none; transition: opacity 0.2s ease, visibility 0.2s ease;
     }
-    .editor-input::placeholder {
-      text-align: center;
-      color: #94a3b8;
+    .history-tooltip::after, .help-tooltip::after {
+      content: ""; position: absolute; bottom: 100%; border-width: 5px; border-style: solid; border-color: transparent transparent #1e293b transparent;
     }
-    .help-tip-wrap {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      cursor: pointer;
-      outline: none;
-    }
+    .history-tooltip::after { left: 12px; }
+    .help-tooltip::after { left: 7px; }
+    .editor-label-wrap:hover .history-tooltip, .editor-label-wrap:focus .history-tooltip { visibility: visible; opacity: 1; }
+    
+    .help-tip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; outline: none; }
     .help-badge {
-      display: inline-block;
-      width: 17px;
-      height: 17px;
-      line-height: 17px;
-      text-align: center;
-      border-radius: 50%;
-      background-color: #94a3b8;
-      color: #ffffff;
-      font-size: 0.72rem;
-      font-weight: 700;
-      user-select: none;
+      display: inline-block; width: 17px; height: 17px; line-height: 17px; text-align: center; border-radius: 50%;
+      background-color: #94a3b8; color: #ffffff; font-size: 0.72rem; font-weight: 700; user-select: none;
     }
-    .help-tip-wrap:hover .help-badge,
-    .help-tip-wrap:focus .help-badge {
-      background-color: #2563eb;
-    }
-    .help-tooltip {
-      visibility: hidden;
-      opacity: 0;
-      position: absolute;
-      top: 135%;
-      left: 0;
-      width: 220px;
-      white-space: normal;
-      word-break: keep-all;
-      background-color: #1e293b;
-      color: #ffffff;
-      text-align: left;
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 0.76rem;
-      font-weight: 500;
-      line-height: 1.45;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
-      pointer-events: none;
-      transition: opacity 0.2s ease, visibility 0.2s ease;
-    }
-    .help-tooltip::after {
-      content: "";
-      position: absolute;
-      bottom: 100%;
-      left: 7px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: transparent transparent #1e293b transparent;
-    }
-    .help-tip-wrap:hover .help-tooltip,
-    .help-tip-wrap:focus .help-tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
+    .help-tip-wrap:hover .help-badge, .help-tip-wrap:focus .help-badge { background-color: #2563eb; }
+    .help-tip-wrap:hover .help-tooltip, .help-tip-wrap:focus .help-tooltip { visibility: visible; opacity: 1; }
+
+    /* 상단 저장 버튼들 */
     .btn-action {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 28px;
-      border: none;
-      padding: 0 10px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; justify-content: center; height: 28px; border: none; padding: 0 10px;
+      font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
     }
     .btn-action:hover { opacity: 0.88; }
     .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-save-stay { background-color: #0284c7; color: white; }
     .btn-save-exit { background-color: #475569; color: white; }
 
-    .modal-body-container {
-      flex: 1;
-      padding: 16px 20px;
-      overflow-y: auto;
-      background: #fff;
-    }
-    .edit-ul {
-      padding-left: 0;
-      list-style: none;
-      margin: 0;
-    }
-    .edit-li {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 14px;
-      width: 100%;
-    }
-    .edit-label {
-      flex: 0 0 92px;
-      max-width: 92px;
-      font-size: 0.88rem;
-      color: #0f172a;
-      font-weight: 700;
-      padding-top: 5px;
-      word-break: keep-all;
-    }
-    .edit-field-wrap {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      width: calc(100% - 92px);
-    }
+    /* 에디터 메인 폼 영역 */
+    .modal-body-container { flex: 1; padding: 16px 20px; overflow-y: auto; background: #fff; }
+    .edit-ul { padding-left: 0; list-style: none; margin: 0; }
+    .edit-li { display: flex; align-items: flex-start; margin-bottom: 14px; width: 100%; }
+    .edit-label { flex: 0 0 92px; max-width: 92px; font-size: 0.88rem; color: #0f172a; font-weight: 700; padding-top: 5px; word-break: keep-all; }
+    .edit-field-wrap { flex: 1; display: flex; flex-direction: column; width: calc(100% - 92px); }
+    
     .edit-textarea-inline, .edit-textarea-full {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 7px 10px;
-      font-size: 0.9rem;
-      line-height: 1.5;
-      color: #1e293b;
-      background-color: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 5px;
-      font-family: inherit;
-      transition: border-color 0.15s ease, background-color 0.15s ease;
+      width: 100%; box-sizing: border-box; padding: 7px 10px; font-size: 0.9rem; line-height: 1.5; color: #1e293b;
+      background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; font-family: inherit; transition: border-color 0.15s ease, background-color 0.15s ease;
     }
-    .edit-textarea-inline:focus, .edit-textarea-full:focus {
-      background-color: #ffffff;
-      border-color: #2563eb;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-    }
-    .edit-textarea-full {
-      min-height: 200px;
-      resize: vertical;
-    }
-    .restore-toolbar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 5px;
-      margin-top: 4px;
-    }
+    .edit-textarea-inline:focus, .edit-textarea-full:focus { background-color: #ffffff; border-color: #2563eb; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+    .edit-textarea-full { min-height: 200px; resize: vertical; }
+    
+    .restore-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 5px; margin-top: 4px; }
     .btn-restore {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      color: #475569;
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      line-height: 1.2;
-      display: inline-flex;
-      align-items: center;
+      background: #ffffff; border: 1px solid #cbd5e1; color: #475569; font-size: 0.72rem; font-weight: 600;
+      padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; line-height: 1.2; display: inline-flex; align-items: center;
     }
-    .btn-restore:hover {
-      background-color: #f1f5f9;
-      border-color: #94a3b8;
-      color: #1e293b;
-    }
-    .btn-restore:active {
-      background-color: #e2e8f0;
-    }
-    .modal-footer-finish {
-      padding: 10px 18px;
-      background: #ffffff;
-      border-top: 1px solid #e2e8f0;
-      display: flex;
-      justify-content: center;
-    }
+    .btn-restore:hover { background-color: #f1f5f9; border-color: #94a3b8; color: #1e293b; }
+    .btn-restore:active { background-color: #e2e8f0; }
+    
+    .modal-footer-finish { padding: 10px 18px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; }
     .btn-finish-large {
-      width: 100%;
-      height: 38px;
-      background-color: #16a34a;
-      color: white;
-      font-size: 0.95rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
-      transition: background-color 0.2s ease;
+      width: 100%; height: 38px; background-color: #16a34a; color: white; font-size: 0.95rem; font-weight: bold;
+      border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2); transition: background-color 0.2s ease;
     }
-    .btn-finish-large:hover {
-      background-color: #15803d;
-    }
-    .btn-finish-large:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .btn-finish-large:hover { background-color: #15803d; }
+    .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* 커스텀 다이얼로그 (Alert & Confirm UI) */
+    /* =========================================
+       7. 알림 및 다이얼로그
+       ========================================= */
     .custom-dialog-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(2px);
-      justify-content: center;
-      align-items: center;
-      z-index: 12000;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.45);
+      backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 12000;
     }
     .custom-dialog-card {
-      background: #ffffff;
-      border-radius: 10px;
-      width: 88%;
-      max-width: 370px;
-      padding: 20px 18px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      animation: dialogPop 0.15s ease-out;
+      background: #ffffff; border-radius: 10px; width: 88%; max-width: 370px; padding: 20px 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; animation: dialogPop 0.15s ease-out;
     }
-    @keyframes dialogPop {
-      from { transform: scale(0.92); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .custom-dialog-msg {
-      font-size: 0.92rem;
-      color: #1e293b;
-      line-height: 1.55;
-      margin-bottom: 18px;
-      word-break: keep-all;
-    }
-    .custom-dialog-btns {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-    }
-    .custom-dialog-btn {
-      flex: 1;
-      height: 34px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: opacity 0.15s ease;
-    }
+    @keyframes dialogPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .custom-dialog-msg { font-size: 0.92rem; color: #1e293b; line-height: 1.55; margin-bottom: 18px; word-break: keep-all; }
+    .custom-dialog-btns { display: flex; justify-content: center; gap: 8px; }
+    .custom-dialog-btn { flex: 1; height: 34px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s ease; }
     .custom-dialog-btn:hover { opacity: 0.85; }
     .dialog-btn-confirm { background-color: #2563eb; color: #ffffff; }
     .dialog-btn-cancel { background-color: #e2e8f0; color: #475569; }
 
-    /* 상단 토스트 알림창 */
     .toast-popup {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #1e293b;
-      color: #ffffff;
-      padding: 10px 18px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 15000;
-      display: none;
-      animation: fadeInOut 2.8s ease forwards;
+      position: fixed; top: 20px; right: 20px; background: #1e293b; color: #ffffff; padding: 10px 18px;
+      border-radius: 6px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 15000; display: none; animation: fadeInOut 2.8s ease forwards;
     }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateY(-8px); }
-      15% { opacity: 1; transform: translateY(0); }
-      85% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-8px); }
-    }
+    @keyframes fadeInOut { 0% { opacity: 0; transform: translateY(-8px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-8px); } }
 
+    /* =========================================
+       8. 반응형 모바일 (미디어 쿼리 통합)
+       ========================================= */
     @media (max-width: 768px) {
+      /* 공통 / 리스트 / 필터 */
       body { padding: 10px; margin: 10px auto; }
       .tab-btn { font-size: 14px; padding: 10px 5px; }
       .filter-container { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 6px; }
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
-
-      /* === [MODULE-STYLE: RANDOM-GRID MOBILE START] === */
+      
+      /* 랜덤 메쉬 그리드 */
       .grid-intro-banner p { font-size: 13px; line-height: 1.5; }
       .grid-intro-count { display: block; margin-top: 3px; }
       .grid-control-bar { gap: 6px; }
@@ -961,14 +338,16 @@
       .show-status .cell-status-doing { border-width: 1.5px !important; }
       .show-status .cell-status-done { border-width: 1.5px !important; }
       .grid-badge-start, .grid-badge-end { height: 28px; font-size: 12px; padding: 0 10px; border-radius: 14px; }
-      .show-status .grid-cell-name { display: none; }
-      /* === [MODULE-STYLE: RANDOM-GRID MOBILE END] === */
+      .show-status .grid-cell-name { display: none; } /* 모바일에서는 이름 숨김 */
 
+      /* 본문 뷰어 팝업 */
       #articleViewer { padding: 10px; }
       .viewer-content-box { padding: 18px; max-height: 92vh; }
       .viewer-header-left { gap: 6px; }
       .viewer-title { font-size: 15px; }
       .btn-go-correct { font-size: 11px; padding: 0 6px; height: 26px; }
+      
+      /* 에디터 팝업 */
       .modal-container-toggle { width: 100%; height: 96vh; }
       .modal-title { font-size: 0.92rem; }
       .edit-li { flex-direction: column; align-items: flex-start; }
@@ -992,7 +371,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.0</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.1</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -1004,27 +383,19 @@
     <div class="filter-container">
       <div class="filter-group">
         <label for="volSelect">1. 통권 호수</label>
-        <select id="volSelect" disabled>
-          <option value="전체">데이터 로딩 중...</option>
-        </select>
+        <select id="volSelect" disabled><option value="전체">데이터 로딩 중...</option></select>
       </div>
       <div class="filter-group">
         <label for="typeSelect">2. 글 종류</label>
-        <select id="typeSelect" disabled>
-          <option value="전체">전체</option>
-        </select>
+        <select id="typeSelect" disabled><option value="전체">전체</option></select>
       </div>
       <div class="filter-group">
         <label for="cohortSelect">3. 기수</label>
-        <select id="cohortSelect" disabled>
-          <option value="전체">전체</option>
-        </select>
+        <select id="cohortSelect" disabled><option value="전체">전체</option></select>
       </div>
       <div class="filter-group">
         <label for="authorSelect">4. 글쓴이</label>
-        <select id="authorSelect" disabled>
-          <option value="전체">전체</option>
-        </select>
+        <select id="authorSelect" disabled><option value="전체">전체</option></select>
       </div>
     </div>
 
@@ -1034,23 +405,19 @@
     </div>
   </div>
 
-  <!-- === [MODULE-HTML: RANDOM-GRID START] === -->
+  <!-- 랜덤 선택 뷰 -->
   <div id="viewGrid">
-    <!-- 1. 독립 중앙 라인 안내 배너 -->
     <div class="grid-intro-banner">
-      <p>
-        ✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요.
-        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v8.0]</strong></span>
+      <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요.
+        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v8.1]</strong></span>
       </p>
     </div>
 
-    <!-- 2. 컨트롤 바 (좌측: 교정 상황 보기 / 우측: 랜덤 셔플 & 읽음 초기화) -->
     <div class="grid-control-bar">
       <label class="status-toggle-wrap">
         <input type="checkbox" id="toggleStatusCheck">
         <span>교정 상황 보기</span>
       </label>
-
       <div class="grid-control-right">
         <label class="status-toggle-wrap">
           <input type="checkbox" id="toggleShuffleCheck">
@@ -1060,25 +427,14 @@
       </div>
     </div>
 
-    <!-- 3. 메쉬 박스 컨테이너 -->
     <div class="grid-mesh-wrapper" id="gridMeshWrapper">
-      <!-- 1번 메쉬 가림 방지 상단 sticky 인디케이터 레인 -->
-      <div class="sticky-indicator-top">
-        <span id="gridStartBadge" class="grid-badge-start">📍 1</span>
-      </div>
-
-      <!-- 실제 메쉬 격자 그리드 -->
+      <div class="sticky-indicator-top"><span id="gridStartBadge" class="grid-badge-start">📍 1</span></div>
       <div class="grid-mesh" id="gridMesh"></div>
-
-      <!-- 마지막 메쉬 가림 방지 하단 sticky 인디케이터 레인 -->
-      <div class="sticky-indicator-bottom">
-        <span id="gridEndBadge" class="grid-badge-end">2,515 📍</span>
-      </div>
+      <div class="sticky-indicator-bottom"><span id="gridEndBadge" class="grid-badge-end">0 📍</span></div>
     </div>
   </div>
-  <!-- === [MODULE-HTML: RANDOM-GRID END] === -->
 
-  <!-- PC/모바일 공통 본문 뷰어 팝업 모달 -->
+  <!-- 본문 뷰어 모달 -->
   <div id="articleViewer" onclick="handleViewerBackdropClick(event)">
     <div class="viewer-content-box" onclick="event.stopPropagation()">
       <div class="viewer-header">
@@ -1098,13 +454,10 @@
   <div class="editor-modal-backdrop" id="editorModalBackdrop" onclick="handleEditorBackdropClick(event)">
     <div class="modal-container-toggle" onclick="event.stopPropagation()">
       <div class="modal-header-toggle">
-        <div class="modal-header-left">
-          <span class="modal-title" id="correctModalTitle">[기고문 교정: 교정 전]</span>
-        </div>
+        <div class="modal-header-left"><span class="modal-title" id="correctModalTitle">[기고문 교정: 교정 전]</span></div>
         <button class="modal-close" onclick="cancelAndCloseEditor()">&times;</button>
       </div>
 
-      <!-- 상단 컨트롤 바 (교정자 입력 & 저장 버튼) -->
       <div class="modal-controls">
         <div class="controls-row-unified">
           <div class="row-unified-left">
@@ -1125,9 +478,9 @@
         </div>
       </div>
 
-      <!-- 메인 콘텐츠 영역 -->
       <div class="modal-body-container" id="editorContentBox">
         <ul class="edit-ul">
+          <!-- 1. 글 종류 -->
           <li class="edit-li">
             <strong class="edit-label">1. 글 종류:</strong>
             <div class="edit-field-wrap">
@@ -1139,6 +492,7 @@
               </div>
             </div>
           </li>
+          <!-- 2. 기수 -->
           <li class="edit-li">
             <strong class="edit-label">2. 기수:</strong>
             <div class="edit-field-wrap">
@@ -1150,6 +504,7 @@
               </div>
             </div>
           </li>
+          <!-- 3. 기고자 -->
           <li class="edit-li">
             <strong class="edit-label">3. 기고자:</strong>
             <div class="edit-field-wrap">
@@ -1161,6 +516,7 @@
               </div>
             </div>
           </li>
+          <!-- 4. 글 제목 -->
           <li class="edit-li">
             <strong class="edit-label">4. 글 제목:</strong>
             <div class="edit-field-wrap">
@@ -1172,6 +528,7 @@
               </div>
             </div>
           </li>
+          <!-- 5. 기고문 본문 -->
           <li class="edit-li" style="flex-direction:column;">
             <strong class="edit-label" style="margin-bottom:6px;">5. 기고문 본문:</strong>
             <div class="edit-field-wrap" style="width:100%;">
@@ -1185,26 +542,25 @@
           </li>
         </ul>
       </div>
-
-      <!-- 하단 교정 완료 바 -->
       <div class="modal-footer-finish" id="modalFooterFinish">
         <button type="button" class="btn-finish-large" id="btnFinishLarge" onclick="handleSaveAction('finish')">✓ 교정 완료</button>
       </div>
     </div>
   </div>
 
-  <!-- 커스텀 다이얼로그 모달 -->
+  <!-- 알림/확인 다이얼로그 -->
   <div class="custom-dialog-overlay" id="custom-dialog-overlay">
     <div class="custom-dialog-card">
       <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
       <div class="custom-dialog-btns" id="custom-dialog-btns"></div>
     </div>
   </div>
-
-  <!-- 상단 토스트 알림창 -->
   <div id="toast-alert" class="toast-popup"></div>
 
   <script>
+    /* =========================================
+       1. CONSTANTS & GLOBALS
+       ========================================= */
     const CORRECT_SHEET_ID = '1NbVgxGzyGgREBu02w1Hz_XdkN95yTlIXEqzuuKonKJ8';
     const CORRECT_SHEET_GID = '1255939946';
     const ORIGIN_SHEET_ID = '1Nkc7CK9FlUb52q3vtzm98vnjiorLBvzmyP7L0eG09H4';
@@ -1222,523 +578,72 @@
     let isNetworkBusy = false;
     let pendingSaveTask = null;
     let editFieldState = {};
+    let isScrollTicking = false;
 
-    const tabFilterBtn = document.getElementById('tabFilterBtn');
-    const tabGridBtn = document.getElementById('tabGridBtn');
-    const viewFilter = document.getElementById('viewFilter');
-    const viewGrid = document.getElementById('viewGrid');
-    const volSelect = document.getElementById('volSelect');
-    const typeSelect = document.getElementById('typeSelect');
-    const cohortSelect = document.getElementById('cohortSelect');
-    const authorSelect = document.getElementById('authorSelect');
-    const listContainer = document.getElementById('listContainer');
-    const listTitle = document.getElementById('listTitle');
-    const articleList = document.getElementById('articleList');
-    const metaInfo = document.getElementById('metaInfo');
-    const contentBody = document.getElementById('contentBody');
-    const articleViewer = document.getElementById('articleViewer');
-    const editorModalBackdrop = document.getElementById('editorModalBackdrop');
-    const viewerStatusBadge = document.getElementById('viewerStatusBadge');
-    const editTypeSelect = document.getElementById('edit_type');
+    /* =========================================
+       2. DOM ELEMENTS CACHING
+       ========================================= */
+    const els = {
+      tabFilterBtn: document.getElementById('tabFilterBtn'),
+      tabGridBtn: document.getElementById('tabGridBtn'),
+      viewFilter: document.getElementById('viewFilter'),
+      viewGrid: document.getElementById('viewGrid'),
+      
+      volSelect: document.getElementById('volSelect'),
+      typeSelect: document.getElementById('typeSelect'),
+      cohortSelect: document.getElementById('cohortSelect'),
+      authorSelect: document.getElementById('authorSelect'),
+      listContainer: document.getElementById('listContainer'),
+      listTitle: document.getElementById('listTitle'),
+      articleList: document.getElementById('articleList'),
+      
+      gridMesh: document.getElementById('gridMesh'),
+      gridTotalCount: document.getElementById('gridTotalCount'),
+      resetGridBtn: document.getElementById('resetGridBtn'),
+      toggleStatusCheck: document.getElementById('toggleStatusCheck'),
+      toggleShuffleCheck: document.getElementById('toggleShuffleCheck'),
+      gridStartBadge: document.getElementById('gridStartBadge'),
+      gridEndBadge: document.getElementById('gridEndBadge'),
+      
+      articleViewer: document.getElementById('articleViewer'),
+      viewerStatusBadge: document.getElementById('viewerStatusBadge'),
+      metaInfo: document.getElementById('metaInfo'),
+      contentBody: document.getElementById('contentBody'),
+      
+      editorModalBackdrop: document.getElementById('editorModalBackdrop'),
+      correctModalTitle: document.getElementById('correctModalTitle'),
+      editorNameInput: document.getElementById('editorNameInput'),
+      editorHistoryTooltip: document.getElementById('editorHistoryTooltip'),
+      btnSaveStay: document.getElementById('btnSaveStay'),
+      
+      editType: document.getElementById('edit_type'),
+      editCohort: document.getElementById('edit_cohort'),
+      editAuthor: document.getElementById('edit_author'),
+      editTitle: document.getElementById('edit_title'),
+      editContent: document.getElementById('edit_content')
+    };
 
+    /* =========================================
+       3. UTILITIES & PARSERS
+       ========================================= */
     function markAsDirty() { isDirty = true; }
 
     function parseEditorList(editorStr) {
       if (!editorStr) return [];
       return editorStr.split(',').map(s => s.trim()).filter(Boolean);
     }
-
+    
     function getLastEditor(editorStr) {
       const list = parseEditorList(editorStr);
       return list.length > 0 ? list[list.length - 1] : '';
     }
 
-    // 성을 제외한 이름 1~2자 추출 헬퍼 (PC 메쉬 셀 표기용)
     function getShortEditorName(editorStr) {
-      if (!editorStr) return '';
-      const parts = parseEditorList(editorStr);
-      const last = parts.length > 0 ? parts[parts.length - 1] : '';
+      const last = getLastEditor(editorStr);
       if (!last) return '';
       if (last.length <= 2) return last.substring(1);
       if (last.length === 3) return last.substring(1);
       return last.slice(-2);
-    }
-
-    async function loadPdfMapData() {
-      try {
-        const resp = await fetch(PDF_CSV_URL);
-        const text = await resp.text();
-        const rows = fastParseArrayCSV(text);
-        for (let j = 1; j < rows.length; j++) {
-          const pCols = rows[j];
-          if (pCols.length < 3) continue;
-          const colName = pCols[0] || '';
-          const colLink = pCols[2] || '';
-          const matches = colName.match(/(\d+)/g);
-          if (!matches || matches.length === 0) continue;
-          let issueNum = parseInt(matches[0], 10);
-          if (colName.includes('100+1')) issueNum = 101;
-          if (colLink && colLink.startsWith('http')) {
-            globalPdfMap[issueNum] = colLink;
-            globalPdfMap[String(issueNum)] = colLink;
-            globalPdfMap[String(issueNum).padStart(3, '0')] = colLink;
-          }
-        }
-      } catch (err) {
-        console.warn('PDF 매핑 데이터 로드 실패:', err);
-      }
-    }
-
-    function fastParseArrayCSV(text) {
-      let p = '', row = [''], ret = [row], i = 0, r = 0, s = true;
-      for (let l of text) {
-        if ('"' === l) {
-          if (s && l === p) row[r] += l;
-          s = !s;
-        } else if (',' === l && s) l = row[++r] = '';
-        else if ('\n' === l && s) {
-          if ('\r' === p) row[r] = row[r].slice(0, -1);
-          row = ret[++i] = [l = ''];
-          r = 0;
-        } else row[r] += l;
-        p = l;
-      }
-      return ret;
-    }
-
-    function showCustomAlert(messageHtml, callback) {
-      const overlay = document.getElementById('custom-dialog-overlay');
-      const msgElem = document.getElementById('custom-dialog-msg');
-      const btnsElem = document.getElementById('custom-dialog-btns');
-      msgElem.innerHTML = messageHtml;
-      btnsElem.innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
-      overlay.style.display = 'flex';
-      document.getElementById('btn-dialog-ok').onclick = function() {
-        overlay.style.display = 'none';
-        if (callback) callback();
-      };
-    }
-
-    function showCustomConfirm(messageHtml, onConfirm, onCancel) {
-      const overlay = document.getElementById('custom-dialog-overlay');
-      const msgElem = document.getElementById('custom-dialog-msg');
-      const btnsElem = document.getElementById('custom-dialog-btns');
-      msgElem.innerHTML = messageHtml;
-      btnsElem.innerHTML = `
-        <button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button>
-        <button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>
-      `;
-      overlay.style.display = 'flex';
-      document.getElementById('btn-dialog-yes').onclick = function() {
-        overlay.style.display = 'none';
-        if (onConfirm) onConfirm();
-      };
-      document.getElementById('btn-dialog-no').onclick = function() {
-        overlay.style.display = 'none';
-        if (onCancel) onCancel();
-      };
-    }
-
-    function showToast(message, bgColor) {
-      const toast = document.getElementById('toast-alert');
-      if (!toast) return;
-      toast.textContent = message;
-      toast.style.background = bgColor || '#1e293b';
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 2800);
-    }
-
-    function updateSyncIndicator(isBusy, actionType) {
-      const btnStay = document.getElementById('btnSaveStay');
-      if (!btnStay) return;
-      if (isBusy && actionType === 'stay') {
-        btnStay.textContent = '⏳ 동기화 중...';
-        btnStay.style.opacity = '0.75';
-      } else {
-        btnStay.textContent = '저장/계속';
-        btnStay.style.opacity = '1';
-      }
-    }
-
-    function openViewerModal() {
-      articleViewer.classList.add('open');
-      if (window.location.hash !== '#article') {
-        window.history.pushState({ modal: 'open' }, '', '#article');
-      }
-    }
-
-    function closeViewerModal() {
-      if (window.location.hash === '#article') {
-        window.history.back();
-      } else {
-        articleViewer.classList.remove('open');
-      }
-    }
-
-    function handleViewerBackdropClick(e) {
-      if (e.target === articleViewer) closeViewerModal();
-    }
-
-    function handleEditorBackdropClick(e) {
-      if (e.target === editorModalBackdrop) cancelAndCloseEditor();
-    }
-
-    window.addEventListener('popstate', () => {
-      if (articleViewer.classList.contains('open')) articleViewer.classList.remove('open');
-    });
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (editorModalBackdrop.classList.contains('open')) cancelAndCloseEditor();
-        else if (articleViewer.classList.contains('open')) closeViewerModal();
-      }
-    });
-
-    function updateEditModalTitle(article, statusOverride) {
-      const st = (statusOverride !== undefined ? statusOverride : (article.status || '')).trim();
-      let statusText = '교정 전';
-      if (st.includes('완료')) {
-        statusText = '교정 완료';
-      } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
-        statusText = '교정 중';
-      }
-      const volStr = article.vol || '';
-      const numMatch = volStr.match(/(\d+)/);
-      const issueNum = numMatch ? parseInt(numMatch[0], 10) : 0;
-      const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum)] || globalPdfMap[String(issueNum).padStart(3, '0')];
-      let volHtml = volStr;
-      if (pdfUrl && pdfUrl.startsWith('http')) {
-        volHtml = `<a href="${pdfUrl}" target="_blank" class="pdf-vol-link" title="회보 원본 PDF 열기 (새 탭)">${volStr}</a>`;
-      }
-      document.getElementById('correctModalTitle').innerHTML = `[기고문 교정: ${statusText}] ${volHtml} - ${article.id}`;
-    }
-
-    function syncEditTypeDropdown(currentSelectedValue) {
-      editTypeSelect.innerHTML = '';
-      const typeOptions = Array.from(typeSelect.options)
-        .map(opt => opt.value)
-        .filter(val => val && val !== '전체');
-
-      if (currentSelectedValue && !typeOptions.includes(currentSelectedValue)) {
-        typeOptions.unshift(currentSelectedValue);
-      }
-      typeOptions.forEach(typeVal => {
-        const opt = document.createElement('option');
-        opt.value = opt.textContent = typeVal;
-        if (typeVal === currentSelectedValue) opt.selected = true;
-        editTypeSelect.appendChild(opt);
-      });
-      if (currentSelectedValue) {
-        editTypeSelect.value = currentSelectedValue;
-      } else if (typeOptions.length > 0) {
-        editTypeSelect.value = typeOptions[0];
-      }
-    }
-
-    async function openInlineEditor() {
-      if (!currentArticleId) return;
-      const article = articlesData.find(item => item.id === currentArticleId);
-      if (!article) return;
-      isDirty = false;
-      updateEditModalTitle(article);
-      const lastEd = getLastEditor(article.editor);
-      const editorInput = document.getElementById('editorNameInput');
-      editorInput.value = lastEd || localStorage.getItem('last_editor_name') || '';
-
-      const historyTip = document.getElementById('editorHistoryTooltip');
-      const list = parseEditorList(article.editor);
-      if (list.length > 0) {
-        historyTip.innerHTML = `<strong>역대 교정자:</strong><br>${list.join(' → ')}`;
-      } else {
-        historyTip.innerHTML = `역대 교정자: 없음`;
-      }
-
-      syncEditTypeDropdown(article.type || '');
-      initFieldState('type', editTypeSelect.value || article.type || '');
-      initFieldState('cohort', article.cohort || '');
-      initFieldState('author', article.author || '');
-      initFieldState('title', article.title || '');
-      initFieldState('content', contentCache[article.id] || '');
-      editorModalBackdrop.classList.add('open');
-      fetchOriginalData(article.id);
-    }
-
-    function initFieldState(key, val) {
-      editFieldState[key] = { currentSaved: val, pureOriginal: '', history: [val] };
-      const el = document.getElementById(`edit_${key}`);
-      if (el) el.value = val;
-    }
-
-    async function fetchOriginalData(id) {
-      if (originalCache[id]) {
-        applyOriginalCache(id);
-        return;
-      }
-      try {
-        const q = encodeURIComponent(`SELECT F, G, H, I, J WHERE A = '${id}'`);
-        const res = await fetch(`https://docs.google.com/spreadsheets/d/${ORIGIN_SHEET_ID}/gviz/tq?tqx=out:json&gid=${ORIGIN_SHEET_GID}&tq=${q}`);
-        const text = await res.text();
-        const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
-        if (match && match[1]) {
-          const rows = JSON.parse(match[1]).table.rows;
-          if (rows && rows.length > 0) {
-            const c = rows[0].c;
-            originalCache[id] = {
-              cohort: c[0] ? c[0].v : '',
-              author: c[1] ? c[1].v : '',
-              type: c[2] ? c[2].v : '',
-              title: c[3] ? c[3].v : '',
-              content: c[4] ? c[4].v : ''
-            };
-            applyOriginalCache(id);
-          }
-        }
-      } catch (err) {
-        console.warn('원본 데이터 로드 실패', err);
-      }
-    }
-
-    function applyOriginalCache(id) {
-      const orig = originalCache[id];
-      if (!orig) return;
-      for (const k in orig) {
-        if (editFieldState[k]) editFieldState[k].pureOriginal = orig[k];
-      }
-    }
-
-    function cancelAndCloseEditor() {
-      if (isDirty) {
-        showCustomConfirm('수정 중인 내용이 저장되지 않았습니다.<br>창을 닫으시겠습니까?', () => {
-          isDirty = false;
-          editorModalBackdrop.classList.remove('open');
-        });
-      } else {
-        editorModalBackdrop.classList.remove('open');
-      }
-    }
-
-    function handleFieldInput(key) {
-      markAsDirty();
-      const el = document.getElementById(`edit_${key}`);
-      if (!el || !editFieldState[key]) return;
-      const stack = editFieldState[key].history;
-      if (stack[stack.length - 1] !== el.value) {
-        stack.push(el.value);
-        if (stack.length > 50) stack.shift();
-      }
-    }
-
-    function undoField(key) {
-      const el = document.getElementById(`edit_${key}`);
-      if (!el || !editFieldState[key]) return;
-      const stack = editFieldState[key].history;
-      if (stack.length > 1) {
-        stack.pop();
-        el.value = stack[stack.length - 1];
-        markAsDirty();
-      } else {
-        showCustomAlert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
-      }
-    }
-
-    function restoreSaved(key) {
-      const el = document.getElementById(`edit_${key}`);
-      if (!el || !editFieldState[key]) return;
-      const targetVal = editFieldState[key].currentSaved;
-      if (el.value === targetVal) {
-        showCustomAlert('이미 최근 저장된 상태와 동일합니다.');
-        return;
-      }
-      editFieldState[key].history.push(targetVal);
-      el.value = targetVal;
-      markAsDirty();
-    }
-
-    async function restoreOriginal(key) {
-      const el = document.getElementById(`edit_${key}`);
-      if (!el || !editFieldState[key] || !currentArticleId) return;
-      if (!originalCache[currentArticleId]) {
-        showToast('📖 원본 시트에서 원문 데이터를 불러오는 중...', '#475569');
-        await fetchOriginalData(currentArticleId);
-      }
-      const origVal = editFieldState[key].pureOriginal;
-      if (el.value === origVal) {
-        showCustomAlert('이미 순수 원문 내용과 동일합니다.');
-        return;
-      }
-      editFieldState[key].history.push(origVal);
-      el.value = origVal;
-      markAsDirty();
-    }
-
-    function computeAccumulatedEditors(currentInput, previousFull) {
-      const list = parseEditorList(previousFull);
-      if (!currentInput) return list.join(', ');
-      if (list.length > 0 && list[list.length - 1] === currentInput) return list.join(', ');
-      list.push(currentInput);
-      return list.join(', ');
-    }
-
-    function handleSaveAction(actionType) {
-      if (!currentArticleId) return;
-      if (actionType === 'exit' && !isDirty) {
-        editorModalBackdrop.classList.remove('open');
-        return;
-      }
-      if (actionType === 'stay' && !isDirty) {
-        showCustomAlert('수정된 내용이 없습니다.');
-        return;
-      }
-      const editorName = document.getElementById('editorNameInput').value.trim();
-      if (!editorName) {
-        showCustomAlert('교정자 이름을 입력해 주세요.', () => {
-          document.getElementById('editorNameInput').focus();
-        });
-        return;
-      }
-      const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
-      const confirmMessage = (actionType === 'finish') ?
-        `[${currentArticleId}] 글을 <strong>'교정 완료'</strong> 상태로 등록하시겠습니까?` :
-        `[${currentArticleId}] 글을 <strong>'교정 중'</strong> 상태로 저장하시겠습니까?`;
-
-      showCustomConfirm(confirmMessage, () => {
-        executeSaveProcess(actionType, statusText, editorName);
-      });
-    }
-
-    function executeSaveProcess(actionType, statusText, editorName) {
-      const article = articlesData.find(item => item.id === currentArticleId);
-      const prevEditorFull = article ? article.editor : '';
-      const newAccumulated = computeAccumulatedEditors(editorName, prevEditorFull);
-
-      const payload = {
-        action: 'saveCorrection',
-        id: currentArticleId,
-        status: statusText,
-        editor: newAccumulated,
-        type: document.getElementById('edit_type').value.trim(),
-        cohort: document.getElementById('edit_cohort').value.trim(),
-        author: document.getElementById('edit_author').value.trim(),
-        title: document.getElementById('edit_title').value.trim(),
-        content: document.getElementById('edit_content').value
-      };
-
-      for (let k in editFieldState) {
-        const el = document.getElementById(`edit_${k}`);
-        if (el) editFieldState[k].currentSaved = el.value;
-      }
-      isDirty = false;
-      localStorage.setItem('last_editor_name', editorName);
-
-      if (article) {
-        article.editor = payload.editor;
-        article.status = payload.status;
-        article.type = payload.type;
-        article.cohort = payload.cohort;
-        article.author = payload.author;
-        article.title = payload.title;
-      }
-      contentCache[currentArticleId] = payload.content;
-      showArticleDetail(currentArticleId);
-
-      // 교정 저장 완료 시 메쉬 그리드 상태 재동기화
-      if (typeof renderMeshGrid === 'function') renderMeshGrid();
-
-      if (actionType === 'stay') {
-        if (article) updateEditModalTitle(article, payload.status);
-      } else {
-        editorModalBackdrop.classList.remove('open');
-      }
-
-      dispatchSaveRequest(payload, actionType);
-    }
-
-    function dispatchSaveRequest(payload, actionType) {
-      if (isNetworkBusy) {
-        pendingSaveTask = { payload: payload, actionType: actionType };
-        return;
-      }
-      isNetworkBusy = true;
-      updateSyncIndicator(true, actionType);
-
-      fetch(GAS_SAVE_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      .then(() => {
-        showToast('✓ 구글 시트 동기화가 완료되었습니다.', '#059669');
-      })
-      .catch((err) => {
-        console.error('백그라운드 동기화 실패:', err);
-        showToast('⚠️ 네트워크 동기화 지연 (재시도 대기)', '#d97706');
-      })
-      .finally(() => {
-        isNetworkBusy = false;
-        updateSyncIndicator(false, actionType);
-        if (pendingSaveTask) {
-          const nextTask = pendingSaveTask;
-          pendingSaveTask = null;
-          dispatchSaveRequest(nextTask.payload, nextTask.actionType);
-        }
-      });
-    }
-
-    // 탭 전환 이벤트
-    tabFilterBtn.addEventListener('click', () => {
-      tabFilterBtn.classList.add('active');
-      tabGridBtn.classList.remove('active');
-      viewFilter.style.display = 'block';
-      viewGrid.style.display = 'none';
-    });
-
-    tabGridBtn.addEventListener('click', () => {
-      tabGridBtn.classList.add('active');
-      tabFilterBtn.classList.remove('active');
-      viewGrid.style.display = 'block';
-      viewFilter.style.display = 'none';
-      if (typeof updateGridPosition === 'function') {
-        requestAnimationFrame(updateGridPosition);
-      }
-    });
-
-    function fastParseCSV(text) {
-      const articles = [];
-      let start = 0, inQuotes = false, row = [];
-      if (!text.endsWith('\n')) text += '\n';
-
-      for (let i = 0; i < text.length; i++) {
-        if (text[i] === '"') {
-          inQuotes = !inQuotes;
-        } else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
-          let val = text.substring(start, i);
-          if (val.endsWith('\r')) val = val.slice(0, -1);
-          if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
-            val = val.substring(1, val.length - 1).replace(/""/g, '"');
-          }
-          row.push(val.trim());
-
-          if (text[i] === '\n') {
-            if (row.length >= 3 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
-              articles.push({
-                id: row[0] || '',
-                status: row[1] || '',
-                editor: row[2] || '',
-                vol: row[3] || '',
-                date: row[4] || '',
-                cohort: row[5] || '',
-                author: row[6] || '',
-                type: row[7] || '',
-                title: row[8] || ''
-              });
-            }
-            row = [];
-          }
-          start = i + 1;
-        }
-      }
-      return articles;
     }
 
     function shuffleArray(array) {
@@ -1750,356 +655,472 @@
       return arr;
     }
 
+    function fastParseCSV(text) {
+      const articles = [];
+      let start = 0, inQuotes = false, row = [];
+      if (!text.endsWith('\n')) text += '\n';
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === '"') inQuotes = !inQuotes;
+        else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
+          let val = text.substring(start, i);
+          if (val.endsWith('\r')) val = val.slice(0, -1);
+          if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
+            val = val.substring(1, val.length - 1).replace(/""/g, '"');
+          }
+          row.push(val.trim());
+          if (text[i] === '\n') {
+            if (row.length >= 3 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
+              articles.push({ id: row[0]||'', status: row[1]||'', editor: row[2]||'', vol: row[3]||'', date: row[4]||'', cohort: row[5]||'', author: row[6]||'', type: row[7]||'', title: row[8]||'' });
+            }
+            row = [];
+          }
+          start = i + 1;
+        }
+      }
+      return articles;
+    }
+
+    function fastParseArrayCSV(text) {
+      let p = '', row = [''], ret = [row], i = 0, r = 0, s = true;
+      for (let l of text) {
+        if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
+        else if (',' === l && s) l = row[++r] = '';
+        else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
+        else row[r] += l;
+        p = l;
+      }
+      return ret;
+    }
+
+    function showCustomAlert(messageHtml, callback) {
+      const overlay = document.getElementById('custom-dialog-overlay');
+      document.getElementById('custom-dialog-msg').innerHTML = messageHtml;
+      document.getElementById('custom-dialog-btns').innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
+      overlay.style.display = 'flex';
+      document.getElementById('btn-dialog-ok').onclick = () => { overlay.style.display = 'none'; if (callback) callback(); };
+    }
+
+    function showCustomConfirm(messageHtml, onConfirm, onCancel) {
+      const overlay = document.getElementById('custom-dialog-overlay');
+      document.getElementById('custom-dialog-msg').innerHTML = messageHtml;
+      document.getElementById('custom-dialog-btns').innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button><button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>`;
+      overlay.style.display = 'flex';
+      document.getElementById('btn-dialog-yes').onclick = () => { overlay.style.display = 'none'; if (onConfirm) onConfirm(); };
+      document.getElementById('btn-dialog-no').onclick = () => { overlay.style.display = 'none'; if (onCancel) onCancel(); };
+    }
+
+    function showToast(message, bgColor) {
+      const toast = document.getElementById('toast-alert');
+      if (!toast) return;
+      toast.textContent = message; toast.style.background = bgColor || '#1e293b'; toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2800);
+    }
+
+    /* =========================================
+       4. DATA FETCHING
+       ========================================= */
+    async function loadPdfMapData() {
+      try {
+        const resp = await fetch(PDF_CSV_URL);
+        const text = await resp.text();
+        const rows = fastParseArrayCSV(text);
+        for (let j = 1; j < rows.length; j++) {
+          const pCols = rows[j];
+          if (pCols.length < 3) continue;
+          const colName = pCols[0] || '', colLink = pCols[2] || '';
+          const matches = colName.match(/(\d+)/g);
+          if (!matches || matches.length === 0) continue;
+          let issueNum = parseInt(matches[0], 10);
+          if (colName.includes('100+1')) issueNum = 101;
+          if (colLink && colLink.startsWith('http')) {
+            globalPdfMap[issueNum] = globalPdfMap[String(issueNum)] = globalPdfMap[String(issueNum).padStart(3, '0')] = colLink;
+          }
+        }
+      } catch (err) { console.warn('PDF 매핑 데이터 로드 실패:', err); }
+    }
+
     async function loadSheetData() {
       try {
         const response = await fetch(METADATA_CSV_URL);
-        const csvText = await response.text();
-        articlesData = fastParseCSV(csvText);
-
-        if (articlesData.length === 0) {
-          contentBody.textContent = '불러온 데이터가 없습니다. 시트 설정을 확인해 주세요.';
-          return;
-        }
-
+        articlesData = fastParseCSV(await response.text());
+        if (articlesData.length === 0) { els.contentBody.textContent = '불러온 데이터가 없습니다.'; return; }
         initDropdowns();
         renderMeshGrid();
-        contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
-      } catch (error) {
-        contentBody.textContent = '목록 데이터를 불러오는 데 실패했습니다.';
-      }
+        els.contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
+      } catch (error) { els.contentBody.textContent = '목록 데이터를 불러오는 데 실패했습니다.'; }
     }
 
-    // === [MODULE-SCRIPT: RANDOM-GRID START] ===
-    const gridMesh = document.getElementById('gridMesh');
-    const gridTotalCount = document.getElementById('gridTotalCount');
-    const resetGridBtn = document.getElementById('resetGridBtn');
-    const toggleStatusCheck = document.getElementById('toggleStatusCheck');
-    const toggleShuffleCheck = document.getElementById('toggleShuffleCheck');
-    const gridStartBadge = document.getElementById('gridStartBadge');
-    const gridEndBadge = document.getElementById('gridEndBadge');
-
-    if (resetGridBtn) {
-      resetGridBtn.addEventListener('click', () => {
-        const readCells = document.querySelectorAll('.grid-cell.read');
-        readCells.forEach(cell => cell.classList.remove('read'));
-      });
-    }
-
-    if (toggleStatusCheck) {
-      toggleStatusCheck.addEventListener('change', (e) => {
-        const isChecked = e.target.checked;
-        if (viewGrid) viewGrid.classList.toggle('show-status', isChecked);
-        if (gridMesh) gridMesh.classList.toggle('show-status', isChecked);
-      });
-    }
-
-    if (toggleShuffleCheck) {
-      toggleShuffleCheck.addEventListener('change', () => {
-        renderMeshGrid();
-      });
-    }
-
-    function renderMeshGrid() {
-      if (!gridMesh || !gridTotalCount) return;
-      gridMesh.innerHTML = '';
-      gridTotalCount.textContent = articlesData.length;
-
-      const shouldShuffle = toggleShuffleCheck && toggleShuffleCheck.checked;
-      const displayArticles = shouldShuffle ? shuffleArray(articlesData) : articlesData;
-
-      const fragment = document.createDocumentFragment();
-
-      displayArticles.forEach((article, index) => {
-        const cell = document.createElement('div');
-        cell.className = 'grid-cell';
-        cell.dataset.index = index + 1;
-
-        const st = (article.status || '').replace(/\s+/g, '');
-        const hasEditor = Boolean((article.editor || '').trim());
-
-        let statusClass = 'cell-status-wait'; // 교정 전 (빨강)
-        let statusLabel = '교정 전';
-
-        if (st.includes('완료')) {
-          statusClass = 'cell-status-done'; // 교정 완료 (검정)
-          statusLabel = '교정 완료';
-        } else if (st.includes('진행') || st.includes('중') || hasEditor) {
-          statusClass = 'cell-status-doing'; // 교정 중 (녹색)
-          statusLabel = '교정 중';
-        }
-
-        cell.classList.add(statusClass);
-
-        const shortName = getShortEditorName(article.editor);
-        if (shortName) {
-          const nameSpan = document.createElement('span');
-          nameSpan.className = 'grid-cell-name';
-          nameSpan.textContent = shortName;
-          cell.appendChild(nameSpan);
-        }
-
-        const editorText = article.editor ? ` / 교정자: ${article.editor}` : '';
-        const titleText = article.title ? ` - [${article.title}]` : '';
-        cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기 [${article.id}]${titleText}\n(상태: ${statusLabel}${editorText})`;
-
-        cell.addEventListener('click', function() {
-          this.classList.add('read');
-          showArticleDetail(article.id);
-          openViewerModal();
-        });
-        fragment.appendChild(cell);
-      });
-      gridMesh.appendChild(fragment);
-
-      requestAnimationFrame(updateGridPosition);
-    }
-
-    let isScrollTicking = false;
-    function updateGridPosition() {
-      if (!viewGrid || viewGrid.style.display !== 'block' || articlesData.length === 0) return;
-      if (!gridMesh || gridMesh.children.length === 0) return;
-
-      const cells = gridMesh.children;
-      const total = cells.length;
-      const vh = window.innerHeight;
-      const firstCellRect = cells[0].getBoundingClientRect();
-      const meshRect = gridMesh.getBoundingClientRect();
-
-      let cols = 0;
-      const firstTop = firstCellRect.top;
-      for (let i = 0; i < Math.min(total, 60); i++) {
-        if (Math.abs(cells[i].getBoundingClientRect().top - firstTop) < 3) {
-          cols++;
-        } else {
-          break;
-        }
-      }
-      if (cols <= 0) cols = 1;
-
-      let rowHeight = 34;
-      if (total > cols) {
-        rowHeight = cells[cols].getBoundingClientRect().top - firstCellRect.top;
-      }
-      if (rowHeight <= 0) rowHeight = 34;
-
-      const scrolledTopDist = Math.max(0, -meshRect.top);
-      const startRow = Math.floor(scrolledTopDist / rowHeight);
-      const firstVisible = Math.max(1, (startRow * cols) + 1);
-
-      const visibleHeightToBottom = Math.max(0, vh - meshRect.top);
-      const endRow = Math.ceil(visibleHeightToBottom / rowHeight);
-      const lastVisible = Math.min(total, Math.max(firstVisible, endRow * cols));
-
-      if (gridStartBadge) gridStartBadge.textContent = `📍 ${firstVisible.toLocaleString()}`;
-      if (gridEndBadge) gridEndBadge.textContent = `${lastVisible.toLocaleString()} 📍`;
-    }
-
-    window.addEventListener('scroll', () => {
-      if (!isScrollTicking) {
-        window.requestAnimationFrame(() => {
-          updateGridPosition();
-          isScrollTicking = false;
-        });
-        isScrollTicking = true;
-      }
-    }, { passive: true });
-
-    window.addEventListener('resize', () => {
-      updateGridPosition();
+    /* =========================================
+       5. TAB & UI CONTROLS
+       ========================================= */
+    els.tabFilterBtn.addEventListener('click', () => {
+      els.tabFilterBtn.classList.add('active'); els.tabGridBtn.classList.remove('active');
+      els.viewFilter.style.display = 'block'; els.viewGrid.style.display = 'none';
     });
-    // === [MODULE-SCRIPT: RANDOM-GRID END] ===
+    
+    els.tabGridBtn.addEventListener('click', () => {
+      els.tabGridBtn.classList.add('active'); els.tabFilterBtn.classList.remove('active');
+      els.viewGrid.style.display = 'block'; els.viewFilter.style.display = 'none';
+      requestAnimationFrame(updateGridPosition);
+    });
 
+    /* =========================================
+       6. FILTER & LIST VIEW LOGIC
+       ========================================= */
     function initDropdowns() {
-      const vols = [...new Set(articlesData.map(item => item.vol))].filter(Boolean).sort((a, b) => {
-        const numA = parseInt(a.replace(/[^0-9]/g, '')) || 0;
-        const numB = parseInt(b.replace(/[^0-9]/g, '')) || 0;
-        return numA - numB;
-      });
-      volSelect.innerHTML = '<option value="전체">전체</option>';
-      vols.forEach(v => {
-        const option = document.createElement('option');
-        option.value = option.textContent = v;
-        volSelect.appendChild(option);
-      });
+      const vols = [...new Set(articlesData.map(i => i.vol))].filter(Boolean).sort((a,b) => (parseInt(a.replace(/\D/g,''))||0) - (parseInt(b.replace(/\D/g,''))||0));
+      els.volSelect.innerHTML = '<option value="전체">전체</option>';
+      vols.forEach(v => els.volSelect.add(new Option(v, v)));
 
-      const types = [...new Set(articlesData.map(item => item.type))].filter(Boolean).sort();
-      typeSelect.innerHTML = '<option value="전체">전체</option>';
-      types.forEach(t => {
-        const option = document.createElement('option');
-        option.value = option.textContent = t;
-        typeSelect.appendChild(option);
-      });
+      const types = [...new Set(articlesData.map(i => i.type))].filter(Boolean).sort();
+      els.typeSelect.innerHTML = '<option value="전체">전체</option>';
+      types.forEach(t => els.typeSelect.add(new Option(t, t)));
 
-      volSelect.disabled = typeSelect.disabled = cohortSelect.disabled = authorSelect.disabled = false;
-      volSelect.value = typeSelect.value = cohortSelect.value = authorSelect.value = "전체";
+      els.volSelect.disabled = els.typeSelect.disabled = els.cohortSelect.disabled = els.authorSelect.disabled = false;
       updateFilters();
     }
 
     function updateFilters() {
-      const selectedVol = volSelect.value;
-      const selectedType = typeSelect.value;
-      const selectedCohort = cohortSelect.value;
-      const selectedAuthor = authorSelect.value;
+      const sv = els.volSelect.value, st = els.typeSelect.value, sc = els.cohortSelect.value, sa = els.authorSelect.value;
+      let pool = articlesData;
+      if (sv !== "전체") pool = pool.filter(i => i.vol === sv);
+      if (st !== "전체") pool = pool.filter(i => i.type === st);
 
-      let currentPool = articlesData;
-      if (selectedVol && selectedVol !== "전체") currentPool = currentPool.filter(item => item.vol === selectedVol);
-      if (selectedType && selectedType !== "전체") currentPool = currentPool.filter(item => item.type === selectedType);
-
-      const validCohorts = currentPool.map(item => item.cohort).filter(c => c && (/^\d+기$/.test(c) || c === '기록 없음' || c === '외부' || c === '촛불회'));
-      const sortedCohorts = [...new Set(validCohorts)].sort((a, b) => {
-        const isNumA = /^\d+기$/.test(a);
-        const isNumB = /^\d+기$/.test(b);
-        if (isNumA && isNumB) return parseInt(a) - parseInt(b);
-        if (isNumA) return -1;
-        if (isNumB) return 1;
-        return a.localeCompare(b);
+      const validCohorts = [...new Set(pool.map(i => i.cohort).filter(c => c && (/^\d+기$/.test(c) || c==='기록 없음' || c==='외부' || c==='촛불회')))].sort((a,b) => {
+        const isNumA = /^\d+기$/.test(a), isNumB = /^\d+기$/.test(b);
+        if(isNumA && isNumB) return parseInt(a) - parseInt(b);
+        return isNumA ? -1 : isNumB ? 1 : a.localeCompare(b);
       });
+      els.cohortSelect.innerHTML = '<option value="전체">전체</option>';
+      validCohorts.forEach(c => els.cohortSelect.add(new Option(c, c, false, c === sc)));
+      if (!validCohorts.includes(sc) && sc !== "전체") els.cohortSelect.value = "전체";
 
-      cohortSelect.innerHTML = '<option value="전체">전체</option>';
-      const cohortFragment = document.createDocumentFragment();
-      sortedCohorts.forEach(cohort => {
-        const option = document.createElement('option');
-        option.value = option.textContent = cohort;
-        if (cohort === selectedCohort) option.selected = true;
-        cohortFragment.appendChild(option);
-      });
-      cohortSelect.appendChild(cohortFragment);
-      if (!sortedCohorts.includes(selectedCohort) && selectedCohort !== "전체") cohortSelect.value = "전체";
-
-      let authorPool = currentPool;
-      if (cohortSelect.value && cohortSelect.value !== "전체") authorPool = authorPool.filter(item => item.cohort === cohortSelect.value);
-
-      const sortedAuthors = [...new Set(authorPool.map(item => item.author))].filter(Boolean).sort();
-      authorSelect.innerHTML = '<option value="전체">전체</option>';
-      const authorFragment = document.createDocumentFragment();
-      sortedAuthors.forEach(author => {
-        const option = document.createElement('option');
-        option.value = option.textContent = author;
-        if (author === selectedAuthor) option.selected = true;
-        authorFragment.appendChild(option);
-      });
-      authorSelect.appendChild(authorFragment);
-      if (!sortedAuthors.includes(selectedAuthor) && selectedAuthor !== "전체") authorSelect.value = "전체";
+      let aPool = pool;
+      if (els.cohortSelect.value !== "전체") aPool = aPool.filter(i => i.cohort === els.cohortSelect.value);
+      
+      const authors = [...new Set(aPool.map(i => i.author))].filter(Boolean).sort();
+      els.authorSelect.innerHTML = '<option value="전체">전체</option>';
+      authors.forEach(a => els.authorSelect.add(new Option(a, a, false, a === sa)));
+      if (!authors.includes(sa) && sa !== "전체") els.authorSelect.value = "전체";
 
       renderArticleList();
     }
 
     function renderArticleList() {
-      const selectedVol = volSelect.value;
-      const selectedType = typeSelect.value;
-      const selectedCohort = cohortSelect.value;
-      const selectedAuthor = authorSelect.value;
-
+      const sv = els.volSelect.value, st = els.typeSelect.value, sc = els.cohortSelect.value, sa = els.authorSelect.value;
       let filtered = articlesData;
-      if (selectedVol && selectedVol !== "전체") filtered = filtered.filter(item => item.vol === selectedVol);
-      if (selectedType && selectedType !== "전체") filtered = filtered.filter(item => item.type === selectedType);
-      if (selectedCohort && selectedCohort !== "전체") filtered = filtered.filter(item => item.cohort === selectedCohort);
-      if (selectedAuthor && selectedAuthor !== "전체") filtered = filtered.filter(item => item.author === selectedAuthor);
+      if (sv !== "전체") filtered = filtered.filter(i => i.vol === sv);
+      if (st !== "전체") filtered = filtered.filter(i => i.type === st);
+      if (sc !== "전체") filtered = filtered.filter(i => i.cohort === sc);
+      if (sa !== "전체") filtered = filtered.filter(i => i.author === sa);
 
-      articleList.innerHTML = '';
-      listTitle.textContent = `검색된 글 목록 (${filtered.length}건)`;
-
+      els.articleList.innerHTML = '';
+      els.listTitle.textContent = `검색된 글 목록 (${filtered.length}건)`;
       if (filtered.length === 0) {
-        articleList.innerHTML = '<li style="padding: 10px; color: #9ca3af; text-align: center;">조건에 일치하는 글이 없습니다.</li>';
-        listContainer.style.display = 'block';
-        return;
+        els.articleList.innerHTML = '<li style="padding: 10px; color: #9ca3af; text-align: center;">조건에 일치하는 글이 없습니다.</li>';
+        els.listContainer.style.display = 'block'; return;
       }
-
-      const listFragment = document.createDocumentFragment();
-      filtered.forEach(article => {
-        const li = document.createElement('li');
-        li.className = 'article-item';
-        li.textContent = `[${article.title}] - ${article.author}`;
-        li.title = `[${article.title}] - ${article.author} (${article.cohort}, ${article.vol})`;
-        li.addEventListener('click', function() {
-          document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
+      const frag = document.createDocumentFragment();
+      filtered.forEach(item => {
+        const li = document.createElement('li'); li.className = 'article-item';
+        li.textContent = `[${item.title}] - ${item.author}`;
+        li.title = `[${item.title}] - ${item.author} (${item.cohort}, ${item.vol})`;
+        li.onclick = () => {
+          document.querySelectorAll('.article-item').forEach(e => e.classList.remove('active'));
           li.classList.add('active');
-          showArticleDetail(article.id);
-          openViewerModal();
-        });
-        listFragment.appendChild(li);
+          showArticleDetail(item.id); openViewerModal();
+        };
+        frag.appendChild(li);
       });
-      articleList.appendChild(listFragment);
-      listContainer.style.display = 'block';
-    }
-
-    async function showArticleDetail(id) {
-      currentArticleId = id;
-      const article = articlesData.find(item => item.id === id);
-      if (!article) return;
-
-      const st = (article.status || '').trim();
-      let badgeText = '교정 전';
-      let badgeClass = 'status-correct';
-      if (st.includes('완료')) {
-        badgeText = '교정 완료';
-        badgeClass = 'status-done';
-      } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
-        badgeText = '교정 중';
-        badgeClass = 'status-progress';
-      } else {
-        badgeText = '교정 전';
-        badgeClass = 'status-correct';
-      }
-
-      viewerStatusBadge.textContent = badgeText;
-      viewerStatusBadge.className = `viewer-status-badge ${badgeClass}`;
-
-      metaInfo.style.display = 'block';
-      metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type}`;
-      contentBody.className = '';
-
-      if (contentCache[id]) {
-        contentBody.textContent = contentCache[id];
-        return;
-      }
-
-      contentBody.textContent = '본문을 불러오는 중입니다...';
-      try {
-        const query = encodeURIComponent(`SELECT J WHERE A = '${id}'`);
-        const queryUrl = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${CORRECT_SHEET_GID}&tq=${query}`;
-        const response = await fetch(queryUrl);
-        const rawText = await response.text();
-        const jsonMatch = rawText.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
-        if (jsonMatch && jsonMatch[1]) {
-          const resObj = JSON.parse(jsonMatch[1]);
-          const rows = resObj.table && resObj.table.rows;
-          if (rows && rows.length > 0 && rows[0].c && rows[0].c[0]) {
-            const fetchedContent = rows[0].c[0].v || '(본문 내용이 비어 있습니다.)';
-            contentCache[id] = fetchedContent;
-            if (currentArticleId === id) {
-              contentBody.textContent = fetchedContent;
-            }
-            return;
-          }
-        }
-        contentBody.textContent = '(해당 글의 본문을 찾을 수 없습니다.)';
-      } catch (err) {
-        contentBody.textContent = '본문을 불러오는 중 통신 오류가 발생했습니다.';
-      }
+      els.articleList.appendChild(frag);
+      els.listContainer.style.display = 'block';
     }
 
     const resetViewer = () => {
-      updateFilters();
-      articleViewer.classList.remove('open');
-      currentArticleId = null;
-      metaInfo.style.display = 'none';
-      contentBody.className = 'placeholder-text';
-      contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
+      updateFilters(); closeViewerModal();
+      currentArticleId = null; els.metaInfo.style.display = 'none';
+      els.contentBody.className = 'placeholder-text'; els.contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
     };
+    els.volSelect.addEventListener('change', resetViewer);
+    els.typeSelect.addEventListener('change', resetViewer);
+    els.cohortSelect.addEventListener('change', resetViewer);
+    els.authorSelect.addEventListener('change', () => { renderArticleList(); resetViewer(); });
 
-    volSelect.addEventListener('change', resetViewer);
-    typeSelect.addEventListener('change', resetViewer);
-    cohortSelect.addEventListener('change', resetViewer);
-    authorSelect.addEventListener('change', () => {
-      renderArticleList();
-      articleViewer.classList.remove('open');
-      currentArticleId = null;
-      metaInfo.style.display = 'none';
-      contentBody.className = 'placeholder-text';
-      contentBody.textContent = '글을 선택하시면 전문이 표시됩니다.';
+    /* =========================================
+       7. RANDOM GRID VIEW LOGIC
+       ========================================= */
+    if (els.resetGridBtn) {
+      els.resetGridBtn.addEventListener('click', () => { document.querySelectorAll('.grid-cell.read').forEach(c => c.classList.remove('read')); });
+    }
+    if (els.toggleStatusCheck) {
+      els.toggleStatusCheck.addEventListener('change', e => {
+        if (els.viewGrid) els.viewGrid.classList.toggle('show-status', e.target.checked);
+        if (els.gridMesh) els.gridMesh.classList.toggle('show-status', e.target.checked);
+      });
+    }
+    if (els.toggleShuffleCheck) {
+      els.toggleShuffleCheck.addEventListener('change', renderMeshGrid);
+    }
+
+    function renderMeshGrid() {
+      if (!els.gridMesh || !els.gridTotalCount) return;
+      els.gridMesh.innerHTML = '';
+      els.gridTotalCount.textContent = articlesData.length;
+
+      const displayData = (els.toggleShuffleCheck && els.toggleShuffleCheck.checked) ? shuffleArray(articlesData) : articlesData;
+      const frag = document.createDocumentFragment();
+      
+      displayData.forEach((article, idx) => {
+        const cell = document.createElement('div'); cell.className = 'grid-cell'; cell.dataset.index = idx + 1;
+        const st = (article.status || '').replace(/\s+/g, '');
+        const hasEditor = Boolean((article.editor || '').trim());
+        let sClass = 'cell-status-wait', sLabel = '교정 전';
+        
+        if (st.includes('완료')) { sClass = 'cell-status-done'; sLabel = '교정 완료'; }
+        else if (st.includes('진행') || st.includes('중') || hasEditor) { sClass = 'cell-status-doing'; sLabel = '교정 중'; }
+        cell.classList.add(sClass);
+        
+        const sName = getShortEditorName(article.editor);
+        if (sName) {
+          const span = document.createElement('span'); span.className = 'grid-cell-name'; span.textContent = sName; cell.appendChild(span);
+        }
+        const eText = article.editor ? ` / 교정자: ${article.editor}` : '';
+        const tText = article.title ? ` - [${article.title}]` : '';
+        cell.title = `#${String(idx+1).padStart(4,'0')}번째 이야기 [${article.id}]${tText}\n(상태: ${sLabel}${eText})`;
+        
+        cell.onclick = () => { cell.classList.add('read'); showArticleDetail(article.id); openViewerModal(); };
+        frag.appendChild(cell);
+      });
+      els.gridMesh.appendChild(frag);
+      requestAnimationFrame(updateGridPosition);
+    }
+
+    function updateGridPosition() {
+      if (!els.viewGrid || els.viewGrid.style.display !== 'block' || !els.gridMesh || !els.gridMesh.children.length) return;
+      const cells = els.gridMesh.children, total = cells.length;
+      let cols = 0; const firstTop = cells[0].getBoundingClientRect().top;
+      
+      for (let i = 0; i < Math.min(total, 60); i++) {
+        if (Math.abs(cells[i].getBoundingClientRect().top - firstTop) < 3) cols++; else break;
+      }
+      if (cols <= 0) cols = 1;
+      let rowHeight = total > cols ? (cells[cols].getBoundingClientRect().top - firstTop) : 34;
+      if (rowHeight <= 0) rowHeight = 34;
+
+      const meshRect = els.gridMesh.getBoundingClientRect();
+      const startRow = Math.floor(Math.max(0, -meshRect.top) / rowHeight);
+      const firstVis = Math.max(1, (startRow * cols) + 1);
+      const endRow = Math.ceil(Math.max(0, window.innerHeight - meshRect.top) / rowHeight);
+      const lastVis = Math.min(total, Math.max(firstVis, endRow * cols));
+
+      if (els.gridStartBadge) els.gridStartBadge.textContent = `📍 ${firstVis.toLocaleString()}`;
+      if (els.gridEndBadge) els.gridEndBadge.textContent = `${lastVis.toLocaleString()} 📍`;
+    }
+    
+    window.addEventListener('scroll', () => {
+      if (!isScrollTicking) { window.requestAnimationFrame(() => { updateGridPosition(); isScrollTicking = false; }); isScrollTicking = true; }
+    }, { passive: true });
+    window.addEventListener('resize', updateGridPosition);
+
+    /* =========================================
+       8. VIEWER MODAL LOGIC
+       ========================================= */
+    async function showArticleDetail(id) {
+      currentArticleId = id; const article = articlesData.find(i => i.id === id); if (!article) return;
+      
+      const st = (article.status || '').trim();
+      let bText = '교정 전', bClass = 'status-correct';
+      if (st.includes('완료')) { bText = '교정 완료'; bClass = 'status-done'; }
+      else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) { bText = '교정 중'; bClass = 'status-progress'; }
+      
+      els.viewerStatusBadge.textContent = bText; els.viewerStatusBadge.className = `viewer-status-badge ${bClass}`;
+      els.metaInfo.style.display = 'block';
+      els.metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type}`;
+      els.contentBody.className = '';
+
+      if (contentCache[id]) { els.contentBody.textContent = contentCache[id]; return; }
+      els.contentBody.textContent = '본문을 불러오는 중입니다...';
+      
+      try {
+        const res = await fetch(`https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${CORRECT_SHEET_GID}&tq=${encodeURIComponent(`SELECT J WHERE A = '${id}'`)}`);
+        const match = (await res.text()).match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+        if (match && match[1]) {
+          const rows = JSON.parse(match[1]).table?.rows;
+          if (rows && rows[0]?.c?.[0]) {
+            contentCache[id] = rows[0].c[0].v || '(본문 내용이 비어 있습니다.)';
+            if (currentArticleId === id) els.contentBody.textContent = contentCache[id];
+            return;
+          }
+        }
+        els.contentBody.textContent = '(해당 글의 본문을 찾을 수 없습니다.)';
+      } catch (err) { els.contentBody.textContent = '본문을 불러오는 중 통신 오류가 발생했습니다.'; }
+    }
+
+    function openViewerModal() {
+      els.articleViewer.classList.add('open');
+      if (window.location.hash !== '#article') window.history.pushState({ modal: 'open' }, '', '#article');
+    }
+    function closeViewerModal() {
+      if (window.location.hash === '#article') window.history.back(); else els.articleViewer.classList.remove('open');
+    }
+    function handleViewerBackdropClick(e) { if (e.target === els.articleViewer) closeViewerModal(); }
+    
+    window.addEventListener('popstate', () => els.articleViewer.classList.remove('open'));
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { if (els.editorModalBackdrop.classList.contains('open')) cancelAndCloseEditor(); else if (els.articleViewer.classList.contains('open')) closeViewerModal(); }
     });
 
+    /* =========================================
+       9. EDITOR MODAL & SYNC LOGIC
+       ========================================= */
+    function updateEditModalTitle(article, statusOverride) {
+      const st = (statusOverride !== undefined ? statusOverride : (article.status || '')).trim();
+      let sText = st.includes('완료') ? '교정 완료' : (st.includes('진행') || st.includes('중') || (st !== '교정' && st !== '교정 전' && st !== '')) ? '교정 중' : '교정 전';
+      
+      const vMatch = (article.vol || '').match(/(\d+)/);
+      const pdfUrl = vMatch ? (globalPdfMap[parseInt(vMatch[0], 10)] || globalPdfMap[vMatch[0].padStart(3, '0')]) : null;
+      const volHtml = (pdfUrl && pdfUrl.startsWith('http')) ? `<a href="${pdfUrl}" target="_blank" class="pdf-vol-link" title="회보 원본 PDF 열기 (새 탭)">${article.vol}</a>` : (article.vol || '');
+      
+      els.correctModalTitle.innerHTML = `[기고문 교정: ${sText}] ${volHtml} - ${article.id}`;
+    }
+
+    function initFieldState(key, val) {
+      editFieldState[key] = { currentSaved: val, pureOriginal: '', history: [val] };
+      const el = els[`edit${key.charAt(0).toUpperCase() + key.slice(1)}`];
+      if (el) el.value = val;
+    }
+
+    async function openInlineEditor() {
+      if (!currentArticleId) return;
+      const article = articlesData.find(i => i.id === currentArticleId); if (!article) return;
+      isDirty = false; updateEditModalTitle(article);
+      
+      els.editorNameInput.value = getLastEditor(article.editor) || localStorage.getItem('last_editor_name') || '';
+      const list = parseEditorList(article.editor);
+      els.editorHistoryTooltip.innerHTML = list.length > 0 ? `<strong>역대 교정자:</strong><br>${list.join(' → ')}` : `역대 교정자: 없음`;
+      
+      els.editType.innerHTML = '';
+      const opts = [...new Set(Array.from(els.typeSelect.options).map(o => o.value).filter(v => v && v !== '전체'))];
+      if (article.type && !opts.includes(article.type)) opts.unshift(article.type);
+      opts.forEach(o => els.editType.add(new Option(o, o, false, o === article.type)));
+      if (!article.type && opts.length > 0) els.editType.value = opts[0];
+
+      initFieldState('type', els.editType.value || article.type || '');
+      initFieldState('cohort', article.cohort || ''); initFieldState('author', article.author || '');
+      initFieldState('title', article.title || ''); initFieldState('content', contentCache[article.id] || '');
+      
+      els.editorModalBackdrop.classList.add('open');
+      if (!originalCache[article.id]) fetchOriginalData(article.id); else applyOriginalCache(article.id);
+    }
+
+    async function fetchOriginalData(id) {
+      try {
+        const res = await fetch(`https://docs.google.com/spreadsheets/d/${ORIGIN_SHEET_ID}/gviz/tq?tqx=out:json&gid=${ORIGIN_SHEET_GID}&tq=${encodeURIComponent(`SELECT F, G, H, I, J WHERE A = '${id}'`)}`);
+        const match = (await res.text()).match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+        if (match && match[1]) {
+          const c = JSON.parse(match[1]).table?.rows?.[0]?.c;
+          if (c) {
+            originalCache[id] = { cohort: c[0]?.v||'', author: c[1]?.v||'', type: c[2]?.v||'', title: c[3]?.v||'', content: c[4]?.v||'' };
+            applyOriginalCache(id);
+          }
+        }
+      } catch (err) { console.warn('원본 데이터 로드 실패', err); }
+    }
+    
+    function applyOriginalCache(id) {
+      const orig = originalCache[id]; if (!orig) return;
+      for (const k in orig) if (editFieldState[k]) editFieldState[k].pureOriginal = orig[k];
+    }
+
+    function cancelAndCloseEditor() {
+      if (isDirty) showCustomConfirm('수정 중인 내용이 저장되지 않았습니다.<br>창을 닫으시겠습니까?', () => { isDirty = false; els.editorModalBackdrop.classList.remove('open'); });
+      else els.editorModalBackdrop.classList.remove('open');
+    }
+    function handleEditorBackdropClick(e) { if (e.target === els.editorModalBackdrop) cancelAndCloseEditor(); }
+
+    function handleFieldInput(key) {
+      markAsDirty();
+      const el = els[`edit${key.charAt(0).toUpperCase() + key.slice(1)}`];
+      if (!el || !editFieldState[key]) return;
+      const stack = editFieldState[key].history;
+      if (stack[stack.length - 1] !== el.value) { stack.push(el.value); if (stack.length > 50) stack.shift(); }
+    }
+    function undoField(key) {
+      const el = els[`edit${key.charAt(0).toUpperCase() + key.slice(1)}`], stack = editFieldState[key]?.history;
+      if (!el || !stack) return;
+      if (stack.length > 1) { stack.pop(); el.value = stack[stack.length - 1]; markAsDirty(); } else showCustomAlert('더 이상 되돌릴 이전 내용이 없습니다.');
+    }
+    function restoreSaved(key) {
+      const el = els[`edit${key.charAt(0).toUpperCase() + key.slice(1)}`], st = editFieldState[key];
+      if (!el || !st) return;
+      if (el.value === st.currentSaved) { showCustomAlert('이미 최근 저장된 상태와 동일합니다.'); return; }
+      st.history.push(st.currentSaved); el.value = st.currentSaved; markAsDirty();
+    }
+    async function restoreOriginal(key) {
+      const el = els[`edit${key.charAt(0).toUpperCase() + key.slice(1)}`], st = editFieldState[key];
+      if (!el || !st || !currentArticleId) return;
+      if (!originalCache[currentArticleId]) { showToast('📖 원문 데이터를 불러오는 중...', '#475569'); await fetchOriginalData(currentArticleId); }
+      if (el.value === st.pureOriginal) { showCustomAlert('이미 순수 원문 내용과 동일합니다.'); return; }
+      st.history.push(st.pureOriginal); el.value = st.pureOriginal; markAsDirty();
+    }
+
+    function updateSyncIndicator(isBusy, actionType) {
+      if (!els.btnSaveStay) return;
+      els.btnSaveStay.textContent = (isBusy && actionType === 'stay') ? '⏳ 동기화 중...' : '저장/계속';
+      els.btnSaveStay.style.opacity = (isBusy && actionType === 'stay') ? '0.75' : '1';
+    }
+
+    function handleSaveAction(actionType) {
+      if (!currentArticleId || (actionType === 'exit' && !isDirty)) { if(actionType === 'exit') els.editorModalBackdrop.classList.remove('open'); return; }
+      if (actionType === 'stay' && !isDirty) { showCustomAlert('수정된 내용이 없습니다.'); return; }
+      
+      const eName = els.editorNameInput.value.trim();
+      if (!eName) { showCustomAlert('교정자 이름을 입력해 주세요.', () => els.editorNameInput.focus()); return; }
+      
+      const sText = actionType === 'finish' ? '교정 완료' : '교정 중';
+      showCustomConfirm(`[${currentArticleId}] 글을 <strong>'${sText}'</strong> 상태로 저장하시겠습니까?`, () => executeSaveProcess(actionType, sText, eName));
+    }
+
+    function executeSaveProcess(actionType, statusText, editorName) {
+      const article = articlesData.find(i => i.id === currentArticleId);
+      const list = parseEditorList(article ? article.editor : '');
+      if (!editorName || (list.length > 0 && list[list.length-1] !== editorName)) list.push(editorName);
+      
+      const payload = {
+        action: 'saveCorrection', id: currentArticleId, status: statusText, editor: list.join(', '),
+        type: els.editType.value.trim(), cohort: els.editCohort.value.trim(), author: els.editAuthor.value.trim(),
+        title: els.editTitle.value.trim(), content: els.editContent.value
+      };
+
+      ['type','cohort','author','title','content'].forEach(k => { if(editFieldState[k]) editFieldState[k].currentSaved = payload[k]; });
+      isDirty = false; localStorage.setItem('last_editor_name', editorName);
+      
+      if (article) Object.assign(article, { editor: payload.editor, status: payload.status, type: payload.type, cohort: payload.cohort, author: payload.author, title: payload.title });
+      contentCache[currentArticleId] = payload.content;
+      
+      showArticleDetail(currentArticleId);
+      renderMeshGrid();
+      
+      if (actionType === 'stay' && article) updateEditModalTitle(article, payload.status);
+      else els.editorModalBackdrop.classList.remove('open');
+      
+      dispatchSaveRequest(payload, actionType);
+    }
+
+    function dispatchSaveRequest(payload, actionType) {
+      if (isNetworkBusy) { pendingSaveTask = { payload, actionType }; return; }
+      isNetworkBusy = true; updateSyncIndicator(true, actionType);
+      
+      fetch(GAS_SAVE_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(() => showToast('✓ 구글 시트 동기화가 완료되었습니다.', '#059669'))
+      .catch(err => { console.error('동기화 실패:', err); showToast('⚠️ 네트워크 동기화 지연 (재시도 대기)', '#d97706'); })
+      .finally(() => {
+        isNetworkBusy = false; updateSyncIndicator(false, actionType);
+        if (pendingSaveTask) { const next = pendingSaveTask; pendingSaveTask = null; dispatchSaveRequest(next.payload, next.actionType); }
+      });
+    }
+
+    // 앱 초기화 로드
     loadSheetData();
     loadPdfMapData();
   </script>
