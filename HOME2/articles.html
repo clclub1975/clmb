@@ -1,4 +1,4 @@
-<!-- v8.5: 안내문구 내 불필요한 버전넘버 제거 및 교정모달 본문 창(textarea) 간격 축소 및 Flex 기반 높이 최대 확장 -->
+<!-- v8.6: 모바일 환경에서 가상키보드 간섭 방지 및 편집 편의를 위해 본문 창(textarea) 최소 높이를 강제 확보하여 모달 스크롤 유도 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -379,8 +379,9 @@
       .btn-action { height: 26px; padding: 0 6px; font-size: 0.74rem; }
       .help-tooltip { width: 200px; left: -20px; }
       .history-tooltip { width: 200px; left: 0; }
-      /* 모바일 환경에서도 edit-textarea-full 은 가독성 유지되도록 약간의 패딩만 줄임 */
-      .edit-textarea-full { padding: 12px; font-size: 15px; line-height: 1.7; }
+      
+      /* 모바일 전용: 가상키보드 간섭 방지 및 편집 편의를 위한 본문 창 높이 강제 확보 */
+      .edit-textarea-full { padding: 12px; font-size: 15px; line-height: 1.7; min-height: 450px; }
     }
   </style>
 </head>
@@ -390,7 +391,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.5</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.6</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
