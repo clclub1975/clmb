@@ -1,10 +1,10 @@
-<!-- v0.0: '랜덤 선택하기' 메쉬 그리드 및 위치 인디케이터 기능 독립 테스트용 서브모듈 (추후 articles.html과 1:1 재병합 전제) -->
+<!-- v0.1: 상단 좌측 시작 인디케이터(📍)를 메인 버튼 간섭 없이 메쉬 상단에 안전하게 배치하도록 좌표 및 z-index 보정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>랜덤 선택하기 서브모듈 테스트 [v0.0]</title>
+  <title>랜덤 선택하기 서브모듈 테스트 [v0.1]</title>
   <style>
     /* 서브모듈 독립 실행용 기본 래퍼 스타일 */
     body {
@@ -86,12 +86,14 @@
       background-color: #2563eb;
       opacity: 0.5;
     }
+
+    /* 상단 좌측 시작 인디케이터 (헤더/버튼 간섭 방지 top: 64px, z-index: 100) */
     .grid-badge-start {
       display: block;
       position: fixed;
-      top: 18px;
+      top: 64px;
       left: 18px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       color: #ffffff;
       padding: 6px 13px;
       border-radius: 20px;
@@ -99,16 +101,19 @@
       font-weight: 600;
       box-shadow: 0 4px 14px rgba(0,0,0,0.25);
       backdrop-filter: blur(4px);
-      z-index: 50;
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 100;
       pointer-events: none;
       letter-spacing: 0.3px;
     }
+
+    /* 하단 우측 끝 인디케이터 */
     .grid-badge-end {
       display: block;
       position: fixed;
       bottom: 18px;
       right: 18px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       color: #ffffff;
       padding: 6px 13px;
       border-radius: 20px;
@@ -116,7 +121,8 @@
       font-weight: 600;
       box-shadow: 0 4px 14px rgba(0,0,0,0.25);
       backdrop-filter: blur(4px);
-      z-index: 50;
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 100;
       pointer-events: none;
       letter-spacing: 0.3px;
     }
@@ -124,8 +130,8 @@
     @media (max-width: 768px) {
       .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
       .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 14px 10px 56px 10px; gap: 4px; margin-top: 10px; }
-      .grid-badge-start { top: 12px; left: 12px; font-size: 11px; padding: 5px 11px; }
-      .grid-badge-end { bottom: 12px; right: 12px; font-size: 11px; padding: 5px 11px; }
+      .grid-badge-start { top: 54px; left: 14px; font-size: 11px; padding: 5px 11px; }
+      .grid-badge-end { bottom: 14px; right: 14px; font-size: 11px; padding: 5px 11px; }
     }
     /* === [MODULE-STYLE: RANDOM-GRID END] === */
   </style>
@@ -133,7 +139,7 @@
 <body>
 
   <div class="test-header-bar">
-    <strong>🛠️ random.html [v0.0] 단독 테스트 모드</strong>
+    <strong>🛠️ random.html [v0.1] 단독 테스트 모드</strong>
     <span>(디버깅 완료 후 articles.html에 1:1 병합 예정)</span>
   </div>
 
