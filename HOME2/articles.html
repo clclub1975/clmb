@@ -1,4 +1,4 @@
-<!-- v8.2: '교정 전' 상태 시 교정자 자동입력 방지(빈칸 처리) 및 교정 모달 본문 textarea 폰트/줄간격 포맷을 읽기 모달과 100% 동일하게 일치 -->
+<!-- v8.3: 컨트롤 버튼 높이/줄맞춤/폰트 통일 및 읽음 기록 전역 동기화 (세부조건 탭에서 읽은 글도 메쉬 그리드에 즉시 반영 및 셔플 시 유지) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -85,17 +85,21 @@
     .grid-control-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; }
     .grid-control-right { display: inline-flex; align-items: center; gap: 8px; }
     
+    /* V8.3 컨트롤 버튼 통일: box-sizing 및 height 명시, display:inline-flex align-items:center 적용 */
     .status-toggle-wrap {
-      display: inline-flex; align-items: center; gap: 7px; background: #ffffff; padding: 6px 12px;
-      border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      height: 32px; box-sizing: border-box; background: #ffffff; padding: 0 12px;
+      border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600; font-family: inherit;
       color: #1e293b; cursor: pointer; user-select: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.15s;
     }
     .status-toggle-wrap:hover { background: #f1f5f9; }
-    .status-toggle-wrap input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb; }
+    .status-toggle-wrap input[type="checkbox"] { cursor: pointer; width: 15px; height: 15px; accent-color: #2563eb; margin: 0; }
     
     .reset-btn {
-      padding: 6px 14px; font-size: 13px; background-color: #ffffff; border: 1px solid #d1d5db;
-      border-radius: 6px; cursor: pointer; color: #4b5563; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: nowrap;
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 32px; box-sizing: border-box; padding: 0 14px; font-size: 13px; font-family: inherit;
+      background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; 
+      color: #4b5563; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: nowrap;
     }
     .reset-btn:hover { background-color: #f3f4f6; }
 
@@ -334,9 +338,12 @@
       .grid-intro-banner p { font-size: 13px; line-height: 1.5; }
       .grid-intro-count { display: block; margin-top: 3px; }
       .grid-control-bar { gap: 6px; }
-      .status-toggle-wrap { font-size: 11.5px; padding: 5px 8px; gap: 5px; }
+      
+      /* 모바일 버튼 높이 통일 */
+      .status-toggle-wrap { font-size: 11.5px; padding: 0 8px; gap: 5px; height: 28px; }
       .status-toggle-wrap input[type="checkbox"] { width: 14px; height: 14px; }
-      .reset-btn { font-size: 11.5px; padding: 5px 8px; }
+      .reset-btn { font-size: 11.5px; padding: 0 8px; height: 28px; }
+      
       .grid-mesh-wrapper { padding: 10px 10px 16px 10px; }
       .sticky-indicator-top { top: 8px; margin-bottom: 8px; }
       .sticky-indicator-bottom { bottom: 10px; margin-top: 8px; }
@@ -381,7 +388,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.2</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.3</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -419,7 +426,7 @@
   <div id="viewGrid">
     <div class="grid-intro-banner">
       <p>✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요.
-        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v8.2]</strong></span>
+        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v8.3]</strong></span>
       </p>
     </div>
 
@@ -584,6 +591,10 @@
     const contentCache = {};
     const originalCache = {};
     const globalPdfMap = {};
+    
+    // 읽음 상태 전역 보관소
+    const readArticleIds = new Set();
+    
     let isDirty = false;
     let isNetworkBusy = false;
     let pendingSaveTask = null;
@@ -860,7 +871,10 @@
        7. RANDOM GRID VIEW LOGIC
        ========================================= */
     if (els.resetGridBtn) {
-      els.resetGridBtn.addEventListener('click', () => { document.querySelectorAll('.grid-cell.read').forEach(c => c.classList.remove('read')); });
+      els.resetGridBtn.addEventListener('click', () => {
+        readArticleIds.clear();
+        document.querySelectorAll('.grid-cell.read').forEach(c => c.classList.remove('read'));
+      });
     }
     if (els.toggleStatusCheck) {
       els.toggleStatusCheck.addEventListener('change', e => {
@@ -882,6 +896,13 @@
       
       displayData.forEach((article, idx) => {
         const cell = document.createElement('div'); cell.className = 'grid-cell'; cell.dataset.index = idx + 1;
+        cell.dataset.id = article.id; // 연동 탐색용 ID 삽입
+        
+        // 읽음 상태 전역 동기화 반영
+        if (readArticleIds.has(article.id)) {
+          cell.classList.add('read');
+        }
+
         const st = (article.status || '').replace(/\s+/g, '');
         const hasEditor = Boolean((article.editor || '').trim());
         let sClass = 'cell-status-wait', sLabel = '교정 전';
@@ -898,7 +919,7 @@
         const tText = article.title ? ` - [${article.title}]` : '';
         cell.title = `#${String(idx+1).padStart(4,'0')}번째 이야기 [${article.id}]${tText}\n(상태: ${sLabel}${eText})`;
         
-        cell.onclick = () => { cell.classList.add('read'); showArticleDetail(article.id); openViewerModal(); };
+        cell.onclick = () => { showArticleDetail(article.id); openViewerModal(); };
         frag.appendChild(cell);
       });
       els.gridMesh.appendChild(frag);
@@ -937,6 +958,11 @@
        ========================================= */
     async function showArticleDetail(id) {
       currentArticleId = id; const article = articlesData.find(i => i.id === id); if (!article) return;
+      
+      // 읽음 상태 전역 기록 및 화면(메쉬) 즉시 연동 반영
+      readArticleIds.add(id);
+      const targetCell = document.querySelector(`.grid-cell[data-id="${id}"]`);
+      if (targetCell) targetCell.classList.add('read');
       
       const st = (article.status || '').trim();
       let bText = '교정 전', bClass = 'status-correct';
