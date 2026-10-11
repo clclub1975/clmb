@@ -1,4 +1,4 @@
-<!-- v7.2: '랜덤 선택하기' 메쉬 그리드 및 위치 인디케이터 구역을 표준 모듈 블록(RANDOM-GRID)으로 샌드박스 격리 구조화 -->
+<!-- v8.0: random.html(v0.10) 서브모듈 완전 통합 - 상단안내배너, 교정상황보기(3색테두리/이름), 선택적 랜덤셔플 및 sticky 인디케이터 결합 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -158,19 +158,68 @@
       display: none;
       position: relative;
     }
-    .grid-header-wrap {
+
+    /* 1. 상단 안내 문구 독립 센터 라인 */
+    .grid-intro-banner {
+      text-align: center;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .grid-intro-banner p {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e293b;
+      letter-spacing: -0.3px;
+    }
+    .grid-intro-count {
+      display: inline;
+    }
+
+    /* 2. 컨트롤 바 (교정 상황 보기 좌측 / 랜덤 셔플 & 읽음 초기화 우측) */
+    .grid-control-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
+      gap: 10px;
     }
-    .grid-header {
-      font-size: 14px;
-      color: #6b7280;
-      margin: 0;
+    .grid-control-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      transition: background 0.15s;
+    }
+    .status-toggle-wrap:hover {
+      background: #f1f5f9;
+    }
+    .status-toggle-wrap input[type="checkbox"] {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      accent-color: #2563eb;
     }
     .reset-btn {
-      padding: 6px 12px;
+      padding: 6px 14px;
       font-size: 13px;
       background-color: #ffffff;
       border: 1px solid #d1d5db;
@@ -180,27 +229,74 @@
       font-weight: 600;
       transition: all 0.2s ease;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      white-space: nowrap;
     }
     .reset-btn:hover {
       background-color: #f3f4f6;
     }
-    .grid-mesh {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
-      gap: 6px;
+
+    /* 메쉬 컨테이너 및 sticky 인디케이터 포지셔닝 래퍼 */
+    .grid-mesh-wrapper {
+      position: relative;
       background: #ffffff;
-      padding: 20px 20px 56px 20px;
+      border: 1px solid #e5e7eb;
       border-radius: 8px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e5e7eb;
-      margin-top: 15px;
+      padding: 12px 20px 20px 20px;
+    }
+
+    /* 상단 좌측 시작 인디케이터 라인 */
+    .sticky-indicator-top {
+      position: sticky;
+      top: 12px;
+      z-index: 30;
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 10px;
+      pointer-events: none;
+    }
+    .grid-badge-start {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      background: rgba(15, 23, 42, 0.92);
+      color: #ffffff;
+      padding: 0 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px);
+      pointer-events: auto;
+      box-sizing: border-box;
+    }
+
+    .grid-mesh {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+      gap: 6px;
     }
     .grid-cell {
       aspect-ratio: 1 / 1;
       background-color: #cbd5e1;
-      border-radius: 3px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: transform 0.1s, background-color 0.2s;
+      transition: transform 0.1s, background-color 0.2s, border-color 0.2s;
+      border: 2px solid transparent;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+      user-select: none;
+      overflow: hidden;
     }
     .grid-cell:hover {
       background-color: #60a5fa;
@@ -209,42 +305,55 @@
       z-index: 2;
     }
     .grid-cell.read {
-      background-color: #2563eb;
-      opacity: 0.5;
+      background-color: #93c5fd;
+      opacity: 0.65;
     }
-    .grid-badge-start {
+
+    /* 교정 상황 보기 활성화 시 */
+    .show-status .cell-status-wait {
+      border: 2px solid #ef4444 !important; /* 교정 전: 빨강 */
+    }
+    .show-status .cell-status-doing {
+      border: 2px solid #16a34a !important; /* 교정 중: 녹색 */
+    }
+    .show-status .cell-status-done {
+      border: 2px solid #0f172a !important; /* 교정 완료: 검정 */
+    }
+    .grid-cell-name {
       display: none;
-      position: fixed;
-      top: 18px;
-      left: 18px;
-      background: rgba(15, 23, 42, 0.85);
-      color: #ffffff;
-      padding: 6px 13px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-      backdrop-filter: blur(4px);
-      z-index: 50;
+    }
+    .show-status .grid-cell-name {
+      display: block;
+    }
+
+    /* 하단 우측 끝 인디케이터 라인 */
+    .sticky-indicator-bottom {
+      position: sticky;
+      bottom: 14px;
+      z-index: 30;
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
       pointer-events: none;
-      letter-spacing: 0.3px;
     }
     .grid-badge-end {
-      display: none;
-      position: fixed;
-      bottom: 18px;
-      right: 18px;
-      background: rgba(15, 23, 42, 0.85);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      background: rgba(15, 23, 42, 0.92);
       color: #ffffff;
-      padding: 6px 13px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      padding: 0 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.2);
       backdrop-filter: blur(4px);
-      z-index: 50;
-      pointer-events: none;
-      letter-spacing: 0.3px;
+      pointer-events: auto;
+      box-sizing: border-box;
     }
     /* === [MODULE-STYLE: RANDOM-GRID END] === */
 
@@ -312,10 +421,21 @@
       display: inline-flex;
       align-items: center;
     }
-    .status-correct { color: #dc2626 !important; border-color: #fecaca; background: #fef2f2; }
-    .status-progress { color: #16a34a !important; border-color: #bbf7d0; background: #f0fdf4; }
-    .status-done { color: #1e293b !important; border-color: #cbd5e1; background: #f8fafc; }
-    
+    .status-correct {
+      color: #dc2626 !important;
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+    .status-progress {
+      color: #16a34a !important;
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+    .status-done {
+      color: #1e293b !important;
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
     .btn-go-correct {
       height: 28px;
       padding: 0 10px;
@@ -447,7 +567,6 @@
     .modal-close:hover {
       color: #ef4444;
     }
-
     .modal-controls {
       display: flex;
       flex-direction: column;
@@ -524,7 +643,8 @@
       border-style: solid;
       border-color: transparent transparent #1e293b transparent;
     }
-    .editor-label-wrap:hover .history-tooltip, .editor-label-wrap:focus .history-tooltip {
+    .editor-label-wrap:hover .history-tooltip,
+    .editor-label-wrap:focus .history-tooltip {
       visibility: visible;
       opacity: 1;
     }
@@ -570,7 +690,8 @@
       font-weight: 700;
       user-select: none;
     }
-    .help-tip-wrap:hover .help-badge, .help-tip-wrap:focus .help-badge {
+    .help-tip-wrap:hover .help-badge,
+    .help-tip-wrap:focus .help-badge {
       background-color: #2563eb;
     }
     .help-tooltip {
@@ -604,7 +725,8 @@
       border-style: solid;
       border-color: transparent transparent #1e293b transparent;
     }
-    .help-tip-wrap:hover .help-tooltip, .help-tip-wrap:focus .help-tooltip {
+    .help-tip-wrap:hover .help-tooltip,
+    .help-tip-wrap:focus .help-tooltip {
       visibility: visible;
       opacity: 1;
     }
@@ -731,8 +853,13 @@
       box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
       transition: background-color 0.2s ease;
     }
-    .btn-finish-large:hover { background-color: #15803d; }
-    .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-finish-large:hover {
+      background-color: #15803d;
+    }
+    .btn-finish-large:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
     /* 커스텀 다이얼로그 (Alert & Confirm UI) */
     .custom-dialog-overlay {
@@ -817,12 +944,24 @@
       .filter-container { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 6px; }
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
-      
+
       /* === [MODULE-STYLE: RANDOM-GRID MOBILE START] === */
-      .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 14px 10px 56px 10px; gap: 4px; margin-top: 10px; }
-      .grid-badge-start { top: 12px; left: 12px; font-size: 11px; padding: 5px 11px; }
-      .grid-badge-end { bottom: 12px; right: 12px; font-size: 11px; padding: 5px 11px; }
+      .grid-intro-banner p { font-size: 13px; line-height: 1.5; }
+      .grid-intro-count { display: block; margin-top: 3px; }
+      .grid-control-bar { gap: 6px; }
+      .status-toggle-wrap { font-size: 11.5px; padding: 5px 8px; gap: 5px; }
+      .status-toggle-wrap input[type="checkbox"] { width: 14px; height: 14px; }
+      .reset-btn { font-size: 11.5px; padding: 5px 8px; }
+      .grid-mesh-wrapper { padding: 10px 10px 16px 10px; }
+      .sticky-indicator-top { top: 8px; margin-bottom: 8px; }
+      .sticky-indicator-bottom { bottom: 10px; margin-top: 8px; }
+      .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); gap: 4px; }
+      .grid-cell { font-size: 8px; }
+      .show-status .cell-status-wait { border-width: 1.5px !important; }
+      .show-status .cell-status-doing { border-width: 1.5px !important; }
+      .show-status .cell-status-done { border-width: 1.5px !important; }
+      .grid-badge-start, .grid-badge-end { height: 28px; font-size: 12px; padding: 0 10px; border-radius: 14px; }
+      .show-status .grid-cell-name { display: none; }
       /* === [MODULE-STYLE: RANDOM-GRID MOBILE END] === */
 
       #articleViewer { padding: 10px; }
@@ -835,7 +974,6 @@
       .edit-li { flex-direction: column; align-items: flex-start; }
       .edit-label { flex: none; max-width: 100%; margin-bottom: 4px; padding-top: 0; }
       .edit-field-wrap { width: 100%; }
-
       .modal-controls { padding: 5px 8px; }
       .controls-row-unified { padding: 4px 6px; gap: 5px; }
       .row-unified-left { gap: 4px; }
@@ -854,13 +992,14 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v7.2</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.0</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
     <button id="tabGridBtn" class="tab-btn">랜덤 선택하기</button>
   </div>
 
+  <!-- 세부조건 필터 뷰 -->
   <div id="viewFilter">
     <div class="filter-container">
       <div class="filter-group">
@@ -897,16 +1036,46 @@
 
   <!-- === [MODULE-HTML: RANDOM-GRID START] === -->
   <div id="viewGrid">
-    <div class="grid-header-wrap">
-      <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기)</p>
-      <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
+    <!-- 1. 독립 중앙 라인 안내 배너 -->
+    <div class="grid-intro-banner">
+      <p>
+        ✨ 칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요.
+        <span class="grid-intro-count">(총 <span id="gridTotalCount" style="color:#2563eb;">0</span>개의 이야기) <strong style="color:#2563eb; font-size:12px;">[v8.0]</strong></span>
+      </p>
     </div>
-    <div class="grid-mesh" id="gridMesh"></div>
-  </div>
 
-  <!-- 양방향 플로팅 위치 인디케이터 (상단 좌측 시작 / 하단 우측 끝) -->
-  <div id="gridStartBadge" class="grid-badge-start">📍 1</div>
-  <div id="gridEndBadge" class="grid-badge-end">160 📍</div>
+    <!-- 2. 컨트롤 바 (좌측: 교정 상황 보기 / 우측: 랜덤 셔플 & 읽음 초기화) -->
+    <div class="grid-control-bar">
+      <label class="status-toggle-wrap">
+        <input type="checkbox" id="toggleStatusCheck">
+        <span>교정 상황 보기</span>
+      </label>
+
+      <div class="grid-control-right">
+        <label class="status-toggle-wrap">
+          <input type="checkbox" id="toggleShuffleCheck">
+          <span>랜덤 셔플</span>
+        </label>
+        <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
+      </div>
+    </div>
+
+    <!-- 3. 메쉬 박스 컨테이너 -->
+    <div class="grid-mesh-wrapper" id="gridMeshWrapper">
+      <!-- 1번 메쉬 가림 방지 상단 sticky 인디케이터 레인 -->
+      <div class="sticky-indicator-top">
+        <span id="gridStartBadge" class="grid-badge-start">📍 1</span>
+      </div>
+
+      <!-- 실제 메쉬 격자 그리드 -->
+      <div class="grid-mesh" id="gridMesh"></div>
+
+      <!-- 마지막 메쉬 가림 방지 하단 sticky 인디케이터 레인 -->
+      <div class="sticky-indicator-bottom">
+        <span id="gridEndBadge" class="grid-badge-end">2,515 📍</span>
+      </div>
+    </div>
+  </div>
   <!-- === [MODULE-HTML: RANDOM-GRID END] === -->
 
   <!-- PC/모바일 공통 본문 뷰어 팝업 모달 -->
@@ -970,7 +1139,6 @@
               </div>
             </div>
           </li>
-
           <li class="edit-li">
             <strong class="edit-label">2. 기수:</strong>
             <div class="edit-field-wrap">
@@ -982,7 +1150,6 @@
               </div>
             </div>
           </li>
-
           <li class="edit-li">
             <strong class="edit-label">3. 기고자:</strong>
             <div class="edit-field-wrap">
@@ -994,7 +1161,6 @@
               </div>
             </div>
           </li>
-
           <li class="edit-li">
             <strong class="edit-label">4. 글 제목:</strong>
             <div class="edit-field-wrap">
@@ -1006,7 +1172,6 @@
               </div>
             </div>
           </li>
-
           <li class="edit-li" style="flex-direction:column;">
             <strong class="edit-label" style="margin-bottom:6px;">5. 기고문 본문:</strong>
             <div class="edit-field-wrap" style="width:100%;">
@@ -1053,7 +1218,6 @@
     const contentCache = {};
     const originalCache = {};
     const globalPdfMap = {};
-
     let isDirty = false;
     let isNetworkBusy = false;
     let pendingSaveTask = null;
@@ -1089,6 +1253,17 @@
       return list.length > 0 ? list[list.length - 1] : '';
     }
 
+    // 성을 제외한 이름 1~2자 추출 헬퍼 (PC 메쉬 셀 표기용)
+    function getShortEditorName(editorStr) {
+      if (!editorStr) return '';
+      const parts = parseEditorList(editorStr);
+      const last = parts.length > 0 ? parts[parts.length - 1] : '';
+      if (!last) return '';
+      if (last.length <= 2) return last.substring(1);
+      if (last.length === 3) return last.substring(1);
+      return last.slice(-2);
+    }
+
     async function loadPdfMapData() {
       try {
         const resp = await fetch(PDF_CSV_URL);
@@ -1117,10 +1292,15 @@
     function fastParseArrayCSV(text) {
       let p = '', row = [''], ret = [row], i = 0, r = 0, s = true;
       for (let l of text) {
-        if ('"' === l) { if (s && l === p) row[r] += l; s = !s; }
-        else if (',' === l && s) l = row[++r] = '';
-        else if ('\n' === l && s) { if ('\r' === p) row[r] = row[r].slice(0, -1); row = ret[++i] = [l = '']; r = 0; }
-        else row[r] += l;
+        if ('"' === l) {
+          if (s && l === p) row[r] += l;
+          s = !s;
+        } else if (',' === l && s) l = row[++r] = '';
+        else if ('\n' === l && s) {
+          if ('\r' === p) row[r] = row[r].slice(0, -1);
+          row = ret[++i] = [l = ''];
+          r = 0;
+        } else row[r] += l;
         p = l;
       }
       return ret;
@@ -1222,17 +1402,14 @@
       } else if (st.includes('진행') || st.includes('교정 중') || (st !== '교정' && st !== '교정 전' && st !== '')) {
         statusText = '교정 중';
       }
-
       const volStr = article.vol || '';
       const numMatch = volStr.match(/(\d+)/);
       const issueNum = numMatch ? parseInt(numMatch[0], 10) : 0;
       const pdfUrl = globalPdfMap[issueNum] || globalPdfMap[String(issueNum)] || globalPdfMap[String(issueNum).padStart(3, '0')];
-
       let volHtml = volStr;
       if (pdfUrl && pdfUrl.startsWith('http')) {
         volHtml = `<a href="${pdfUrl}" target="_blank" class="pdf-vol-link" title="회보 원본 PDF 열기 (새 탭)">${volStr}</a>`;
       }
-
       document.getElementById('correctModalTitle').innerHTML = `[기고문 교정: ${statusText}] ${volHtml} - ${article.id}`;
     }
 
@@ -1245,14 +1422,12 @@
       if (currentSelectedValue && !typeOptions.includes(currentSelectedValue)) {
         typeOptions.unshift(currentSelectedValue);
       }
-
       typeOptions.forEach(typeVal => {
         const opt = document.createElement('option');
         opt.value = opt.textContent = typeVal;
         if (typeVal === currentSelectedValue) opt.selected = true;
         editTypeSelect.appendChild(opt);
       });
-
       if (currentSelectedValue) {
         editTypeSelect.value = currentSelectedValue;
       } else if (typeOptions.length > 0) {
@@ -1264,10 +1439,8 @@
       if (!currentArticleId) return;
       const article = articlesData.find(item => item.id === currentArticleId);
       if (!article) return;
-
       isDirty = false;
       updateEditModalTitle(article);
-
       const lastEd = getLastEditor(article.editor);
       const editorInput = document.getElementById('editorNameInput');
       editorInput.value = lastEd || localStorage.getItem('last_editor_name') || '';
@@ -1281,23 +1454,17 @@
       }
 
       syncEditTypeDropdown(article.type || '');
-
       initFieldState('type', editTypeSelect.value || article.type || '');
       initFieldState('cohort', article.cohort || '');
       initFieldState('author', article.author || '');
       initFieldState('title', article.title || '');
       initFieldState('content', contentCache[article.id] || '');
-
       editorModalBackdrop.classList.add('open');
       fetchOriginalData(article.id);
     }
 
     function initFieldState(key, val) {
-      editFieldState[key] = {
-        currentSaved: val,
-        pureOriginal: '',
-        history: [val]
-      };
+      editFieldState[key] = { currentSaved: val, pureOriginal: '', history: [val] };
       const el = document.getElementById(`edit_${key}`);
       if (el) el.value = val;
     }
@@ -1390,12 +1557,10 @@
     async function restoreOriginal(key) {
       const el = document.getElementById(`edit_${key}`);
       if (!el || !editFieldState[key] || !currentArticleId) return;
-
       if (!originalCache[currentArticleId]) {
         showToast('📖 원본 시트에서 원문 데이터를 불러오는 중...', '#475569');
         await fetchOriginalData(currentArticleId);
       }
-
       const origVal = editFieldState[key].pureOriginal;
       if (el.value === origVal) {
         showCustomAlert('이미 순수 원문 내용과 동일합니다.');
@@ -1416,17 +1581,14 @@
 
     function handleSaveAction(actionType) {
       if (!currentArticleId) return;
-
       if (actionType === 'exit' && !isDirty) {
         editorModalBackdrop.classList.remove('open');
         return;
       }
-
       if (actionType === 'stay' && !isDirty) {
         showCustomAlert('수정된 내용이 없습니다.');
         return;
       }
-
       const editorName = document.getElementById('editorNameInput').value.trim();
       if (!editorName) {
         showCustomAlert('교정자 이름을 입력해 주세요.', () => {
@@ -1434,11 +1596,10 @@
         });
         return;
       }
-
       const statusText = (actionType === 'finish') ? '교정 완료' : '교정 중';
-      const confirmMessage = (actionType === 'finish')
-        ? `[${currentArticleId}] 글을 <strong>'교정 완료'</strong> 상태로 등록하시겠습니까?`
-        : `[${currentArticleId}] 글을 <strong>'교정 중'</strong> 상태로 저장하시겠습니까?`;
+      const confirmMessage = (actionType === 'finish') ?
+        `[${currentArticleId}] 글을 <strong>'교정 완료'</strong> 상태로 등록하시겠습니까?` :
+        `[${currentArticleId}] 글을 <strong>'교정 중'</strong> 상태로 저장하시겠습니까?`;
 
       showCustomConfirm(confirmMessage, () => {
         executeSaveProcess(actionType, statusText, editorName);
@@ -1480,6 +1641,9 @@
       contentCache[currentArticleId] = payload.content;
       showArticleDetail(currentArticleId);
 
+      // 교정 저장 완료 시 메쉬 그리드 상태 재동기화
+      if (typeof renderMeshGrid === 'function') renderMeshGrid();
+
       if (actionType === 'stay') {
         if (article) updateEditModalTitle(article, payload.status);
       } else {
@@ -1494,7 +1658,6 @@
         pendingSaveTask = { payload: payload, actionType: actionType };
         return;
       }
-
       isNetworkBusy = true;
       updateSyncIndicator(true, actionType);
 
@@ -1514,7 +1677,6 @@
       .finally(() => {
         isNetworkBusy = false;
         updateSyncIndicator(false, actionType);
-
         if (pendingSaveTask) {
           const nextTask = pendingSaveTask;
           pendingSaveTask = null;
@@ -1523,13 +1685,12 @@
       });
     }
 
+    // 탭 전환 이벤트
     tabFilterBtn.addEventListener('click', () => {
       tabFilterBtn.classList.add('active');
       tabGridBtn.classList.remove('active');
       viewFilter.style.display = 'block';
       viewGrid.style.display = 'none';
-      if (typeof gridStartBadge !== 'undefined' && gridStartBadge) gridStartBadge.style.display = 'none';
-      if (typeof gridEndBadge !== 'undefined' && gridEndBadge) gridEndBadge.style.display = 'none';
     });
 
     tabGridBtn.addEventListener('click', () => {
@@ -1537,9 +1698,9 @@
       tabFilterBtn.classList.remove('active');
       viewGrid.style.display = 'block';
       viewFilter.style.display = 'none';
-      if (typeof gridStartBadge !== 'undefined' && gridStartBadge) gridStartBadge.style.display = 'block';
-      if (typeof gridEndBadge !== 'undefined' && gridEndBadge) gridEndBadge.style.display = 'block';
-      if (typeof updateGridPosition === 'function') updateGridPosition();
+      if (typeof updateGridPosition === 'function') {
+        requestAnimationFrame(updateGridPosition);
+      }
     });
 
     function fastParseCSV(text) {
@@ -1548,16 +1709,18 @@
       if (!text.endsWith('\n')) text += '\n';
 
       for (let i = 0; i < text.length; i++) {
-        if (text[i] === '"') inQuotes = !inQuotes;
-        else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
+        if (text[i] === '"') {
+          inQuotes = !inQuotes;
+        } else if ((text[i] === ',' || text[i] === '\n') && !inQuotes) {
           let val = text.substring(start, i);
           if (val.endsWith('\r')) val = val.slice(0, -1);
           if (val.startsWith('"') && val.endsWith('"') && val.length >= 2) {
             val = val.substring(1, val.length - 1).replace(/""/g, '"');
           }
           row.push(val.trim());
+
           if (text[i] === '\n') {
-            if (row.length >= 7 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
+            if (row.length >= 3 && row[0] && !row[0].includes('관리 ID') && !row[0].includes('ID') && row[0] !== 'A') {
               articles.push({
                 id: row[0] || '',
                 status: row[1] || '',
@@ -1599,7 +1762,7 @@
         }
 
         initDropdowns();
-        if (typeof initBlindGrid === 'function') initBlindGrid();
+        renderMeshGrid();
         contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
       } catch (error) {
         contentBody.textContent = '목록 데이터를 불러오는 데 실패했습니다.';
@@ -1610,6 +1773,8 @@
     const gridMesh = document.getElementById('gridMesh');
     const gridTotalCount = document.getElementById('gridTotalCount');
     const resetGridBtn = document.getElementById('resetGridBtn');
+    const toggleStatusCheck = document.getElementById('toggleStatusCheck');
+    const toggleShuffleCheck = document.getElementById('toggleShuffleCheck');
     const gridStartBadge = document.getElementById('gridStartBadge');
     const gridEndBadge = document.getElementById('gridEndBadge');
 
@@ -1620,52 +1785,110 @@
       });
     }
 
-    function initBlindGrid() {
+    if (toggleStatusCheck) {
+      toggleStatusCheck.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        if (viewGrid) viewGrid.classList.toggle('show-status', isChecked);
+        if (gridMesh) gridMesh.classList.toggle('show-status', isChecked);
+      });
+    }
+
+    if (toggleShuffleCheck) {
+      toggleShuffleCheck.addEventListener('change', () => {
+        renderMeshGrid();
+      });
+    }
+
+    function renderMeshGrid() {
       if (!gridMesh || !gridTotalCount) return;
       gridMesh.innerHTML = '';
       gridTotalCount.textContent = articlesData.length;
-      const shuffledArticles = shuffleArray(articlesData);
+
+      const shouldShuffle = toggleShuffleCheck && toggleShuffleCheck.checked;
+      const displayArticles = shouldShuffle ? shuffleArray(articlesData) : articlesData;
+
       const fragment = document.createDocumentFragment();
 
-      shuffledArticles.forEach((article, index) => {
+      displayArticles.forEach((article, index) => {
         const cell = document.createElement('div');
         cell.className = 'grid-cell';
         cell.dataset.index = index + 1;
-        cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기`;
+
+        const st = (article.status || '').replace(/\s+/g, '');
+        const hasEditor = Boolean((article.editor || '').trim());
+
+        let statusClass = 'cell-status-wait'; // 교정 전 (빨강)
+        let statusLabel = '교정 전';
+
+        if (st.includes('완료')) {
+          statusClass = 'cell-status-done'; // 교정 완료 (검정)
+          statusLabel = '교정 완료';
+        } else if (st.includes('진행') || st.includes('중') || hasEditor) {
+          statusClass = 'cell-status-doing'; // 교정 중 (녹색)
+          statusLabel = '교정 중';
+        }
+
+        cell.classList.add(statusClass);
+
+        const shortName = getShortEditorName(article.editor);
+        if (shortName) {
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'grid-cell-name';
+          nameSpan.textContent = shortName;
+          cell.appendChild(nameSpan);
+        }
+
+        const editorText = article.editor ? ` / 교정자: ${article.editor}` : '';
+        const titleText = article.title ? ` - [${article.title}]` : '';
+        cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기 [${article.id}]${titleText}\n(상태: ${statusLabel}${editorText})`;
+
         cell.addEventListener('click', function() {
           this.classList.add('read');
-          if (typeof showArticleDetail === 'function') showArticleDetail(article.id);
-          if (typeof openViewerModal === 'function') openViewerModal();
+          showArticleDetail(article.id);
+          openViewerModal();
         });
         fragment.appendChild(cell);
       });
       gridMesh.appendChild(fragment);
-      updateGridPosition();
+
+      requestAnimationFrame(updateGridPosition);
     }
 
     let isScrollTicking = false;
     function updateGridPosition() {
       if (!viewGrid || viewGrid.style.display !== 'block' || articlesData.length === 0) return;
-      if (!gridMesh) return;
-      
+      if (!gridMesh || gridMesh.children.length === 0) return;
+
       const cells = gridMesh.children;
       const total = cells.length;
-      if (total === 0) return;
-
       const vh = window.innerHeight;
+      const firstCellRect = cells[0].getBoundingClientRect();
       const meshRect = gridMesh.getBoundingClientRect();
 
-      let firstVisible = 1;
-      let lastVisible = total;
-
-      if (meshRect.height > 0) {
-        const topRatio = Math.max(0, Math.min(1, (-meshRect.top) / meshRect.height));
-        const bottomRatio = Math.max(0, Math.min(1, (vh - meshRect.top) / meshRect.height));
-
-        firstVisible = Math.max(1, Math.floor(topRatio * total) + 1);
-        lastVisible = Math.min(total, Math.ceil(bottomRatio * total));
-        if (lastVisible < firstVisible) lastVisible = firstVisible;
+      let cols = 0;
+      const firstTop = firstCellRect.top;
+      for (let i = 0; i < Math.min(total, 60); i++) {
+        if (Math.abs(cells[i].getBoundingClientRect().top - firstTop) < 3) {
+          cols++;
+        } else {
+          break;
+        }
       }
+      if (cols <= 0) cols = 1;
+
+      let rowHeight = 34;
+      if (total > cols) {
+        rowHeight = cells[cols].getBoundingClientRect().top - firstCellRect.top;
+      }
+      if (rowHeight <= 0) rowHeight = 34;
+
+      const scrolledTopDist = Math.max(0, -meshRect.top);
+      const startRow = Math.floor(scrolledTopDist / rowHeight);
+      const firstVisible = Math.max(1, (startRow * cols) + 1);
+
+      const visibleHeightToBottom = Math.max(0, vh - meshRect.top);
+      const endRow = Math.ceil(visibleHeightToBottom / rowHeight);
+      const lastVisible = Math.min(total, Math.max(firstVisible, endRow * cols));
 
       if (gridStartBadge) gridStartBadge.textContent = `📍 ${firstVisible.toLocaleString()}`;
       if (gridEndBadge) gridEndBadge.textContent = `${lastVisible.toLocaleString()} 📍`;
@@ -1808,7 +2031,6 @@
       const st = (article.status || '').trim();
       let badgeText = '교정 전';
       let badgeClass = 'status-correct';
-
       if (st.includes('완료')) {
         badgeText = '교정 완료';
         badgeClass = 'status-done';
@@ -1833,14 +2055,11 @@
       }
 
       contentBody.textContent = '본문을 불러오는 중입니다...';
-
       try {
         const query = encodeURIComponent(`SELECT J WHERE A = '${id}'`);
         const queryUrl = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${CORRECT_SHEET_GID}&tq=${query}`;
-        
         const response = await fetch(queryUrl);
         const rawText = await response.text();
-
         const jsonMatch = rawText.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
         if (jsonMatch && jsonMatch[1]) {
           const resObj = JSON.parse(jsonMatch[1]);
