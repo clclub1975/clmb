@@ -1,10 +1,10 @@
-<!-- v4.10: 헤더 타이틀 영역의 마크다운 형식 텍스트 오류 수정 및 v4.10 버전 업그레이드 -->
+<!-- v4.11: 모바일 환경(미디어 쿼리)에서도 메뉴 카드가 3열 레이아웃으로 배치되도록 수정 및 v4.11 버전 업그레이드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 50년사 아카이브 v4.10</title>
+    <title>촛불회 50년사 아카이브 v4.11</title>
     <style>
         :root {
             --primary-color: #8b0000;
@@ -110,7 +110,7 @@
             color: var(--primary-color);
         }
 
-        /* PC 환경에서 3열 1행(3x1) 그리드 레이아웃 유지 */
+        /* PC 및 모바일 환경 모두에서 3열(3x1) 그리드 레이아웃 고정 */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -181,30 +181,33 @@
             }
 
             main {
-                width: 92%;
+                width: 95%;
                 margin-top: -20px;
             }
 
+            /* 모바일 화면에서도 3열 배치가 유지되도록 설정 (모바일 기기 특성을 고려하여 여백과 폰트 크기 조정) */
             .menu-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
             }
 
             .menu-card {
-                padding: 24px 16px;
+                padding: 16px 8px;
             }
 
             .menu-card .icon {
-                font-size: 2.2rem;
-                margin-bottom: 12px;
+                font-size: 1.8rem;
+                margin-bottom: 8px;
             }
 
             .menu-card h2 {
-                font-size: 1.1rem;
+                font-size: 0.95rem;
+                margin-bottom: 4px;
             }
 
             .menu-card p {
-                font-size: 0.82rem;
+                font-size: 0.72rem;
+                line-height: 1.3;
             }
         }
     </style>
@@ -212,13 +215,13 @@
 <body>
 
     <div class="dev-meta-bar">
-        <!-- v4.10: 헤더 타이틀 영역의 마크다운 형식 텍스트 오류 수정 및 v4.10 버전 업그레이드 -->
+        <!-- v4.11: 모바일 환경(미디어 쿼리)에서도 메뉴 카드가 3열 레이아웃으로 배치되도록 수정 및 v4.11 버전 업그레이드 -->
     </div>
 
     <header>
         <div class="header-title-area">
             <h1><a href="HOME2/process.html" title="작업 프로세스로 이동">🕯️</a> 촛불회 50년사 아카이브</h1>
-            <span class="version-tag">v4.10</span>
+            <span class="version-tag">v4.11</span>
         </div>
         <p>1975년부터 이어온 반세기의 기록과 기억을 담다</p>
     </header>
