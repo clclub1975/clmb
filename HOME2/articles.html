@@ -1,4 +1,4 @@
-<!-- v8.6: 모바일 환경에서 가상키보드 간섭 방지 및 편집 편의를 위해 본문 창(textarea) 최소 높이를 강제 확보하여 모달 스크롤 유도 -->
+<!-- v8.7: 교정 모달의 '5. 기고문 본문' 라벨(edit-label)에 flex: none; height: auto; 강제 주입하여 PC 화면에서의 불필요한 92px 수직 여백 완벽 제거 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -391,7 +391,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.6</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.7</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -548,9 +548,9 @@
               </div>
             </div>
           </li>
-          <!-- 5. 기고문 본문 -->
+          <!-- 5. 기고문 본문 (v8.7: edit-label에 flex: none; height: auto; 강제 주입하여 92px 높이 고정 버그 완벽 해결) -->
           <li class="edit-li" style="flex-direction:column; flex:1; margin-bottom:0;">
-            <strong class="edit-label" style="margin-bottom:2px; padding-top:0;">5. 기고문 본문:</strong>
+            <strong class="edit-label" style="flex: none; height: auto; margin-bottom:2px; padding-top:0;">5. 기고문 본문:</strong>
             <div class="edit-field-wrap" style="width:100%; flex:1; display:flex; flex-direction:column;">
               <textarea id="edit_content" class="edit-textarea-full" style="flex:1;" oninput="handleFieldInput('content')"></textarea>
               <div class="restore-toolbar" style="margin-top:8px;">
