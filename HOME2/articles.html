@@ -1,4 +1,4 @@
-<!-- v8.7: 교정 모달의 '5. 기고문 본문' 라벨(edit-label)에 flex: none; height: auto; 강제 주입하여 PC 화면에서의 불필요한 92px 수직 여백 완벽 제거 -->
+<!-- v8.8: 코드 구조 최적화 - HTML 내 하드코딩된 인라인 스타일(style="...") 전면 제거 및 CSS 클래스 통합 분리, 가독성 향상 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -260,13 +260,19 @@
     .btn-save-stay { background-color: #0284c7; color: white; }
     .btn-save-exit { background-color: #475569; color: white; }
 
-    /* 에디터 메인 폼 영역: v8.5 Flex 구조화로 높이 꽉채우기 */
+    /* 에디터 메인 폼 영역: Flex 구조화로 높이 꽉채우기 */
     .modal-body-container { flex: 1; padding: 16px 20px; overflow-y: auto; background: #fff; display: flex; flex-direction: column; }
     .edit-ul { padding-left: 0; list-style: none; margin: 0; display: flex; flex-direction: column; flex: 1; }
     .edit-li { display: flex; align-items: flex-start; margin-bottom: 14px; width: 100%; }
     .edit-label { flex: 0 0 92px; max-width: 92px; font-size: 0.88rem; color: #0f172a; font-weight: 700; padding-top: 5px; word-break: keep-all; }
     .edit-field-wrap { flex: 1; display: flex; flex-direction: column; width: calc(100% - 92px); }
     
+    /* 5번 본문 전용 최적화 클래스 (v8.8 신설) */
+    .edit-li-content { flex-direction: column; flex: 1; margin-bottom: 0; }
+    .edit-label-content { flex: none; height: auto; margin-bottom: 2px; padding-top: 0; }
+    .edit-wrap-content { width: 100%; flex: 1; display: flex; flex-direction: column; }
+    .restore-toolbar-content { margin-top: 8px; }
+
     /* 인라인 입력 필드 포맷 */
     .edit-textarea-inline {
       width: 100%; box-sizing: border-box; padding: 7px 10px; font-size: 0.9rem; line-height: 1.5; color: #1e293b;
@@ -278,7 +284,7 @@
     .edit-textarea-full {
       width: 100%; box-sizing: border-box; padding: 20px; font-size: 16px; line-height: 1.8; color: #1f2937;
       background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; font-family: inherit; transition: border-color 0.15s ease, background-color 0.15s ease;
-      min-height: 120px; resize: none; white-space: pre-wrap;
+      min-height: 120px; resize: none; white-space: pre-wrap; flex: 1;
     }
     .edit-textarea-full:focus { background-color: #ffffff; border-color: #2563eb; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
     
@@ -391,7 +397,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.7</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.8</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -548,12 +554,12 @@
               </div>
             </div>
           </li>
-          <!-- 5. 기고문 본문 (v8.7: edit-label에 flex: none; height: auto; 강제 주입하여 92px 높이 고정 버그 완벽 해결) -->
-          <li class="edit-li" style="flex-direction:column; flex:1; margin-bottom:0;">
-            <strong class="edit-label" style="flex: none; height: auto; margin-bottom:2px; padding-top:0;">5. 기고문 본문:</strong>
-            <div class="edit-field-wrap" style="width:100%; flex:1; display:flex; flex-direction:column;">
-              <textarea id="edit_content" class="edit-textarea-full" style="flex:1;" oninput="handleFieldInput('content')"></textarea>
-              <div class="restore-toolbar" style="margin-top:8px;">
+          <!-- 5. 기고문 본문 (v8.8 구조 최적화: 인라인 스타일 제거 및 CSS 클래스화 적용) -->
+          <li class="edit-li edit-li-content">
+            <strong class="edit-label edit-label-content">5. 기고문 본문:</strong>
+            <div class="edit-field-wrap edit-wrap-content">
+              <textarea id="edit_content" class="edit-textarea-full" oninput="handleFieldInput('content')"></textarea>
+              <div class="restore-toolbar restore-toolbar-content">
                 <button type="button" class="btn-restore" onclick="undoField('content')">↺ 방금 취소</button>
                 <button type="button" class="btn-restore" onclick="restoreSaved('content')">⟲ 최근 저장 상태로</button>
                 <button type="button" class="btn-restore" onclick="restoreOriginal('content')">📖 원문으로 복원</button>
