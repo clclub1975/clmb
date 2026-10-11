@@ -1,10 +1,10 @@
-<!-- v0.1: 상단 좌측 시작 인디케이터(📍)를 메인 버튼 간섭 없이 메쉬 상단에 안전하게 배치하도록 좌표 및 z-index 보정 -->
+<!-- v0.2: 상단 좌측 인디케이터(📍)를 브라우저 외곽이 아닌 메쉬 그리드 상단 정렬선에 안착시키고 반영 확인용 버전[v0.2] 표기 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>랜덤 선택하기 서브모듈 테스트 [v0.1]</title>
+  <title>랜덤 선택하기 서브모듈 테스트 [v0.2]</title>
   <style>
     /* 서브모듈 독립 실행용 기본 래퍼 스타일 */
     body {
@@ -37,6 +37,13 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
+      gap: 10px;
+    }
+    .grid-header-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .grid-header {
       font-size: 14px;
@@ -54,6 +61,7 @@
       font-weight: 600;
       transition: all 0.2s ease;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      white-space: nowrap;
     }
     .reset-btn:hover {
       background-color: #f3f4f6;
@@ -67,7 +75,7 @@
       border-radius: 8px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       border: 1px solid #e5e7eb;
-      margin-top: 15px;
+      margin-top: 10px;
     }
     .grid-cell {
       aspect-ratio: 1 / 1;
@@ -87,27 +95,22 @@
       opacity: 0.5;
     }
 
-    /* 상단 좌측 시작 인디케이터 (헤더/버튼 간섭 방지 top: 64px, z-index: 100) */
+    /* 상단 좌측 시작 인디케이터: 메쉬 상단 안내문구 앞 정렬선에 안착 */
     .grid-badge-start {
-      display: block;
-      position: fixed;
-      top: 64px;
-      left: 18px;
-      background: rgba(15, 23, 42, 0.88);
+      display: inline-flex;
+      align-items: center;
+      background: #1e293b;
       color: #ffffff;
-      padding: 6px 13px;
-      border-radius: 20px;
+      padding: 4px 11px;
+      border-radius: 14px;
       font-size: 12px;
       font-weight: 600;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-      backdrop-filter: blur(4px);
-      border: 1px solid rgba(255,255,255,0.15);
-      z-index: 100;
-      pointer-events: none;
       letter-spacing: 0.3px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      white-space: nowrap;
     }
 
-    /* 하단 우측 끝 인디케이터 */
+    /* 하단 우측 끝 인디케이터 (화면 하단 스크롤 연동 플로팅) */
     .grid-badge-end {
       display: block;
       position: fixed;
@@ -128,9 +131,11 @@
     }
 
     @media (max-width: 768px) {
-      .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 14px 10px 56px 10px; gap: 4px; margin-top: 10px; }
-      .grid-badge-start { top: 54px; left: 14px; font-size: 11px; padding: 5px 11px; }
+      .grid-header-wrap { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .grid-header-left { gap: 6px; }
+      .grid-header { font-size: 12px; }
+      .grid-mesh { grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); padding: 14px 10px 56px 10px; gap: 4px; margin-top: 8px; }
+      .grid-badge-start { font-size: 11px; padding: 3px 8px; }
       .grid-badge-end { bottom: 14px; right: 14px; font-size: 11px; padding: 5px 11px; }
     }
     /* === [MODULE-STYLE: RANDOM-GRID END] === */
@@ -139,21 +144,24 @@
 <body>
 
   <div class="test-header-bar">
-    <strong>🛠️ random.html [v0.1] 단독 테스트 모드</strong>
+    <strong>🛠️ 랜덤 선택하기 [v0.2] 서브모듈 단독 테스트 모드</strong>
     <span>(디버깅 완료 후 articles.html에 1:1 병합 예정)</span>
   </div>
 
   <!-- === [MODULE-HTML: RANDOM-GRID START] === -->
   <div id="viewGrid">
     <div class="grid-header-wrap">
-      <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기)</p>
+      <div class="grid-header-left">
+        <!-- 메쉬 그리드 좌측 상단선에 정렬된 시작 번호 인디케이터 -->
+        <span id="gridStartBadge" class="grid-badge-start">📍 1</span>
+        <p class="grid-header">칸을 눌러 어떤 글이 숨어 있는지 확인해 보세요. (총 <span id="gridTotalCount">0</span>개의 이야기) <strong style="color:#2563eb;">[v0.2]</strong></p>
+      </div>
       <button id="resetGridBtn" class="reset-btn">↻ 읽음 초기화</button>
     </div>
     <div class="grid-mesh" id="gridMesh"></div>
   </div>
 
-  <!-- 양방향 플로팅 위치 인디케이터 (상단 좌측 시작 / 하단 우측 끝) -->
-  <div id="gridStartBadge" class="grid-badge-start">📍 1</div>
+  <!-- 하단 우측 끝 인디케이터 -->
   <div id="gridEndBadge" class="grid-badge-end">160 📍</div>
   <!-- === [MODULE-HTML: RANDOM-GRID END] === -->
 
@@ -218,7 +226,6 @@
         cell.title = `#${String(index + 1).padStart(4, '0')}번째 이야기`;
         cell.addEventListener('click', function() {
           this.classList.add('read');
-          // 부모 모달 연동 체크 및 Fallback
           if (typeof showArticleDetail === 'function') {
             showArticleDetail(article.id);
             if (typeof openViewerModal === 'function') openViewerModal();
