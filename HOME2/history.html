@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- v4.3: 화면 우측 하단 양방향 플로팅 액션 버튼(FAB) 추가로 모바일 스크롤 트랩 해결 및 버전 v4.3 갱신 -->
+    <!-- v4.4: 전체 코드 구조 최적화, 렌더링 성능 개선, 중복 로직 통합 및 버전 v4.4 갱신 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>촛불회 연혁 살펴보기 v4.3</title>
+    <title>촛불회 연혁 살펴보기 v4.4</title>
     <!-- 마크다운 파싱을 위한 marked.js (경량 CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -687,7 +687,7 @@
             line-height: 1;
         }
 
-        /* 📌 [v4.3 핵심] 화면 우측 하단 양방향 플로팅 액션 버튼(FAB) */
+        /* 📌 [v4.4] 화면 우측 하단 양방향 플로팅 액션 버튼(FAB) */
         .fab-quick-btn {
             position: fixed;
             bottom: 25px;
@@ -723,11 +723,11 @@
             background-color: #334155;
         }
 
-        /* 📱 모바일 최적화 (4열 × 4행 레이아웃 유지) */
+        /* 📱 모바일 최적화 */
         @media (max-width: 768px) {
             body {
                 padding: 15px 8px;
-                padding-bottom: 80px; /* 플로팅 버튼 여백 */
+                padding-bottom: 80px;
             }
             h1 {
                 font-size: 1.5rem;
@@ -801,7 +801,6 @@
             .input-wrapper textarea {
                 min-height: 72px;
             }
-            /* 모바일 FAB 위치 및 크기 조절 */
             .fab-quick-btn {
                 bottom: 18px;
                 right: 14px;
@@ -819,7 +818,7 @@
 
 <div class="title-wrapper">
     <h1>🕯️ 촛불회 연혁 살펴보기</h1>
-    <span class="version">v4.3</span>
+    <span class="version">v4.4</span>
 </div>
 
 <div class="chat-container">
@@ -940,7 +939,7 @@
     </div>
 </div>
 
-<!-- 📌 [v4.3] 스마트 플로팅 액션 버튼 (FAB) -->
+<!-- 스마트 플로팅 액션 버튼 (FAB) -->
 <button type="button" id="fabQuickBtn" class="fab-quick-btn" onclick="handleFabClick()" title="AI 분석 영역으로 이동">
     <span id="fabIcon">🤖</span>
     <span id="fabText">AI 분석 바로가기 ↓</span>
@@ -953,7 +952,6 @@
 
     // R1_촛불회_회보DB 교정본 웹 게시 CSV 주소
     const SHEET_CORRECT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5y3knlwOACIPVnGma3PdHA57BCudCWlP41WZLx-7fY2XVN3LQfpm-SwNw31LSoORY0WIulyYa-i8G/pub?gid=1838786594&single=true&output=csv";
-
     const PUBLIC_SHARED_KEY = "__SHARED_API_KEY__";
 
     let sheetParsedRows = [];
@@ -962,8 +960,6 @@
     let conversationHistory = [];
     let lastSingleResult = null;
     let isPersonalWaitState = false;
-
-    // 사용자가 체크박스를 누른 순서대로 기록하는 배열
     let selectedHistoryOrder = [];
 
     // 16개 소분류 정의 및 교정본 시트 실제 열(Column) 매핑
@@ -1004,10 +1000,9 @@
             }
         };
 
-        // 스크롤 위치 감지하여 플로팅 버튼 전환
         window.addEventListener('scroll', updateFabState, { passive: true });
 
-        // 구글 시트 '교정본' CSV 실시간 로드
+        // 구글 시트 데이터 로드
         fetch(SHEET_CORRECT_CSV_URL)
             .then(res => {
                 if (!res.ok) throw new Error(`시트 응답 상태(${res.status}) - 웹에 게시 설정을 확인해주세요.`);
@@ -1022,17 +1017,12 @@
             });
     };
 
-    // 📌 [v4.3] 플로팅 버튼 상태 업데이트 (스크롤 위치에 따라 AI 분석 ↔ 연혁 본문 전환)
+    // 플로팅 버튼(FAB) 상태 업데이트
     function updateFabState() {
-        const fab = $("fabQuickBtn");
-        const fabIcon = $("fabIcon");
-        const fabText = $("fabText");
-        const aiSec = $("aiSectionAnchor");
+        const fab = $("fabQuickBtn"), fabIcon = $("fabIcon"), fabText = $("fabText"), aiSec = $("aiSectionAnchor");
         if (!aiSec) return;
 
-        const rect = aiSec.getBoundingClientRect();
-        // AI 분석 섹션이 화면 상단에 절반 이상 들어왔을 경우
-        if (rect.top <= 200) {
+        if (aiSec.getBoundingClientRect().top <= 200) {
             fab.classList.add("to-top");
             fabIcon.innerText = "📖";
             fabText.innerText = "연혁 목록 위로 ↑";
@@ -1045,20 +1035,17 @@
         }
     }
 
-    // 📌 [v4.3] 플로팅 버튼 클릭 동작
+    // 플로팅 버튼(FAB) 클릭 동작
     function handleFabClick() {
-        const fab = $("fabQuickBtn");
-        if (fab.classList.contains("to-top")) {
-            // 상단 연혁 본문으로 부드럽게 스크롤
+        if ($("fabQuickBtn").classList.contains("to-top")) {
             $("historyTopAnchor").scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
-            // 하단 AI 분석 입력창으로 부드럽게 스크롤
             $("aiSectionAnchor").scrollIntoView({ behavior: 'smooth', block: 'start' });
             setTimeout(() => $("userQuery").focus(), 400);
         }
     }
 
-    // 단일 연혁 뷰어 렌더링 함수
+    // 연혁 뷰어 렌더링
     function renderFilteredHistory(targetScrollLabel = null) {
         const box = $("historyContentBox");
         const summaryText = $("selectedSummaryText");
@@ -1066,7 +1053,6 @@
 
         const isAll = $("selectAllCheckbox").checked;
 
-        // 1. 상단 선택 요약 바 텍스트 업데이트
         if (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) {
             summaryText.innerText = "전체 선택";
         } else if (selectedHistoryOrder.length > 0) {
@@ -1075,17 +1061,12 @@
             summaryText.innerText = "선택된 항목 없음";
         }
 
-        // 2. 아무것도 선택되지 않았을 때
         if (!isAll && selectedHistoryOrder.length === 0) {
             box.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 25px 10px;">상단 '검색항목'에서 원하는 항목을 체크하면 해당 연혁 본문이 이곳에 표시됩니다.</div>`;
             return;
         }
 
-        // 3. 전체 또는 선택된 항목들의 마크다운 생성
-        const targetItems = (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length)
-            ? CUSTOM_MENU_MAPPING
-            : selectedHistoryOrder;
-
+        const targetItems = (isAll || selectedHistoryOrder.length === CUSTOM_MENU_MAPPING.length) ? CUSTOM_MENU_MAPPING : selectedHistoryOrder;
         let generatedMarkdown = "";
 
         targetItems.forEach(item => {
@@ -1097,7 +1078,6 @@
 
         if (generatedMarkdown.trim()) {
             box.innerHTML = marked.parse(generatedMarkdown);
-
             if (targetScrollLabel) {
                 requestAnimationFrame(() => {
                     const targetElement = document.getElementById(`sec-${encodeURIComponent(targetScrollLabel)}`);
@@ -1114,7 +1094,7 @@
         }
     }
 
-    // correct.html과 동일한 대괄호 기준 기고문 하위 불릿 목록 렌더링
+    // 마크다운 생성 (기고문 특수 처리 포함)
     function buildSheetSectionMarkdown(item) {
         let lines = [];
         const isArticle = (item.label === "기고문");
@@ -1130,11 +1110,10 @@
             const trimmedContent = contentText.trim();
 
             if (isArticle) {
-                let cleanArt = trimmedContent.replace(/\\n/g, '\n').replace(/\r/g, '');
-                cleanArt = cleanArt.replace(/\s*\/\s*(?=\[)/g, '\n');
+                let cleanArt = trimmedContent.replace(/\\n/g, '\n').replace(/\r/g, '').replace(/\s*\/\s*(?=\[)/g, '\n');
                 let articles = cleanArt.split(/(?=\[.*?\])/g);
-
                 let articleSubLines = [];
+
                 articles.forEach(art => {
                     let cleaned = art.trim().replace(/^[-*•/]\s*/, '').trim();
                     if (cleaned) {
@@ -1147,28 +1126,22 @@
                     lines.push(`* **[${formatIssueNo(rawNo)}] ${issueDate}** :\n` + articleSubLines.join("\n"));
                 }
             } else {
-                const formatted = trimmedContent.replace(/\r?\n+/g, " / ");
-                lines.push(`* **[${formatIssueNo(rawNo)}] ${issueDate}** : ${formatted}`);
+                lines.push(`* **[${formatIssueNo(rawNo)}] ${issueDate}** : ${trimmedContent.replace(/\r?\n+/g, " / ")}`);
             }
         });
 
         if (lines.length === 0) return "";
-        const sectionId = `sec-${encodeURIComponent(item.label)}`;
-        return `<h3 id="${sectionId}">${item.label}</h3>\n\n` + lines.join("\n");
+        return `<h3 id="sec-${encodeURIComponent(item.label)}">${item.label}</h3>\n\n` + lines.join("\n");
     }
 
     function getRowValue(row, possibleKeys) {
         if (!row || !possibleKeys) return "";
         for (let key of possibleKeys) {
-            if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
-                return row[key].trim();
-            }
+            if (row[key] !== undefined && row[key] !== null && row[key] !== "") return row[key].trim();
             const cleanKey = key.replace(/\s+/g, "");
             for (let actualKey in row) {
-                if (actualKey.replace(/\s+/g, "") === cleanKey) {
-                    if (row[actualKey] !== undefined && row[actualKey] !== null && row[actualKey] !== "") {
-                        return row[actualKey].trim();
-                    }
+                if (actualKey.replace(/\s+/g, "") === cleanKey && row[actualKey] !== undefined && row[actualKey] !== null && row[actualKey] !== "") {
+                    return row[actualKey].trim();
                 }
             }
         }
@@ -1176,38 +1149,17 @@
     }
 
     function formatIssueNo(numStr) {
-        const clean = numStr.replace(/[^0-9]/g, "");
-        return clean.padStart(3, "0") + "호";
+        return numStr.replace(/[^0-9]/g, "").padStart(3, "0") + "호";
     }
 
-    // 연혁 본문 결과 복사 함수
-    function copyHistoryContent() {
-        const box = $("historyContentBox");
-        const btn = $("copyBtn");
-        const textToCopy = box.innerText.trim();
-
+    // 복사 기능 공통화
+    function handleCopy(sourceId, btnId, emptyMsg) {
+        const textToCopy = $(sourceId).innerText.trim();
         if (!textToCopy || textToCopy.includes("실시간으로 불러오는 중") || textToCopy.includes("선택된 연혁 항목이 없습니다")) {
-            alert("복사할 연혁 내용이 없습니다.");
+            alert(emptyMsg || "복사할 내용이 없습니다.");
             return;
         }
-
         navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = btn.innerText;
-            btn.innerText = "✅ 복사완료!";
-            setTimeout(() => btn.innerText = originalText, 2000);
-        }).catch(() => alert("클립보드 복사에 실패했습니다."));
-    }
-
-    function copyAiResult() {
-        copyResult("aiResult", "copyAiBtn");
-    }
-
-    function copyCumulativeResult() {
-        copyResult("cumulativeResultBox", "cumulativeCopyBtn");
-    }
-
-    function copyResult(boxId, btnId) {
-        navigator.clipboard.writeText($(boxId).innerText).then(() => {
             const btn = $(btnId);
             const originalText = btn.innerText;
             btn.innerText = "✅ 복사완료!";
@@ -1215,55 +1167,44 @@
         }).catch(() => alert("클립보드 복사에 실패했습니다."));
     }
 
-    // 16개 항목 체크박스 렌더링 (디폴트로 '한 줄 요약' 체크)
+    const copyHistoryContent = () => handleCopy("historyContentBox", "copyBtn", "복사할 연혁 내용이 없습니다.");
+    const copyAiResult = () => handleCopy("aiResult", "copyAiBtn");
+    const copyCumulativeResult = () => handleCopy("cumulativeResultBox", "cumulativeCopyBtn");
+
+    // 📌 최적화: 체크박스 렌더링 문자열 결합 처리
     function renderCheckboxes() {
-        const container = $("checkboxContainer");
-        container.innerHTML = "";
-        
-        // '한 줄 요약'을 기본 선택 항목으로 배열에 등록
         const defaultItem = CUSTOM_MENU_MAPPING.find(m => m.label === "한 줄 요약");
         selectedHistoryOrder = defaultItem ? [defaultItem] : [];
 
+        let html = "";
         CUSTOM_MENU_MAPPING.forEach(item => {
             const isChecked = (item.label === "한 줄 요약") ? "checked" : "";
-            container.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" ${isChecked} onchange="handleItemCheckboxChange(this)"> ${item.label}</label>`;
+            html += `<label class="checkbox-item"><input type="checkbox" name="targetMenu" value="${item.label}" ${isChecked} onchange="handleItemCheckboxChange(this)"> ${item.label}</label>`;
         });
-
+        
+        $("checkboxContainer").innerHTML = html;
         $("selectedSummaryText").innerText = "한 줄 요약";
     }
 
     function handleItemCheckboxChange(cb) {
         const label = cb.value;
-        const mapped = CUSTOM_MENU_MAPPING.find(m => m.label === label);
-        let targetScrollLabel = null;
-
         if (cb.checked) {
             selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
-            selectedHistoryOrder.push(mapped);
-            targetScrollLabel = label;
+            selectedHistoryOrder.push(CUSTOM_MENU_MAPPING.find(m => m.label === label));
         } else {
             selectedHistoryOrder = selectedHistoryOrder.filter(i => i.label !== label);
         }
-
-        const allChecked = Array.from(document.querySelectorAll('input[name="targetMenu"]')).every(c => c.checked);
-        $("selectAllCheckbox").checked = allChecked;
-
-        renderFilteredHistory(targetScrollLabel);
+        $("selectAllCheckbox").checked = Array.from(document.querySelectorAll('input[name="targetMenu"]')).every(c => c.checked);
+        renderFilteredHistory(cb.checked ? label : null);
     }
 
-    // [전체 선택] 토글
     const toggleSelectAll = (selectAllCb) => {
         const isChecked = selectAllCb.checked;
         document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = isChecked);
-        if (isChecked) {
-            selectedHistoryOrder = [...CUSTOM_MENU_MAPPING];
-        } else {
-            selectedHistoryOrder = [];
-        }
+        selectedHistoryOrder = isChecked ? [...CUSTOM_MENU_MAPPING] : [];
         renderFilteredHistory();
     };
 
-    // [전체 해제 ✕] 버튼 클릭 함수
     function deselectAllItems() {
         $("selectAllCheckbox").checked = false;
         document.querySelectorAll('input[name="targetMenu"]').forEach(cb => cb.checked = false);
@@ -1278,15 +1219,14 @@
                 currentController.abort();
                 currentController = null;
             } else {
-                const isSeqActive = $("sequentialBtn").classList.contains("active-enter-mode");
-                askAI(isSeqActive);
+                askAI($("sequentialBtn").classList.contains("active-enter-mode"));
             }
         }
     }
 
     function updateEnterModeFocus() {
         const submitBtn = $("submitBtn"), seqBtn = $("sequentialBtn"), resultText = $("aiResult").innerText.trim();
-        const hasValidResult = resultText && !resultText.includes("조건을 설정하고") && !resultText.includes("AI가 답변을 생성하는 중입니다");
+        const hasValidResult = resultText && !resultText.includes("조건을 설정하고") && !resultText.includes("AI가 연혁 데이터를 분석 중입니다");
         submitBtn.classList.toggle("active-enter-mode", !hasValidResult);
         seqBtn.classList.toggle("active-enter-mode", hasValidResult);
     }
@@ -1301,10 +1241,7 @@
     function checkApiKeyStatus() {
         const savedKey = localStorage.getItem("GEMINI_USER_API_KEY");
         const keyType = localStorage.getItem("GEMINI_KEY_TYPE");
-        const badge = $("apiStatusBadge");
-        const apiBox = $("apiBox");
-        const apiContent = $("apiBoxContent");
-        const toggleBtn = $("apiToggleBoxBtn");
+        const badge = $("apiStatusBadge"), apiBox = $("apiBox"), apiContent = $("apiBoxContent"), toggleBtn = $("apiToggleBoxBtn");
 
         if (savedKey) {
             isPersonalWaitState = false;
@@ -1314,7 +1251,6 @@
             $("apiCancelBtn").style.display = "none";
             $("dropdownArrow").style.display = "none";
             $("apiSaveBtn").disabled = true;
-
             apiContent.style.display = "none";
             apiBox.classList.add("collapsed");
             toggleBtn.innerText = "안내 펼치기 ▼";
@@ -1333,9 +1269,8 @@
             $("apiDelBtn").style.display = "none";
             $("apiSaveBtn").disabled = false;
             $("apiSaveBtn").classList.remove("api-wait-btn");
-            badge.innerText = "⚠️️ 키 미설정 상태";
+            badge.innerText = "⚠ 키 미설정 상태";
             Object.assign(badge.style, { color: "#c0392b", background: "#fadbd8" });
-
             apiContent.style.display = "block";
             apiBox.classList.remove("collapsed");
             toggleBtn.innerText = "안내 숨기기 ▲";
@@ -1446,11 +1381,7 @@
         $("copyAiBtn").style.display = "none";
         $("cumulativeSection").style.display = "none";
         $("cumulativeResultBox").innerHTML = "";
-        $("submitBtnText").innerText = "새로 질문하기";
-        $("submitBtn").classList.remove("stop-btn");
-        $("sequentialBtnText").innerText = "이어서 질문하기";
-        $("sequentialBtn").classList.remove("stop-btn");
-        updateEnterModeFocus();
+        resetAiUiState();
     }
 
     const toggleCheckboxPanel = () => {
@@ -1459,6 +1390,17 @@
         panel.style.display = isBlock ? "none" : "block";
         btn.innerHTML = isBlock ? "📁 검색할 목록 열기 ▼" : "📂 검색할 목록 닫기 ▲";
     };
+
+    // 📌 최적화: UI 상태 복구용 공통 헬퍼 함수
+    function resetAiUiState() {
+        currentController = null;
+        activeTaskType = null;
+        $("submitBtnText").innerText = "새로 질문하기";
+        $("submitBtn").classList.remove("stop-btn");
+        $("sequentialBtnText").innerText = "이어서 질문하기";
+        $("sequentialBtn").classList.remove("stop-btn");
+        updateEnterModeFocus();
+    }
 
     // AI 질의 함수
     async function askAI(isSequential) {
@@ -1510,7 +1452,6 @@
 
         const targetHistoryText = $("historyContentBox").innerText.trim();
         const targetSummaryTitle = $("selectedSummaryText").innerText;
-
         const qPrefix = isSequential ? `Q${conversationHistory.length + 1}.` : "Q.";
 
         activeTaskType = targetType;
@@ -1579,13 +1520,7 @@ ${contextPrompt}
             const isAbort = error.name === 'AbortError';
             $("aiResult").innerHTML = renderQnA(`${qPrefix} ${query}`, `<strong style="${isAbort ? 'color:#e74c3c; font-style:italic;' : 'color:red;'}">${isAbort ? '[알림] 사용자에 의해 AI 답변 생성이 중단되었습니다.' : `[시스템 에러]<br>${error.message}`}</strong>`);
         } finally {
-            currentController = null;
-            activeTaskType = null;
-            $("submitBtnText").innerText = "새로 질문하기";
-            $("submitBtn").classList.remove("stop-btn");
-            $("sequentialBtnText").innerText = "이어서 질문하기";
-            $("sequentialBtn").classList.remove("stop-btn");
-            updateEnterModeFocus();
+            resetAiUiState();
         }
     }
 
@@ -1595,7 +1530,6 @@ ${contextPrompt}
         box.scrollTop = box.scrollHeight;
     }
 
-    // 2행 헤더를 자동 감지하여 파싱하는 스마트 CSV 파서
     function parseSheetCSVWithSmartHeader(text) {
         let rawRows = [], currentRow = [], currentField = "", inQuotes = false;
         for (let i = 0; i < text.length; i++) {
