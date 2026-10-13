@@ -1,4 +1,4 @@
-<!-- v9.0: test.html(v2.2) 본문 검색창 UI 완전 통합 - X 클리어 버튼, ? 툴팁, &, | 다중 연산자 지원 및 GViz 교집합 검색 엔진 적용 -->
+<!-- v9.1: 모바일 환경에서 커스텀 경고 모달창(custom-dialog-card) 및 검색 도움말(?) 툴팁이 화면 오른쪽 바깥으로 짤려나가는 현상 완벽 보정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -57,7 +57,7 @@
     }
     select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     
-    /* V9.0: test.html v2.2 검색창 UI 이식 */
+    /* 본문 검색창 UI */
     .search-section {
       background: #ffffff;
       padding: 16px 20px 14px 20px;
@@ -260,14 +260,12 @@
     .grid-cell:hover { background-color: #60a5fa; transform: scale(1.15); box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 2; }
     .grid-cell.read { background-color: #93c5fd; opacity: 0.65; }
     
-    /* 교정 상황 보기 활성화 시 테두리 색상 */
     .show-status .cell-status-wait { border: 2px solid #ef4444 !important; }
     .show-status .cell-status-doing { border: 2px solid #16a34a !important; }
     .show-status .cell-status-done { border: 2px solid #0f172a !important; }
     .grid-cell-name { display: none; }
     .show-status .grid-cell-name { display: block; }
 
-    /* Sticky 배지 (시작/끝 표시) */
     .sticky-indicator-top { position: sticky; top: 12px; z-index: 30; display: flex; justify-content: flex-start; margin-bottom: 10px; pointer-events: none; }
     .sticky-indicator-bottom { position: sticky; bottom: 14px; z-index: 30; display: flex; justify-content: flex-end; margin-top: 10px; pointer-events: none; }
     .grid-badge-start, .grid-badge-end {
@@ -298,7 +296,6 @@
     .viewer-header-left { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .viewer-title { font-size: 17px; color: #1e293b; font-weight: 700; }
     
-    /* 뷰어/에디터 상태 배지 공통 색상 */
     .viewer-status-badge {
       font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
       background: #f1f5f9; border: 1px solid #e2e8f0; display: inline-flex; align-items: center;
@@ -372,7 +369,6 @@
     
     .editor-label-wrap:hover .history-tooltip, .editor-label-wrap:focus .history-tooltip { visibility: visible; opacity: 1; }
     
-    /* 상단 저장 버튼들 */
     .btn-action {
       display: inline-flex; align-items: center; justify-content: center; height: 28px; border: none; padding: 0 10px;
       font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
@@ -382,7 +378,6 @@
     .btn-save-stay { background-color: #0284c7; color: white; }
     .btn-save-exit { background-color: #475569; color: white; }
 
-    /* 에디터 메인 폼 영역 */
     .modal-body-container { flex: 1; padding: 16px 20px; overflow-y: auto; background: #fff; display: flex; flex-direction: column; }
     .edit-ul { padding-left: 0; list-style: none; margin: 0; display: flex; flex-direction: column; flex: 1; }
     .edit-li { display: flex; align-items: flex-start; margin-bottom: 14px; width: 100%; }
@@ -424,21 +419,28 @@
     .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* =========================================
-       7. 알림 및 다이얼로그
+       7. 알림 및 다이얼로그 (v9.1 완전 중앙 배치 강화)
        ========================================= */
     .custom-dialog-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.45);
-      backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 12000;
+      display: none; position: fixed; inset: 0; width: 100%; height: 100%;
+      background: rgba(15,23,42,0.45); backdrop-filter: blur(2px);
+      justify-content: center; align-items: center; z-index: 12000;
+      box-sizing: border-box; padding: 16px;
     }
     .custom-dialog-card {
-      background: #ffffff; border-radius: 10px; width: 88%; max-width: 370px; padding: 20px 18px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; animation: dialogPop 0.15s ease-out;
+      background: #ffffff; border-radius: 10px; width: 88%; max-width: 360px;
+      box-sizing: border-box; padding: 22px 20px 18px 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
+      animation: dialogPop 0.15s ease-out; margin: auto;
     }
     @keyframes dialogPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .custom-dialog-msg { font-size: 0.92rem; color: #1e293b; line-height: 1.55; margin-bottom: 18px; word-break: keep-all; }
-    .custom-dialog-btns { display: flex; justify-content: center; gap: 8px; }
-    .custom-dialog-btn { flex: 1; height: 34px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s ease; }
-    .custom-dialog-btn:hover { opacity: 0.85; }
+    .custom-dialog-msg { font-size: 14px; color: #1e293b; line-height: 1.55; margin-bottom: 18px; word-break: keep-all; }
+    .custom-dialog-btns { display: flex; justify-content: center; gap: 8px; width: 100%; }
+    .custom-dialog-btn {
+      flex: 1; height: 36px; border-radius: 6px; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; border: none; transition: opacity 0.15s ease; box-sizing: border-box;
+    }
+    .custom-dialog-btn:hover { opacity: 0.9; }
     .dialog-btn-confirm { background-color: #2563eb; color: #ffffff; }
     .dialog-btn-cancel { background-color: #e2e8f0; color: #475569; }
 
@@ -459,16 +461,23 @@
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
       
-      /* 본문 검색 모바일 */
+      /* 본문 검색 모바일 툴팁 위치 및 여백 보정 */
       .search-section { padding: 12px 14px 10px 14px; margin-bottom: 14px; }
       .search-input-row { gap: 6px; }
       .search-input { font-size: 13px; padding: 8px 30px 8px 10px; }
       .search-clear-btn { font-size: 14px; right: 8px; }
       .search-btn { font-size: 13px; padding: 8px 14px; }
       .help-badge { width: 20px; height: 20px; line-height: 20px; font-size: 11px; }
-      .help-tooltip { width: 220px; right: -5px; }
-      .help-tooltip::after { right: 8px; }
+      
+      /* 툴팁 너비 축소 및 모바일 안전 영역 안착 */
+      .help-tooltip { width: 200px; right: -4px; padding: 9px 10px; font-size: 11.5px; }
+      .help-tooltip::after { right: 7px; }
       .search-guide-text { font-size: 11px; }
+
+      /* V9.1: 모바일 알림창 짤림 방지 강제 적용 */
+      .custom-dialog-card { width: calc(100% - 32px); max-width: 320px; padding: 18px 16px 14px 16px; }
+      .custom-dialog-msg { font-size: 13px; }
+      .custom-dialog-btn { height: 34px; font-size: 13px; }
 
       /* 랜덤 메쉬 그리드 */
       .grid-intro-banner p { font-size: 13px; line-height: 1.5; }
@@ -524,7 +533,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.0</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.1</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -552,7 +561,7 @@
       </div>
     </div>
 
-    <!-- V9.0: 본문 검색 컨테이너 (test.html v2.2 이식) -->
+    <!-- 본문 검색 컨테이너 -->
     <div class="search-section" id="searchContainer" style="display:none;">
       <div class="search-input-row">
         <div class="search-input-wrap">
@@ -755,7 +764,7 @@
     // 읽음 상태 전역 보관소
     const readArticleIds = new Set();
     
-    // V9.0: 본문 검색 상태 관리
+    // 본문 검색 상태 관리
     let currentSearchIds = null;
     let isSearching = false;
 
@@ -779,7 +788,6 @@
       cohortSelect: document.getElementById('cohortSelect'),
       authorSelect: document.getElementById('authorSelect'),
       
-      // V9.0: 검색 관련 DOM 캐싱
       searchContainer: document.getElementById('searchContainer'),
       searchInput: document.getElementById('searchInput'),
       searchClearBtn: document.getElementById('searchClearBtn'),
@@ -938,7 +946,7 @@
         if (articlesData.length === 0) { els.contentBody.textContent = '불러온 데이터가 없습니다.'; return; }
         
         initDropdowns();
-        els.searchContainer.style.display = 'block'; // V9.0 검색창 활성화
+        els.searchContainer.style.display = 'block';
         
         renderMeshGrid();
         els.contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
@@ -962,7 +970,6 @@
     /* =========================================
        6. FILTER, SEARCH & LIST VIEW LOGIC
        ========================================= */
-    // V9.0: X 클리어 버튼 노출/숨김 상태 제어
     function updateClearButtonState() {
       if (els.searchInput.value.trim().length > 0) {
         els.searchClearBtn.style.display = 'flex';
@@ -973,7 +980,6 @@
 
     els.searchInput.addEventListener('input', updateClearButtonState);
 
-    // X 클리어 버튼 클릭: 검색창 비우고 기존 검색 해제 및 목록 복원
     els.searchClearBtn.addEventListener('click', () => {
       els.searchInput.value = '';
       updateClearButtonState();
@@ -985,7 +991,6 @@
     els.searchBtn.addEventListener('click', executeSearch);
     els.searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
 
-    // V9.0: 다중 조건(&, |) GViz 쿼리 생성 엔진
     function buildGvizSearchQuery(rawInput) {
       if (rawInput.includes('&')) {
         const parts = rawInput.split('&').map(s => s.trim().replace(/'/g, "\\'")).filter(Boolean);
@@ -1087,13 +1092,11 @@
       const sv = els.volSelect.value, st = els.typeSelect.value, sc = els.cohortSelect.value, sa = els.authorSelect.value;
       let filtered = articlesData;
       
-      // 1. 드롭다운 필터 적용
       if (sv !== "전체") filtered = filtered.filter(i => i.vol === sv);
       if (st !== "전체") filtered = filtered.filter(i => i.type === st);
       if (sc !== "전체") filtered = filtered.filter(i => i.cohort === sc);
       if (sa !== "전체") filtered = filtered.filter(i => i.author === sa);
 
-      // 2. V9.0: 본문 검색 결과 교집합 적용
       if (currentSearchIds !== null) {
         filtered = filtered.filter(i => currentSearchIds.has(i.id));
       }
@@ -1223,7 +1226,7 @@
 
     /* =========================================
        8. VIEWER MODAL LOGIC
-       ========================================= */
+       ======================================== */
     async function showArticleDetail(id) {
       currentArticleId = id; const article = articlesData.find(i => i.id === id); if (!article) return;
       
@@ -1434,7 +1437,6 @@
       });
     }
 
-    // 앱 초기화 로드
     loadSheetData();
     loadPdfMapData();
   </script>
