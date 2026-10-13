@@ -1,4 +1,4 @@
-<!-- v9.1: 모바일 환경에서 커스텀 경고 모달창(custom-dialog-card) 및 검색 도움말(?) 툴팁이 화면 오른쪽 바깥으로 짤려나가는 현상 완벽 보정 -->
+<!-- v9.2: 모바일 환경에서 검색 도움말(?) 툴팁 우측 변을 ?에 일치(right:0) 및 커스텀 경고창 화면 정중앙 강제 배치(top 50%, left 50%)로 짤림 방지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -181,7 +181,7 @@
       content: "";
       position: absolute;
       bottom: 100%;
-      right: 8px;
+      right: 6px;
       border-width: 5px;
       border-style: solid;
       border-color: transparent transparent #1e293b transparent;
@@ -419,21 +419,21 @@
     .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* =========================================
-       7. 알림 및 다이얼로그 (v9.1 완전 중앙 배치 강화)
+       7. 알림 및 다이얼로그 (v9.2 완전 중앙 절대 고정)
        ========================================= */
     .custom-dialog-overlay {
       display: none; position: fixed; inset: 0; width: 100%; height: 100%;
       background: rgba(15,23,42,0.45); backdrop-filter: blur(2px);
-      justify-content: center; align-items: center; z-index: 12000;
-      box-sizing: border-box; padding: 16px;
+      z-index: 12000;
     }
     .custom-dialog-card {
-      background: #ffffff; border-radius: 10px; width: 88%; max-width: 360px;
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #ffffff; border-radius: 10px; width: min(320px, calc(100vw - 32px));
       box-sizing: border-box; padding: 22px 20px 18px 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
-      animation: dialogPop 0.15s ease-out; margin: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25); text-align: center;
+      animation: dialogPop 0.15s ease-out; margin: 0;
     }
-    @keyframes dialogPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes dialogPop { from { transform: translate(-50%, -50%) scale(0.92); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
     .custom-dialog-msg { font-size: 14px; color: #1e293b; line-height: 1.55; margin-bottom: 18px; word-break: keep-all; }
     .custom-dialog-btns { display: flex; justify-content: center; gap: 8px; width: 100%; }
     .custom-dialog-btn {
@@ -461,7 +461,7 @@
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
       
-      /* 본문 검색 모바일 툴팁 위치 및 여백 보정 */
+      /* V9.2: 모바일 툴팁 우측 변을 ? 버튼 우측 끝선에 완벽 일치(right: 0) */
       .search-section { padding: 12px 14px 10px 14px; margin-bottom: 14px; }
       .search-input-row { gap: 6px; }
       .search-input { font-size: 13px; padding: 8px 30px 8px 10px; }
@@ -469,13 +469,12 @@
       .search-btn { font-size: 13px; padding: 8px 14px; }
       .help-badge { width: 20px; height: 20px; line-height: 20px; font-size: 11px; }
       
-      /* 툴팁 너비 축소 및 모바일 안전 영역 안착 */
-      .help-tooltip { width: 200px; right: -4px; padding: 9px 10px; font-size: 11.5px; }
-      .help-tooltip::after { right: 7px; }
+      .help-tooltip { width: 200px; right: 0; padding: 9px 10px; font-size: 11.5px; }
+      .help-tooltip::after { right: 5px; }
       .search-guide-text { font-size: 11px; }
 
-      /* V9.1: 모바일 알림창 짤림 방지 강제 적용 */
-      .custom-dialog-card { width: calc(100% - 32px); max-width: 320px; padding: 18px 16px 14px 16px; }
+      /* V9.2: 모바일 알림창 크기 및 중앙 절대 고정 */
+      .custom-dialog-card { width: min(320px, calc(100vw - 32px)); padding: 18px 16px 14px 16px; }
       .custom-dialog-msg { font-size: 13px; }
       .custom-dialog-btn { height: 34px; font-size: 13px; }
 
@@ -533,7 +532,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.1</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.2</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -896,7 +895,7 @@
       const overlay = document.getElementById('custom-dialog-overlay');
       document.getElementById('custom-dialog-msg').innerHTML = messageHtml;
       document.getElementById('custom-dialog-btns').innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
-      overlay.style.display = 'flex';
+      overlay.style.display = 'block';
       document.getElementById('btn-dialog-ok').onclick = () => { overlay.style.display = 'none'; if (callback) callback(); };
     }
 
@@ -904,7 +903,7 @@
       const overlay = document.getElementById('custom-dialog-overlay');
       document.getElementById('custom-dialog-msg').innerHTML = messageHtml;
       document.getElementById('custom-dialog-btns').innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button><button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>`;
-      overlay.style.display = 'flex';
+      overlay.style.display = 'block';
       document.getElementById('btn-dialog-yes').onclick = () => { overlay.style.display = 'none'; if (onConfirm) onConfirm(); };
       document.getElementById('btn-dialog-no').onclick = () => { overlay.style.display = 'none'; if (onCancel) onCancel(); };
     }
@@ -1226,7 +1225,7 @@
 
     /* =========================================
        8. VIEWER MODAL LOGIC
-       ======================================== */
+       ========================================= */
     async function showArticleDetail(id) {
       currentArticleId = id; const article = articlesData.find(i => i.id === id); if (!article) return;
       
