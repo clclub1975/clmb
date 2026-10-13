@@ -1,10 +1,10 @@
-<!-- test.html v2.1: 본문 검색창 UI 디자인 단독 테스트 (X 클리어 버튼, ? 툴팁 연산자 안내, 대상 안내문, 커스텀 경고창 적용) -->
+<!-- test.html v2.2: Clear 버튼의 회색 원형 배경 제거 및 미니멀한 순수 '✕' 텍스트 마크로 정돈 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>본문 검색창 디자인 테스트 [v2.1]</title>
+  <title>본문 검색창 디자인 테스트 [v2.2]</title>
   <style>
     /* 배경 및 기본 뼈대 (articles.html과 동일 환경 구성) */
     body {
@@ -54,7 +54,7 @@
     .search-input {
       width: 100%;
       box-sizing: border-box;
-      padding: 10px 36px 10px 14px; /* X버튼 공간 확보 */
+      padding: 10px 34px 10px 14px; /* X버튼 공간 확보 */
       border: 1px solid #d1d5db;
       border-radius: 6px;
       font-size: 14px;
@@ -69,30 +69,33 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    /* 입력창 내부 우측 X 클리어 버튼 */
+    /* V2.2 수정: 회색 원형 배경을 제거한 단순하고 깔끔한 ✕ 마크 */
     .search-clear-btn {
       position: absolute;
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
       border: none;
-      background: #cbd5e1;
-      color: #ffffff;
-      border-radius: 50%;
+      background: transparent;
+      color: #94a3b8;
       cursor: pointer;
       display: none; /* 글자 있을 때만 JS로 flex 전환 */
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 15px;
+      font-weight: 500;
       line-height: 1;
-      padding: 0;
-      transition: background 0.15s;
+      padding: 4px;
+      transition: color 0.15s, transform 0.1s;
+      user-select: none;
     }
 
     .search-clear-btn:hover {
-      background: #94a3b8;
+      color: #475569;
+    }
+
+    .search-clear-btn:active {
+      transform: translateY(-50%) scale(0.92);
     }
 
     /* 본문 검색 실행 버튼 */
@@ -197,7 +200,8 @@
     @media (max-width: 768px) {
       .search-section { padding: 12px 14px 10px 14px; margin-bottom: 14px; }
       .search-input-row { gap: 6px; }
-      .search-input { font-size: 13px; padding: 8px 32px 8px 10px; }
+      .search-input { font-size: 13px; padding: 8px 30px 8px 10px; }
+      .search-clear-btn { font-size: 14px; right: 8px; }
       .search-btn { font-size: 13px; padding: 8px 14px; }
       .help-badge { width: 20px; height: 20px; line-height: 20px; font-size: 11px; }
       .help-tooltip { width: 220px; right: -5px; }
@@ -206,7 +210,7 @@
     }
     /* === [MODULE-STYLE: SEARCH-BAR END] === */
 
-    /* 자체 커스텀 다이얼로그 모달 스타일 (articles.html 톤앤매너 동일) */
+    /* 자체 커스텀 다이얼로그 모달 스타일 */
     .custom-dialog-overlay {
       display: none;
       position: fixed;
@@ -260,7 +264,7 @@
 <body>
 
   <div class="test-header">
-    🛠️ 본문 검색창 디자인 단독 테스트 모드 (test.html v2.1)
+    🛠️ 본문 검색창 디자인 단독 테스트 모드 (test.html v2.2)
   </div>
 
   <!-- === [MODULE-HTML: SEARCH-BAR START] === -->
@@ -298,7 +302,6 @@
   </div>
 
   <script>
-    // 디자인 UI 및 인터랙션 시뮬레이션 스크립트
     const searchInput = document.getElementById('searchInput');
     const searchClearBtn = document.getElementById('searchClearBtn');
     const searchBtn = document.getElementById('searchBtn');
@@ -307,7 +310,6 @@
     const customDialogMsg = document.getElementById('customDialogMsg');
     const customDialogBtn = document.getElementById('customDialogBtn');
 
-    // 예쁜 자체 팝업 알림 띄우기 함수
     function showCustomAlert(messageHtml) {
       customDialogMsg.innerHTML = messageHtml;
       customDialogOverlay.style.display = 'flex';
@@ -317,7 +319,6 @@
       };
     }
 
-    // 입력값 유무에 따른 X 버튼 동적 노출/숨김
     function updateClearButtonState() {
       if (searchInput.value.trim().length > 0) {
         searchClearBtn.style.display = 'flex';
@@ -328,19 +329,16 @@
 
     searchInput.addEventListener('input', updateClearButtonState);
 
-    // X 버튼 클릭 시: 검색창 비우고 X버튼 숨김
     searchClearBtn.addEventListener('click', () => {
       searchInput.value = '';
       updateClearButtonState();
       searchInput.focus();
     });
 
-    // 엔터키 지원
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') searchBtn.click();
     });
 
-    // 본문 검색 버튼 클릭 시 시뮬레이션
     searchBtn.addEventListener('click', () => {
       const keyword = searchInput.value.trim();
       if (!keyword) {
@@ -348,7 +346,6 @@
         return;
       }
 
-      // 검색 진행 상태 시각 피드백
       searchBtn.textContent = '검색 중...';
       searchBtn.disabled = true;
 
