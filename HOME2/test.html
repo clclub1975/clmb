@@ -1,10 +1,10 @@
-<!-- test.html v2.0: articles.html의 본문 검색창(UI 디자인) 단독 분리 테스트 및 디버깅용 -->
+<!-- test.html v2.1: 본문 검색창 UI 디자인 단독 테스트 (X 클리어 버튼, ? 툴팁 연산자 안내, 대상 안내문, 커스텀 경고창 적용) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>본문 검색창 디자인 테스트 [v2.0]</title>
+  <title>본문 검색창 디자인 테스트 [v2.1]</title>
   <style>
     /* 배경 및 기본 뼈대 (articles.html과 동일 환경 구성) */
     body {
@@ -14,93 +14,348 @@
       padding: 20px;
       background-color: #f9fafb;
       color: #333;
+      word-break: keep-all;
     }
     .test-header {
-      background: #e2e8f0; padding: 12px 20px; border-radius: 8px; margin-bottom: 25px;
-      font-size: 14px; color: #334155; font-weight: bold; text-align: center;
+      background: #e2e8f0;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      font-size: 14px;
+      color: #334155;
+      font-weight: bold;
+      text-align: center;
     }
 
     /* === [MODULE-STYLE: SEARCH-BAR START] === */
-    .search-container {
-      display: flex; gap: 8px; align-items: center; background: #ffffff; padding: 14px 20px;
-      border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px;
+    .search-section {
+      background: #ffffff;
+      padding: 16px 20px 14px 20px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
     }
+
+    .search-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* 입력창 + X 버튼 래퍼 */
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
     .search-input {
-      flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;
-      outline: none; transition: border-color 0.15s; font-family: inherit;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 36px 10px 14px; /* X버튼 공간 확보 */
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      color: #1e293b;
     }
-    .search-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    
-    .search-btn, .search-reset-btn {
-      padding: 10px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: opacity 0.15s; font-family: inherit; white-space: nowrap;
+
+    .search-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
-    .search-btn { background-color: #2563eb; color: #fff; }
-    .search-btn:hover { opacity: 0.85; }
-    .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    
-    .search-reset-btn { background-color: #e5e7eb; color: #4b5563; }
-    .search-reset-btn:hover { background-color: #d1d5db; }
+
+    /* 입력창 내부 우측 X 클리어 버튼 */
+    .search-clear-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: #cbd5e1;
+      color: #ffffff;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none; /* 글자 있을 때만 JS로 flex 전환 */
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      line-height: 1;
+      padding: 0;
+      transition: background 0.15s;
+    }
+
+    .search-clear-btn:hover {
+      background: #94a3b8;
+    }
+
+    /* 본문 검색 실행 버튼 */
+    .search-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background-color: #2563eb;
+      color: #ffffff;
+      transition: opacity 0.15s, background-color 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .search-btn:hover {
+      opacity: 0.9;
+    }
+
+    .search-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* 도움말 ? 아이콘 및 풍선도움말 툴팁 */
+    .help-tip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .help-badge {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      text-align: center;
+      border-radius: 50%;
+      background-color: #94a3b8;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      user-select: none;
+      transition: background-color 0.15s;
+    }
+
+    .help-tip-wrap:hover .help-badge,
+    .help-tip-wrap:focus .help-badge {
+      background-color: #2563eb;
+    }
+
+    .help-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: 135%;
+      right: 0;
+      width: 260px;
+      white-space: normal;
+      background-color: #1e293b;
+      color: #ffffff;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      z-index: 1000;
+      pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .help-tooltip::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      right: 8px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent #1e293b transparent;
+    }
+
+    .help-tip-wrap:hover .help-tooltip,
+    .help-tip-wrap:focus .help-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* 하단 검색 대상 범위 안내문 */
+    .search-guide-text {
+      margin: 8px 0 0 2px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+    }
 
     @media (max-width: 768px) {
-      .search-container { padding: 10px; margin-bottom: 12px; gap: 6px; }
-      .search-input { font-size: 12px; padding: 8px 10px; }
-      .search-btn, .search-reset-btn { font-size: 12px; padding: 8px 12px; }
+      .search-section { padding: 12px 14px 10px 14px; margin-bottom: 14px; }
+      .search-input-row { gap: 6px; }
+      .search-input { font-size: 13px; padding: 8px 32px 8px 10px; }
+      .search-btn { font-size: 13px; padding: 8px 14px; }
+      .help-badge { width: 20px; height: 20px; line-height: 20px; font-size: 11px; }
+      .help-tooltip { width: 220px; right: -5px; }
+      .help-tooltip::after { right: 8px; }
+      .search-guide-text { font-size: 11px; }
     }
     /* === [MODULE-STYLE: SEARCH-BAR END] === */
+
+    /* 자체 커스텀 다이얼로그 모달 스타일 (articles.html 톤앤매너 동일) */
+    .custom-dialog-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+      justify-content: center;
+      align-items: center;
+      z-index: 12000;
+    }
+    .custom-dialog-card {
+      background: #ffffff;
+      border-radius: 10px;
+      width: 88%;
+      max-width: 360px;
+      padding: 22px 20px 18px 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      animation: dialogPop 0.15s ease-out;
+    }
+    @keyframes dialogPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .custom-dialog-msg {
+      font-size: 14px;
+      color: #1e293b;
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+    .custom-dialog-btn {
+      width: 100%;
+      height: 36px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background-color: #2563eb;
+      color: #ffffff;
+      transition: opacity 0.15s ease;
+    }
+    .custom-dialog-btn:hover {
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
 
   <div class="test-header">
-    🛠️ 본문 검색창 디자인 단독 테스트 모드 (test.html v2.0)
+    🛠️ 본문 검색창 디자인 단독 테스트 모드 (test.html v2.1)
   </div>
 
   <!-- === [MODULE-HTML: SEARCH-BAR START] === -->
-  <div class="search-container" id="searchContainer">
-    <input type="text" id="searchInput" class="search-input" placeholder="본문 검색어 입력 (예: 민주주의)">
-    <button type="button" id="searchBtn" class="search-btn">본문 검색</button>
-    <button type="button" id="searchResetBtn" class="search-reset-btn" style="display:none;">초기화</button>
+  <div class="search-section" id="searchContainer">
+    <div class="search-input-row">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" class="search-input" placeholder="본문 검색어 입력 (예: 체육대회)">
+        <button type="button" id="searchClearBtn" class="search-clear-btn" title="검색어 지우기">✕</button>
+      </div>
+
+      <button type="button" id="searchBtn" class="search-btn">본문 검색</button>
+
+      <!-- 연산자 사용법 안내 툴팁 -->
+      <div class="help-tip-wrap" tabindex="0">
+        <span class="help-badge">?</span>
+        <div class="help-tooltip">
+          <strong>🔍 다중 조건 검색 안내</strong><br>
+          • <strong>&amp; (AND)</strong> : 두 단어 모두 포함<br>
+          &nbsp;&nbsp;예) <code>체육대회 &amp; 농활</code><br>
+          • <strong>| (OR)</strong> : 두 단어 중 하나 이상 포함<br>
+          &nbsp;&nbsp;예) <code>야유회 | 체육대회</code>
+        </div>
+      </div>
+    </div>
+    <p class="search-guide-text">※ 본문 검색은 아래 '검색된 글 목록'에 표시된 글들만을 대상으로 진행됩니다.</p>
   </div>
   <!-- === [MODULE-HTML: SEARCH-BAR END] === -->
 
+  <!-- 커스텀 다이얼로그 팝업 창 -->
+  <div class="custom-dialog-overlay" id="customDialogOverlay">
+    <div class="custom-dialog-card">
+      <div class="custom-dialog-msg" id="customDialogMsg">검색어를 입력해 주세요.</div>
+      <button type="button" class="custom-dialog-btn" id="customDialogBtn">확인</button>
+    </div>
+  </div>
+
   <script>
-    // 디자인 UI 동작을 확인하기 위한 가짜(Mock) 스크립트입니다.
+    // 디자인 UI 및 인터랙션 시뮬레이션 스크립트
     const searchInput = document.getElementById('searchInput');
+    const searchClearBtn = document.getElementById('searchClearBtn');
     const searchBtn = document.getElementById('searchBtn');
-    const searchResetBtn = document.getElementById('searchResetBtn');
 
-    // 본문 검색 버튼 클릭 시 UI 변화 시뮬레이션
-    searchBtn.addEventListener('click', () => {
-      const keyword = searchInput.value.trim();
-      if (!keyword) {
-        alert('검색어를 입력하세요.');
-        return;
+    const customDialogOverlay = document.getElementById('customDialogOverlay');
+    const customDialogMsg = document.getElementById('customDialogMsg');
+    const customDialogBtn = document.getElementById('customDialogBtn');
+
+    // 예쁜 자체 팝업 알림 띄우기 함수
+    function showCustomAlert(messageHtml) {
+      customDialogMsg.innerHTML = messageHtml;
+      customDialogOverlay.style.display = 'flex';
+      customDialogBtn.onclick = () => {
+        customDialogOverlay.style.display = 'none';
+        searchInput.focus();
+      };
+    }
+
+    // 입력값 유무에 따른 X 버튼 동적 노출/숨김
+    function updateClearButtonState() {
+      if (searchInput.value.trim().length > 0) {
+        searchClearBtn.style.display = 'flex';
+      } else {
+        searchClearBtn.style.display = 'none';
       }
-      
-      // 검색 중 상태 렌더링 테스트
-      searchBtn.textContent = '검색 중...';
-      searchBtn.disabled = true;
-      searchResetBtn.style.display = 'none';
+    }
 
-      // 1초 뒤 검색 완료 상태 렌더링 테스트
-      setTimeout(() => {
-        searchBtn.textContent = '본문 검색';
-        searchBtn.disabled = false;
-        searchResetBtn.style.display = 'inline-block';
-      }, 1000);
+    searchInput.addEventListener('input', updateClearButtonState);
+
+    // X 버튼 클릭 시: 검색창 비우고 X버튼 숨김
+    searchClearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      updateClearButtonState();
+      searchInput.focus();
     });
 
-    // 엔터키 입력 지원
+    // 엔터키 지원
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') searchBtn.click();
     });
 
-    // 초기화 버튼 클릭 시 UI 복원 시뮬레이션
-    searchResetBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      searchResetBtn.style.display = 'none';
-      searchInput.focus();
+    // 본문 검색 버튼 클릭 시 시뮬레이션
+    searchBtn.addEventListener('click', () => {
+      const keyword = searchInput.value.trim();
+      if (!keyword) {
+        showCustomAlert('검색어를 입력해 주세요.<br><span style="font-size:12px; color:#64748b;">(예: 체육대회, 체육대회 &amp; 농활)</span>');
+        return;
+      }
+
+      // 검색 진행 상태 시각 피드백
+      searchBtn.textContent = '검색 중...';
+      searchBtn.disabled = true;
+
+      setTimeout(() => {
+        searchBtn.textContent = '본문 검색';
+        searchBtn.disabled = false;
+      }, 800);
     });
   </script>
 </body>
