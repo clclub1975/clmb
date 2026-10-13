@@ -1,4 +1,4 @@
-<!-- v8.9: '세부조건으로 선택하기' 탭에 J열 본문 검색 기능 추가 (GViz 쿼리 교집합 방식 적용) -->
+<!-- v9.0: test.html(v2.2) 본문 검색창 UI 완전 통합 - X 클리어 버튼, ? 툴팁, &, | 다중 연산자 지원 및 GViz 교집합 검색 엔진 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -57,25 +57,146 @@
     }
     select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     
-    /* V8.9 신설: 본문 검색 컨테이너 */
-    .search-container {
-      display: flex; gap: 8px; align-items: center; background: #ffffff; padding: 14px 20px;
-      border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px;
+    /* V9.0: test.html v2.2 검색창 UI 이식 */
+    .search-section {
+      background: #ffffff;
+      padding: 16px 20px 14px 20px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
+    }
+    .search-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
     }
     .search-input {
-      flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;
-      outline: none; transition: border-color 0.15s; font-family: inherit;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 34px 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      color: #1e293b;
     }
-    .search-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .search-btn, .search-reset-btn {
-      padding: 10px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: opacity 0.15s; font-family: inherit; white-space: nowrap;
+    .search-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
-    .search-btn { background-color: #2563eb; color: #fff; }
-    .search-btn:hover { opacity: 0.85; }
+    .search-clear-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1;
+      padding: 4px;
+      transition: color 0.15s, transform 0.1s;
+      user-select: none;
+    }
+    .search-clear-btn:hover { color: #475569; }
+    .search-clear-btn:active { transform: translateY(-50%) scale(0.92); }
+
+    .search-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background-color: #2563eb;
+      color: #ffffff;
+      transition: opacity 0.15s, background-color 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .search-btn:hover { opacity: 0.9; }
     .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .search-reset-btn { background-color: #e5e7eb; color: #4b5563; }
-    .search-reset-btn:hover { background-color: #d1d5db; }
+
+    .help-tip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      outline: none;
+    }
+    .help-badge {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      text-align: center;
+      border-radius: 50%;
+      background-color: #94a3b8;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      user-select: none;
+      transition: background-color 0.15s;
+    }
+    .help-tip-wrap:hover .help-badge,
+    .help-tip-wrap:focus .help-badge {
+      background-color: #2563eb;
+    }
+    .help-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: 135%;
+      right: 0;
+      width: 260px;
+      white-space: normal;
+      background-color: #1e293b;
+      color: #ffffff;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      z-index: 1000;
+      pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .help-tooltip::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      right: 8px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent #1e293b transparent;
+    }
+    .help-tip-wrap:hover .help-tooltip,
+    .help-tip-wrap:focus .help-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    .search-guide-text {
+      margin: 8px 0 0 2px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+    }
 
     .list-container {
       background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
@@ -249,28 +370,8 @@
     .editor-input:focus { border-color: #2563eb; outline: none; }
     .editor-input::placeholder { text-align: center; color: #94a3b8; }
     
-    /* 툴팁 공통 (도움말, 역사) */
-    .history-tooltip, .help-tooltip {
-      visibility: hidden; opacity: 0; position: absolute; top: 135%; left: 0; width: 220px;
-      white-space: normal; word-break: keep-all; background-color: #1e293b; color: #ffffff; text-align: left;
-      padding: 8px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 500; line-height: 1.45;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 1000; pointer-events: none; transition: opacity 0.2s ease, visibility 0.2s ease;
-    }
-    .history-tooltip::after, .help-tooltip::after {
-      content: ""; position: absolute; bottom: 100%; border-width: 5px; border-style: solid; border-color: transparent transparent #1e293b transparent;
-    }
-    .history-tooltip::after { left: 12px; }
-    .help-tooltip::after { left: 7px; }
     .editor-label-wrap:hover .history-tooltip, .editor-label-wrap:focus .history-tooltip { visibility: visible; opacity: 1; }
     
-    .help-tip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; outline: none; }
-    .help-badge {
-      display: inline-block; width: 17px; height: 17px; line-height: 17px; text-align: center; border-radius: 50%;
-      background-color: #94a3b8; color: #ffffff; font-size: 0.72rem; font-weight: 700; user-select: none;
-    }
-    .help-tip-wrap:hover .help-badge, .help-tip-wrap:focus .help-badge { background-color: #2563eb; }
-    .help-tip-wrap:hover .help-tooltip, .help-tip-wrap:focus .help-tooltip { visibility: visible; opacity: 1; }
-
     /* 상단 저장 버튼들 */
     .btn-action {
       display: inline-flex; align-items: center; justify-content: center; height: 28px; border: none; padding: 0 10px;
@@ -281,27 +382,24 @@
     .btn-save-stay { background-color: #0284c7; color: white; }
     .btn-save-exit { background-color: #475569; color: white; }
 
-    /* 에디터 메인 폼 영역: Flex 구조화로 높이 꽉채우기 */
+    /* 에디터 메인 폼 영역 */
     .modal-body-container { flex: 1; padding: 16px 20px; overflow-y: auto; background: #fff; display: flex; flex-direction: column; }
     .edit-ul { padding-left: 0; list-style: none; margin: 0; display: flex; flex-direction: column; flex: 1; }
     .edit-li { display: flex; align-items: flex-start; margin-bottom: 14px; width: 100%; }
     .edit-label { flex: 0 0 92px; max-width: 92px; font-size: 0.88rem; color: #0f172a; font-weight: 700; padding-top: 5px; word-break: keep-all; }
     .edit-field-wrap { flex: 1; display: flex; flex-direction: column; width: calc(100% - 92px); }
     
-    /* 5번 본문 전용 최적화 클래스 */
     .edit-li-content { flex-direction: column; flex: 1; margin-bottom: 0; }
     .edit-label-content { flex: none; height: auto; margin-bottom: 2px; padding-top: 0; }
     .edit-wrap-content { width: 100%; flex: 1; display: flex; flex-direction: column; }
     .restore-toolbar-content { margin-top: 8px; }
 
-    /* 인라인 입력 필드 포맷 */
     .edit-textarea-inline {
       width: 100%; box-sizing: border-box; padding: 7px 10px; font-size: 0.9rem; line-height: 1.5; color: #1e293b;
       background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; font-family: inherit; transition: border-color 0.15s ease, background-color 0.15s ease;
     }
     .edit-textarea-inline:focus { background-color: #ffffff; border-color: #2563eb; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
     
-    /* 본문(textarea) 포맷 - 읽기 뷰어창과 100% 동일한 폰트 및 여백 적용, Flex 확장 대응 */
     .edit-textarea-full {
       width: 100%; box-sizing: border-box; padding: 20px; font-size: 16px; line-height: 1.8; color: #1f2937;
       background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; font-family: inherit; transition: border-color 0.15s ease, background-color 0.15s ease;
@@ -355,24 +453,28 @@
        8. 반응형 모바일 (미디어 쿼리 통합)
        ========================================= */
     @media (max-width: 768px) {
-      /* 공통 / 리스트 / 필터 */
       body { padding: 10px; margin: 10px auto; }
       .tab-btn { font-size: 14px; padding: 10px 5px; }
       .filter-container { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 6px; margin-bottom: 10px; }
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
       
-      /* 본문 검색 (v8.9 신설) */
-      .search-container { padding: 10px; margin-bottom: 12px; gap: 6px; }
-      .search-input { font-size: 12px; padding: 8px 10px; }
-      .search-btn, .search-reset-btn { font-size: 12px; padding: 8px 12px; }
+      /* 본문 검색 모바일 */
+      .search-section { padding: 12px 14px 10px 14px; margin-bottom: 14px; }
+      .search-input-row { gap: 6px; }
+      .search-input { font-size: 13px; padding: 8px 30px 8px 10px; }
+      .search-clear-btn { font-size: 14px; right: 8px; }
+      .search-btn { font-size: 13px; padding: 8px 14px; }
+      .help-badge { width: 20px; height: 20px; line-height: 20px; font-size: 11px; }
+      .help-tooltip { width: 220px; right: -5px; }
+      .help-tooltip::after { right: 8px; }
+      .search-guide-text { font-size: 11px; }
 
       /* 랜덤 메쉬 그리드 */
       .grid-intro-banner p { font-size: 13px; line-height: 1.5; }
       .grid-intro-count { display: block; margin-top: 3px; }
       .grid-control-bar { gap: 6px; }
       
-      /* 모바일 버튼 높이 완벽 통일 */
       .status-toggle-wrap, .reset-btn { height: 28px; font-size: 11.5px; }
       .status-toggle-wrap { padding: 0 8px; gap: 5px; }
       .reset-btn { padding: 0 10px; }
@@ -412,7 +514,6 @@
       .help-tooltip { width: 200px; left: -20px; }
       .history-tooltip { width: 200px; left: 0; }
       
-      /* 모바일 전용: 가상키보드 간섭 방지 및 편집 편의를 위한 본문 창 높이 강제 확보 */
       .edit-textarea-full { padding: 12px; font-size: 15px; line-height: 1.7; min-height: 450px; }
     }
   </style>
@@ -423,7 +524,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.9</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.0</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -451,11 +552,28 @@
       </div>
     </div>
 
-    <!-- V8.9 본문 검색 컨테이너 신설 (목록 상단) -->
-    <div class="search-container" id="searchContainer" style="display:none;">
-      <input type="text" id="searchInput" class="search-input" placeholder="본문 검색어 입력 (예: 민주주의)">
-      <button type="button" id="searchBtn" class="search-btn">본문 검색</button>
-      <button type="button" id="searchResetBtn" class="search-reset-btn" style="display:none;">초기화</button>
+    <!-- V9.0: 본문 검색 컨테이너 (test.html v2.2 이식) -->
+    <div class="search-section" id="searchContainer" style="display:none;">
+      <div class="search-input-row">
+        <div class="search-input-wrap">
+          <input type="text" id="searchInput" class="search-input" placeholder="본문 검색어 입력 (예: 체육대회)">
+          <button type="button" id="searchClearBtn" class="search-clear-btn" title="검색어 지우기">✕</button>
+        </div>
+
+        <button type="button" id="searchBtn" class="search-btn">본문 검색</button>
+
+        <div class="help-tip-wrap" tabindex="0">
+          <span class="help-badge">?</span>
+          <div class="help-tooltip">
+            <strong>🔍 다중 조건 검색 안내</strong><br>
+            • <strong>&amp; (AND)</strong> : 두 단어 모두 포함<br>
+            &nbsp;&nbsp;예) <code>체육대회 &amp; 농활</code><br>
+            • <strong>| (OR)</strong> : 두 단어 중 하나 이상 포함<br>
+            &nbsp;&nbsp;예) <code>야유회 | 체육대회</code>
+          </div>
+        </div>
+      </div>
+      <p class="search-guide-text">※ 본문 검색은 아래 '검색된 글 목록'에 표시된 글들만을 대상으로 진행됩니다.</p>
     </div>
 
     <div class="list-container" id="listContainer" style="display:none;">
@@ -637,7 +755,7 @@
     // 읽음 상태 전역 보관소
     const readArticleIds = new Set();
     
-    // V8.9: 본문 검색 상태 관리
+    // V9.0: 본문 검색 상태 관리
     let currentSearchIds = null;
     let isSearching = false;
 
@@ -661,11 +779,11 @@
       cohortSelect: document.getElementById('cohortSelect'),
       authorSelect: document.getElementById('authorSelect'),
       
-      // V8.9: 검색 요소
+      // V9.0: 검색 관련 DOM 캐싱
       searchContainer: document.getElementById('searchContainer'),
       searchInput: document.getElementById('searchInput'),
+      searchClearBtn: document.getElementById('searchClearBtn'),
       searchBtn: document.getElementById('searchBtn'),
-      searchResetBtn: document.getElementById('searchResetBtn'),
 
       listContainer: document.getElementById('listContainer'),
       listTitle: document.getElementById('listTitle'),
@@ -820,7 +938,7 @@
         if (articlesData.length === 0) { els.contentBody.textContent = '불러온 데이터가 없습니다.'; return; }
         
         initDropdowns();
-        els.searchContainer.style.display = 'flex'; // V8.9 검색창 활성화
+        els.searchContainer.style.display = 'block'; // V9.0 검색창 활성화
         
         renderMeshGrid();
         els.contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
@@ -844,21 +962,52 @@
     /* =========================================
        6. FILTER, SEARCH & LIST VIEW LOGIC
        ========================================= */
-    // V8.9: 본문 검색 이벤트 리스너 추가
+    // V9.0: X 클리어 버튼 노출/숨김 상태 제어
+    function updateClearButtonState() {
+      if (els.searchInput.value.trim().length > 0) {
+        els.searchClearBtn.style.display = 'flex';
+      } else {
+        els.searchClearBtn.style.display = 'none';
+      }
+    }
+
+    els.searchInput.addEventListener('input', updateClearButtonState);
+
+    // X 클리어 버튼 클릭: 검색창 비우고 기존 검색 해제 및 목록 복원
+    els.searchClearBtn.addEventListener('click', () => {
+      els.searchInput.value = '';
+      updateClearButtonState();
+      currentSearchIds = null;
+      renderArticleList();
+      els.searchInput.focus();
+    });
+
     els.searchBtn.addEventListener('click', executeSearch);
     els.searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
-    els.searchResetBtn.addEventListener('click', () => {
-      els.searchInput.value = '';
-      currentSearchIds = null;
-      els.searchResetBtn.style.display = 'none';
-      renderArticleList();
-    });
+
+    // V9.0: 다중 조건(&, |) GViz 쿼리 생성 엔진
+    function buildGvizSearchQuery(rawInput) {
+      if (rawInput.includes('&')) {
+        const parts = rawInput.split('&').map(s => s.trim().replace(/'/g, "\\'")).filter(Boolean);
+        if (parts.length === 0) return '';
+        return `SELECT A WHERE ` + parts.map(p => `J CONTAINS '${p}'`).join(' AND ');
+      } else if (rawInput.includes('|')) {
+        const parts = rawInput.split('|').map(s => s.trim().replace(/'/g, "\\'")).filter(Boolean);
+        if (parts.length === 0) return '';
+        return `SELECT A WHERE ` + parts.map(p => `J CONTAINS '${p}'`).join(' OR ');
+      } else {
+        const safe = rawInput.replace(/'/g, "\\'");
+        return `SELECT A WHERE J CONTAINS '${safe}'`;
+      }
+    }
 
     async function executeSearch() {
       const keyword = els.searchInput.value.trim();
       if (!keyword) {
+        showCustomAlert('검색어를 입력해 주세요.<br><span style="font-size:12px; color:#64748b;">(예: 체육대회, 체육대회 &amp; 농활)</span>', () => {
+          els.searchInput.focus();
+        });
         currentSearchIds = null;
-        els.searchResetBtn.style.display = 'none';
         renderArticleList();
         return;
       }
@@ -869,9 +1018,9 @@
       els.searchBtn.disabled = true;
 
       try {
-        const safeKeyword = keyword.replace(/'/g, "\\'");
-        const query = encodeURIComponent(`SELECT A WHERE J CONTAINS '${safeKeyword}'`);
-        const url = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${CORRECT_SHEET_GID}&tq=${query}`;
+        const queryString = buildGvizSearchQuery(keyword);
+        const encodedQuery = encodeURIComponent(queryString);
+        const url = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${CORRECT_SHEET_GID}&tq=${encodedQuery}`;
 
         const res = await fetch(url);
         const text = await res.text();
@@ -891,7 +1040,6 @@
         isSearching = false;
         els.searchBtn.textContent = '본문 검색';
         els.searchBtn.disabled = false;
-        els.searchResetBtn.style.display = 'inline-block';
         renderArticleList();
       }
     }
@@ -945,14 +1093,13 @@
       if (sc !== "전체") filtered = filtered.filter(i => i.cohort === sc);
       if (sa !== "전체") filtered = filtered.filter(i => i.author === sa);
 
-      // 2. V8.9: 본문 검색 교집합 적용
+      // 2. V9.0: 본문 검색 결과 교집합 적용
       if (currentSearchIds !== null) {
         filtered = filtered.filter(i => currentSearchIds.has(i.id));
       }
 
       els.articleList.innerHTML = '';
       
-      // 검색 결과 안내 텍스트 표시
       const searchStatusHtml = currentSearchIds !== null 
         ? `<span class="list-title-sub">(&#10003; 본문 검색 포함)</span>` 
         : '';
@@ -1018,9 +1165,8 @@
       
       displayData.forEach((article, idx) => {
         const cell = document.createElement('div'); cell.className = 'grid-cell'; cell.dataset.index = idx + 1;
-        cell.dataset.id = article.id; // 연동 탐색용 ID 삽입
+        cell.dataset.id = article.id;
         
-        // 읽음 상태 전역 동기화 반영
         if (readArticleIds.has(article.id)) {
           cell.classList.add('read');
         }
@@ -1081,7 +1227,6 @@
     async function showArticleDetail(id) {
       currentArticleId = id; const article = articlesData.find(i => i.id === id); if (!article) return;
       
-      // 읽음 상태 전역 기록 및 화면(메쉬) 즉시 연동 반영
       readArticleIds.add(id);
       const targetCell = document.querySelector(`.grid-cell[data-id="${id}"]`);
       if (targetCell) targetCell.classList.add('read');
@@ -1159,7 +1304,6 @@
         isWaitStatus = false;
       }
       
-      // 교정 전 상태인 경우 교정자 입력칸 무조건 빈칸 처리 (이전 기록 무시)
       if (isWaitStatus) {
         els.editorNameInput.value = '';
       } else {
