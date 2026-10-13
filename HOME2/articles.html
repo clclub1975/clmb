@@ -1,4 +1,4 @@
-<!-- v8.8: 코드 구조 최적화 - HTML 내 하드코딩된 인라인 스타일(style="...") 전면 제거 및 CSS 클래스 통합 분리, 가독성 향상 -->
+<!-- v8.9: '세부조건으로 선택하기' 탭에 J열 본문 검색 기능 추가 (GViz 쿼리 교집합 방식 적용) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -47,7 +47,7 @@
        ========================================= */
     .filter-container {
       display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-      background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px;
+      background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 15px;
     }
     .filter-group { width: 100%; }
     label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 13px; color: #4b5563; white-space: nowrap; }
@@ -57,11 +57,32 @@
     }
     select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     
+    /* V8.9 신설: 본문 검색 컨테이너 */
+    .search-container {
+      display: flex; gap: 8px; align-items: center; background: #ffffff; padding: 14px 20px;
+      border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px;
+    }
+    .search-input {
+      flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;
+      outline: none; transition: border-color 0.15s; font-family: inherit;
+    }
+    .search-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .search-btn, .search-reset-btn {
+      padding: 10px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.15s; font-family: inherit; white-space: nowrap;
+    }
+    .search-btn { background-color: #2563eb; color: #fff; }
+    .search-btn:hover { opacity: 0.85; }
+    .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .search-reset-btn { background-color: #e5e7eb; color: #4b5563; }
+    .search-reset-btn:hover { background-color: #d1d5db; }
+
     .list-container {
       background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
       margin-bottom: 25px; border: 1px solid #e5e7eb;
     }
     .list-container h3 { margin-top: 0; font-size: 16px; color: #1f2937; margin-bottom: 12px; border-bottom: 2px solid #f3f4f6; padding-bottom: 8px; }
+    .list-title-sub { font-size: 13px; color: #2563eb; font-weight: normal; margin-left: 8px; }
     .article-list { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
     .article-item {
       padding: 2px 6px; margin-bottom: 1px; border-radius: 4px; cursor: pointer; transition: background-color 0.15s;
@@ -267,7 +288,7 @@
     .edit-label { flex: 0 0 92px; max-width: 92px; font-size: 0.88rem; color: #0f172a; font-weight: 700; padding-top: 5px; word-break: keep-all; }
     .edit-field-wrap { flex: 1; display: flex; flex-direction: column; width: calc(100% - 92px); }
     
-    /* 5번 본문 전용 최적화 클래스 (v8.8 신설) */
+    /* 5번 본문 전용 최적화 클래스 */
     .edit-li-content { flex-direction: column; flex: 1; margin-bottom: 0; }
     .edit-label-content { flex: none; height: auto; margin-bottom: 2px; padding-top: 0; }
     .edit-wrap-content { width: 100%; flex: 1; display: flex; flex-direction: column; }
@@ -337,10 +358,15 @@
       /* 공통 / 리스트 / 필터 */
       body { padding: 10px; margin: 10px auto; }
       .tab-btn { font-size: 14px; padding: 10px 5px; }
-      .filter-container { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 6px; }
+      .filter-container { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 6px; margin-bottom: 10px; }
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
       
+      /* 본문 검색 (v8.9 신설) */
+      .search-container { padding: 10px; margin-bottom: 12px; gap: 6px; }
+      .search-input { font-size: 12px; padding: 8px 10px; }
+      .search-btn, .search-reset-btn { font-size: 12px; padding: 8px 12px; }
+
       /* 랜덤 메쉬 그리드 */
       .grid-intro-banner p { font-size: 13px; line-height: 1.5; }
       .grid-intro-count { display: block; margin-top: 3px; }
@@ -397,7 +423,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.8</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v8.9</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -423,6 +449,13 @@
         <label for="authorSelect">4. 글쓴이</label>
         <select id="authorSelect" disabled><option value="전체">전체</option></select>
       </div>
+    </div>
+
+    <!-- V8.9 본문 검색 컨테이너 신설 (목록 상단) -->
+    <div class="search-container" id="searchContainer" style="display:none;">
+      <input type="text" id="searchInput" class="search-input" placeholder="본문 검색어 입력 (예: 민주주의)">
+      <button type="button" id="searchBtn" class="search-btn">본문 검색</button>
+      <button type="button" id="searchResetBtn" class="search-reset-btn" style="display:none;">초기화</button>
     </div>
 
     <div class="list-container" id="listContainer" style="display:none;">
@@ -554,7 +587,7 @@
               </div>
             </div>
           </li>
-          <!-- 5. 기고문 본문 (v8.8 구조 최적화: 인라인 스타일 제거 및 CSS 클래스화 적용) -->
+          <!-- 5. 기고문 본문 -->
           <li class="edit-li edit-li-content">
             <strong class="edit-label edit-label-content">5. 기고문 본문:</strong>
             <div class="edit-field-wrap edit-wrap-content">
@@ -604,6 +637,10 @@
     // 읽음 상태 전역 보관소
     const readArticleIds = new Set();
     
+    // V8.9: 본문 검색 상태 관리
+    let currentSearchIds = null;
+    let isSearching = false;
+
     let isDirty = false;
     let isNetworkBusy = false;
     let pendingSaveTask = null;
@@ -623,6 +660,13 @@
       typeSelect: document.getElementById('typeSelect'),
       cohortSelect: document.getElementById('cohortSelect'),
       authorSelect: document.getElementById('authorSelect'),
+      
+      // V8.9: 검색 요소
+      searchContainer: document.getElementById('searchContainer'),
+      searchInput: document.getElementById('searchInput'),
+      searchBtn: document.getElementById('searchBtn'),
+      searchResetBtn: document.getElementById('searchResetBtn'),
+
       listContainer: document.getElementById('listContainer'),
       listTitle: document.getElementById('listTitle'),
       articleList: document.getElementById('articleList'),
@@ -774,7 +818,10 @@
         const response = await fetch(METADATA_CSV_URL);
         articlesData = fastParseCSV(await response.text());
         if (articlesData.length === 0) { els.contentBody.textContent = '불러온 데이터가 없습니다.'; return; }
+        
         initDropdowns();
+        els.searchContainer.style.display = 'flex'; // V8.9 검색창 활성화
+        
         renderMeshGrid();
         els.contentBody.textContent = '글을 선택하시면 이곳에 전문이 표시됩니다.';
       } catch (error) { els.contentBody.textContent = '목록 데이터를 불러오는 데 실패했습니다.'; }
@@ -795,8 +842,60 @@
     });
 
     /* =========================================
-       6. FILTER & LIST VIEW LOGIC
+       6. FILTER, SEARCH & LIST VIEW LOGIC
        ========================================= */
+    // V8.9: 본문 검색 이벤트 리스너 추가
+    els.searchBtn.addEventListener('click', executeSearch);
+    els.searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
+    els.searchResetBtn.addEventListener('click', () => {
+      els.searchInput.value = '';
+      currentSearchIds = null;
+      els.searchResetBtn.style.display = 'none';
+      renderArticleList();
+    });
+
+    async function executeSearch() {
+      const keyword = els.searchInput.value.trim();
+      if (!keyword) {
+        currentSearchIds = null;
+        els.searchResetBtn.style.display = 'none';
+        renderArticleList();
+        return;
+      }
+
+      if (isSearching) return;
+      isSearching = true;
+      els.searchBtn.textContent = '검색 중...';
+      els.searchBtn.disabled = true;
+
+      try {
+        const safeKeyword = keyword.replace(/'/g, "\\'");
+        const query = encodeURIComponent(`SELECT A WHERE J CONTAINS '${safeKeyword}'`);
+        const url = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${CORRECT_SHEET_GID}&tq=${query}`;
+
+        const res = await fetch(url);
+        const text = await res.text();
+        const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+        if (match && match[1]) {
+          const rows = JSON.parse(match[1]).table?.rows || [];
+          const ids = rows.map(r => r.c[0]?.v).filter(Boolean);
+          currentSearchIds = new Set(ids);
+        } else {
+          currentSearchIds = new Set();
+        }
+      } catch (err) {
+        console.error('본문 검색 오류:', err);
+        showToast('⚠️ 본문 검색 중 오류가 발생했습니다.', '#ef4444');
+        currentSearchIds = null;
+      } finally {
+        isSearching = false;
+        els.searchBtn.textContent = '본문 검색';
+        els.searchBtn.disabled = false;
+        els.searchResetBtn.style.display = 'inline-block';
+        renderArticleList();
+      }
+    }
+
     function initDropdowns() {
       const vols = [...new Set(articlesData.map(i => i.vol))].filter(Boolean).sort((a,b) => (parseInt(a.replace(/\D/g,''))||0) - (parseInt(b.replace(/\D/g,''))||0));
       els.volSelect.innerHTML = '<option value="전체">전체</option>';
@@ -839,17 +938,31 @@
     function renderArticleList() {
       const sv = els.volSelect.value, st = els.typeSelect.value, sc = els.cohortSelect.value, sa = els.authorSelect.value;
       let filtered = articlesData;
+      
+      // 1. 드롭다운 필터 적용
       if (sv !== "전체") filtered = filtered.filter(i => i.vol === sv);
       if (st !== "전체") filtered = filtered.filter(i => i.type === st);
       if (sc !== "전체") filtered = filtered.filter(i => i.cohort === sc);
       if (sa !== "전체") filtered = filtered.filter(i => i.author === sa);
 
+      // 2. V8.9: 본문 검색 교집합 적용
+      if (currentSearchIds !== null) {
+        filtered = filtered.filter(i => currentSearchIds.has(i.id));
+      }
+
       els.articleList.innerHTML = '';
-      els.listTitle.textContent = `검색된 글 목록 (${filtered.length}건)`;
+      
+      // 검색 결과 안내 텍스트 표시
+      const searchStatusHtml = currentSearchIds !== null 
+        ? `<span class="list-title-sub">(&#10003; 본문 검색 포함)</span>` 
+        : '';
+      els.listTitle.innerHTML = `검색된 글 목록 (${filtered.length}건)${searchStatusHtml}`;
+
       if (filtered.length === 0) {
         els.articleList.innerHTML = '<li style="padding: 10px; color: #9ca3af; text-align: center;">조건에 일치하는 글이 없습니다.</li>';
         els.listContainer.style.display = 'block'; return;
       }
+      
       const frag = document.createDocumentFragment();
       filtered.forEach(item => {
         const li = document.createElement('li'); li.className = 'article-item';
@@ -1183,4 +1296,3 @@
   </script>
 </body>
 </html>
- 
