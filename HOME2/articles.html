@@ -1,4 +1,4 @@
-<!-- v9.4: ? 도움말을 커스텀 모달로 일원화하여 모바일 짤림 원천 차단 및 스마트폰 뒤로가기(<) 버튼 시 다이얼로그만 닫히도록 popstate 연동 -->
+<!-- v9.5: 본문 검색어 다색 형광펜(파스텔톤) 하이라이트 기능 추가 (다중 키워드별 고유 색상 매핑) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -131,7 +131,6 @@
     .search-btn:hover { opacity: 0.9; }
     .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* V9.4: 물음표 버튼을 클릭형 버튼으로 깔끔하게 정돈 */
     .btn-search-help {
       display: inline-flex;
       align-items: center;
@@ -292,6 +291,15 @@
     #contentBody { white-space: pre-wrap; font-size: 16px; color: #1f2937; line-height: 1.8; min-height: 120px; }
     .placeholder-text { color: #9ca3af; text-align: center; padding: 40px 0; }
 
+    /* V9.5: 검색어 하이라이트 마크 공통 클래스 */
+    .search-hl-mark {
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-weight: 700;
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
     /* =========================================
        6. 인라인 에디터 모달 (교정)
        ========================================= */
@@ -406,7 +414,7 @@
     .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* =========================================
-       7. 알림 및 다이얼로그 (v9.4 Flexbox 정중앙 정렬)
+       7. 알림 및 다이얼로그 (Flexbox 정중앙 정렬)
        ========================================= */
     .custom-dialog-overlay {
       display: none;
@@ -527,7 +535,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.4</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.5</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -564,8 +572,6 @@
         </div>
 
         <button type="button" id="searchBtn" class="search-btn">본문 검색</button>
-
-        <!-- V9.4: 물음표를 커스텀 다이얼로그 모달 호출 버튼으로 일원화 -->
         <button type="button" class="btn-search-help" id="btnSearchHelp" title="검색 도움말 보기">?</button>
       </div>
       <p class="search-guide-text">※ 본문 검색은 아래 '검색된 글 목록'에 표시된 글들만을 대상으로 진행됩니다.</p>
@@ -720,7 +726,7 @@
     </div>
   </div>
 
-  <!-- 알림/확인 다이얼로그 (V9.4 히스토리 및 정중앙 연동) -->
+  <!-- 알림/확인 다이얼로그 -->
   <div class="custom-dialog-overlay" id="custom-dialog-overlay" onclick="closeCustomDialog()">
     <div class="custom-dialog-card" onclick="event.stopPropagation()">
       <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
@@ -741,6 +747,9 @@
     const METADATA_CSV_URL = `https://docs.google.com/spreadsheets/d/${CORRECT_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${CORRECT_SHEET_GID}&tq=SELECT%20A,B,C,D,E,F,G,H,I`;
     const PDF_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREEH1WnaWylHjZPq8IegURPhYSYDGIPKHhtE31taVWSit7Ho2hRSpU2m95hULcnCl3pk0DWytPL7Xx/pub?gid=0&single=true&output=csv';
 
+    // V9.5: 다중 검색어 형광펜 팔레트 (파스텔톤 5색 순환)
+    const HIGHLIGHT_PALETTE = ['#fef08a', '#bbf7d0', '#bae6fd', '#fbcfe8', '#fed7aa'];
+
     let articlesData = [];
     let currentArticleId = null;
     const contentCache = {};
@@ -754,7 +763,7 @@
     let currentSearchIds = null;
     let isSearching = false;
 
-    // V9.4: 다이얼로그 콜백 및 뒤로가기 상태 관리
+    // 다이얼로그 콜백 및 뒤로가기 상태 관리
     let currentDialogCallback = null;
 
     let isDirty = false;
@@ -845,6 +854,48 @@
       return arr;
     }
 
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // V9.5: 검색 키워드 추출 및 다색 형광펜 하이라이트 렌더링 함수
+    function getSearchKeywords() {
+      if (!els.searchInput) return [];
+      const raw = els.searchInput.value.trim();
+      if (!raw) return [];
+      const parts = raw.split(/[&|]/).map(s => s.trim()).filter(Boolean);
+      return [...new Set(parts)];
+    }
+
+    function renderHighlightedContent(rawText) {
+      if (!rawText) return '(본문 내용이 비어 있습니다.)';
+      const keywords = getSearchKeywords();
+      let safeHtml = escapeHtml(rawText);
+
+      if (keywords.length === 0 || currentSearchIds === null) {
+        return safeHtml;
+      }
+
+      keywords.forEach((kw, idx) => {
+        const color = HIGHLIGHT_PALETTE[idx % HIGHLIGHT_PALETTE.length];
+        const safeKw = escapeRegExp(escapeHtml(kw));
+        const regex = new RegExp(`(${safeKw})`, 'gi');
+        safeHtml = safeHtml.replace(regex, `<mark class="search-hl-mark" style="background-color: ${color};">$1</mark>`);
+      });
+
+      return safeHtml;
+    }
+
     function fastParseCSV(text) {
       const articles = [];
       let start = 0, inQuotes = false, row = [];
@@ -882,7 +933,6 @@
       return ret;
     }
 
-    /* V9.4: 스마트폰 뒤로가기(<) 버튼 시 다이얼로그만 닫히도록 완벽 연동 */
     function openCustomDialog(contentHtml, buttonsHtml, callback) {
       const overlay = document.getElementById('custom-dialog-overlay');
       document.getElementById('custom-dialog-msg').innerHTML = contentHtml;
@@ -890,7 +940,6 @@
       currentDialogCallback = callback;
       overlay.style.display = 'flex';
       
-      // 스마트폰 뒤로가기 버튼 감지를 위해 브라우저 히스토리에 해시 추가
       if (window.location.hash !== '#dialog') {
         window.history.pushState({ dialog: 'open' }, '', '#dialog');
       }
@@ -900,7 +949,6 @@
       const overlay = document.getElementById('custom-dialog-overlay');
       if (overlay.style.display !== 'none' && overlay.style.display !== '') {
         overlay.style.display = 'none';
-        // 직접 버튼(확인/취소)으로 닫은 경우 히스토리 스택 정리
         if (window.location.hash === '#dialog') {
           window.history.back();
         }
@@ -1006,13 +1054,15 @@
       updateClearButtonState();
       currentSearchIds = null;
       renderArticleList();
+      if (currentArticleId && contentCache[currentArticleId]) {
+        els.contentBody.innerHTML = renderHighlightedContent(contentCache[currentArticleId]);
+      }
       els.searchInput.focus();
     });
 
     els.searchBtn.addEventListener('click', executeSearch);
     els.searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
 
-    // V9.4: 물음표(?) 클릭 시 커스텀 다이얼로그 모달로 안내문 표시
     els.btnSearchHelp.addEventListener('click', () => {
       const helpHtml = `
         <div style="font-weight:700; font-size:15px; color:#1e293b; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
@@ -1083,6 +1133,9 @@
         els.searchBtn.textContent = '본문 검색';
         els.searchBtn.disabled = false;
         renderArticleList();
+        if (currentArticleId && contentCache[currentArticleId]) {
+          els.contentBody.innerHTML = renderHighlightedContent(contentCache[currentArticleId]);
+        }
       }
     }
 
@@ -1262,7 +1315,7 @@
     window.addEventListener('resize', updateGridPosition);
 
     /* =========================================
-       8. VIEWER MODAL LOGIC
+       8. VIEWER MODAL LOGIC (V9.5 하이라이트 연동)
        ========================================= */
     async function showArticleDetail(id) {
       currentArticleId = id; const article = articlesData.find(i => i.id === id); if (!article) return;
@@ -1281,7 +1334,11 @@
       els.metaInfo.innerHTML = `<strong>[${article.title}]</strong> | 발행: ${article.vol} (${article.date}) | 기수: ${article.cohort} | 기고자: ${article.author} | 종류: ${article.type}`;
       els.contentBody.className = '';
 
-      if (contentCache[id]) { els.contentBody.textContent = contentCache[id]; return; }
+      // V9.5: 캐시된 본문이 있는 경우 하이라이트 적용 후 출력
+      if (contentCache[id]) {
+        els.contentBody.innerHTML = renderHighlightedContent(contentCache[id]);
+        return;
+      }
       els.contentBody.textContent = '본문을 불러오는 중입니다...';
       
       try {
@@ -1291,7 +1348,9 @@
           const rows = JSON.parse(match[1]).table?.rows;
           if (rows && rows[0]?.c?.[0]) {
             contentCache[id] = rows[0].c[0].v || '(본문 내용이 비어 있습니다.)';
-            if (currentArticleId === id) els.contentBody.textContent = contentCache[id];
+            if (currentArticleId === id) {
+              els.contentBody.innerHTML = renderHighlightedContent(contentCache[id]);
+            }
             return;
           }
         }
@@ -1308,7 +1367,6 @@
     }
     function handleViewerBackdropClick(e) { if (e.target === els.articleViewer) closeViewerModal(); }
     
-    // V9.4: popstate 이벤트에서 다이얼로그와 뷰어 분기 처리
     window.addEventListener('popstate', (e) => {
       const overlay = document.getElementById('custom-dialog-overlay');
       if (overlay.style.display === 'flex') {
@@ -1493,4 +1551,3 @@
   </script>
 </body>
 </html>
- 
