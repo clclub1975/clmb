@@ -1,4 +1,4 @@
-<!-- v9.3: 모바일 환경에서 검색 도움말(?) 툴팁 우측 변을 ? 버튼에 일치(right:0) 및 커스텀 경고창 Flex 기반 화면 정중앙 배치 복원으로 짤림 현상 완벽 해결 -->
+<!-- v9.4: ? 도움말을 커스텀 모달로 일원화하여 모바일 짤림 원천 차단 및 스마트폰 뒤로가기(<) 버튼 시 다이얼로그만 닫히도록 popstate 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -131,66 +131,34 @@
     .search-btn:hover { opacity: 0.9; }
     .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .help-tip-wrap {
-      position: relative;
+    /* V9.4: 물음표 버튼을 클릭형 버튼으로 깔끔하게 정돈 */
+    .btn-search-help {
       display: inline-flex;
       align-items: center;
-      cursor: pointer;
-      outline: none;
-    }
-    .help-badge {
-      display: inline-block;
-      width: 22px;
-      height: 22px;
-      line-height: 22px;
-      text-align: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      line-height: 1;
       border-radius: 50%;
+      border: none;
       background-color: #94a3b8;
       color: #ffffff;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
+      cursor: pointer;
       user-select: none;
-      transition: background-color 0.15s;
+      transition: background-color 0.15s, transform 0.1s;
+      padding: 0;
+      outline: none;
+      flex-shrink: 0;
     }
-    .help-tip-wrap:hover .help-badge,
-    .help-tip-wrap:focus .help-badge {
+    .btn-search-help:hover, .btn-search-help:focus {
       background-color: #2563eb;
     }
-    .help-tooltip {
-      visibility: hidden;
-      opacity: 0;
-      position: absolute;
-      top: 135%;
-      right: 0;
-      width: 260px;
-      white-space: normal;
-      background-color: #1e293b;
-      color: #ffffff;
-      text-align: left;
-      padding: 10px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      line-height: 1.5;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
-      pointer-events: none;
-      transition: opacity 0.2s ease, visibility 0.2s ease;
+    .btn-search-help:active {
+      transform: scale(0.92);
     }
-    .help-tooltip::after {
-      content: "";
-      position: absolute;
-      bottom: 100%;
-      right: 6px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: transparent transparent #1e293b transparent;
-    }
-    .help-tip-wrap:hover .help-tooltip,
-    .help-tip-wrap:focus .help-tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
+
     .search-guide-text {
       margin: 8px 0 0 2px;
       font-size: 12px;
@@ -367,8 +335,27 @@
     .editor-input:focus { border-color: #2563eb; outline: none; }
     .editor-input::placeholder { text-align: center; color: #94a3b8; }
     
+    .history-tooltip, .help-tooltip {
+      visibility: hidden; opacity: 0; position: absolute; top: 135%; left: 0; width: 220px;
+      white-space: normal; word-break: keep-all; background-color: #1e293b; color: #ffffff; text-align: left;
+      padding: 8px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 500; line-height: 1.45;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 1000; pointer-events: none; transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .history-tooltip::after, .help-tooltip::after {
+      content: ""; position: absolute; bottom: 100%; border-width: 5px; border-style: solid; border-color: transparent transparent #1e293b transparent;
+    }
+    .history-tooltip::after { left: 12px; }
+    .help-tooltip::after { left: 7px; }
     .editor-label-wrap:hover .history-tooltip, .editor-label-wrap:focus .history-tooltip { visibility: visible; opacity: 1; }
     
+    .help-tip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; outline: none; }
+    .help-badge {
+      display: inline-block; width: 17px; height: 17px; line-height: 17px; text-align: center; border-radius: 50%;
+      background-color: #94a3b8; color: #ffffff; font-size: 0.72rem; font-weight: 700; user-select: none;
+    }
+    .help-tip-wrap:hover .help-badge, .help-tip-wrap:focus .help-badge { background-color: #2563eb; }
+    .help-tip-wrap:hover .help-tooltip, .help-tip-wrap:focus .help-tooltip { visibility: visible; opacity: 1; }
+
     .btn-action {
       display: inline-flex; align-items: center; justify-content: center; height: 28px; border: none; padding: 0 10px;
       font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
@@ -419,7 +406,7 @@
     .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* =========================================
-       7. 알림 및 다이얼로그 (v9.3 Flexbox 기반 완벽 중앙 정렬)
+       7. 알림 및 다이얼로그 (v9.4 Flexbox 정중앙 정렬)
        ========================================= */
     .custom-dialog-overlay {
       display: none;
@@ -438,16 +425,16 @@
     .custom-dialog-card {
       background: #ffffff;
       border-radius: 10px;
-      width: min(320px, calc(100vw - 32px));
+      width: min(340px, calc(100vw - 32px));
       box-sizing: border-box;
       padding: 22px 20px 18px 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.25);
       text-align: center;
       animation: dialogPop 0.15s ease-out;
-      margin: 0;
+      margin: auto;
     }
     @keyframes dialogPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .custom-dialog-msg { font-size: 14px; color: #1e293b; line-height: 1.55; margin-bottom: 18px; word-break: keep-all; }
+    .custom-dialog-msg { font-size: 14px; color: #1e293b; line-height: 1.6; margin-bottom: 18px; word-break: keep-all; text-align: left; }
     .custom-dialog-btns { display: flex; justify-content: center; gap: 8px; width: 100%; }
     .custom-dialog-btn {
       flex: 1; height: 36px; border-radius: 6px; font-size: 13.5px; font-weight: 600;
@@ -474,26 +461,14 @@
       label { font-size: 10px; margin-bottom: 3px; text-overflow: ellipsis; overflow: hidden; }
       select { padding: 5px 2px; font-size: 11px; height: 32px; }
       
-      /* V9.3: 모바일 툴팁 우측 변을 ? 버튼 우측 끝선에 완벽 일치(right: 0) 및 안전 너비 보장 */
       .search-section { padding: 12px 14px 10px 14px; margin-bottom: 14px; }
       .search-input-row { gap: 6px; }
       .search-input { font-size: 13px; padding: 8px 30px 8px 10px; }
       .search-clear-btn { font-size: 14px; right: 8px; }
       .search-btn { font-size: 13px; padding: 8px 14px; }
-      .help-badge { width: 20px; height: 20px; line-height: 20px; font-size: 11px; }
-      
-      .help-tooltip {
-        width: 220px;
-        max-width: calc(100vw - 36px);
-        right: 0;
-        left: auto;
-        padding: 9px 10px;
-        font-size: 11.5px;
-      }
-      .help-tooltip::after { right: 5px; }
+      .btn-search-help { width: 22px; height: 22px; font-size: 12px; }
       .search-guide-text { font-size: 11px; }
 
-      /* V9.3: 모바일 알림창 크기 및 중앙 절대 보장 */
       .custom-dialog-card { width: min(320px, calc(100vw - 32px)); padding: 18px 16px 14px 16px; }
       .custom-dialog-msg { font-size: 13px; }
       .custom-dialog-btn { height: 34px; font-size: 13px; }
@@ -552,7 +527,7 @@
     <a href="../index.html" class="home-btn">← 메인으로 돌아가기</a>
   </div>
 
-  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.3</span></h1>
+  <h1>촛불회 50년, 그 삶의 기록들 <span class="version-badge">v9.4</span></h1>
 
   <div class="tab-container">
     <button id="tabFilterBtn" class="tab-btn active">세부조건으로 선택하기</button>
@@ -590,16 +565,8 @@
 
         <button type="button" id="searchBtn" class="search-btn">본문 검색</button>
 
-        <div class="help-tip-wrap" tabindex="0">
-          <span class="help-badge">?</span>
-          <div class="help-tooltip">
-            <strong>🔍 다중 조건 검색 안내</strong><br>
-            • <strong>&amp; (AND)</strong> : 두 단어 모두 포함<br>
-            &nbsp;&nbsp;예) <code>체육대회 &amp; 농활</code><br>
-            • <strong>| (OR)</strong> : 두 단어 중 하나 이상 포함<br>
-            &nbsp;&nbsp;예) <code>야유회 | 체육대회</code>
-          </div>
-        </div>
+        <!-- V9.4: 물음표를 커스텀 다이얼로그 모달 호출 버튼으로 일원화 -->
+        <button type="button" class="btn-search-help" id="btnSearchHelp" title="검색 도움말 보기">?</button>
       </div>
       <p class="search-guide-text">※ 본문 검색은 아래 '검색된 글 목록'에 표시된 글들만을 대상으로 진행됩니다.</p>
     </div>
@@ -753,9 +720,9 @@
     </div>
   </div>
 
-  <!-- 알림/확인 다이얼로그 -->
-  <div class="custom-dialog-overlay" id="custom-dialog-overlay">
-    <div class="custom-dialog-card">
+  <!-- 알림/확인 다이얼로그 (V9.4 히스토리 및 정중앙 연동) -->
+  <div class="custom-dialog-overlay" id="custom-dialog-overlay" onclick="closeCustomDialog()">
+    <div class="custom-dialog-card" onclick="event.stopPropagation()">
       <div class="custom-dialog-msg" id="custom-dialog-msg">메시지 내용</div>
       <div class="custom-dialog-btns" id="custom-dialog-btns"></div>
     </div>
@@ -787,6 +754,9 @@
     let currentSearchIds = null;
     let isSearching = false;
 
+    // V9.4: 다이얼로그 콜백 및 뒤로가기 상태 관리
+    let currentDialogCallback = null;
+
     let isDirty = false;
     let isNetworkBusy = false;
     let pendingSaveTask = null;
@@ -811,6 +781,7 @@
       searchInput: document.getElementById('searchInput'),
       searchClearBtn: document.getElementById('searchClearBtn'),
       searchBtn: document.getElementById('searchBtn'),
+      btnSearchHelp: document.getElementById('btnSearchHelp'),
 
       listContainer: document.getElementById('listContainer'),
       listTitle: document.getElementById('listTitle'),
@@ -911,21 +882,52 @@
       return ret;
     }
 
-    function showCustomAlert(messageHtml, callback) {
+    /* V9.4: 스마트폰 뒤로가기(<) 버튼 시 다이얼로그만 닫히도록 완벽 연동 */
+    function openCustomDialog(contentHtml, buttonsHtml, callback) {
       const overlay = document.getElementById('custom-dialog-overlay');
-      document.getElementById('custom-dialog-msg').innerHTML = messageHtml;
-      document.getElementById('custom-dialog-btns').innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
+      document.getElementById('custom-dialog-msg').innerHTML = contentHtml;
+      document.getElementById('custom-dialog-btns').innerHTML = buttonsHtml;
+      currentDialogCallback = callback;
       overlay.style.display = 'flex';
-      document.getElementById('btn-dialog-ok').onclick = () => { overlay.style.display = 'none'; if (callback) callback(); };
+      
+      // 스마트폰 뒤로가기 버튼 감지를 위해 브라우저 히스토리에 해시 추가
+      if (window.location.hash !== '#dialog') {
+        window.history.pushState({ dialog: 'open' }, '', '#dialog');
+      }
+    }
+
+    function closeCustomDialog(executeCallback = true) {
+      const overlay = document.getElementById('custom-dialog-overlay');
+      if (overlay.style.display !== 'none' && overlay.style.display !== '') {
+        overlay.style.display = 'none';
+        // 직접 버튼(확인/취소)으로 닫은 경우 히스토리 스택 정리
+        if (window.location.hash === '#dialog') {
+          window.history.back();
+        }
+        if (executeCallback && currentDialogCallback) {
+          const cb = currentDialogCallback;
+          currentDialogCallback = null;
+          cb();
+        } else {
+          currentDialogCallback = null;
+        }
+      }
+    }
+
+    function showCustomAlert(messageHtml, callback) {
+      const buttonsHtml = `<button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-ok">확인</button>`;
+      openCustomDialog(messageHtml, buttonsHtml, callback);
+      document.getElementById('btn-dialog-ok').onclick = () => closeCustomDialog(true);
     }
 
     function showCustomConfirm(messageHtml, onConfirm, onCancel) {
-      const overlay = document.getElementById('custom-dialog-overlay');
-      document.getElementById('custom-dialog-msg').innerHTML = messageHtml;
-      document.getElementById('custom-dialog-btns').innerHTML = `<button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button><button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>`;
-      overlay.style.display = 'flex';
-      document.getElementById('btn-dialog-yes').onclick = () => { overlay.style.display = 'none'; if (onConfirm) onConfirm(); };
-      document.getElementById('btn-dialog-no').onclick = () => { overlay.style.display = 'none'; if (onCancel) onCancel(); };
+      const buttonsHtml = `
+        <button type="button" class="custom-dialog-btn dialog-btn-cancel" id="btn-dialog-no">취소</button>
+        <button type="button" class="custom-dialog-btn dialog-btn-confirm" id="btn-dialog-yes">확인</button>
+      `;
+      openCustomDialog(messageHtml, buttonsHtml, null);
+      document.getElementById('btn-dialog-yes').onclick = () => { closeCustomDialog(false); if (onConfirm) onConfirm(); };
+      document.getElementById('btn-dialog-no').onclick = () => { closeCustomDialog(false); if (onCancel) onCancel(); };
     }
 
     function showToast(message, bgColor) {
@@ -1009,6 +1011,22 @@
 
     els.searchBtn.addEventListener('click', executeSearch);
     els.searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
+
+    // V9.4: 물음표(?) 클릭 시 커스텀 다이얼로그 모달로 안내문 표시
+    els.btnSearchHelp.addEventListener('click', () => {
+      const helpHtml = `
+        <div style="font-weight:700; font-size:15px; color:#1e293b; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+          🔍 다중 조건 검색 안내
+        </div>
+        <div style="font-size:13px; line-height:1.6; color:#334155;">
+          • <strong>&amp; (AND)</strong> : 두 단어 모두 포함<br>
+          &nbsp;&nbsp;예) <code>체육대회 &amp; 농활</code><br><br>
+          • <strong>| (OR)</strong> : 두 단어 중 하나 이상 포함<br>
+          &nbsp;&nbsp;예) <code>야유회 | 체육대회</code>
+        </div>
+      `;
+      showCustomAlert(helpHtml);
+    });
 
     function buildGvizSearchQuery(rawInput) {
       if (rawInput.includes('&')) {
@@ -1290,9 +1308,23 @@
     }
     function handleViewerBackdropClick(e) { if (e.target === els.articleViewer) closeViewerModal(); }
     
-    window.addEventListener('popstate', () => els.articleViewer.classList.remove('open'));
+    // V9.4: popstate 이벤트에서 다이얼로그와 뷰어 분기 처리
+    window.addEventListener('popstate', (e) => {
+      const overlay = document.getElementById('custom-dialog-overlay');
+      if (overlay.style.display === 'flex') {
+        overlay.style.display = 'none';
+        currentDialogCallback = null;
+      }
+      els.articleViewer.classList.remove('open');
+    });
+
     window.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { if (els.editorModalBackdrop.classList.contains('open')) cancelAndCloseEditor(); else if (els.articleViewer.classList.contains('open')) closeViewerModal(); }
+      if (e.key === 'Escape') {
+        const overlay = document.getElementById('custom-dialog-overlay');
+        if (overlay.style.display === 'flex') closeCustomDialog(false);
+        else if (els.editorModalBackdrop.classList.contains('open')) cancelAndCloseEditor();
+        else if (els.articleViewer.classList.contains('open')) closeViewerModal();
+      }
     });
 
     /* =========================================
