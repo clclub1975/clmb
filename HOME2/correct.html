@@ -1,4 +1,4 @@
-<!-- v15.13: 교정 상태 배너 분기(교정 전/작업 중/완료), 이름+본문편집 시 버튼 활성화, 저장/종료 버튼 유채색 적용 및 '?' 툴팁 제거 -->
+<!-- v15.14: 상단 저장 버튼을 [저장]과 [나가기]로 단순화, [나가기] 상시 활성화 및 테두리형 스타일 적용 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -326,7 +326,7 @@
         .row-2-right {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             margin-left: auto;
         }
         
@@ -406,26 +406,33 @@
             justify-content: center;
             height: 28px;
             border: none;
-            padding: 0 9px;
+            padding: 0 11px;
             font-size: 0.8rem;
             font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.2s ease, opacity 0.2s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
             white-space: nowrap;
         }
-        .btn-action:hover:not(:disabled) { opacity: 0.85; }
-        .btn-save-stay {
+        .btn-action:hover:not(:disabled) { opacity: 0.88; }
+        .btn-save {
             background-color: #0284c7;
             color: white;
         }
-        .btn-save-exit {
-            background-color: #4f46e5;
-            color: white;
+        .btn-exit {
+            background-color: #ffffff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-exit:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+            opacity: 1;
         }
         .btn-action:disabled {
             background-color: #cbd5e1 !important;
             color: #64748b !important;
+            border-color: transparent !important;
             cursor: not-allowed;
             opacity: 1;
         }
@@ -556,8 +563,8 @@
                 padding: 2px 5px;
             }
             .btn-action {
-                padding: 0 7px;
-                font-size: 0.76rem;
+                padding: 0 9px;
+                font-size: 0.78rem;
             }
             .editor-input {
                 width: 68px;
@@ -695,7 +702,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.13</span>
+                <span class="version">v15.14</span>
             </h1>
         </header>
 
@@ -762,8 +769,8 @@
                         <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="handleEditorNameInput()">
                     </div>
                     <div class="row-2-right">
-                        <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
-                        <button type="button" class="btn-action btn-save-exit" id="btn-save-exit" onclick="handleSaveAction('exit')">저장/종료</button>
+                        <button type="button" class="btn-action btn-save" id="btn-save" onclick="handleSaveAction('save')">저장</button>
+                        <button type="button" class="btn-action btn-exit" id="btn-exit" onclick="cancelAndCloseModal()">나가기</button>
                     </div>
                 </div>
             </div>
@@ -804,29 +811,27 @@
         let globalPdfMap = {};
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
-        let hasContentEdited = false; // v15.13: 본문 편집 여부 추적
+        let hasContentEdited = false; // 본문 편집 여부 추적
         let isSaving = false;
         let editFieldState = {};
 
         function markAsDirty() { isDirty = true; }
 
-        // v15.13: 교정자 이름 입력 시 버튼 활성화 조건 재평가
+        // 교정자 이름 입력 시 버튼 활성화 조건 재평가
         function handleEditorNameInput() {
             markAsDirty();
             updateActionButtonsState();
         }
 
-        // v15.13: 상태 배너 및 저장/완료 버튼 활성화 상태 통합 제어
+        // 저장/완료 버튼 활성화 상태 통합 제어 ([나가기]는 상시 활성화)
         function updateActionButtonsState() {
-            const btnStay = document.getElementById('btn-save-stay');
-            const btnExit = document.getElementById('btn-save-exit');
+            const btnSave = document.getElementById('btn-save');
             const btnFinish = document.getElementById('btn-finish-large');
             const editorInput = document.getElementById('editor-name-input');
-            if (!btnStay || !btnExit || !btnFinish || !editorInput) return;
+            if (!btnSave || !btnFinish || !editorInput) return;
 
             if (isSaving) {
-                btnStay.disabled = true;
-                btnExit.disabled = true;
+                btnSave.disabled = true;
                 btnFinish.disabled = true;
                 return;
             }
@@ -839,8 +844,7 @@
             // 교정자 이름이 없거나, (교정 전/완료 상태에서 본문 편집이 시작되지 않은 경우) 버튼 비활성화
             const shouldDisable = (!editorName) || (isBeforeOrDone && !hasContentEdited);
 
-            btnStay.disabled = shouldDisable;
-            btnExit.disabled = shouldDisable;
+            btnSave.disabled = shouldDisable;
             btnFinish.disabled = shouldDisable;
         }
 
@@ -1434,7 +1438,7 @@
             renderCurrentMode();
         }
 
-        // v15.13: A열 상태값에 따른 배너 텍스트 및 색상 반영
+        // A열 상태값에 따른 배너 텍스트 및 색상 반영
         function updateStatusBanner() {
             const titleBar = document.getElementById('controls-title-bar');
             const statusBadge = document.getElementById('mode-status-badge');
@@ -1578,16 +1582,13 @@
             isSaving = true;
             updateActionButtonsState();
 
-            const btnStay = document.getElementById('btn-save-stay');
-            const btnExit = document.getElementById('btn-save-exit');
+            const btnSave = document.getElementById('btn-save');
             const btnFinish = document.getElementById('btn-finish-large');
 
-            const originalBtnStayText = btnStay.textContent;
-            const originalBtnExitText = btnExit.textContent;
+            const originalBtnSaveText = btnSave.textContent;
             const originalBtnFinishText = btnFinish.textContent;
 
-            if (actionType === 'stay') btnStay.textContent = '저장 중...';
-            else if (actionType === 'exit') btnExit.textContent = '저장 중...';
+            if (actionType === 'save') btnSave.textContent = '저장 중...';
             else if (actionType === 'finish') btnFinish.textContent = '완료 처리 중...';
 
             const getVal = (k) => {
@@ -1677,9 +1678,9 @@
 
                 const alertHtml = getSuccessAlertHtml(activeEditorName);
 
-                if (actionType === 'stay') {
+                if (actionType === 'save') {
                     showCustomAlert(alertHtml);
-                } else if (actionType === 'exit' || actionType === 'finish') {
+                } else if (actionType === 'finish') {
                     showCustomAlert(alertHtml, () => forceCloseModal());
                 }
 
@@ -1688,8 +1689,7 @@
                 showCustomAlert("구글 시트 저장 도중 통신 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
             } finally {
                 isSaving = false;
-                btnStay.textContent = originalBtnStayText;
-                btnExit.textContent = originalBtnExitText;
+                btnSave.textContent = originalBtnSaveText;
                 btnFinish.textContent = originalBtnFinishText;
                 updateActionButtonsState();
             }
