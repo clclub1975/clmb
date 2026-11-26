@@ -1,4 +1,4 @@
-<!-- v15.12: [요약] 모달이 '원본' 대신 '교정본' 탭 데이터를 불러오도록 수정 및 저장 시 즉시 캐시 반영, 버전 v15.12 -->
+<!-- v15.13: 교정 상태 배너 분기(교정 전/작업 중/완료), 이름+본문편집 시 버튼 활성화, 저장/종료 버튼 유채색 적용 및 '?' 툴팁 제거 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -262,9 +262,17 @@
             background: #f0f9ff;
             border: 1.5px solid #bae6fd;
         }
-        .controls-title-bar.correct-mode {
+        .controls-title-bar.mode-before {
+            background: #fef2f2;
+            border: 1.5px solid #fecaca;
+        }
+        .controls-title-bar.mode-progress {
             background: #ecfdf5;
             border: 1.5px solid #86efac;
+        }
+        .controls-title-bar.mode-done {
+            background: #f1f5f9;
+            border: 1.5px solid #cbd5e1;
         }
         .status-banner-text {
             display: inline-flex;
@@ -275,9 +283,9 @@
             letter-spacing: -0.2px;
             white-space: nowrap;
         }
-        .controls-title-bar.correct-mode .status-banner-text {
-            color: #15803d;
-        }
+        .controls-title-bar.mode-before .status-banner-text { color: #dc2626; }
+        .controls-title-bar.mode-progress .status-banner-text { color: #15803d; }
+        .controls-title-bar.mode-done .status-banner-text { color: #1e293b; }
 
         /* 타이틀 바 우측 끝에 배치되는 모드 전환 버튼 */
         .btn-toggle-switch {
@@ -297,10 +305,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .btn-toggle-switch:hover { background-color: #f8fafc; }
-        .controls-title-bar.correct-mode .btn-toggle-switch {
-            color: #0284c7;
-            border-color: #93c5fd;
-        }
 
         /* 2행 교정 모드 전용 컨트롤 */
         .controls-row-2 {
@@ -396,69 +400,6 @@
             color: #94a3b8;
         }
 
-        /* 원문자(?) 안내 툴팁 표준 CSS */
-        .help-tip-wrap {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            outline: none;
-        }
-        .help-badge {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            line-height: 18px;
-            text-align: center;
-            border-radius: 50%;
-            background-color: #94a3b8;
-            color: #ffffff;
-            font-size: 0.72rem;
-            font-weight: 700;
-            transition: background-color 0.15s ease;
-            user-select: none;
-        }
-        .help-tip-wrap:hover .help-badge,
-        .help-tip-wrap:focus .help-badge {
-            background-color: #2563eb;
-        }
-        .help-tooltip {
-            visibility: hidden;
-            opacity: 0;
-            position: absolute;
-            top: 135%;
-            left: 0;
-            width: 220px;
-            white-space: normal;
-            word-break: keep-all;
-            background-color: #1e293b;
-            color: #ffffff;
-            text-align: left;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 0.76rem;
-            font-weight: 500;
-            line-height: 1.45;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-            z-index: 1000;
-            pointer-events: none;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-        }
-        .help-tooltip::after {
-            content: "";
-            position: absolute;
-            bottom: 100%;
-            left: 7px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: transparent transparent #1e293b transparent;
-        }
-        .help-tip-wrap:hover .help-tooltip,
-        .help-tip-wrap:focus .help-tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
-
         .btn-action {
             display: inline-flex;
             align-items: center;
@@ -470,18 +411,23 @@
             font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
-            transition: opacity 0.2s ease;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
             white-space: nowrap;
         }
-        .btn-action:hover { opacity: 0.85; }
-        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-action:hover:not(:disabled) { opacity: 0.85; }
         .btn-save-stay {
             background-color: #0284c7;
             color: white;
         }
         .btn-save-exit {
-            background-color: #475569;
+            background-color: #4f46e5;
             color: white;
+        }
+        .btn-action:disabled {
+            background-color: #cbd5e1 !important;
+            color: #64748b !important;
+            cursor: not-allowed;
+            opacity: 1;
         }
 
         /* 메인 콘텐츠 출력 영역 */
@@ -616,13 +562,6 @@
             .editor-input {
                 width: 68px;
             }
-            .help-tooltip {
-                width: 210px;
-                left: -30px;
-            }
-            .help-tooltip::after {
-                left: 35px;
-            }
             .history-tooltip {
                 width: 200px;
                 left: 0;
@@ -649,8 +588,14 @@
             box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
             transition: background-color 0.2s ease;
         }
-        .btn-finish-large:hover { background-color: #15803d; }
-        .btn-finish-large:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-finish-large:hover:not(:disabled) { background-color: #15803d; }
+        .btn-finish-large:disabled {
+            background-color: #cbd5e1 !important;
+            color: #64748b !important;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 1;
+        }
 
         .modal-content-single {
             background: #fff;
@@ -750,7 +695,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.12</span>
+                <span class="version">v15.13</span>
             </h1>
         </header>
 
@@ -814,14 +759,7 @@
                                 역대 교정자: 없음
                             </div>
                         </div>
-                        <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="markAsDirty()">
-                        <!-- 원문자(?) 안내 툴팁 -->
-                        <div class="help-tip-wrap" tabindex="0">
-                            <span class="help-badge">?</span>
-                            <div class="help-tooltip">
-                                이름을 지운 상태에서 [저장/종료]를 누르면 교정 전 상태로 표시됩니다.
-                            </div>
-                        </div>
+                        <input type="text" id="editor-name-input" class="editor-input" placeholder="이름" oninput="handleEditorNameInput()">
                     </div>
                     <div class="row-2-right">
                         <button type="button" class="btn-action btn-save-stay" id="btn-save-stay" onclick="handleSaveAction('stay')">저장/계속</button>
@@ -866,10 +804,45 @@
         let globalPdfMap = {};
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
+        let hasContentEdited = false; // v15.13: 본문 편집 여부 추적
         let isSaving = false;
         let editFieldState = {};
 
         function markAsDirty() { isDirty = true; }
+
+        // v15.13: 교정자 이름 입력 시 버튼 활성화 조건 재평가
+        function handleEditorNameInput() {
+            markAsDirty();
+            updateActionButtonsState();
+        }
+
+        // v15.13: 상태 배너 및 저장/완료 버튼 활성화 상태 통합 제어
+        function updateActionButtonsState() {
+            const btnStay = document.getElementById('btn-save-stay');
+            const btnExit = document.getElementById('btn-save-exit');
+            const btnFinish = document.getElementById('btn-finish-large');
+            const editorInput = document.getElementById('editor-name-input');
+            if (!btnStay || !btnExit || !btnFinish || !editorInput) return;
+
+            if (isSaving) {
+                btnStay.disabled = true;
+                btnExit.disabled = true;
+                btnFinish.disabled = true;
+                return;
+            }
+
+            const editorName = editorInput.value.trim();
+            const meta = correctMetaMap[currentIssueData.issueNum] || { status: '교정', editorFull: '', lastEditor: '' };
+            const status = (meta.status || '교정').trim();
+            const isBeforeOrDone = (status === '교정' || !status || status.includes('완료'));
+
+            // 교정자 이름이 없거나, (교정 전/완료 상태에서 본문 편집이 시작되지 않은 경우) 버튼 비활성화
+            const shouldDisable = (!editorName) || (isBeforeOrDone && !hasContentEdited);
+
+            btnStay.disabled = shouldDisable;
+            btnExit.disabled = shouldDisable;
+            btnFinish.disabled = shouldDisable;
+        }
 
         // 문자열에서 마지막 교정자 및 리스트 추출 유틸리티
         function parseEditorList(editorStr) {
@@ -1118,6 +1091,9 @@
 
         function handleFieldInput(key) {
             markAsDirty();
+            hasContentEdited = true;
+            updateActionButtonsState();
+
             const ta = document.getElementById(`edit_${key}`);
             if (!ta) return;
             autoResizeTextarea(ta);
@@ -1141,6 +1117,8 @@
                 ta.value = prev;
                 autoResizeTextarea(ta);
                 markAsDirty();
+                hasContentEdited = true;
+                updateActionButtonsState();
             } else {
                 showCustomAlert('더 이상 되돌릴 이전 입력 내용이 없습니다.');
             }
@@ -1158,6 +1136,8 @@
             ta.value = targetVal;
             autoResizeTextarea(ta);
             markAsDirty();
+            hasContentEdited = true;
+            updateActionButtonsState();
         }
 
         function restoreOriginal(key) {
@@ -1172,9 +1152,11 @@
             ta.value = origVal;
             autoResizeTextarea(ta);
             markAsDirty();
+            hasContentEdited = true;
+            updateActionButtonsState();
         }
 
-        // 데이터 페칭 및 렌더링 (v15.12: 'summary' 타입 추가로 교정본 읽기 전용 지원)
+        // 데이터 페칭 및 렌더링
         function getIssueDetail(issueNum, type) {
             const map = (type === 'original') ? originalMap : (type === 'summary' ? summaryViewMap : correctMap);
             if (map[issueNum]) return map[issueNum];
@@ -1393,7 +1375,7 @@
             }
         }
 
-        // 모달창 오픈 및 제어 (v15.12: [요약]은 교정본 탭 데이터를 읽기 전용으로 표시)
+        // 모달창 오픈 및 제어
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('summary-modal-title');
@@ -1413,6 +1395,7 @@
         function openCorrectModal(issueNum, year, month) {
             currentIssueData = { issueNum, year, month, activeTab: 'correct' };
             isDirty = false;
+            hasContentEdited = false;
             
             const modal = document.getElementById('correct-modal');
             const titleElem = document.getElementById('correct-modal-title');
@@ -1441,6 +1424,7 @@
             }
 
             renderCurrentMode();
+            updateActionButtonsState();
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
         }
@@ -1448,6 +1432,27 @@
         function toggleMode() {
             currentIssueData.activeTab = (currentIssueData.activeTab === 'original') ? 'correct' : 'original';
             renderCurrentMode();
+        }
+
+        // v15.13: A열 상태값에 따른 배너 텍스트 및 색상 반영
+        function updateStatusBanner() {
+            const titleBar = document.getElementById('controls-title-bar');
+            const statusBadge = document.getElementById('mode-status-badge');
+            const meta = correctMetaMap[currentIssueData.issueNum] || { status: '교정' };
+            const status = (meta.status || '교정').trim();
+
+            titleBar.classList.remove('mode-before', 'mode-progress', 'mode-done');
+
+            if (status === '교정' || !status) {
+                titleBar.classList.add('mode-before');
+                statusBadge.textContent = '교정 전';
+            } else if (status.includes('완료')) {
+                titleBar.classList.add('mode-done');
+                statusBadge.textContent = '교정 완료';
+            } else {
+                titleBar.classList.add('mode-progress');
+                statusBadge.textContent = '✏️ 교정 작업 중';
+            }
         }
 
         function renderCurrentMode() {
@@ -1468,7 +1473,7 @@
             }
 
             if (currentIssueData.activeTab === 'original') {
-                titleBar.classList.remove('correct-mode');
+                titleBar.classList.remove('mode-before', 'mode-progress', 'mode-done');
                 statusBadge.textContent = '📖 원문 보기 중';
                 toggleBtn.textContent = '✏️ 교정하러 가기';
                 correctRow2.style.display = 'none';
@@ -1479,8 +1484,7 @@
                 else contentBox.innerHTML = `<p>${issueNum}호에 대한 데이터가 없습니다.</p>`;
 
             } else {
-                titleBar.classList.add('correct-mode');
-                statusBadge.textContent = '✏️ 교정 작업 중';
+                updateStatusBanner();
                 toggleBtn.textContent = '📖 원문 보러가기';
                 correctRow2.style.display = 'flex';
                 footerFinish.style.display = 'flex';
@@ -1492,14 +1496,12 @@
                 } else {
                     contentBox.innerHTML = `<p>${issueNum}호에 대한 데이터가 없습니다.</p>`;
                 }
+                updateActionButtonsState();
             }
         }
 
         // 저장 로직 (누적 조합 및 비동기 전송)
         function getSuccessAlertHtml(editorName) {
-            if (!editorName) {
-                return `<strong>교정 전 상태로 표시됩니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
-            }
             return `<strong>[${editorName}] 교정자의 수정내용이 저장되었습니다.</strong><br><br><span style="font-size:0.8rem; color:#64748b;">⚠️ 다른 사용자의 홈페이지에 반영되기까지는 수 분 정도 소요됩니다.</span>`;
         }
 
@@ -1519,24 +1521,13 @@
             if (isSaving) return;
 
             const editorName = document.getElementById('editor-name-input').value.trim();
-            const issueNum = currentIssueData.issueNum;
-            const meta = correctMetaMap[issueNum] || { status: '교정', editorFull: '', lastEditor: '' };
-
-            if (actionType === 'exit' && !editorName) {
-                showCustomConfirm(
-                    "교정자 이름을 비우고 저장하면 <strong>교정 전 상태</strong>로 표시됩니다.<br>진행하시겠습니까?",
-                    () => {
-                        executePostSave('교정', meta.editorFull, '', actionType);
-                    }
-                );
-                return;
-            }
-
             if (!editorName) {
                 showCustomAlert('교정자 이름을 입력해 주세요.', () => document.getElementById('editor-name-input').focus());
                 return;
             }
 
+            const issueNum = currentIssueData.issueNum;
+            const meta = correctMetaMap[issueNum] || { status: '교정', editorFull: '', lastEditor: '' };
             const newAccumulated = computeAccumulatedEditors(editorName, meta.editorFull);
 
             if (actionType === 'finish') {
@@ -1548,7 +1539,7 @@
             }
         }
 
-        // v15.12: 저장 시 메모리상 correctRawRows 및 캐시 즉시 동기화
+        // 저장 시 메모리상 correctRawRows 및 캐시 즉시 동기화
         function syncLocalCorrectRow(payload) {
             if (!correctRawRows) return;
             for (let j = 1; j < correctRawRows.length; j++) {
@@ -1585,14 +1576,11 @@
 
         async function executePostSave(statusText, editorPayload, activeEditorName, actionType) {
             isSaving = true;
+            updateActionButtonsState();
 
             const btnStay = document.getElementById('btn-save-stay');
             const btnExit = document.getElementById('btn-save-exit');
             const btnFinish = document.getElementById('btn-finish-large');
-
-            btnStay.disabled = true;
-            btnExit.disabled = true;
-            btnFinish.disabled = true;
 
             const originalBtnStayText = btnStay.textContent;
             const originalBtnExitText = btnExit.textContent;
@@ -1644,6 +1632,7 @@
                     if (ta) editFieldState[key].currentSaved = ta.value;
                 }
                 isDirty = false;
+                hasContentEdited = false;
 
                 // 로컬 행 데이터 및 캐시 동기화
                 syncLocalCorrectRow(payload);
@@ -1653,6 +1642,9 @@
                     editorFull: editorPayload,
                     lastEditor: getLastEditor(editorPayload)
                 };
+
+                // 상단 배너 즉시 갱신
+                updateStatusBanner();
 
                 const historyTip = document.getElementById('editor-history-tooltip');
                 if (historyTip) {
@@ -1675,15 +1667,10 @@
                         statusSpan.title = `완료 (${activeEditorName})`;
                         statusSpan.classList.add('status-done');
                         if (cellTd) cellTd.classList.add('cell-completed');
-                    } else if (statusText === '진행' || activeEditorName !== '') {
+                    } else {
                         statusSpan.textContent = activeEditorName || '진행';
                         statusSpan.title = `진행 (${activeEditorName})`;
                         statusSpan.classList.add('status-progress');
-                        if (cellTd) cellTd.classList.remove('cell-completed');
-                    } else {
-                        statusSpan.textContent = '교정';
-                        statusSpan.title = '교정';
-                        statusSpan.classList.add('status-correct');
                         if (cellTd) cellTd.classList.remove('cell-completed');
                     }
                 }
@@ -1701,12 +1688,10 @@
                 showCustomAlert("구글 시트 저장 도중 통신 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
             } finally {
                 isSaving = false;
-                btnStay.disabled = false;
-                btnExit.disabled = false;
-                btnFinish.disabled = false;
                 btnStay.textContent = originalBtnStayText;
                 btnExit.textContent = originalBtnExitText;
                 btnFinish.textContent = originalBtnFinishText;
+                updateActionButtonsState();
             }
         }
 
@@ -1715,6 +1700,7 @@
             if (isDirty) {
                 showCustomConfirm('작업 중인 내용이 저장되지 않습니다. 저장하지 않고 나가시겠습니까?', () => {
                     isDirty = false;
+                    hasContentEdited = false;
                     forceCloseModal();
                 });
             } else {
