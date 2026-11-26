@@ -1,4 +1,4 @@
-<!-- v15.11: 사용하지 않는 레거시 코드 정리 및 최적화, 버전 v15.11 -->
+<!-- v15.12: [요약] 모달이 '원본' 대신 '교정본' 탭 데이터를 불러오도록 수정 및 저장 시 즉시 캐시 반영, 버전 v15.12 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -750,7 +750,7 @@
         <header>
             <h1>
                 <span class="title-wrap">촛불회 회보 둘러보기</span>
-                <span class="version">v15.11</span>
+                <span class="version">v15.12</span>
             </h1>
         </header>
 
@@ -776,11 +776,11 @@
         </div>
     </div>
 
-    <!-- [요약] 모달 팝업 (단일창) -->
+    <!-- [요약] 모달 팝업 (단일창 - 교정본 읽기 전용) -->
     <div class="modal-overlay" id="summary-modal" onclick="closeModal()">
         <div class="modal-content-single" onclick="event.stopPropagation()">
             <div class="modal-header-single">
-                <span class="modal-title" id="summary-modal-title">원본</span>
+                <span class="modal-title" id="summary-modal-title">요약</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="summary-modal-text">데이터를 불러오는 중입니다...</div>
@@ -859,9 +859,10 @@
         // 전역 상태 변수
         let correctRawRows = null;
         let originalRawRows = null; 
-        let correctMap = {};
-        let originalMap = {};
-        let correctMetaMap = {}; // { [num]: { status: '', editorFull: '', lastEditor: '' } }
+        let correctMap = {};      // 교정본 편집 폼 캐시
+        let summaryViewMap = {};  // 교정본 읽기 전용([요약]) 캐시
+        let originalMap = {};     // 원본 읽기 전용 캐시
+        let correctMetaMap = {};  // { [num]: { status: '', editorFull: '', lastEditor: '' } }
         let globalPdfMap = {};
         let currentIssueData = { issueNum: 0, year: 0, month: 0, activeTab: 'original' };
         let isDirty = false;
@@ -932,7 +933,7 @@
             return ret;
         }
 
-        // 원본 구조화 HTML 빌더
+        // 구조화 읽기 전용 HTML 빌더 (요약 및 원본 보기 공용)
         function buildStructuredHtml(cols) {
             let pubDate        = cols[3] || '';
             let summaryText    = cols[4] || '';  
@@ -955,45 +956,45 @@
             let htmlBuilder = '';
             htmlBuilder += `<h4>1. 회보 정보</h4><ul>`;
             htmlBuilder += `<li><strong>발행년월:</strong> ${pubDate}</li>`;
-            if (summaryText) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${summaryText.replace(/\\n/g, '<br>')}</li>`;
+            if (summaryText) htmlBuilder += `<li><strong>한 줄 요약:</strong> ${summaryText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
             htmlBuilder += `</ul>`;
 
             if (execCell || sysCell) {
                 htmlBuilder += `<h4>2. 조직 및 체계 변화</h4><ul>`;
-                if (execCell) htmlBuilder += `<li><strong>임원진:</strong> ${execCell.replace(/\\n/g, '<br>')}</li>`;
-                if (sysCell) htmlBuilder += `<li><strong>체계 변화:</strong> ${sysCell.replace(/\\n/g, '<br>')}</li>`;
+                if (execCell) htmlBuilder += `<li><strong>임원진:</strong> ${execCell.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (sysCell) htmlBuilder += `<li><strong>체계 변화:</strong> ${sysCell.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
                 htmlBuilder += `</ul>`;
             }
             if (eventCell || historyCell || troubleCell) {
                 htmlBuilder += `<h4>3. 주요 이벤트 및 마일스톤</h4><ul>`;
-                if (eventCell) htmlBuilder += `<li><strong>이벤트:</strong> ${eventCell.replace(/\\n/g, '<br>')}</li>`;
-                if (historyCell) htmlBuilder += `<li><strong>역사적 사실:</strong> ${historyCell.replace(/\\n/g, '<br>')}</li>`;
-                if (troubleCell) htmlBuilder += `<li><strong>애로 사항:</strong> ${troubleCell.replace(/\\n/g, '<br>')}</li>`;
+                if (eventCell) htmlBuilder += `<li><strong>이벤트:</strong> ${eventCell.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (historyCell) htmlBuilder += `<li><strong>역사적 사실:</strong> ${historyCell.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (troubleCell) htmlBuilder += `<li><strong>애로 사항:</strong> ${troubleCell.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
                 htmlBuilder += `</ul>`;
             }
             if (meetingType || meetingVote) {
                 htmlBuilder += `<h4>4. 주요 회의</h4><ul>`;
-                if (meetingType) htmlBuilder += `<li><strong>회의 종류:</strong> ${meetingType.replace(/\\n/g, '<br>')}</li>`;
-                if (meetingVote) htmlBuilder += `<li><strong>의결 사항:</strong> ${meetingVote.replace(/\\n/g, '<br>')}</li>`;
+                if (meetingType) htmlBuilder += `<li><strong>회의 종류:</strong> ${meetingType.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (meetingVote) htmlBuilder += `<li><strong>의결 사항:</strong> ${meetingVote.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
                 htmlBuilder += `</ul>`;
             }
             if (volRegular || volEtc) {
                 htmlBuilder += `<h4>5. 봉사 활동</h4><ul>`;
-                if (volRegular) htmlBuilder += `<li><strong>정기 봉사:</strong> ${volRegular.replace(/\\n/g, '<br>')}</li>`;
-                if (volEtc) htmlBuilder += `<li><strong>기타 봉사:</strong> ${volEtc.replace(/\\n/g, '<br>')}</li>`;
+                if (volRegular) htmlBuilder += `<li><strong>정기 봉사:</strong> ${volRegular.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (volEtc) htmlBuilder += `<li><strong>기타 봉사:</strong> ${volEtc.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
                 htmlBuilder += `</ul>`;
             }
             if (subStudy || subEtc) {
                 htmlBuilder += `<h4>6. 소집단 활동</h4><ul>`;
-                if (subStudy) htmlBuilder += `<li><strong>학술/문화:</strong> ${subStudy.replace(/\\n/g, '<br>')}</li>`;
-                if (subEtc) htmlBuilder += `<li><strong>기타 활동:</strong> ${subEtc.replace(/\\n/g, '<br>')}</li>`;
+                if (subStudy) htmlBuilder += `<li><strong>학술/문화:</strong> ${subStudy.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (subEtc) htmlBuilder += `<li><strong>기타 활동:</strong> ${subEtc.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
                 htmlBuilder += `</ul>`;
             }
             if (peopleInter || peopleNews || peopleEvent) {
                 htmlBuilder += `<h4>7. 인물 소식</h4><ul>`;
-                if (peopleInter) htmlBuilder += `<li><strong>인터뷰:</strong> ${peopleInter.replace(/\\n/g, '<br>')}</li>`;
-                if (peopleNews) htmlBuilder += `<li><strong>개별 동정:</strong> ${peopleNews.replace(/\\n/g, '<br>')}</li>`;
-                if (peopleEvent) htmlBuilder += `<li><strong>경조사:</strong> ${peopleEvent.replace(/\\n/g, '<br>')}</li>`;
+                if (peopleInter) htmlBuilder += `<li><strong>인터뷰:</strong> ${peopleInter.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (peopleNews) htmlBuilder += `<li><strong>개별 동정:</strong> ${peopleNews.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
+                if (peopleEvent) htmlBuilder += `<li><strong>경조사:</strong> ${peopleEvent.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</li>`;
                 htmlBuilder += `</ul>`;
             }
             if (articleSummary) {
@@ -1003,7 +1004,7 @@
                 articles.forEach(art => {
                     let trimmedArt = art.trim();
                     if (trimmedArt) {
-                        htmlBuilder += `<li>${trimmedArt.replace(/\\n/g, '<br>')}</li>`;
+                        htmlBuilder += `<li>${trimmedArt.replace(/\n/g, '<br>')}</li>`;
                     }
                 });
                 htmlBuilder += `</ul>`;
@@ -1173,9 +1174,9 @@
             markAsDirty();
         }
 
-        // 데이터 페칭 및 렌더링
+        // 데이터 페칭 및 렌더링 (v15.12: 'summary' 타입 추가로 교정본 읽기 전용 지원)
         function getIssueDetail(issueNum, type) {
-            const map = (type === 'original') ? originalMap : correctMap;
+            const map = (type === 'original') ? originalMap : (type === 'summary' ? summaryViewMap : correctMap);
             if (map[issueNum]) return map[issueNum];
 
             const rows = (type === 'original') ? originalRawRows : correctRawRows;
@@ -1198,9 +1199,10 @@
                 if (num === issueNum) {
                     const paddedNum = String(issueNum).padStart(3, '0');
                     const pubDate = cols[3] || `${paddedNum}호`;
-                    const html = (type === 'original') ? buildStructuredHtml(cols) : buildEditableHtml(cols, issueNum);
+                    const html = (type === 'correct') ? buildEditableHtml(cols, issueNum) : buildStructuredHtml(cols);
+                    const suffix = (type === 'original') ? '원본' : (type === 'summary' ? '요약' : '교정본');
                     map[issueNum] = {
-                        title: `${pubDate} - ${paddedNum}호 ${type === 'original' ? '원본' : '교정본'}`,
+                        title: `${pubDate} - ${paddedNum}호 ${suffix}`,
                         content: html
                     };
                     return map[issueNum];
@@ -1391,18 +1393,18 @@
             }
         }
 
-        // 모달창 오픈 및 제어
+        // 모달창 오픈 및 제어 (v15.12: [요약]은 교정본 탭 데이터를 읽기 전용으로 표시)
         function openSummaryModal(issueNum, year, month) {
             const modal = document.getElementById('summary-modal');
             const titleElem = document.getElementById('summary-modal-title');
             const textElem = document.getElementById('summary-modal-text');
             
-            titleElem.textContent = `${year}년 ${month}월 - ${String(issueNum).padStart(3, '0')}호 원본`;
-            const data = getIssueDetail(issueNum, 'original');
+            titleElem.textContent = `${year}년 ${month}월 - ${String(issueNum).padStart(3, '0')}호 요약`;
+            const data = getIssueDetail(issueNum, 'summary');
             if (data) {
                 textElem.innerHTML = data.content;
             } else {
-                textElem.innerHTML = `<p>${issueNum}호에 대한 원본 시트 데이터가 아직 없습니다.</p>`;
+                textElem.innerHTML = `<p>${issueNum}호에 대한 교정본 시트 데이터가 아직 없습니다.</p>`;
             }
             modal.style.display = 'flex';
             history.pushState({ modalOpen: true }, '', window.location.href);
@@ -1546,6 +1548,41 @@
             }
         }
 
+        // v15.12: 저장 시 메모리상 correctRawRows 및 캐시 즉시 동기화
+        function syncLocalCorrectRow(payload) {
+            if (!correctRawRows) return;
+            for (let j = 1; j < correctRawRows.length; j++) {
+                const cols = correctRawRows[j];
+                if (cols.length < 3) continue;
+                const matches = (cols[1] + " " + cols[2]).match(/(\d+)/g);
+                if (!matches || matches.length === 0) continue;
+                if (parseInt(matches[0], 10) === payload.issueNum) {
+                    cols[0] = payload.status;
+                    cols[1] = payload.editorName;
+                    cols[3] = payload.pubDate;
+                    cols[4] = payload.summary;
+                    cols[5] = payload.exec;
+                    cols[6] = payload.sys;
+                    cols[7] = payload.event;
+                    cols[8] = payload.history;
+                    cols[9] = payload.trouble;
+                    cols[10] = payload.meetingType;
+                    cols[11] = payload.meetingVote;
+                    cols[12] = payload.volRegular;
+                    cols[13] = payload.volEtc;
+                    cols[14] = payload.subStudy;
+                    cols[15] = payload.subEtc;
+                    cols[16] = payload.peopleInter;
+                    cols[17] = payload.peopleNews;
+                    cols[18] = payload.peopleEvent;
+                    cols[19] = payload.articles;
+                    break;
+                }
+            }
+            delete summaryViewMap[payload.issueNum];
+            delete correctMap[payload.issueNum];
+        }
+
         async function executePostSave(statusText, editorPayload, activeEditorName, actionType) {
             isSaving = true;
 
@@ -1607,6 +1644,9 @@
                     if (ta) editFieldState[key].currentSaved = ta.value;
                 }
                 isDirty = false;
+
+                // 로컬 행 데이터 및 캐시 동기화
+                syncLocalCorrectRow(payload);
 
                 correctMetaMap[currentIssueData.issueNum] = {
                     status: statusText,
@@ -1723,4 +1763,3 @@
     </script>
 </body>
 </html>
- 
